@@ -34,6 +34,13 @@ const TOWN_GATES = [
   { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
   { name: "東門", x: 18, y: 48, w: 1, h: 3, axis: "y" },
 ];
+const TREASURE_CHESTS = [
+  { id: "town-cache", x: 17, y: 53, reward: "starter" },
+  { id: "north-ruin", x: 18, y: 17, reward: "weapon" },
+  { id: "river-shrine", x: 42, y: 33, reward: "ward" },
+  { id: "east-grove", x: 56, y: 43, reward: "armor" },
+  { id: "dragon-cache", x: 50, y: 16, reward: "scale" },
+];
 
 const TILE_GRASS = 0;
 const TILE_PATH = 1;
@@ -53,8 +60,12 @@ const DIRS = {
   right: { x: 1, y: 0 },
 };
 
-const weaponNames = ["木", "銅", "鉄", "銀", "竜"];
-const armorNames = ["布", "革", "鎖", "鋼", "竜"];
+const ATTACK_RANGE = 24;
+const ATTACK_WIDTH = 20;
+const DASH_COST = 34;
+
+const weaponNames = ["木剣", "銅剣", "鉄剣", "銀剣", "竜剣"];
+const armorNames = ["布服", "革鎧", "鎖鎧", "鋼鎧", "竜鎧"];
 const itemOrder = ["potion", "bomb", "ward"];
 
 const monsterTypes = {
@@ -144,6 +155,7 @@ const state = {
   rings: [],
   floaters: [],
   particles: [],
+  projectiles: [],
   npcs: [],
   chests: new Set(),
   spawnedBoss: false,
@@ -182,6 +194,10 @@ const player = {
   wards: 0,
   selectedItem: "potion",
   scales: 0,
+  stamina: 100,
+  staminaMax: 100,
+  attackCooldown: 0,
+  dashCooldown: 0,
   invuln: 0,
   guard: 0,
   combo: 0,
@@ -270,7 +286,7 @@ function blocksClosedTownGate(actor, tx, ty) {
   const currentTy = Math.floor(current.y / TILE);
   if (inTownTile(currentTx, currentTy)) return false;
   if (!inTownTile(tx, ty)) return false;
-  return !tileInGate(tx, ty);
+  return true;
 }
 
 function blocksTownEntry(actor, x, y) {
@@ -395,6 +411,11 @@ function spawnMonster(typeName, x, y) {
     boss: Boolean(template.boss),
     isMonster: true,
     contactTimer: rand(0, 300),
+    fireCooldown: rand(900, 1800),
+    windup: 0,
+    chargeTime: 0,
+    chargeCooldown: rand(500, 1200),
+    chargeVector: { x: 0, y: 0 },
     wanderTimer: rand(500, 1600),
     vx: 0,
     vy: 0,
@@ -497,6 +518,10 @@ function loadGame() {
     Object.assign(player, data.player);
     player.bombs ??= 1;
     player.wards ??= 0;
+    player.staminaMax ??= 100;
+    player.stamina = player.staminaMax;
+    player.attackCooldown = 0;
+    player.dashCooldown = 0;
     player.selectedItem = itemOrder.includes(player.selectedItem) ? player.selectedItem : "potion";
     player.combo = 0;
     player.comboTimer = 0;
@@ -532,6 +557,10 @@ function resetGame() {
     selectedItem: "potion",
     invuln: 0,
     guard: 0,
+    stamina: 100,
+    staminaMax: 100,
+    attackCooldown: 0,
+    dashCooldown: 0,
     combo: 0,
     comboTimer: 0,
     speed: 58,
@@ -543,6 +572,7 @@ function resetGame() {
   state.rings = [];
   state.floaters = [];
   state.particles = [];
+  state.projectiles = [];
   state.spawnedBoss = false;
   state.bossDefeated = false;
   state.gameOver = false;
@@ -596,13 +626,22 @@ function pointerMoveVector() {
   return normalize(dx, dy);
 }
 
-function updatePlayer(dt) {
+function inputMoveVector() {
   let dx = 0;
   let dy = 0;
   if (hasKey("ArrowLeft") || hasKey("KeyA")) dx -= 1;
   if (hasKey("ArrowRight") || hasKey("KeyD")) dx += 1;
   if (hasKey("ArrowUp") || hasKey("KeyW")) dy -= 1;
   if (hasKey("ArrowDown") || hasKey("KeyS")) dy += 1;
+  return normalize(dx, dy);
+}
+
+function facingVector() {
+  return DIRS[player.dir] || DIRS.down;
+}
+
+function updatePlayer(dt) {
+  let { x: dx, y: dy } = inputMoveVector();
   if (!dx && !dy) {
     const pointer = pointerMoveVector();
     dx = pointer.x;
@@ -618,6 +657,9 @@ function updatePlayer(dt) {
 
   player.invuln = Math.max(0, player.invuln - dt);
   player.guard = Math.max(0, player.guard - dt);
+  player.attackCooldown = Math.max(0, player.attackCooldown - dt);
+  player.dashCooldown = Math.max(0, player.dashCooldown - dt);
+  player.stamina = Math.min(player.staminaMax, player.stamina + dt * 0.027);
   player.comboTimer = Math.max(0, player.comboTimer - dt);
   if (player.comboTimer <= 0) player.combo = 0;
   state.searchCooldown = Math.max(0, state.searchCooldown - dt);
@@ -670,6 +712,10 @@ function updateMonsters(dt) {
     monster.age += dt;
     monster.hurt = Math.max(0, monster.hurt - dt);
     monster.contactTimer = Math.max(0, monster.contactTimer - dt);
+    monster.fireCooldown = Math.max(0, monster.fireCooldown - dt);
+    monster.windup = Math.max(0, monster.windup - dt);
+    monster.chargeTime = Math.max(0, monster.chargeTime - dt);
+    monster.chargeCooldown = Math.max(0, monster.chargeCooldown - dt);
     monster.wanderTimer -= dt;
 
     const c = centerOf(monster);
@@ -677,7 +723,26 @@ function updateMonsters(dt) {
     let vx = 0;
     let vy = 0;
 
-    if (monster.boss || dist < 230) {
+    if (monster.type === "boar" && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < 92) {
+      monster.chargeVector = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
+      monster.windup = 360;
+      monster.chargeCooldown = 1700;
+      addRing(c.x, c.y, "#ff8a3d", 15);
+    }
+
+    if ((monster.type === "wisp" || monster.boss) && monster.fireCooldown <= 0 && dist < (monster.boss ? 180 : 130)) {
+      shootProjectile(monster, playerCenter);
+      monster.fireCooldown = monster.boss ? rand(850, 1400) : rand(1300, 2100);
+    }
+
+    if (monster.windup > 0) {
+      vx = 0;
+      vy = 0;
+      if (monster.windup <= 40) monster.chargeTime = 360;
+    } else if (monster.chargeTime > 0) {
+      vx = monster.chargeVector.x;
+      vy = monster.chargeVector.y;
+    } else if (monster.boss || dist < 230) {
       const chase = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
       vx = chase.x;
       vy = chase.y;
@@ -694,7 +759,8 @@ function updateMonsters(dt) {
 
     monster.dir = directionFromVector(vx, vy, monster.dir);
     const slow = rectsOverlap(monster, player) ? 0.25 : 1;
-    moveActor(monster, vx * monster.speed * slow * dt * 0.001, vy * monster.speed * slow * dt * 0.001);
+    const chargeSpeed = monster.chargeTime > 0 ? 2.55 : 1;
+    moveActor(monster, vx * monster.speed * chargeSpeed * slow * dt * 0.001, vy * monster.speed * chargeSpeed * slow * dt * 0.001);
     resolveContact(monster);
   }
 
@@ -702,6 +768,59 @@ function updateMonsters(dt) {
     if (monster.hp > 0) return true;
     defeatMonster(monster);
     return false;
+  });
+}
+
+function shootProjectile(monster, target) {
+  const c = centerOf(monster);
+  const aim = normalize(target.x - c.x, target.y - c.y);
+  const speed = monster.boss ? 78 : 62;
+  state.projectiles.push({
+    x: c.x,
+    y: c.y,
+    vx: aim.x * speed,
+    vy: aim.y * speed,
+    r: monster.boss ? 4 : 3,
+    damage: monster.boss ? 14 : 8,
+    color: monster.boss ? "#ff543d" : "#ffd166",
+    life: monster.boss ? 1500 : 1200,
+  });
+  addSlash(c.x + aim.x * 8, c.y + aim.y * 8, monster.dir, monster.boss ? "#ff543d" : "#ffd166");
+}
+
+function updateProjectiles(dt) {
+  state.projectiles = state.projectiles.filter((p) => {
+    p.x += p.vx * dt * 0.001;
+    p.y += p.vy * dt * 0.001;
+    p.life -= dt;
+    if (p.life <= 0) return false;
+
+    const tx = Math.floor(p.x / TILE);
+    const ty = Math.floor(p.y / TILE);
+    if (isBlockedTile(tileAt(tx, ty), { flying: false })) {
+      burst(p.x, p.y, p.color, 4);
+      return false;
+    }
+
+    const hitbox = { x: p.x - p.r, y: p.y - p.r, w: p.r * 2, h: p.r * 2 };
+    if (rectsOverlap(player, hitbox)) {
+      if (player.invuln <= 0 && player.hp > 0) {
+        let hurt = Math.max(1, p.damage - Math.floor(playerDefense() * 0.45));
+        if (player.guard > 0) hurt = Math.floor(hurt * 0.3);
+        player.hp = Math.max(0, player.hp - hurt);
+        player.invuln = 320;
+        state.shake = Math.max(state.shake, 120);
+        addFloater(player.x + player.w / 2, player.y, String(hurt), "#ffeb61");
+        burst(player.x + player.w / 2, player.y + player.h / 2, p.color, 8);
+        if (player.hp <= 0) {
+          state.gameOver = true;
+          say("倒れた... Rで再挑戦", 5000);
+        }
+      }
+      return false;
+    }
+
+    return true;
   });
 }
 
@@ -851,6 +970,109 @@ function updateEffects(dt) {
   }
 }
 
+function contextAction() {
+  if (state.gameOver || player.hp <= 0) return;
+  if (nearestAttackTarget()) {
+    performAttack();
+    return;
+  }
+  if (nearestNpc() || nearestChest() || playerNearCave()) {
+    interact();
+    return;
+  }
+  performAttack();
+}
+
+function playerNearCave() {
+  const tx = Math.floor((player.x + player.w / 2) / TILE);
+  const ty = Math.floor((player.y + player.h / 2) / TILE);
+  return Math.abs(tx - 51) <= 1 && Math.abs(ty - 18) <= 1;
+}
+
+function nearestAttackTarget() {
+  const pc = centerOf(player);
+  const dir = facingVector();
+  let best = null;
+  let bestScore = Infinity;
+  for (const monster of state.monsters) {
+    if (monster.hp <= 0) continue;
+    const mc = centerOf(monster);
+    const relX = mc.x - pc.x;
+    const relY = mc.y - pc.y;
+    const forward = relX * dir.x + relY * dir.y;
+    const side = Math.abs(relX * -dir.y + relY * dir.x);
+    if (forward < -4 || forward > ATTACK_RANGE + monster.w) continue;
+    if (side > ATTACK_WIDTH / 2 + monster.w / 2) continue;
+    const score = forward + side * 0.35;
+    if (score < bestScore) {
+      best = monster;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+function performAttack() {
+  if (player.attackCooldown > 0 || state.gameOver || player.hp <= 0) return;
+  player.attackCooldown = 280;
+  const pc = centerOf(player);
+  const dir = facingVector();
+  const slashX = pc.x + dir.x * 14;
+  const slashY = pc.y + dir.y * 14;
+  addSlash(slashX, slashY, player.dir, "#f8fbff");
+
+  let hitCount = 0;
+  for (const monster of state.monsters) {
+    if (monster.hp <= 0) continue;
+    const mc = centerOf(monster);
+    const relX = mc.x - pc.x;
+    const relY = mc.y - pc.y;
+    const forward = relX * dir.x + relY * dir.y;
+    const side = Math.abs(relX * -dir.y + relY * dir.x);
+    if (forward < -2 || forward > ATTACK_RANGE + monster.w) continue;
+    if (side > ATTACK_WIDTH / 2 + monster.w / 2) continue;
+    hitMonster(monster, 1.08 + hitCount * 0.08, "#ffffff");
+    hitCount += 1;
+  }
+
+  if (hitCount) {
+    player.comboTimer = 2400;
+    state.shake = Math.max(state.shake, 60);
+  } else {
+    player.combo = Math.max(0, player.combo - 1);
+  }
+}
+
+function hitMonster(monster, power = 1, color = "#ffffff") {
+  const crit = Math.random() < 0.12 + player.weapon * 0.03;
+  const critMult = crit ? 1.55 : 1;
+  const hit = Math.max(1, Math.round((playerAttack() - monster.def + rand(0, 4)) * power * critMult));
+  monster.hp -= hit;
+  monster.hurt = 150;
+  player.stamina = Math.min(player.staminaMax, player.stamina + 5);
+  const pc = centerOf(player);
+  const mc = centerOf(monster);
+  const away = normalize(mc.x - pc.x, mc.y - pc.y);
+  addFloater(mc.x, monster.y, crit ? `${hit}!` : String(hit), crit ? "#ffd166" : color);
+  burst(mc.x, mc.y, crit ? "#ffd166" : "#f8fbff", monster.boss ? 10 : 6);
+  moveActor(monster, away.x * 7, away.y * 7);
+}
+
+function dash() {
+  if (state.gameOver || player.hp <= 0 || player.dashCooldown > 0 || player.stamina < DASH_COST) return;
+  const input = inputMoveVector();
+  const dir = input.x || input.y ? input : facingVector();
+  player.stamina = Math.max(0, player.stamina - DASH_COST);
+  player.dashCooldown = 360;
+  player.invuln = Math.max(player.invuln, 260);
+  player.step += 1;
+  for (let i = 0; i < 5; i += 1) {
+    moveActor(player, dir.x * 6, dir.y * 6);
+    burst(player.x + player.w / 2 - dir.x * 4, player.y + player.h / 2 - dir.y * 4, "#6de4ff", 1);
+  }
+  addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 18);
+}
+
 function interact() {
   if (state.gameOver) return;
   const npc = nearestNpc();
@@ -859,14 +1081,62 @@ function interact() {
     return;
   }
 
-  const tx = Math.floor((player.x + player.w / 2) / TILE);
-  const ty = Math.floor((player.y + player.h / 2) / TILE);
-  if (Math.abs(tx - 51) <= 1 && Math.abs(ty - 18) <= 1) {
+  const chest = nearestChest();
+  if (chest) {
+    openChest(chest);
+    return;
+  }
+
+  if (playerNearCave()) {
     handleCave();
     return;
   }
 
   searchGround();
+}
+
+function nearestChest() {
+  const pc = centerOf(player);
+  for (const chest of TREASURE_CHESTS) {
+    if (state.chests.has(chest.id)) continue;
+    const cx = (chest.x + 0.5) * TILE;
+    const cy = (chest.y + 0.5) * TILE;
+    if (Math.hypot(pc.x - cx, pc.y - cy) < 22) return chest;
+  }
+  return null;
+}
+
+function openChest(chest) {
+  if (state.chests.has(chest.id)) return;
+  state.chests.add(chest.id);
+  const cx = (chest.x + 0.5) * TILE;
+  const cy = (chest.y + 0.5) * TILE;
+  addRing(cx, cy, "#ffd166", 22);
+  burst(cx, cy, "#ffd166", 16);
+  grantChestReward(chest.reward);
+}
+
+function grantChestReward(reward) {
+  if (reward === "starter") {
+    player.gold += 45;
+    player.potions = Math.min(9, player.potions + 2);
+    say("宝箱から45Gと薬を見つけた");
+  } else if (reward === "weapon") {
+    player.weapon = Math.min(weaponNames.length - 1, player.weapon + 1);
+    player.gold += 30;
+    say(`${weaponNames[player.weapon]}を手に入れた`);
+  } else if (reward === "armor") {
+    player.armor = Math.min(armorNames.length - 1, player.armor + 1);
+    player.wards = Math.min(9, player.wards + 1);
+    say(`${armorNames[player.armor]}を手に入れた`);
+  } else if (reward === "ward") {
+    player.bombs = Math.min(9, player.bombs + 2);
+    player.wards = Math.min(9, player.wards + 2);
+    say("火瓶と護符を見つけた");
+  } else if (reward === "scale") {
+    player.scales = Math.min(3, player.scales + 1);
+    say("古い竜の鱗を見つけた");
+  }
 }
 
 function nearestNpc() {
@@ -945,6 +1215,11 @@ function handleCave() {
 function searchGround() {
   if (state.searchCooldown > 0) return;
   state.searchCooldown = 700;
+  const chest = nearestChest();
+  if (chest) {
+    openChest(chest);
+    return;
+  }
   const tx = Math.floor((player.x + player.w / 2) / TILE);
   const ty = Math.floor((player.y + player.h / 2) / TILE);
   const tile = tileAt(tx, ty);
@@ -1091,12 +1366,17 @@ function draw() {
   ctx.clearRect(0, 0, W, H);
   drawWorld(cam);
   drawWorldAtmosphere(cam);
+  drawFieldDetails(cam);
+  drawTownDetails(cam);
   drawHealCircle(cam);
+  drawTownFence(cam);
   drawTownGates(cam);
+  drawChests(cam);
   drawNpcs(cam);
   drawEntities(cam);
   drawEffects(cam);
   drawScreenGrade(cam);
+  drawObjective();
   drawHud();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
@@ -1141,6 +1421,213 @@ function drawWorldAtmosphere(cam) {
   }
 }
 
+function drawTownDetails(cam) {
+  drawWell(8 * TILE - cam.x, 46 * TILE - cam.y);
+  drawBench(9 * TILE - cam.x, 50 * TILE - cam.y, "x");
+  drawBench(14 * TILE - cam.x, 50 * TILE - cam.y, "x");
+  drawCrates(16 * TILE - cam.x, 52 * TILE - cam.y);
+  drawFlowerBed(6 * TILE - cam.x, 51 * TILE - cam.y);
+  drawFlowerBed(14 * TILE - cam.x, 45 * TILE - cam.y);
+  drawLamp(17 * TILE - cam.x, 46 * TILE - cam.y);
+  drawLamp(6 * TILE - cam.x, 46 * TILE - cam.y);
+  drawSign(12 * TILE - cam.x, 48 * TILE - cam.y);
+}
+
+function drawFieldDetails(cam) {
+  const startX = Math.floor(cam.x / TILE);
+  const startY = Math.floor(cam.y / TILE);
+  const endX = Math.ceil((cam.x + W) / TILE);
+  const endY = Math.ceil((cam.y + VIEW_H) / TILE);
+  for (let ty = startY; ty <= endY; ty += 1) {
+    for (let tx = startX; tx <= endX; tx += 1) {
+      if (inTownTile(tx, ty)) continue;
+      const tile = tileAt(tx, ty);
+      const sx = tx * TILE - cam.x;
+      const sy = ty * TILE - cam.y;
+      const n = hashNoise(tx * 3 + 7, ty * 5 + 11);
+      if (tile === TILE_GRASS || tile === TILE_FLOWER) {
+        if (n > 0.88) drawRock(sx + 5, sy + 8);
+        else if (n > 0.76) drawGrassClump(sx + 3, sy + 7);
+        else if (n < 0.08) drawTinyFlowers(sx + 3, sy + 4);
+      }
+      if (tile === TILE_FIELD && n > 0.7) {
+        drawCropBundle(sx + 5, sy + 3);
+      }
+      if (tile === TILE_WATER) {
+        const edge = tileAt(tx - 1, ty) !== TILE_WATER || tileAt(tx + 1, ty) !== TILE_WATER;
+        if (edge && n > 0.45) drawReeds(sx + (n > 0.7 ? 2 : 12), sy + 5);
+      }
+      if (tile === TILE_PATH && n > 0.82) {
+        drawPebbles(sx + 3, sy + 6);
+      }
+    }
+  }
+}
+
+function drawRock(sx, sy) {
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
+  ctx.fillRect(sx + 1, sy + 4, 7, 2);
+  ctx.fillStyle = "#6f7780";
+  ctx.fillRect(sx + 1, sy + 1, 7, 4);
+  ctx.fillStyle = "#aeb7bf";
+  ctx.fillRect(sx + 2, sy, 4, 2);
+  ctx.fillStyle = "#3f464d";
+  ctx.fillRect(sx + 6, sy + 3, 2, 2);
+}
+
+function drawGrassClump(sx, sy) {
+  ctx.fillStyle = "#1f7d36";
+  ctx.fillRect(sx + 1, sy + 5, 11, 2);
+  ctx.fillStyle = "#6dde69";
+  ctx.fillRect(sx + 2, sy + 2, 1, 5);
+  ctx.fillRect(sx + 5, sy, 1, 7);
+  ctx.fillRect(sx + 8, sy + 1, 1, 6);
+  ctx.fillRect(sx + 11, sy + 3, 1, 4);
+}
+
+function drawTinyFlowers(sx, sy) {
+  ctx.fillStyle = "#2d8d30";
+  ctx.fillRect(sx + 1, sy + 4, 10, 2);
+  ctx.fillStyle = "#ffd166";
+  ctx.fillRect(sx + 2, sy + 2, 2, 2);
+  ctx.fillStyle = "#ff8ab3";
+  ctx.fillRect(sx + 7, sy + 3, 2, 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(sx + 11, sy + 1, 1, 1);
+}
+
+function drawCropBundle(sx, sy) {
+  ctx.fillStyle = "#4d9f37";
+  ctx.fillRect(sx + 1, sy + 8, 9, 2);
+  ctx.fillStyle = "#fff06b";
+  ctx.fillRect(sx + 2, sy, 1, 9);
+  ctx.fillRect(sx + 5, sy + 1, 1, 8);
+  ctx.fillRect(sx + 8, sy, 1, 9);
+}
+
+function drawReeds(sx, sy) {
+  ctx.fillStyle = "#195f3d";
+  ctx.fillRect(sx + 1, sy + 2, 1, 8);
+  ctx.fillRect(sx + 4, sy, 1, 10);
+  ctx.fillRect(sx + 7, sy + 3, 1, 7);
+  ctx.fillStyle = "#c98945";
+  ctx.fillRect(sx + 3, sy, 3, 2);
+}
+
+function drawPebbles(sx, sy) {
+  ctx.fillStyle = "#7c5f41";
+  ctx.fillRect(sx, sy + 2, 2, 1);
+  ctx.fillRect(sx + 6, sy, 3, 2);
+  ctx.fillRect(sx + 11, sy + 5, 2, 1);
+}
+
+function drawWell(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(0,0,0,0.24)";
+  ctx.fillRect(sx + 1, sy + 10, 15, 4);
+  ctx.fillStyle = "#66717c";
+  ctx.fillRect(sx + 2, sy + 6, 12, 7);
+  ctx.fillStyle = "#aeb7bf";
+  ctx.fillRect(sx + 3, sy + 5, 10, 2);
+  ctx.fillStyle = "#172636";
+  ctx.fillRect(sx + 5, sy + 8, 6, 3);
+  ctx.fillStyle = "#8b3f32";
+  ctx.fillRect(sx + 1, sy + 1, 14, 3);
+  ctx.fillStyle = "#d9704c";
+  ctx.fillRect(sx + 3, sy, 10, 2);
+}
+
+function drawBench(sx, sy, axis) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
+  ctx.fillRect(sx + 1, sy + 8, 17, 3);
+  ctx.fillStyle = "#5f371b";
+  ctx.fillRect(sx, sy + 4, 18, 3);
+  ctx.fillStyle = "#c98945";
+  ctx.fillRect(sx + 1, sy + 2, 16, 2);
+  ctx.fillStyle = "#2c2018";
+  ctx.fillRect(sx + 3, sy + 7, 2, 3);
+  ctx.fillRect(sx + 13, sy + 7, 2, 3);
+}
+
+function drawCrates(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  drawCrate(sx, sy + 3);
+  drawCrate(sx + 8, sy);
+  drawCrate(sx + 9, sy + 9);
+}
+
+function drawCrate(sx, sy) {
+  ctx.fillStyle = "#7b4b25";
+  ctx.fillRect(sx, sy, 7, 7);
+  ctx.fillStyle = "#c3853f";
+  ctx.fillRect(sx + 1, sy + 1, 5, 1);
+  ctx.fillRect(sx + 1, sy + 5, 5, 1);
+  ctx.fillStyle = "#4f2e17";
+  ctx.fillRect(sx + 3, sy + 1, 1, 5);
+}
+
+function drawFlowerBed(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "#3b7b37";
+  ctx.fillRect(sx, sy, 16, 8);
+  ctx.fillStyle = "#2d5c2b";
+  ctx.fillRect(sx, sy + 7, 16, 1);
+  ctx.fillStyle = "#ffd166";
+  ctx.fillRect(sx + 3, sy + 2, 2, 2);
+  ctx.fillStyle = "#ff6b8a";
+  ctx.fillRect(sx + 8, sy + 3, 2, 2);
+  ctx.fillStyle = "#eaffff";
+  ctx.fillRect(sx + 12, sy + 1, 2, 2);
+}
+
+function drawLamp(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  const flicker = Math.floor(performance.now() / 200 + sx + sy) % 2;
+  ctx.fillStyle = "#3a2718";
+  ctx.fillRect(sx + 7, sy + 4, 2, 10);
+  ctx.fillStyle = "#ffd166";
+  ctx.fillRect(sx + 5, sy + 1, 6, 5);
+  ctx.fillStyle = flicker ? "#fff2a6" : "#ff9a3d";
+  ctx.fillRect(sx + 6, sy + 2, 4, 3);
+}
+
+function drawSign(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "#4f2e17";
+  ctx.fillRect(sx + 7, sy + 5, 2, 9);
+  ctx.fillStyle = "#c98945";
+  ctx.fillRect(sx + 2, sy + 1, 12, 6);
+  ctx.fillStyle = "#2c2018";
+  ctx.fillRect(sx + 4, sy + 3, 8, 1);
+}
+
+function drawChests(cam) {
+  for (const chest of TREASURE_CHESTS) {
+    const sx = chest.x * TILE - cam.x;
+    const sy = chest.y * TILE - cam.y;
+    if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) continue;
+    drawChest(sx + 3, sy + 5, state.chests.has(chest.id));
+  }
+}
+
+function drawChest(sx, sy, opened) {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+  ctx.fillRect(sx, sy + 8, 11, 3);
+  ctx.fillStyle = opened ? "#5f4630" : "#9f5b28";
+  ctx.fillRect(sx, sy + 4, 11, 7);
+  ctx.fillStyle = opened ? "#3b2b20" : "#d28a3c";
+  ctx.fillRect(sx + 1, sy + 2, 9, 4);
+  ctx.fillStyle = "#2c2018";
+  ctx.fillRect(sx, sy + 6, 11, 1);
+  ctx.fillStyle = opened ? "#1b1410" : "#ffd166";
+  ctx.fillRect(sx + 5, sy + 5, 2, 3);
+  if (!opened) {
+    ctx.fillStyle = "#fff2a6";
+    ctx.fillRect(sx + 2, sy + 3, 3, 1);
+  }
+}
+
 function drawHealCircle(cam) {
   const sx = HEAL_CIRCLE.x * TILE - cam.x;
   const sy = HEAL_CIRCLE.y * TILE - cam.y;
@@ -1156,6 +1643,41 @@ function drawHealCircle(cam) {
   ctx.fillStyle = "#74ff8f";
   ctx.fillRect(sx + 3, sy + 3, 2, 2);
   ctx.fillRect(sx + 11, sy + 11, 2, 2);
+}
+
+function drawTownFence(cam) {
+  const left = 5;
+  const right = 18;
+  const top = 39;
+  const bottom = 55;
+  for (let tx = left; tx <= right; tx += 1) {
+    if (!tileInGate(tx, top)) drawFenceSegment(tx * TILE - cam.x, top * TILE - cam.y, "x");
+    if (!tileInGate(tx, bottom)) drawFenceSegment(tx * TILE - cam.x, bottom * TILE - cam.y + 11, "x");
+  }
+  for (let ty = top; ty <= bottom; ty += 1) {
+    if (!tileInGate(left, ty)) drawFenceSegment(left * TILE - cam.x, ty * TILE - cam.y, "y");
+    if (!tileInGate(right, ty)) drawFenceSegment(right * TILE - cam.x + 11, ty * TILE - cam.y, "y");
+  }
+}
+
+function drawFenceSegment(sx, sy, axis) {
+  if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.24)";
+  if (axis === "x") {
+    ctx.fillRect(sx, sy + 4, TILE, 3);
+    ctx.fillStyle = "#5f371b";
+    ctx.fillRect(sx, sy + 2, TILE, 3);
+    ctx.fillStyle = "#c3853f";
+    ctx.fillRect(sx + 2, sy, 3, 9);
+    ctx.fillRect(sx + 11, sy, 3, 9);
+  } else {
+    ctx.fillRect(sx + 4, sy, 3, TILE);
+    ctx.fillStyle = "#5f371b";
+    ctx.fillRect(sx + 2, sy, 3, TILE);
+    ctx.fillStyle = "#c3853f";
+    ctx.fillRect(sx, sy + 2, 9, 3);
+    ctx.fillRect(sx, sy + 11, 9, 3);
+  }
 }
 
 function drawTownGates(cam) {
@@ -1297,11 +1819,17 @@ function drawTile(tile, sx, sy, tx, ty) {
   }
 
   if (tile === TILE_FLOOR) {
-    ctx.fillStyle = "#a69d8a";
+    const floorTone = hashNoise(tx + 101, ty + 203);
+    ctx.fillStyle = floorTone > 0.66 ? "#b4ad9b" : floorTone < 0.22 ? "#928b7a" : "#a69d8a";
     ctx.fillRect(sx, sy, TILE, TILE);
     ctx.fillStyle = "#756f63";
     ctx.fillRect(sx, sy + 7, TILE, 1);
     ctx.fillRect(sx + 7, sy, 1, TILE);
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.fillRect(sx + 2, sy + 2, 4, 1);
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    if (floorTone > 0.8) ctx.fillRect(sx + 10, sy + 11, 4, 1);
+    if (floorTone < 0.12) ctx.fillRect(sx + 3, sy + 12, 2, 2);
     drawTerrainEdges(tile, sx, sy, tx, ty);
   }
 }
@@ -1412,6 +1940,12 @@ function drawPlayer(sx, sy) {
   ctx.fillRect(sx + 2, sy - 1 + bob, 8, 3);
   ctx.fillStyle = "#ffd68e";
   ctx.fillRect(sx + 3, sy + bob, 6, 5);
+  if (player.dir === "up") {
+    ctx.fillStyle = "#3d231b";
+    ctx.fillRect(sx + 3, sy + bob, 6, 5);
+    ctx.fillStyle = "#2b1a18";
+    ctx.fillRect(sx + 2, sy + 1 + bob, 8, 2);
+  }
   ctx.fillStyle = player.armor >= 2 ? "#4b6c8f" : "#1956d2";
   ctx.fillRect(sx + 2, sy + 5 + bob, 8, 7);
   ctx.fillStyle = "#69d7ff";
@@ -1425,8 +1959,14 @@ function drawPlayer(sx, sy) {
   ctx.fillRect(sx + 2, sy + 11 + bob, 3, 2);
   ctx.fillRect(sx + 7, sy + 11 + bob, 3, 2);
   ctx.fillStyle = "#1b1230";
-  const eye = player.dir === "left" ? [2, 2] : player.dir === "right" ? [8, 2] : [4, 2];
-  ctx.fillRect(sx + eye[0], sy + eye[1] + bob, 1, 1);
+  if (player.dir === "down") {
+    ctx.fillRect(sx + 4, sy + 2 + bob, 1, 1);
+    ctx.fillRect(sx + 7, sy + 2 + bob, 1, 1);
+  } else if (player.dir === "left") {
+    ctx.fillRect(sx + 3, sy + 2 + bob, 1, 1);
+  } else if (player.dir === "right") {
+    ctx.fillRect(sx + 8, sy + 2 + bob, 1, 1);
+  }
   drawWeapon(sx, sy + bob);
 }
 
@@ -1450,6 +1990,10 @@ function drawMonster(monster, sx, sy) {
   if (sy > VIEW_H || sx < -30 || sx > W + 10) return;
   const mainColor = monster.hurt > 0 ? "#ffffff" : monster.color;
   drawActorShadow(sx + 1, sy + monster.h - 1, monster.w);
+  if (monster.windup > 0) {
+    ctx.strokeStyle = "#ffef8a";
+    ctx.strokeRect(sx - 2, sy - 2, monster.w + 4, monster.h + 4);
+  }
   if (monster.type === "dragon") {
     drawDragon(monster, sx, sy);
     return;
@@ -1580,6 +2124,17 @@ function drawEffects(cam) {
     ctx.fillRect(Math.round(state.pointerMove.x) - 1, Math.round(state.pointerMove.y) - 1, 2, 2);
   }
 
+  for (const p of state.projectiles) {
+    const sx = Math.round(p.x - cam.x);
+    const sy = Math.round(p.y - cam.y);
+    ctx.fillStyle = "rgba(255, 120, 58, 0.32)";
+    ctx.fillRect(sx - p.r - 1, sy - p.r - 1, p.r * 2 + 2, p.r * 2 + 2);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(sx - p.r, sy - p.r, p.r * 2, p.r * 2);
+    ctx.fillStyle = "#fff2a6";
+    ctx.fillRect(sx - 1, sy - 1, 2, 2);
+  }
+
   for (const r of state.rings) {
     const t = 1 - r.life / r.max;
     const radius = Math.max(2, Math.floor(r.radius * t));
@@ -1643,6 +2198,27 @@ function drawScreenGrade(cam) {
   ctx.fillRect(0, 0, W, 2);
 }
 
+function objectiveText() {
+  if (state.victory || state.bossDefeated) return "目的: 村へ戻って長老に報告";
+  if (state.spawnedBoss) return "目的: 洞穴の赤竜を倒す";
+  if (player.scales >= 3) return "目的: 北東の洞穴へ向かう";
+  const unopened = TREASURE_CHESTS.length - state.chests.size;
+  return `目的: 竜の鱗を集める ${player.scales}/3  宝箱${unopened}`;
+}
+
+function drawObjective() {
+  const text = objectiveText();
+  ctx.font = "7px monospace";
+  ctx.textAlign = "left";
+  const w = Math.min(W - 10, Math.max(112, text.length * 7 + 9));
+  ctx.fillStyle = "rgba(5, 8, 18, 0.72)";
+  ctx.fillRect(5, 5, w, 13);
+  ctx.strokeStyle = "rgba(255, 209, 102, 0.74)";
+  ctx.strokeRect(5, 5, w, 13);
+  ctx.fillStyle = "#fff2a6";
+  ctx.fillText(text, 9, 14);
+}
+
 function drawHud() {
   ctx.fillStyle = "#07111c";
   ctx.fillRect(0, VIEW_H, W, HUD_H);
@@ -1659,10 +2235,12 @@ function drawHud() {
 
   drawBar(43, VIEW_H + 5, 68, 7, player.hp / player.hpMax, "#54d66f", "#ff5252");
   drawBar(43, VIEW_H + 18, 68, 5, player.xp / player.xpNext, "#6de4ff", "#1b367e");
+  drawBar(43, VIEW_H + 26, 68, 4, player.stamina / player.staminaMax, "#ffd166", "#7d4d20");
 
   ctx.fillStyle = "#ffffff";
   ctx.fillText(`HP ${Math.ceil(player.hp)}/${player.hpMax}`, 116, VIEW_H + 10);
   ctx.fillText(`EXP ${player.xp}/${player.xpNext}`, 116, VIEW_H + 22);
+  ctx.fillText(`ST ${Math.floor(player.stamina)}`, 116, VIEW_H + 30);
 
   drawItemChip(183, VIEW_H + 5);
   drawMiniCompass(216, VIEW_H + 8);
@@ -1675,7 +2253,7 @@ function selectedItemCount() {
 }
 
 function drawItemChip(x, y) {
-  const labels = { potion: "薬", bomb: "火", ward: "護" };
+  const labels = { potion: "薬", bomb: "爆", ward: "護" };
   ctx.fillStyle = "#0d1724";
   ctx.fillRect(x, y, 28, 19);
   ctx.strokeStyle = player.guard > 0 ? "#6de4ff" : "#ffd166";
@@ -1731,11 +2309,12 @@ function command(name) {
 
 function bindControls() {
   window.addEventListener("keydown", (event) => {
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(event.code)) {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "ShiftLeft", "ShiftRight"].includes(event.code)) {
       event.preventDefault();
     }
     state.keys.add(event.code);
-    if (event.code === "Enter" || event.code === "Space") interact();
+    if (event.code === "Enter" || event.code === "Space") contextAction();
+    if (event.code === "ShiftLeft" || event.code === "ShiftRight") dash();
     if (event.code === "KeyH") useSelectedItem();
     if (event.code === "KeyQ") cycleItem(-1);
     if (event.code === "KeyE") cycleItem(1);
@@ -1760,7 +2339,8 @@ function bindControls() {
       event.preventDefault();
       button.classList.add("is-active");
       for (const code of codes) state.virtualKeys.add(code);
-      if (codes.includes("Enter")) interact();
+      if (codes.includes("Enter")) contextAction();
+      if (codes.includes("ShiftLeft") || codes.includes("ShiftRight")) dash();
       if (codes.includes("KeyH")) useSelectedItem();
     };
     const end = () => {
@@ -1776,8 +2356,8 @@ function bindControls() {
   const setPointerMove = (event) => {
     const rect = canvas.getBoundingClientRect();
     state.pointerMove = {
-      x: ((event.clientX - rect.left) / rect.width) * W,
-      y: ((event.clientY - rect.top) / rect.height) * H,
+      x: clamp(((event.clientX - rect.left) / rect.width) * W, 0, W),
+      y: clamp(((event.clientY - rect.top) / rect.height) * H, 0, VIEW_H - 2),
     };
   };
   canvas.addEventListener("pointerdown", (event) => {
@@ -1790,7 +2370,11 @@ function bindControls() {
     if (state.pointerMove) setPointerMove(event);
   });
   const stopPointerMove = (event) => {
-    canvas.releasePointerCapture?.(event.pointerId);
+    try {
+      canvas.releasePointerCapture?.(event.pointerId);
+    } catch {
+      // Pointer capture may already be released by the browser.
+    }
     state.pointerMove = null;
   };
   canvas.addEventListener("pointerup", stopPointerMove);
@@ -1808,6 +2392,7 @@ function loop(now) {
   if (!state.gameOver) {
     updatePlayer(dt);
     updateMonsters(dt);
+    updateProjectiles(dt);
     trySpawnMonster(dt);
   }
   updateEffects(dt);
