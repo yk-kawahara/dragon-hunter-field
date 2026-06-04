@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dragon Hunter Field</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="game-app" aria-label="Dragon Hunter Field">
+      <section class="playdeck">
+        <aside class="command-panel" aria-label="Commands">
+          <div class="panel-title"><span>Dragon</span><span>Hunter</span></div>
+          <button type="button" data-command="talk">話す</button>
+          <button type="button" data-command="search">調べる</button>
+          <button type="button" data-command="items">道具</button>
+          <button type="button" data-command="stats">強さ</button>
+          <button type="button" data-command="save">保存</button>
+          <div class="gold-box" id="goldBox">0G</div>
+        </aside>
+
+        <div class="screen-wrap">
+          <canvas id="game" width="240" height="176" tabindex="0"></canvas>
+          <div class="toast" id="toast" aria-live="polite"></div>
+        </div>
+
+        <aside class="status-panel" aria-label="Status">
+          <div class="status-row"><span>LV</span><strong id="levelText">1</strong></div>
+          <div class="status-row"><span>HP</span><strong id="hpText">--</strong></div>
+          <div class="status-row"><span>EXP</span><strong id="expText">0</strong></div>
+          <div class="status-row"><span>剣</span><strong id="weaponText">木</strong></div>
+          <div class="status-row"><span>鎧</span><strong id="armorText">布</strong></div>
+          <div class="status-row"><span>連</span><strong id="comboText">0</strong></div>
+          <div class="status-row"><span>鱗</span><strong id="scaleText">0/3</strong></div>
+          <div class="zone" id="zoneText">草原</div>
+          <div class="item-dock" aria-label="Items">
+            <button type="button" data-item="potion"><span>薬</span><strong id="potionText">2</strong></button>
+            <button type="button" data-item="bomb"><span>火</span><strong id="bombText">1</strong></button>
+            <button type="button" data-item="ward"><span>護</span><strong id="wardText">0</strong></button>
+          </div>
+        </aside>
+      </section>
+
+      <nav class="touch-controls" aria-label="Touch controls">
+        <div class="dpad">
+          <button type="button" data-keys="ArrowUp ArrowLeft" aria-label="Up left">↖</button>
+          <button type="button" data-key="ArrowUp" aria-label="Up">▲</button>
+          <button type="button" data-keys="ArrowUp ArrowRight" aria-label="Up right">↗</button>
+          <button type="button" data-key="ArrowLeft" aria-label="Left">◀</button>
+          <button type="button" data-key="ArrowRight" aria-label="Right">▶</button>
+          <button type="button" data-keys="ArrowDown ArrowLeft" aria-label="Down left">↙</button>
+          <button type="button" data-key="ArrowDown" aria-label="Down">▼</button>
+          <button type="button" data-keys="ArrowDown ArrowRight" aria-label="Down right">↘</button>
+        </div>
+        <div class="action-pad">
+          <button type="button" data-key="Enter" aria-label="Action">A</button>
+          <button type="button" data-key="KeyH" aria-label="Item">道具</button>
+        </div>
+      </nav>
+    </main>
+
+    <script src="src/game.js"></script>
+  </body>
+</html>
