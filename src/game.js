@@ -547,6 +547,10 @@ function resetGame() {
   state.bossDefeated = false;
   state.gameOver = false;
   state.victory = false;
+  state.healCooldown = 0;
+  state.townGateOpen = false;
+  state.townGateHold = 0;
+  state.pointerMove = null;
   localStorage.removeItem(SAVE_KEY);
   say("新しい旅が始まった");
 }
@@ -1750,18 +1754,18 @@ function bindControls() {
     button.addEventListener("click", () => selectItem(button.dataset.item));
   });
 
-  document.querySelectorAll("[data-key]").forEach((button) => {
-    const code = button.dataset.key;
+  document.querySelectorAll("[data-key], [data-keys]").forEach((button) => {
+    const codes = (button.dataset.keys || button.dataset.key || "").split(/\s+/).filter(Boolean);
     const start = (event) => {
       event.preventDefault();
       button.classList.add("is-active");
-      state.virtualKeys.add(code);
-      if (code === "Enter") interact();
-      if (code === "KeyH") useSelectedItem();
+      for (const code of codes) state.virtualKeys.add(code);
+      if (codes.includes("Enter")) interact();
+      if (codes.includes("KeyH")) useSelectedItem();
     };
     const end = () => {
       button.classList.remove("is-active");
-      state.virtualKeys.delete(code);
+      for (const code of codes) state.virtualKeys.delete(code);
     };
     button.addEventListener("pointerdown", start);
     button.addEventListener("pointerup", end);
@@ -1769,7 +1773,32 @@ function bindControls() {
     button.addEventListener("pointercancel", end);
   });
 
-  canvas.addEventListener("pointerdown", () => canvas.focus());
+  const setPointerMove = (event) => {
+    const rect = canvas.getBoundingClientRect();
+    state.pointerMove = {
+      x: ((event.clientX - rect.left) / rect.width) * W,
+      y: ((event.clientY - rect.top) / rect.height) * H,
+    };
+  };
+  canvas.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    canvas.focus();
+    canvas.setPointerCapture?.(event.pointerId);
+    setPointerMove(event);
+  });
+  canvas.addEventListener("pointermove", (event) => {
+    if (state.pointerMove) setPointerMove(event);
+  });
+  const stopPointerMove = (event) => {
+    canvas.releasePointerCapture?.(event.pointerId);
+    state.pointerMove = null;
+  };
+  canvas.addEventListener("pointerup", stopPointerMove);
+  canvas.addEventListener("pointercancel", stopPointerMove);
+  canvas.addEventListener("lostpointercapture", () => {
+    state.pointerMove = null;
+  });
+  canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 }
 
 function loop(now) {
