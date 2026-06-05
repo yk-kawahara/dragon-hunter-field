@@ -648,31 +648,40 @@ The ending should reinforce that the player has grown from a fragile village-bou
 
 \* Survival-range rebalance: early contact damage is painful, shop armor visibly reduces it, and mid-game regeneration extends exploration without replacing retreat.
 
+\* Region-aware enemy populations so distant North Forest, East Forest/River, and Dragon Cave areas maintain stronger enemy pressure.
+
+\* Village safety rules for projectiles and monsters: closed gates block danger, open gates allow danger through gate tiles only.
+
+\* Stronger village boundary readability with stone-wall visuals and role markers for core village functions.
+
+\* Static reward reachability safeguards for treasure, discoveries, and the Guardian site.
+
+\* Faster movement, dash, and stamina recovery to keep exploration tempo brisk.
+
+\* Strength-command info panels for equipment traits, survival stats, and inventory/progression items.
+
 
 
 \# Future Design Priorities
 
 
 
-1\. Rebalance the full playthrough around survival range expansion.
+1\. Run a full manual playthrough around survival range expansion.
 
-2\. Make early enemy damage feel dangerous but fair.
+2\. Verify that early enemy damage, shop equipment, gold flow, and level 4 timing feel natural.
 
-3\. Make shop equipment visibly reduce incoming damage.
+3\. Verify that distant area enemy density feels dangerous but not exhausting.
 
-4\. Add weak mid-game HP regeneration.
+4\. Improve equipment UI into a fuller review menu once critical gameplay issues remain stable.
 
-5\. Add late-game gear that makes old enemies nearly harmless.
+5\. Add late-game gear or rewards that make old enemies nearly harmless.
 
 6\. Add exploration rewards that extend travel range.
 
-7\. Improve equipment UI so players understand why they became stronger.
+7\. Add ending dialogue after the victory report.
 
-8\. Make the village feel like a safe recovery point, not just a quest hub.
+8\. Run browser visual QA on desktop and mobile viewport.
 
-9\. Add ending dialogue after the victory report.
-
-10\. Run browser visual QA on desktop and mobile viewport.
 
 
 
@@ -795,4 +804,3 @@ Visual readability is more important than decorative detail.
 
 
 Signs, building layouts, props, walls, gates, and terrain should communicate function clearly.
-

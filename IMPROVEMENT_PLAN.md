@@ -84,13 +84,62 @@ Implemented:
 * Disabled regeneration while burning.
 * Added save support.
 
+### Survival Range Expansion QA Cycle 4
+
+Problem:
+
+* Distant areas were under-populated, weakening the feeling that the player's survivable range had expanded into more valuable danger.
+
+Implemented:
+
+* Added region-specific enemy pools for grassland, North Forest, East Forest/River, and Dragon Cave.
+* Added local regional replenishment so dangerous areas maintain nearby enemy pressure.
+* Tuned spawn intervals and caps by danger level.
+
+### Survival Range Expansion QA Cycle 5
+
+Problem:
+
+* The village safety rule was undermined by enemy projectiles and a weak boundary read.
+
+Implemented:
+
+* Blocked enemy projectiles from entering the village while gates are closed.
+* Allowed danger through open gate tiles only.
+* Improved the village boundary visual from weak fence to stone-wall safe-base treatment.
+* Added role markers for elder, smith, healer, recovery point, and gates.
+
+### Survival Range Expansion QA Cycle 6
+
+Problem:
+
+* Some exploration rewards could become difficult to trust if map generation placed them on blocked tiles, and the game tempo still felt a little slow.
+
+Implemented:
+
+* Carved small walkable clearings around static treasure, discoveries, and the Guardian site.
+* Increased player movement speed, dash distance, and stamina recovery.
+* Expanded the strength command into equipment, survival, and inventory/progression pages.
+
+### Survival Range Expansion QA Cycle 7
+
+Problem:
+
+* The rotating strength messages improved visibility but were still easy to miss and too cramped for equipment and inventory review.
+
+Implemented:
+
+* Added a short-lived in-game info panel for the strength command.
+* The panel cycles through equipment, survival stats, and inventory/progression pages.
+* Verified panel page cycling with VM simulation.
+
 ---
 
 ## Critical Issues Discovered During Real Playtesting
 
 ### Enemy Population
 
-Current problem:
+Previous problem:
 
 * Enemy density and placement are incorrect.
 * Distant areas may contain few or no enemies.
@@ -104,9 +153,14 @@ Required outcome:
 
 This is currently the highest gameplay priority.
 
+Current status:
+
+* Addressed with region-aware spawn pools and regional replenishment.
+* VM verification confirms enemies spawn in grassland, North Forest, East Forest/River, and Dragon Cave.
+
 ### Village Safety
 
-Current problem:
+Previous problem:
 
 * Enemy projectiles can reach the village.
 
@@ -116,9 +170,14 @@ Required outcome:
 * Enemy projectiles should not threaten players inside the village.
 * Walls and gates should clearly separate safety from danger.
 
+Current status:
+
+* Addressed with projectile town-entry blocking and verified gate rules for monsters.
+* Browser visual QA is still pending.
+
 ### Village Readability
 
-Current problem:
+Previous problem:
 
 * Shops and NPC roles are difficult to identify visually.
 
@@ -134,9 +193,14 @@ Players should immediately recognize:
 
 through layout, props, signs, and environment design.
 
+Current status:
+
+* Partially addressed with role markers and a stronger wall visual.
+* A fuller layout pass can follow after full-playthrough balance.
+
 ### Game Tempo
 
-Current problem:
+Previous problem:
 
 * Movement and combat pacing feel too slow.
 
@@ -149,9 +213,14 @@ Required outcome:
 
 Danger should come from enemy damage and positioning, not slow movement.
 
+Current status:
+
+* Partially addressed with faster movement, dash distance, and stamina recovery.
+* Manual feel testing remains required.
+
 ### Menu and Inventory Visibility
 
-Current problem:
+Previous problem:
 
 * Players cannot easily review equipment or inventory.
 
@@ -162,6 +231,11 @@ Required outcome:
 * Equipment effect visibility.
 * Progress item visibility.
 * Better player understanding of growth.
+
+Current status:
+
+* Addressed for current scope with an in-game info panel that shows equipment, survival stats, and inventory/progression items.
+* A full interactive menu can be considered later if item-use depth grows.
 
 ---
 
@@ -219,13 +293,18 @@ Current automated verification:
 * Save/load simulation passes.
 * Equipment progression simulation passes.
 * Regeneration simulation passes.
+* Region spawn simulation passes for grassland, North Forest, East Forest/River, and Dragon Cave.
+* Reward reachability simulation passes for all static treasure, discoveries, and Guardian site.
+* Village projectile safety simulation passes for closed-gate blocking.
+* Monster gate simulation passes: closed gates block, open gates allow gate entry, walls still block.
+* Strength command info-panel cycling simulation passes for equipment, survival, and inventory pages.
+* Dragon spawn, defeat, elder report, save/load persistence smoke test passes.
+* Balance spot-check supports the intended power reversal: leather sharply reduces early slime damage and chain armor can make weak enemies nearly harmless.
 
 Still required:
 
 * Desktop browser QA.
 * Mobile browser QA.
 * Full manual playthrough.
-* Verify enemy populations in all major regions.
-* Verify village safety.
-* Verify movement and combat tempo.
-* Verify inventory and equipment usability.
+* Manual verification of movement and combat tempo.
+* Manual verification of inventory and equipment panel usability.

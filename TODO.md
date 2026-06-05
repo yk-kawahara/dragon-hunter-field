@@ -18,33 +18,46 @@
 * Added one mid-game treasure or exploration reward that extends exploration range rather than only giving gold.
 * Tuned early contact damage and first armor purchase so the player feels safer after buying gear.
 * Showed equipment traits and regeneration rate through the strength command.
+* Added region-aware enemy spawn pools and local replenishment so north, east, and cave areas are no longer empty.
+* Blocked enemy projectiles from entering the village while gates are closed, and limited open-gate projectile entry to gate tiles.
+* Verified monster gate rules: closed gates block entry, open gates allow gate entry, and walls still block entry.
+* Reworked the village boundary into a stronger stone-wall visual and added role markers for elder, smith, healer, recovery point, and gates.
+* Carved walkable clearings around static treasure, discoveries, and the Guardian site; VM verification confirms all are passable.
+* Increased player movement speed, dash distance, and stamina recovery to improve old mobile action-RPG tempo.
+* Expanded the strength command into rotating equipment, survival, and inventory/progression readouts.
+* Upgraded the strength command from toast-only text to a short-lived in-game info panel for equipment, survival stats, and inventory/progression review.
 
-## Critical Playtest Issues
+## Critical Playtest Issues - Addressed This Pass
 
 * Fix enemy spawning outside the village-adjacent areas.
 
-  * Current issue: enemies appear near the base, but distant areas such as the north area may have few or no enemies.
-  * This is critical because survival range expansion requires stronger enemy populations farther from the village.
-  * Farther areas should contain stronger enemies, better rewards, and more danger.
+  * Implemented region-aware spawn pools and regional replenishment around the player.
+  * Verified grassland, North Forest, East Forest/River, and Dragon Cave all spawn region-appropriate enemies.
 * Prevent enemy projectiles and magic from threatening the player inside the village.
 
-  * Current issue: enemy magic can fly into the base.
-  * The village must feel like a safe recovery point.
-  * Projectiles should be blocked, removed, or prevented from crossing village walls/gates unless part of a meaningful crisis event.
+  * Implemented projectile town-entry blocking.
+  * Closed gates block projectiles from entering the village.
+  * Open gates allow danger through gate tiles only.
 * Improve the village boundary from a weak fence feeling to a stronger wall/safe-base feeling.
 
-  * The current fence does not strongly communicate safety.
-  * Consider stone walls, gates, or clearer collision/visual barriers.
+  * Replaced the weak fence visual with a stronger stone-wall treatment.
+  * Added gate markers so the player can read whether danger is entering through an open gate.
 * Fix invalid item or reward placement.
 
-  * Current issue: items can appear inside walls or invalid map tiles.
-  * Ensure treasure, drops, hidden rewards, and discoveries spawn only on reachable walkable tiles.
+  * Static treasure, discoveries, and Guardian site now carve local walkable clearings.
+  * VM verification confirms all static reward sites are reachable.
 * Verify the full enemy spawn system by area.
 
-  * Grassland: early enemies.
-  * North Forest: stronger enemies and Guardian pressure.
-  * East Forest/River: ranged or special enemies.
-  * Dragon Cave: late enemies and final boss pressure.
+  * Grassland: verified early enemies.
+  * North Forest: verified stronger enemies.
+  * East Forest/River: verified ranged/late enemy pressure.
+  * Dragon Cave: verified late enemies.
+
+## Remaining High Priority
+
+* Run real desktop and mobile browser visual QA when browser automation is available.
+* Perform a full manual playthrough from new save to red dragon clear and elder report.
+* Continue balance testing for whether gold, EXP, medicines, and shop prices make the first armor purchase and level 4 timing feel natural.
 
 ## Next Priority: Survival Range Expansion
 
@@ -88,7 +101,8 @@
 
 ## Menu, Items, and Equipment UI
 
-* Add a proper menu or command screen for item and equipment review.
+* Current state: the strength command opens a temporary info panel with equipment, survival, and inventory/progression pages.
+* Future improvement: expand this into an interactive command screen if the game needs deeper item use or comparisons.
 * Allow the player to view current items clearly:
 
   * Medicine.
@@ -105,7 +119,7 @@
   * HP regeneration rate.
   * Stamina or movement effects.
 * Consider allowing item use through the item menu rather than only through quick buttons.
-* Add visible equipment detail panel if the command UI expands.
+* Add equipment comparison if the command UI expands.
 
 ## Gameplay and Balance
 
@@ -165,3 +179,23 @@
   * Elder report / clear state.
   * Item menu state if added.
   * Area spawn or discovery state if added.
+
+## Refactoring Plan
+
+- Analyze `src/game.js` responsibilities before splitting files.
+- Do not perform large file splitting until gameplay-critical bugs are fixed.
+- Proposed future modules:
+  - `src/core/state.js`
+  - `src/core/constants.js`
+  - `src/world/map.js`
+  - `src/world/spawn.js`
+  - `src/entities/player.js`
+  - `src/entities/enemies.js`
+  - `src/systems/combat.js`
+  - `src/systems/items.js`
+  - `src/systems/save.js`
+  - `src/ui/hud.js`
+  - `src/ui/menu.js`
+- First refactor should extract only constants and pure helper functions.
+- Avoid changing behavior during the first split.
+- Verify the game after every small extraction.

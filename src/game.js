@@ -48,6 +48,12 @@ const DISCOVERY_POINTS = [
 ];
 const GUARDIAN_SITE = { x: 20, y: 16 };
 const BOSS_REQUIREMENTS = { level: 4, scales: 3 };
+const REGION_SPAWNS = {
+  grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
+  north: { danger: 2, maxBonus: 2, pool: ["boar", "boar", "bat", "wisp"] },
+  east: { danger: 3, maxBonus: 3, pool: ["wisp", "boar", "dragonling", "bat"] },
+  cave: { danger: 4, maxBonus: 4, pool: ["dragonling", "wisp", "dragonling"] },
+};
 
 const TILE_GRASS = 0;
 const TILE_PATH = 1;
@@ -199,9 +205,13 @@ const state = {
   townGateOpen: false,
   townGateHold: 0,
   statsFlip: false,
+  statsPage: 0,
+  infoPanel: null,
   gameOver: false,
   victory: false,
   pointerMove: null,
+  regionSpawnTimer: 0,
+  lastRegion: "grassland",
 };
 
 const player = {
@@ -237,7 +247,7 @@ const player = {
   burnTick: 0,
   combo: 0,
   comboTimer: 0,
-  speed: 58,
+  speed: 66,
   step: 0,
 };
 
@@ -392,12 +402,35 @@ function createMap() {
   }
   setTile(51, 18, TILE_CAVE);
   setTile(51, 17, TILE_CAVE);
+  ensureRewardSitesReachable();
 
   state.npcs = [
     { x: 9 * TILE + 3, y: 47 * TILE + 2, w: 10, h: 12, dir: "down", type: "elder" },
     { x: 15 * TILE + 4, y: 48 * TILE + 1, w: 10, h: 12, dir: "left", type: "smith" },
     { x: 13 * TILE + 3, y: 43 * TILE + 2, w: 10, h: 12, dir: "down", type: "healer" },
   ];
+}
+
+function ensureRewardSitesReachable() {
+  for (const chest of TREASURE_CHESTS) {
+    carveRewardClearing(chest.x, chest.y);
+  }
+  for (const discovery of DISCOVERY_POINTS) {
+    carveRewardClearing(discovery.x, discovery.y);
+  }
+  carveRewardClearing(GUARDIAN_SITE.x, GUARDIAN_SITE.y);
+}
+
+function carveRewardClearing(cx, cy) {
+  for (let y = cy - 1; y <= cy + 1; y += 1) {
+    for (let x = cx - 1; x <= cx + 1; x += 1) {
+      if (x <= 0 || y <= 0 || x >= MAP_W - 1 || y >= MAP_H - 1) continue;
+      const tile = tileAt(x, y);
+      if (tile === TILE_WALL || tile === TILE_ROOF || tile === TILE_TREE || tile === TILE_WATER) {
+        setTile(x, y, inTownTile(x, y) ? TILE_FLOOR : TILE_PATH);
+      }
+    }
+  }
 }
 
 function fillEllipse(cx, cy, rx, ry, tile) {
@@ -471,24 +504,40 @@ function spawnIfClear(typeName, x, y) {
 }
 
 function monsterChoice() {
-  const lv = player.level;
-  const pool = ["slime", "slime", "bat"];
-  if (lv >= 2) pool.push("boar", "boar", "wisp");
-  if (lv >= 3) pool.push("wisp", "dragonling");
-  if (lv >= 4) pool.push("dragonling");
+  const pool = monsterPoolForRegion(currentRegion());
   return pool[irand(0, pool.length - 1)];
+}
+
+function currentRegion() {
+  const tx = Math.floor((player.x + player.w / 2) / TILE);
+  const ty = Math.floor((player.y + player.h / 2) / TILE);
+  if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
+  if (tx > 40) return "east";
+  if (ty < 25) return "north";
+  return "grassland";
+}
+
+function monsterPoolForRegion(region) {
+  const lv = player.level;
+  const pool = [...(REGION_SPAWNS[region] || REGION_SPAWNS.grassland).pool];
+  if (lv <= 1) return region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => type !== "dragonling");
+  if (lv >= 3 && region === "grassland") pool.push("boar");
+  if (lv >= 4) pool.push("dragonling");
+  return pool;
 }
 
 function trySpawnMonster(dt) {
   if (state.gameOver || state.victory) return;
   state.spawnTimer -= dt;
-  const maxMonsters = clamp(5 + player.level * 2, 7, 13);
+  const region = currentRegion();
+  const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
+  const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
   if (state.spawnTimer > 0 || state.monsters.length >= maxMonsters) return;
-  state.spawnTimer = rand(900, 1500);
+  state.spawnTimer = rand(780, 1320) / regionInfo.danger;
 
   for (let i = 0; i < 40; i += 1) {
     const angle = rand(0, Math.PI * 2);
-    const radius = rand(118, 210);
+    const radius = rand(92, 190 + regionInfo.danger * 18);
     const x = clamp(player.x + Math.cos(angle) * radius, TILE, MAP_W * TILE - TILE * 2);
     const y = clamp(player.y + Math.sin(angle) * radius, TILE, MAP_H * TILE - TILE * 2);
     const actor = { x, y, w: 12, h: 12, flying: false };
@@ -498,6 +547,62 @@ function trySpawnMonster(dt) {
       return;
     }
   }
+}
+
+function updateRegionSpawns(dt) {
+  if (state.gameOver || state.victory || inTown(player.x, player.y)) return;
+  state.regionSpawnTimer = Math.max(0, state.regionSpawnTimer - dt);
+  const region = currentRegion();
+  const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
+  const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
+  if (region !== state.lastRegion) {
+    state.lastRegion = region;
+    state.regionSpawnTimer = 0;
+    say(areaDangerText(region), 1300);
+  }
+  if (state.regionSpawnTimer > 0 || state.monsters.length >= maxMonsters) return;
+  state.regionSpawnTimer = 1600;
+  const nearby = countNearbyMonsters(210);
+  const target = region === "grassland" ? 3 : region === "north" ? 4 : region === "east" ? 5 : 5;
+  for (let i = nearby; i < target && state.monsters.length < maxMonsters; i += 1) {
+    spawnNearPlayer(region, 105 + i * 16, 235 + i * 10);
+  }
+}
+
+function countNearbyMonsters(radius) {
+  const pc = centerOf(player);
+  return state.monsters.filter((monster) => {
+    if (monster.hp <= 0) return false;
+    const mc = centerOf(monster);
+    return Math.hypot(mc.x - pc.x, mc.y - pc.y) < radius;
+  }).length;
+}
+
+function spawnNearPlayer(region, minRadius, maxRadius) {
+  const pool = monsterPoolForRegion(region);
+  for (let i = 0; i < 35; i += 1) {
+    const angle = rand(0, Math.PI * 2);
+    const radius = rand(minRadius, maxRadius);
+    const x = clamp(player.x + Math.cos(angle) * radius, TILE, MAP_W * TILE - TILE * 2);
+    const y = clamp(player.y + Math.sin(angle) * radius, TILE, MAP_H * TILE - TILE * 2);
+    if (inTown(x, y)) continue;
+    const type = pool[irand(0, pool.length - 1)];
+    const template = monsterTypes[type];
+    const size = type === "dragonling" ? 14 : 11;
+    const actor = { x, y, w: size, h: size, flying: Boolean(template.flying), isMonster: true };
+    if (isPassableRect(actor)) {
+      spawnMonster(type, x, y);
+      return true;
+    }
+  }
+  return false;
+}
+
+function areaDangerText(region) {
+  if (region === "north") return "北森: 強敵の気配";
+  if (region === "east") return "東の森: 魔力が濃い";
+  if (region === "cave") return "竜洞: 危険";
+  return "草原: 村の近く";
 }
 
 function guardianReady() {
@@ -690,7 +795,7 @@ function resetGame() {
     dashCooldown: 0,
     combo: 0,
     comboTimer: 0,
-    speed: 58,
+    speed: 66,
     scales: 0,
   });
   state.monsters = [];
@@ -712,6 +817,7 @@ function resetGame() {
   state.townGateOpen = false;
   state.townGateHold = 0;
   state.pointerMove = null;
+  state.infoPanel = null;
   refreshDerivedStats();
   localStorage.removeItem(SAVE_KEY);
   say("新しい旅が始まった");
@@ -803,7 +909,7 @@ function updatePlayer(dt) {
   }
   player.attackCooldown = Math.max(0, player.attackCooldown - dt);
   player.dashCooldown = Math.max(0, player.dashCooldown - dt);
-  player.stamina = Math.min(player.staminaMax, player.stamina + dt * 0.027);
+  player.stamina = Math.min(player.staminaMax, player.stamina + dt * 0.032);
   player.comboTimer = Math.max(0, player.comboTimer - dt);
   if (player.comboTimer <= 0) player.combo = 0;
   state.searchCooldown = Math.max(0, state.searchCooldown - dt);
@@ -981,6 +1087,8 @@ function shootProjectile(monster, target, angleOffset = 0) {
 
 function updateProjectiles(dt) {
   state.projectiles = state.projectiles.filter((p) => {
+    const prevX = p.x;
+    const prevY = p.y;
     p.x += p.vx * dt * 0.001;
     p.y += p.vy * dt * 0.001;
     p.life -= dt;
@@ -988,6 +1096,10 @@ function updateProjectiles(dt) {
 
     const tx = Math.floor(p.x / TILE);
     const ty = Math.floor(p.y / TILE);
+    if (blocksProjectileTownEntry(prevX, prevY, p.x, p.y)) {
+      burst(p.x, p.y, "#6de4ff", 3);
+      return false;
+    }
     if (isBlockedTile(tileAt(tx, ty), { flying: false })) {
       burst(p.x, p.y, p.color, 4);
       return false;
@@ -1021,6 +1133,17 @@ function updateProjectiles(dt) {
 
     return true;
   });
+}
+
+function blocksProjectileTownEntry(prevX, prevY, nextX, nextY) {
+  const from = { x: Math.floor(prevX / TILE), y: Math.floor(prevY / TILE) };
+  const to = { x: Math.floor(nextX / TILE), y: Math.floor(nextY / TILE) };
+  const wasInside = inTownTile(from.x, from.y);
+  const willBeInside = inTownTile(to.x, to.y);
+  if (!willBeInside) return false;
+  if (wasInside) return !state.townGateOpen;
+  if (!state.townGateOpen) return true;
+  return !(tileInGate(from.x, from.y) || tileInGate(to.x, to.y));
 }
 
 function resolveContact(monster) {
@@ -1296,7 +1419,7 @@ function dash() {
   player.invuln = Math.max(player.invuln, 260);
   player.step += 1;
   for (let i = 0; i < 5; i += 1) {
-    moveActor(player, dir.x * 6, dir.y * 6);
+    moveActor(player, dir.x * 7, dir.y * 7);
     burst(player.x + player.w / 2 - dir.x * 4, player.y + player.h / 2 - dir.y * 4, "#6de4ff", 1);
   }
   addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 18);
@@ -1621,12 +1744,48 @@ function cycleItem(step) {
 }
 
 function showStats() {
-  state.statsFlip = !state.statsFlip;
-  if (state.statsFlip) {
-    say(`攻${playerAttack()} ${weaponNames[player.weapon]}:${weaponTraits[player.weapon]} / 防${playerDefense()} ${armorNames[player.armor]}:${armorTraits[player.armor]}`, 2600);
-  } else {
-    say(`次${player.xpNext - player.xp} 回避${dashCost()}ST 再生${regenRate().toFixed(1)}/秒`, 2600);
-  }
+  const page = statsPanelPages()[state.statsPage];
+  state.infoPanel = { ...page, until: performance.now() + 4200 };
+  say(`${page.title}を確認`, 1200);
+  state.statsPage = (state.statsPage + 1) % 3;
+}
+
+function statsPanelPages() {
+  return [
+    {
+      title: "装備",
+      lines: [
+        `${weaponNames[player.weapon]} ${weaponTraits[player.weapon]} 攻${playerAttack()}`,
+        `${armorNames[player.armor]} ${armorTraits[player.armor]} 防${playerDefense()}`,
+        nextUpgradeText(),
+      ],
+    },
+    {
+      title: "探索力",
+      lines: [
+        `HP ${Math.ceil(player.hp)}/${player.hpMax} ST ${Math.floor(player.stamina)}/${player.staminaMax}`,
+        `回避 ${dashCost()}ST 再生 ${regenRate().toFixed(1)}/秒`,
+        `状態 ${player.burn > 0 ? "燃焼" : player.slow > 0 ? "鈍足" : "通常"}`,
+      ],
+    },
+    {
+      title: "所持品",
+      lines: [
+        `薬${player.potions} 爆${player.bombs} 護${player.wards}`,
+        `鱗 ${player.scales}/3 紋 ${player.sealCrest ? "有" : "無"}`,
+        `宝箱 ${state.chests.size}/${TREASURE_CHESTS.length}`,
+      ],
+    },
+  ];
+}
+
+function nextUpgradeText() {
+  const target = player.armor <= player.weapon ? "鎧" : "剣";
+  const rank = target === "鎧" ? player.armor + 1 : player.weapon + 1;
+  const names = target === "鎧" ? armorNames : weaponNames;
+  const costs = target === "鎧" ? armorCosts : weaponCosts;
+  if (rank >= names.length) return "鍛冶 強化完了";
+  return `次 ${target}:${names[rank]} ${costs[rank]}G`;
 }
 
 function updateZone() {
@@ -1666,6 +1825,7 @@ function draw() {
   drawWorldAtmosphere(cam);
   drawFieldDetails(cam);
   drawTownDetails(cam);
+  drawVillageRoleMarkers(cam);
   drawHealCircle(cam);
   drawTownFence(cam);
   drawTownGates(cam);
@@ -1678,10 +1838,33 @@ function draw() {
   drawScreenGrade(cam);
   drawObjective();
   drawHud();
+  drawInfoPanel();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
   if (state.victory && !state.elderReported) drawVictoryBanner();
   if (state.elderReported) drawOverlay("QUEST CLEAR", "CLEAR");
+}
+
+function drawInfoPanel() {
+  const panel = state.infoPanel;
+  if (!panel || performance.now() > panel.until) return;
+  const x = 37;
+  const y = 17;
+  const w = 166;
+  const h = 58;
+  ctx.fillStyle = "rgba(5, 8, 18, 0.9)";
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = "#6de4ff";
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = "#ffd166";
+  ctx.font = "9px monospace";
+  ctx.textAlign = "left";
+  ctx.fillText(panel.title, x + 7, y + 12);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "8px monospace";
+  for (let i = 0; i < panel.lines.length; i += 1) {
+    ctx.fillText(panel.lines[i], x + 7, y + 25 + i * 11);
+  }
 }
 
 function drawWorld(cam) {
@@ -1732,6 +1915,28 @@ function drawTownDetails(cam) {
   drawLamp(17 * TILE - cam.x, 46 * TILE - cam.y);
   drawLamp(6 * TILE - cam.x, 46 * TILE - cam.y);
   drawSign(12 * TILE - cam.x, 48 * TILE - cam.y);
+}
+
+function drawVillageRoleMarkers(cam) {
+  drawRoleMarker(9 * TILE - cam.x, 46 * TILE - cam.y, "長", "#fff2a6");
+  drawRoleMarker(15 * TILE - cam.x, 47 * TILE - cam.y, "鍛", "#ffd166");
+  drawRoleMarker(13 * TILE - cam.x, 42 * TILE - cam.y, "薬", "#74ff8f");
+  drawRoleMarker(HEAL_CIRCLE.x * TILE - cam.x, (HEAL_CIRCLE.y - 1) * TILE - cam.y, "回", "#6de4ff");
+  for (const gate of TOWN_GATES) {
+    drawRoleMarker(gate.x * TILE - cam.x, (gate.y - 1) * TILE - cam.y, state.townGateOpen ? "開" : "門", state.townGateOpen ? "#ffd166" : "#d7e2ea");
+  }
+}
+
+function drawRoleMarker(sx, sy, text, color) {
+  if (sx < -16 || sy < -16 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(5, 8, 18, 0.72)";
+  ctx.fillRect(sx + 1, sy + 1, 10, 10);
+  ctx.strokeStyle = color;
+  ctx.strokeRect(sx + 1, sy + 1, 10, 10);
+  ctx.font = "8px monospace";
+  ctx.textAlign = "left";
+  ctx.fillStyle = color;
+  ctx.fillText(text, sx + 3, sy + 9);
 }
 
 function drawFieldDetails(cam) {
@@ -2022,19 +2227,21 @@ function drawFenceSegment(sx, sy, axis) {
   if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) return;
   ctx.fillStyle = "rgba(0, 0, 0, 0.24)";
   if (axis === "x") {
-    ctx.fillRect(sx, sy + 4, TILE, 3);
-    ctx.fillStyle = "#5f371b";
-    ctx.fillRect(sx, sy + 2, TILE, 3);
-    ctx.fillStyle = "#c3853f";
-    ctx.fillRect(sx + 2, sy, 3, 9);
-    ctx.fillRect(sx + 11, sy, 3, 9);
+    ctx.fillRect(sx, sy + 6, TILE, 4);
+    ctx.fillStyle = "#394759";
+    ctx.fillRect(sx, sy + 2, TILE, 7);
+    ctx.fillStyle = "#7c8a99";
+    ctx.fillRect(sx, sy + 2, TILE, 2);
+    ctx.fillRect(sx + 2, sy + 5, 5, 2);
+    ctx.fillRect(sx + 10, sy + 5, 5, 2);
   } else {
-    ctx.fillRect(sx + 4, sy, 3, TILE);
-    ctx.fillStyle = "#5f371b";
-    ctx.fillRect(sx + 2, sy, 3, TILE);
-    ctx.fillStyle = "#c3853f";
-    ctx.fillRect(sx, sy + 2, 9, 3);
-    ctx.fillRect(sx, sy + 11, 9, 3);
+    ctx.fillRect(sx + 6, sy, 4, TILE);
+    ctx.fillStyle = "#394759";
+    ctx.fillRect(sx + 2, sy, 7, TILE);
+    ctx.fillStyle = "#7c8a99";
+    ctx.fillRect(sx + 2, sy, 2, TILE);
+    ctx.fillRect(sx + 5, sy + 2, 2, 5);
+    ctx.fillRect(sx + 5, sy + 10, 2, 5);
   }
 }
 
@@ -2815,6 +3022,7 @@ function loop(now) {
   if (!state.gameOver) {
     updatePlayer(dt);
     updateStoryEvents();
+    updateRegionSpawns(dt);
     updateMonsters(dt);
     updateProjectiles(dt);
     trySpawnMonster(dt);
