@@ -151,6 +151,23 @@ Verified:
 * Whole-map sampled spawn pass with old village enemies pre-filled: 134 passable non-town points, 0 spawn holes.
 * Region pools now preserve the intended curve: grassland remains slime/bat/boar, while Wilds/North/East/Cave can carry stronger enemies.
 
+### Playtest Improvement Pass Cycle 9
+
+Problem:
+
+* After spawn fixes, the next biggest non-spawn weaknesses were village safety clarity, moment-to-moment guidance, and combat tempo.
+
+Implemented:
+
+* Gates now close while the player is inside town, making retreating into the village feel safer.
+* The objective display now has a second guidance line for healing, buying the next upgrade, retreating at low HP, and pushing toward the next danger area.
+* Added contextual action prompts for nearby NPCs, treasure, hidden discoveries, cave entry, and gathering.
+* Shortened attack cooldown, dash cooldown, and contact interval slightly to improve action-RPG tempo without changing the contact-combat core.
+
+Verified:
+
+* VM checks pass for inside-town gate closure, outside gate opening, projectile blocking, monster gate rules, guidance text, action prompts, reward reachability, info panels, tempo constants, clear flow, and save/load persistence.
+
 ---
 
 ## Critical Issues Discovered During Real Playtesting
@@ -192,6 +209,7 @@ Required outcome:
 Current status:
 
 * Addressed with projectile town-entry blocking and verified gate rules for monsters.
+* Improved further: gates close when the player is inside town, so retreating back through a gate restores safety more reliably.
 * Browser visual QA is still pending.
 
 ### Village Readability
@@ -214,7 +232,7 @@ through layout, props, signs, and environment design.
 
 Current status:
 
-* Partially addressed with role markers and a stronger wall visual.
+* Partially addressed with role markers, a stronger wall visual, and contextual prompts for nearby interactions.
 * A fuller layout pass can follow after full-playthrough balance.
 
 ### Game Tempo
@@ -234,7 +252,7 @@ Danger should come from enemy damage and positioning, not slow movement.
 
 Current status:
 
-* Partially addressed with faster movement, dash distance, and stamina recovery.
+* Partially addressed with faster movement, dash distance, stamina recovery, shorter attack cooldown, shorter dash cooldown, and shorter contact interval.
 * Manual feel testing remains required.
 
 ### Menu and Inventory Visibility
@@ -317,6 +335,8 @@ Current automated verification:
 * Reward reachability simulation passes for all static treasure, discoveries, and Guardian site.
 * Village projectile safety simulation passes for closed-gate blocking.
 * Monster gate simulation passes: closed gates block, open gates allow gate entry, walls still block.
+* Gate safety simulation passes: standing inside town lets gates close, standing outside near a gate opens them.
+* Guidance and context prompt simulation passes for town safety, next upgrade, retreat warning, smith, chest, and discovery prompts.
 * Strength command info-panel cycling simulation passes for equipment, survival, and inventory pages.
 * Dragon spawn, defeat, elder report, save/load persistence smoke test passes.
 * Balance spot-check supports the intended power reversal: leather sharply reduces early slime damage and chain armor can make weak enemies nearly harmless.
@@ -329,3 +349,4 @@ Still required:
 * Manual verification of movement and combat tempo.
 * Manual verification of inventory and equipment panel usability.
 * Manual verification that local monster pruning feels natural during long-distance travel.
+* Manual verification that objective guidance/context prompts fit the small screen visually.

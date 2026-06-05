@@ -30,6 +30,10 @@
 * Added a `wilds` region for far non-north/non-east areas so distant grassland-like map areas are not treated like safe village outskirts.
 * Tightened grassland enemy pools so village-adjacent areas stay weak even after the player reaches late game.
 * Verified a whole-map sampled spawn pass with pre-filled old enemies: 134 passable non-town sample points, 0 spawn holes.
+* Made village gates close while the player is inside town, so returning to town more reliably restores safety.
+* Added a second objective line that gives survival-range guidance such as healing, buying the next equipment upgrade, retreating at low HP, or pushing toward the next danger area.
+* Added contextual action prompts for NPCs, treasure, discoveries, cave entry, and gathering spots.
+* Improved combat tempo with shorter attack, dash, and contact intervals without changing the contact-combat identity.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -66,6 +70,7 @@
 * Perform a full manual playthrough from new save to red dragon clear and elder report.
 * Continue balance testing for whether gold, EXP, medicines, and shop prices make the first armor purchase and level 4 timing feel natural.
 * Manually verify whether the new local monster pruning feels natural during long-distance travel.
+* Manually verify that the new objective guidance and context prompts do not clutter the small mobile-style screen.
 
 ## Next Priority: Survival Range Expansion
 
@@ -92,6 +97,7 @@
 * Tune combat/contact pacing so enemies can be defeated quickly once the player is stronger.
 * Avoid making the game feel like a slow walking simulator.
 * Preserve danger through damage and enemy placement, not through sluggish movement.
+* Current state: movement was already faster; this pass also shortened attack cooldown, dash cooldown, and contact interval slightly.
 
 ## Village Readability and Function
 
@@ -106,6 +112,7 @@
   * Gate: visually clear exit to danger.
 * Improve the feeling of relief when returning to the village from dangerous areas.
 * Keep ordinary monsters out of the village unless it is a meaningful crisis event.
+* Current state: returning inside town closes the gate after its short hold, role markers identify key services, and context prompts identify nearby NPCs/facilities.
 
 ## Menu, Items, and Equipment UI
 

@@ -957,7 +957,8 @@ function playerNearTownGate() {
 }
 
 function updateTownGate(dt) {
-  if (playerNearTownGate()) {
+  const playerInsideTown = inTown(player.x, player.y);
+  if (playerNearTownGate() && !playerInsideTown) {
     state.townGateHold = 1300;
   } else {
     state.townGateHold = Math.max(0, state.townGateHold - dt);
@@ -1176,7 +1177,7 @@ function blocksProjectileTownEntry(prevX, prevY, nextX, nextY) {
 
 function resolveContact(monster) {
   if (!rectsOverlap(player, monster) || monster.contactTimer > 0 || player.hp <= 0) return;
-  monster.contactTimer = monster.boss ? 340 : 430;
+  monster.contactTimer = monster.boss ? 320 : 380;
 
   const pDot = facingDot(player, monster);
   const mDot = facingDot(monster, player);
@@ -1391,7 +1392,7 @@ function nearestAttackTarget() {
 
 function performAttack() {
   if (player.attackCooldown > 0 || state.gameOver || player.hp <= 0) return;
-  player.attackCooldown = 280;
+  player.attackCooldown = 230;
   const pc = centerOf(player);
   const dir = facingVector();
   const slashX = pc.x + dir.x * 14;
@@ -1443,7 +1444,7 @@ function dash() {
   const input = inputMoveVector();
   const dir = input.x || input.y ? input : facingVector();
   player.stamina = Math.max(0, player.stamina - cost);
-  player.dashCooldown = 360;
+  player.dashCooldown = 320;
   player.invuln = Math.max(player.invuln, 260);
   player.step += 1;
   for (let i = 0; i < 5; i += 1) {
@@ -1866,6 +1867,7 @@ function draw() {
   drawEffects(cam);
   drawScreenGrade(cam);
   drawObjective();
+  drawContextPrompt();
   drawHud();
   drawInfoPanel();
 
@@ -2825,6 +2827,34 @@ function objectiveText() {
   return `目的: 竜の鱗 ${player.scales}/${BOSS_REQUIREMENTS.scales} 宝${unopened} 隠${hidden}`;
 }
 
+function guidanceText() {
+  if (inTown(player.x, player.y)) {
+    if (player.hp < player.hpMax) return "安全: 回復陣で全快できる";
+    const nextCost = nextUpgradeCost();
+    if (nextCost > 0 && player.gold < nextCost) return `準備: ${nextCost}Gで次の装備`;
+    if (nextCost > 0) return "準備: 鍛冶屋で生存圏を広げる";
+    return "安全: 外へ出てより遠くを目指す";
+  }
+  const hpRate = player.hp / player.hpMax;
+  if (hpRate < 0.35) return "危険: 村へ戻って立て直す";
+  const stage = gameStage();
+  if (stage === "scales") return player.armor === 0 ? "近場で稼ぎ 革鎧を買う" : "遠方ほど鱗と報酬が良い";
+  if (stage === "ruin") return "北森の遺跡で守護者の手掛かり";
+  if (stage === "level") return "強敵で鍛え 装備も更新";
+  if (stage === "guardian") return "北森は準備して挑む";
+  if (stage === "cave") return "北東の竜洞へ";
+  if (stage === "dragon") return "炎と接触に注意";
+  if (stage === "report") return "村は安全 長老へ";
+  return areaDangerText(currentRegion());
+}
+
+function nextUpgradeCost() {
+  const target = player.armor <= player.weapon ? "armor" : "weapon";
+  const rank = player[target] + 1;
+  if (rank >= weaponNames.length) return 0;
+  return target === "weapon" ? weaponCosts[rank] : armorCosts[rank];
+}
+
 function gameStage() {
   if (state.elderReported) return "cleared";
   if (state.victory || state.bossDefeated) return "report";
@@ -2852,15 +2882,55 @@ function stageName(stage) {
 
 function drawObjective() {
   const text = objectiveText();
+  const guide = guidanceText();
   ctx.font = "7px monospace";
   ctx.textAlign = "left";
-  const w = Math.min(W - 10, Math.max(112, text.length * 7 + 9));
+  const w = Math.min(W - 10, Math.max(132, Math.max(text.length, guide.length) * 7 + 9));
   ctx.fillStyle = "rgba(5, 8, 18, 0.72)";
-  ctx.fillRect(5, 5, w, 13);
+  ctx.fillRect(5, 5, w, 23);
   ctx.strokeStyle = "rgba(255, 209, 102, 0.74)";
-  ctx.strokeRect(5, 5, w, 13);
+  ctx.strokeRect(5, 5, w, 23);
   ctx.fillStyle = "#fff2a6";
   ctx.fillText(text, 9, 14);
+  ctx.fillStyle = inTown(player.x, player.y) ? "#74ff8f" : player.hp / player.hpMax < 0.35 ? "#ff8a3d" : "#d7e2ea";
+  ctx.fillText(guide, 9, 24);
+}
+
+function contextPromptText() {
+  const npc = nearestNpc();
+  if (npc) return `話す: ${npcRoleName(npc.type)}`;
+  const chest = nearestChest();
+  if (chest) return "調べる: 宝箱";
+  if (nearestDiscovery()) return "調べる: 気になる場所";
+  if (playerNearCave()) return canChallengeDragon() ? "入る: 竜洞" : "封印: 条件不足";
+  const tx = Math.floor((player.x + player.w / 2) / TILE);
+  const ty = Math.floor((player.y + player.h / 2) / TILE);
+  const tile = tileAt(tx, ty);
+  if (tile === TILE_FLOWER || tile === TILE_FIELD) return "採取: 旅道具";
+  return "";
+}
+
+function npcRoleName(type) {
+  if (type === "elder") return "長老";
+  if (type === "smith") return "鍛冶屋";
+  if (type === "healer") return "薬師";
+  return "人";
+}
+
+function drawContextPrompt() {
+  const text = contextPromptText();
+  if (!text) return;
+  ctx.font = "7px monospace";
+  ctx.textAlign = "left";
+  const w = Math.min(W - 10, Math.max(74, text.length * 7 + 12));
+  const x = 5;
+  const y = 31;
+  ctx.fillStyle = "rgba(5, 8, 18, 0.68)";
+  ctx.fillRect(x, y, w, 12);
+  ctx.strokeStyle = "rgba(109, 228, 255, 0.72)";
+  ctx.strokeRect(x, y, w, 12);
+  ctx.fillStyle = "#d7e2ea";
+  ctx.fillText(text, x + 5, y + 9);
 }
 
 function drawHud() {

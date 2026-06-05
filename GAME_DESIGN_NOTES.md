@@ -668,11 +668,19 @@ The ending should reinforce that the player has grown from a fragile village-bou
 
 \* Village safety rules for projectiles and monsters: closed gates block danger, open gates allow danger through gate tiles only.
 
+\* Safer retreat behavior: gates close while the player is inside town, and the open-gate danger exception mainly applies when the player is outside near a gate.
+
 \* Stronger village boundary readability with stone-wall visuals and role markers for core village functions.
+
+\* Two-line objective guidance that teaches the current survival-range action: heal, buy gear, retreat, or push toward the next danger area.
+
+\* Context prompts for nearby NPCs, treasure, hidden discoveries, cave entry, and gathering.
 
 \* Static reward reachability safeguards for treasure, discoveries, and the Guardian site.
 
 \* Faster movement, dash, and stamina recovery to keep exploration tempo brisk.
+
+\* Slightly shorter attack, dash, and contact intervals to reduce downtime while keeping contact combat central.
 
 \* Strength-command info panels for equipment traits, survival stats, and inventory/progression items.
 
