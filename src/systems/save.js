@@ -13,6 +13,7 @@
 
   const {
     TILE,
+    WORLD_SCALE,
     SAVE_KEY,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
@@ -108,8 +109,8 @@
     Object.assign(player, {
       x: 10 * TILE,
       y: 48 * TILE,
-      w: 10,
-      h: 12,
+      w: 10 * WORLD_SCALE,
+      h: 12 * WORLD_SCALE,
       dir: "down",
       hp: 46,
       hpMax: 46,
@@ -137,7 +138,7 @@
       dashCooldown: 0,
       combo: 0,
       comboTimer: 0,
-      speed: 66,
+      speed: 66 * WORLD_SCALE,
       scales: 0,
     });
     state.monsters = [];

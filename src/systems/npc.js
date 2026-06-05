@@ -13,6 +13,7 @@
 
   const {
     TILE,
+    WORLD_SCALE,
     BOSS_REQUIREMENTS,
     weaponNames,
     armorNames,
@@ -23,6 +24,8 @@
   } = definitions;
 
   const { centerOf } = mathHelpers;
+
+  const worldPx = (value) => value * WORLD_SCALE;
 
   function requireNpcContext(context) {
     if (!context?.state || !context?.player || !context?.say || !context?.spawnMonster || !context?.guardianReady) {
@@ -42,7 +45,7 @@
     const { state, player } = requireNpcContext(context);
     for (const npc of state.npcs) {
       const d = Math.hypot(centerOf(player).x - centerOf(npc).x, centerOf(player).y - centerOf(npc).y);
-      if (d < 24) return npc;
+      if (d < worldPx(24)) return npc;
     }
     return null;
   }
@@ -121,7 +124,7 @@
     }
     if (!state.spawnedBoss) {
       state.spawnedBoss = true;
-      spawnMonster("dragon", 51 * TILE - 4, 14 * TILE);
+      spawnMonster("dragon", 51 * TILE - worldPx(4), 14 * TILE);
       say("赤竜が目覚めた!");
     } else {
       say("洞穴の奥から熱風が来る");

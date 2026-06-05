@@ -13,6 +13,7 @@
 
   const {
     TILE_FIELD,
+    WORLD_SCALE,
     weaponNames,
     armorNames,
     itemOrder,
@@ -22,6 +23,8 @@
     clamp,
     centerOf,
   } = mathHelpers;
+
+  const worldPx = (value) => value * WORLD_SCALE;
 
   function rewardIds(list) {
     return new Set(list.map((entry) => entry.id));
@@ -195,7 +198,7 @@
     }
     player.bombs -= 1;
     const pc = centerOf(player);
-    const radius = 46;
+    const radius = worldPx(46);
     const damage = 30 + player.level * 8 + player.weapon * 5;
     let hitCount = 0;
     for (const monster of state.monsters) {
@@ -206,7 +209,7 @@
         monster.hp -= dealt;
         monster.hurt = 180;
         hitCount += 1;
-        addFloater(mc.x, mc.y - 4, String(dealt), "#ffef8a");
+        addFloater(mc.x, mc.y - worldPx(4), String(dealt), "#ffef8a");
         burst(mc.x, mc.y, "#ff8a3d", monster.boss ? 12 : 8);
       }
     }
@@ -226,7 +229,7 @@
     player.wards -= 1;
     player.guard = 5200 + (player.armor >= 3 ? 1400 : 0);
     player.invuln = Math.max(player.invuln, 500);
-    addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 28);
+    addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", worldPx(28));
     burst(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 16);
     say("護符をかざした");
   }

@@ -47,6 +47,10 @@
 * Left behavior hubs in `src/game.js`; no player, enemy AI, combat, save/load, NPC, boss, draw orchestration, input, loop, or init logic was split.
 * Extracted pure math and geometry helpers into `src/core/math.js`.
 * Kept `rand` and `irand` in `src/game.js` to avoid changing random/spawn behavior during this pass.
+* Recognized the user-led hand refactor that split gameplay behavior into `src/core`, `src/data`, and `src/systems`.
+* Recognized new audio/player asset work, including `assets/audio/field.ogg`, `src/data/audio.js`, and `assets/player.png`.
+* Split `assets/player.png` into eight independent 32x32 player frames under `assets/player/`.
+* Confirmed the generated frame names match the current render loader: `down_idle`, `down_walk`, `left_idle`, `left_walk`, `right_idle`, `right_walk`, `up_idle`, and `up_walk`.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -162,6 +166,13 @@
   * Stamina or movement effects.
 * Consider allowing item use through the item menu rather than only through quick buttons.
 * Add equipment comparison if the command UI expands.
+
+## Character Art Assets
+
+* Current state: the player renderer first looks for independent files in `assets/player/<direction>_<pose>.png`.
+* `assets/player.png` remains available as the 256x32 legacy strip fallback.
+* The eight split player frames exist in `assets/player/` and are each 32x32.
+* Future character sprite updates can replace one frame at a time instead of regenerating the full 8-frame strip.
 
 ## Gameplay and Balance
 

@@ -13,6 +13,7 @@
 
   const {
     TILE,
+    WORLD_SCALE,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     TILE_GRASS,
@@ -27,6 +28,8 @@
     facingDot,
     normalize,
   } = mathHelpers;
+
+  const worldPx = (value) => value * WORLD_SCALE;
 
   function requireActionContext(context) {
     if (!context?.state || !context?.player) {
@@ -88,7 +91,7 @@
       const relY = mc.y - pc.y;
       const forward = relX * dir.x + relY * dir.y;
       const side = Math.abs(relX * -dir.y + relY * dir.x);
-      if (forward < -4 || forward > ATTACK_RANGE + monster.w) continue;
+      if (forward < -worldPx(4) || forward > ATTACK_RANGE + monster.w) continue;
       if (side > ATTACK_WIDTH / 2 + monster.w / 2) continue;
       const score = forward + side * 0.35;
       if (score < bestScore) {
@@ -105,8 +108,8 @@
     player.attackCooldown = 230;
     const pc = centerOf(player);
     const dir = facingVector();
-    const slashX = pc.x + dir.x * 14;
-    const slashY = pc.y + dir.y * 14;
+    const slashX = pc.x + dir.x * worldPx(14);
+    const slashY = pc.y + dir.y * worldPx(14);
     addSlash(slashX, slashY, player.dir, "#f8fbff");
 
     let hitCount = 0;
@@ -117,7 +120,7 @@
       const relY = mc.y - pc.y;
       const forward = relX * dir.x + relY * dir.y;
       const side = Math.abs(relX * -dir.y + relY * dir.x);
-      if (forward < -2 || forward > ATTACK_RANGE + monster.w) continue;
+      if (forward < -worldPx(2) || forward > ATTACK_RANGE + monster.w) continue;
       if (side > ATTACK_WIDTH / 2 + monster.w / 2) continue;
       hitMonster(context, monster, 1.08 + hitCount * 0.08, "#ffffff");
       hitCount += 1;
@@ -179,7 +182,7 @@
       if (state.chests.has(chest.id)) continue;
       const cx = (chest.x + 0.5) * TILE;
       const cy = (chest.y + 0.5) * TILE;
-      if (Math.hypot(pc.x - cx, pc.y - cy) < 22) return chest;
+      if (Math.hypot(pc.x - cx, pc.y - cy) < worldPx(22)) return chest;
     }
     return null;
   }
@@ -227,7 +230,7 @@
       if (state.discoveries.has(discovery.id)) continue;
       const dx = (discovery.x + 0.5) * TILE;
       const dy = (discovery.y + 0.5) * TILE;
-      if (Math.hypot(pc.x - dx, pc.y - dy) < 20) return discovery;
+      if (Math.hypot(pc.x - dx, pc.y - dy) < worldPx(20)) return discovery;
     }
     return null;
   }
@@ -241,7 +244,7 @@
     state.discoveries.add(discovery.id);
     const dx = (discovery.x + 0.5) * TILE;
     const dy = (discovery.y + 0.5) * TILE;
-    addRing(dx, dy, "#bafc87", 24);
+    addRing(dx, dy, "#bafc87", worldPx(24));
     grantDiscoveryReward(discovery, dx, dy);
   }
 

@@ -11,8 +11,10 @@
     throw new Error("DRAGON_HUNTER_MATH must be loaded before projectile helpers");
   }
 
-  const { TILE } = definitions;
+  const { TILE, WORLD_SCALE } = definitions;
   const { centerOf, normalize, rectsOverlap } = mathHelpers;
+
+  const worldPx = (value) => value * WORLD_SCALE;
 
   function requireProjectileContext(context) {
     if (!context?.state || !context?.player) {
@@ -40,19 +42,19 @@
       x: baseAim.x * cos - baseAim.y * sin,
       y: baseAim.x * sin + baseAim.y * cos,
     };
-    const speed = monster.boss ? 78 : monster.midboss ? 68 : 62;
+    const speed = (monster.boss ? 78 : monster.midboss ? 68 : 62) * WORLD_SCALE;
     state.projectiles.push({
       x: c.x,
       y: c.y,
       vx: aim.x * speed,
       vy: aim.y * speed,
-      r: monster.boss ? 4 : monster.midboss ? 3 : 3,
+      r: worldPx(monster.boss ? 4 : monster.midboss ? 3 : 3),
       damage: monster.boss ? 14 : monster.midboss ? 11 : 8,
       color: monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166",
       source: monster.boss ? "dragon" : monster.midboss ? "guardian" : monster.type,
       life: monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
     });
-    addSlash(c.x + aim.x * 8, c.y + aim.y * 8, monster.dir, monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166");
+    addSlash(c.x + aim.x * worldPx(8), c.y + aim.y * worldPx(8), monster.dir, monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166");
   }
 
   function updateProjectiles(context, dt) {

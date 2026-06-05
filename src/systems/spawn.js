@@ -13,6 +13,7 @@
 
   const {
     TILE,
+    WORLD_SCALE,
     MAP_W,
     MAP_H,
     REGION_SPAWNS,
@@ -26,6 +27,12 @@
     normalize,
   } = mathHelpers;
 
+  const worldPx = (value) => value * WORLD_SCALE;
+
+  function monsterSize(typeName, template) {
+    return worldPx(template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11);
+  }
+
   function requireSpawnContext(context) {
     if (!context?.state || !context?.player || !context?.rand || !context?.irand || !context?.isPassableRect || !context?.inTown || !context?.say || !context?.addRing) {
       throw new Error("spawn helpers require { state, player, rand, irand, isPassableRect, inTown, say, addRing }");
@@ -36,7 +43,7 @@
   function spawnMonster(context, typeName, x, y) {
     const { state, rand } = requireSpawnContext(context);
     const template = monsterTypes[typeName];
-    const size = template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11;
+    const size = monsterSize(typeName, template);
     const monster = {
       type: typeName,
       name: template.name,
@@ -79,7 +86,7 @@
   function spawnIfClear(context, typeName, x, y) {
     const { isPassableRect } = requireSpawnContext(context);
     const template = monsterTypes[typeName];
-    const size = template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11;
+    const size = monsterSize(typeName, template);
     const actor = { x, y, w: size, h: size, flying: Boolean(template.flying), isMonster: true };
     if (isPassableRect(actor)) spawnMonster(context, typeName, x, y);
   }
@@ -97,7 +104,7 @@
     if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
     if (tx > 40) return "east";
     if (ty < 25) return "north";
-    if (distanceFromVillage(context) > 330) return "wilds";
+    if (distanceFromVillage(context) > worldPx(330)) return "wilds";
     return "grassland";
   }
 
@@ -135,10 +142,10 @@
 
     for (let i = 0; i < 40; i += 1) {
       const angle = rand(0, Math.PI * 2);
-      const radius = rand(92, 190 + regionInfo.danger * 18);
+      const radius = rand(worldPx(92), worldPx(190 + regionInfo.danger * 18));
       const x = clamp(player.x + Math.cos(angle) * radius, TILE, MAP_W * TILE - TILE * 2);
       const y = clamp(player.y + Math.sin(angle) * radius, TILE, MAP_H * TILE - TILE * 2);
-      const actor = { x, y, w: 12, h: 12, flying: false };
+      const actor = { x, y, w: worldPx(12), h: worldPx(12), flying: false };
       if (inTown(x, y)) continue;
       if (isPassableRect(actor)) {
         spawnMonster(context, monsterChoice(context), x, y);
@@ -161,19 +168,19 @@
       state.regionSpawnTimer = 0;
       say(areaDangerText(region), 1300);
     }
-    let nearby = countNearbyMonsters(context, 210);
+    let nearby = countNearbyMonsters(context, worldPx(210));
     if (nearby < target) {
-      pruneDistantMonsters(context, 230);
-      nearby = countNearbyMonsters(context, 210);
+      pruneDistantMonsters(context, worldPx(230));
+      nearby = countNearbyMonsters(context, worldPx(210));
     }
     if (state.regionSpawnTimer > 0 || state.monsters.length >= maxMonsters) return;
     state.regionSpawnTimer = 1600;
     for (let i = nearby; i < target && state.monsters.length < maxMonsters; i += 1) {
-      spawnNearPlayer(context, region, 105 + i * 16, 235 + i * 10);
+      spawnNearPlayer(context, region, worldPx(105 + i * 16), worldPx(235 + i * 10));
     }
   }
 
-  function pruneDistantMonsters(context, maxDistance = 520) {
+  function pruneDistantMonsters(context, maxDistance = worldPx(520)) {
     const { state, player } = requireSpawnContext(context);
     const pc = centerOf(player);
     state.monsters = state.monsters.filter((monster) => {
@@ -204,7 +211,7 @@
       if (inTown(x, y)) continue;
       const type = pool[irand(0, pool.length - 1)];
       const template = monsterTypes[type];
-      const size = type === "dragonling" ? 14 : 11;
+      const size = monsterSize(type, template);
       const actor = { x, y, w: size, h: size, flying: Boolean(template.flying), isMonster: true };
       if (isPassableRect(actor)) {
         spawnMonster(context, type, x, y);
@@ -232,7 +239,7 @@
     const pc = centerOf(player);
     const gx = (GUARDIAN_SITE.x + 0.5) * TILE;
     const gy = (GUARDIAN_SITE.y + 0.5) * TILE;
-    return Math.hypot(pc.x - gx, pc.y - gy) < 86;
+    return Math.hypot(pc.x - gx, pc.y - gy) < worldPx(86);
   }
 
   function updateStoryEvents(context) {

@@ -30,11 +30,17 @@ if (!gameDefinitions) {
 
 const {
   W,
+  H,
   VIEW_H,
   TILE,
+  WORLD_SCALE,
   MAP_W,
   MAP_H,
 } = gameDefinitions;
+
+canvas.width = W;
+canvas.height = H;
+ctx.imageSmoothingEnabled = false;
 
 const mathHelpers = globalThis.DRAGON_HUNTER_MATH;
 if (!mathHelpers) {
@@ -104,6 +110,12 @@ if (!projectileHelpers) {
   throw new Error("DRAGON_HUNTER_PROJECTILES must be loaded before src/game.js");
 }
 
+
+const monsterHelpers = globalThis.DRAGON_HUNTER_MONSTERS;
+if (!monsterHelpers) {
+  throw new Error("DRAGON_HUNTER_MONSTERS must be loaded before src/game.js");
+}
+
 const npcHelpers = globalThis.DRAGON_HUNTER_NPC;
 if (!npcHelpers) {
   throw new Error("DRAGON_HUNTER_NPC must be loaded before src/game.js");
@@ -141,6 +153,43 @@ if (!uiHelpers) {
   throw new Error("DRAGON_HUNTER_UI must be loaded before src/game.js");
 }
 
+const audioHelpers = globalThis.DRAGON_HUNTER_AUDIO;
+if (!audioHelpers) {
+  console.warn("DRAGON_HUNTER_AUDIO is not loaded. BGM/SE will be disabled.");
+}
+
+const audio = audioHelpers
+  ? audioHelpers.createAudioManager({
+      masterVolume: 0.9,
+      bgmVolume: 0.38,
+      seVolume: 0.58,
+      bgm: {
+        field: {
+          src: ["assets/audio/field.ogg", "assets/audio/field.mp3"],
+          loop: true,
+          volume: 1,
+        },
+        boss: {
+          src: ["assets/audio/boss.ogg", "assets/audio/boss.mp3"],
+          loop: true,
+          volume: 1,
+        },
+      },
+    })
+  : {
+      preloadBgm: () => false,
+      playBgm: () => Promise.resolve(false),
+      pauseBgm: () => false,
+      stopBgm: () => false,
+      playSe: () => false,
+      unlock: () => Promise.resolve(false),
+      bindUnlockEvents: () => {},
+      setMuted: () => {},
+      status: () => ({ currentBgmKey: null }),
+    };
+
+globalThis.dragonHunterAudio = audio;
+
 // Runtime state ------------------------------------------------------------
 const stateHelpers = globalThis.DRAGON_HUNTER_STATE;
 if (!stateHelpers) {
@@ -176,6 +225,8 @@ const contexts = contextHelpers.createContextFactory({
   nearestDiscovery,
   playerNearCave,
   spawnMonster,
+  spawnIfClear,
+  shootProjectile,
   distanceFromVillage,
   playerAttack,
   playerDefense,
@@ -194,6 +245,7 @@ const contexts = contextHelpers.createContextFactory({
   moveActor,
   handleNpc,
   handleCave,
+  grantMonsterDefeatDrops,
   grantChestReward,
   grantDiscoveryReward,
   gainFoundItem,
@@ -286,7 +338,7 @@ function updateRegionSpawns(dt) {
   return spawnHelpers.updateRegionSpawns(contexts.spawn(), dt);
 }
 
-function pruneDistantMonsters(maxDistance = 520) {
+function pruneDistantMonsters(maxDistance = 520 * WORLD_SCALE) {
   return spawnHelpers.pruneDistantMonsters(contexts.spawn(), maxDistance);
 }
 
@@ -372,7 +424,7 @@ function levelUp() {
     player.xpNext = Math.floor(player.xpNext * 1.45 + 18);
     player.hpMax += 12;
     player.hp = player.hpMax;
-    burst(player.x + 5, player.y + 4, "#fff36b", 18);
+    burst(player.x + 5 * WORLD_SCALE, player.y + 4 * WORLD_SCALE, "#fff36b", 18);
     say(`LEVEL UP! LV ${player.level}`);
   }
 }
@@ -389,8 +441,8 @@ function say(text, duration = 1800) {
 function getCamera() {
   const x = clamp(player.x + player.w / 2 - W / 2, 0, MAP_W * TILE - W);
   const y = clamp(player.y + player.h / 2 - VIEW_H / 2, 0, MAP_H * TILE - VIEW_H);
-  const shakeX = state.shake > 0 ? irand(-1, 1) : 0;
-  const shakeY = state.shake > 0 ? irand(-1, 1) : 0;
+  const shakeX = state.shake > 0 ? irand(-WORLD_SCALE, WORLD_SCALE) : 0;
+  const shakeY = state.shake > 0 ? irand(-WORLD_SCALE, WORLD_SCALE) : 0;
   return { x: Math.floor(x + shakeX), y: Math.floor(y + shakeY) };
 }
 
@@ -436,92 +488,7 @@ function updateDiscoverySprings() {
 }
 
 function updateMonsters(dt) {
-  const playerCenter = centerOf(player);
-  for (const monster of state.monsters) {
-    if (monster.hp <= 0) continue;
-    monster.age += dt;
-    monster.hurt = Math.max(0, monster.hurt - dt);
-    monster.contactTimer = Math.max(0, monster.contactTimer - dt);
-    monster.fireCooldown = Math.max(0, monster.fireCooldown - dt);
-    monster.windup = Math.max(0, monster.windup - dt);
-    monster.chargeTime = Math.max(0, monster.chargeTime - dt);
-    monster.chargeCooldown = Math.max(0, monster.chargeCooldown - dt);
-    monster.wanderTimer -= dt;
-
-    const c = centerOf(monster);
-    const dist = Math.hypot(playerCenter.x - c.x, playerCenter.y - c.y);
-    let vx = 0;
-    let vy = 0;
-
-    if (monster.boss && !monster.enraged && monster.hp <= monster.hpMax * 0.5) {
-      monster.enraged = true;
-      monster.speed += 6;
-      monster.atk += 4;
-      monster.fireCooldown = 120;
-      state.shake = Math.max(state.shake, 260);
-      addRing(c.x, c.y, "#ff543d", 48);
-      say("赤竜が怒り狂う!", 2600);
-    }
-
-    if (monster.boss && monster.enraged && !monster.summoned && monster.hp <= monster.hpMax * 0.42) {
-      monster.summoned = true;
-      spawnIfClear("dragonling", monster.x - 28, monster.y + 26);
-      spawnIfClear("wisp", monster.x + 34, monster.y + 20);
-      say("赤竜が眷属を呼んだ!", 2200);
-    }
-
-    if (monster.type === "boar" && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < 92) {
-      monster.chargeVector = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
-      monster.windup = 360;
-      monster.chargeCooldown = 1700;
-      addRing(c.x, c.y, "#ff8a3d", 15);
-    }
-
-    if ((monster.type === "wisp" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < (monster.boss ? 180 : monster.midboss ? 150 : 130)) {
-      if (monster.boss && monster.enraged) {
-        shootProjectile(monster, playerCenter, -0.28);
-        shootProjectile(monster, playerCenter, 0);
-        shootProjectile(monster, playerCenter, 0.28);
-      } else {
-        shootProjectile(monster, playerCenter);
-      }
-      monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : rand(1300, 2100);
-    }
-
-    if (monster.windup > 0) {
-      vx = 0;
-      vy = 0;
-      if (monster.windup <= 40) monster.chargeTime = 360;
-    } else if (monster.chargeTime > 0) {
-      vx = monster.chargeVector.x;
-      vy = monster.chargeVector.y;
-    } else if (monster.boss || dist < 230) {
-      const chase = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
-      vx = chase.x;
-      vy = chase.y;
-    } else {
-      if (monster.wanderTimer <= 0) {
-        monster.wanderTimer = rand(700, 1800);
-        const a = rand(0, Math.PI * 2);
-        monster.vx = Math.cos(a);
-        monster.vy = Math.sin(a);
-      }
-      vx = monster.vx;
-      vy = monster.vy;
-    }
-
-    monster.dir = directionFromVector(vx, vy, monster.dir);
-    const slow = rectsOverlap(monster, player) ? 0.25 : 1;
-    const chargeSpeed = monster.chargeTime > 0 ? 2.55 : 1;
-    moveActor(monster, vx * monster.speed * chargeSpeed * slow * dt * 0.001, vy * monster.speed * chargeSpeed * slow * dt * 0.001);
-    resolveContact(monster);
-  }
-
-  state.monsters = state.monsters.filter((monster) => {
-    if (monster.hp > 0) return true;
-    defeatMonster(monster);
-    return false;
-  });
+  return monsterHelpers.updateMonsters(contexts.monster(), dt);
 }
 
 // Projectile facade --------------------------------------------------------
@@ -819,6 +786,32 @@ function bindControls() {
   return controlsHelpers.bindControls(contexts.controls());
 }
 
+// Audio facade -------------------------------------------------------------
+let requestedBgmKey;
+
+function bindAudio() {
+  audio.preloadBgm("field");
+  audio.preloadBgm("boss");
+  audio.bindUnlockEvents(window, { bgmKey: "field", fadeMs: 700 });
+}
+
+function desiredBgmKey() {
+  if (state.gameOver) return null;
+  if (state.monsters.some((monster) => monster.hp > 0 && monster.boss)) return "boss";
+  return "field";
+}
+
+function syncBgmToState() {
+  const key = desiredBgmKey();
+  if (key === requestedBgmKey) return;
+  requestedBgmKey = key;
+  if (!key) {
+    audio.pauseBgm({ fadeMs: 450 });
+    return;
+  }
+  audio.playBgm(key, { fadeMs: 700 });
+}
+
 // Main loop ----------------------------------------------------------------
 function loop(now) {
   const dt = Math.min(40, now - state.last);
@@ -833,6 +826,7 @@ function loop(now) {
     trySpawnMonster(dt);
   }
   updateEffects(dt);
+  syncBgmToState();
   updateUi();
   draw();
   requestAnimationFrame(loop);
@@ -842,6 +836,7 @@ function loop(now) {
 function init() {
   createMap();
   bindControls();
+  bindAudio();
   if (!loadGame()) {
     say("長老が竜の鱗を求めている", 2600);
   }

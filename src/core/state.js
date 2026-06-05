@@ -6,7 +6,7 @@
     throw new Error("DRAGON_HUNTER_DEFINITIONS must be loaded before state helpers");
   }
 
-  const { TILE } = definitions;
+  const { TILE, WORLD_SCALE } = definitions;
 
   function createInitialState() {
     return {
@@ -52,8 +52,8 @@
     return {
       x: 10 * TILE,
       y: 48 * TILE,
-      w: 10,
-      h: 12,
+      w: 10 * WORLD_SCALE,
+      h: 12 * WORLD_SCALE,
       dir: "down",
       hp: 46,
       hpMax: 46,
@@ -82,7 +82,7 @@
       burnTick: 0,
       combo: 0,
       comboTimer: 0,
-      speed: 66,
+      speed: 66 * WORLD_SCALE,
       step: 0,
     };
   }

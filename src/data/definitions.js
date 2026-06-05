@@ -1,14 +1,16 @@
 "use strict";
 
 (() => {
-  const W = 240;
-  const H = 176;
-  const VIEW_H = 144;
+  const BASE_TILE = 16;
+  const WORLD_SCALE = 2;
+  const W = 240 * WORLD_SCALE;
+  const H = 176 * WORLD_SCALE;
+  const VIEW_H = 144 * WORLD_SCALE;
   const HUD_H = H - VIEW_H;
-  const TILE = 16;
+  const TILE = BASE_TILE * WORLD_SCALE;
   const MAP_W = 64;
   const MAP_H = 64;
-  const SAVE_KEY = "dragon-hunter-field-save-v1";
+  const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
@@ -54,8 +56,8 @@
     right: { x: 1, y: 0 },
   };
 
-  const ATTACK_RANGE = 24;
-  const ATTACK_WIDTH = 20;
+  const ATTACK_RANGE = 24 * WORLD_SCALE;
+  const ATTACK_WIDTH = 20 * WORLD_SCALE;
   const DASH_COST = 34;
 
   const weaponNames = ["木剣", "銅剣", "鉄剣", "銀剣", "竜剣"];
@@ -73,7 +75,7 @@
       hp: 18,
       atk: 8,
       def: 0,
-      speed: 18,
+      speed: 18 * WORLD_SCALE,
       xp: 10,
       gold: 5,
       color: "#4dd455",
@@ -85,7 +87,7 @@
       hp: 14,
       atk: 11,
       def: 0,
-      speed: 34,
+      speed: 34 * WORLD_SCALE,
       xp: 14,
       gold: 7,
       color: "#8a52d6",
@@ -98,7 +100,7 @@
       hp: 34,
       atk: 25,
       def: 2,
-      speed: 25,
+      speed: 25 * WORLD_SCALE,
       xp: 24,
       gold: 14,
       color: "#b0652d",
@@ -110,7 +112,7 @@
       hp: 28,
       atk: 27,
       def: 1,
-      speed: 22,
+      speed: 22 * WORLD_SCALE,
       xp: 32,
       gold: 18,
       color: "#ffdb52",
@@ -122,7 +124,7 @@
       hp: 58,
       atk: 42,
       def: 5,
-      speed: 21,
+      speed: 21 * WORLD_SCALE,
       xp: 62,
       gold: 42,
       color: "#d63d31",
@@ -134,7 +136,7 @@
       hp: 150,
       atk: 52,
       def: 6,
-      speed: 24,
+      speed: 24 * WORLD_SCALE,
       xp: 180,
       gold: 140,
       color: "#55c7a0",
@@ -147,7 +149,7 @@
       hp: 280,
       atk: 107,
       def: 7,
-      speed: 18,
+      speed: 18 * WORLD_SCALE,
       xp: 500,
       gold: 500,
       color: "#ec342d",
@@ -158,6 +160,8 @@
   };
 
   globalThis.DRAGON_HUNTER_DEFINITIONS = {
+    BASE_TILE,
+    WORLD_SCALE,
     W,
     H,
     VIEW_H,

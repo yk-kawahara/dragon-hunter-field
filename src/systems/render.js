@@ -12,11 +12,13 @@
   }
 
   const {
-    W,
-    H,
-    VIEW_H,
-    HUD_H,
-    TILE,
+    W: CANVAS_W,
+    H: CANVAS_H,
+    VIEW_H: CANVAS_VIEW_H,
+    HUD_H: CANVAS_HUD_H,
+    TILE: WORLD_TILE,
+    BASE_TILE,
+    WORLD_SCALE,
     HEAL_CIRCLE,
     TOWN_GATES,
     TREASURE_CHESTS,
@@ -33,6 +35,33 @@
     TILE_FLOWER,
     TILE_FIELD,
   } = definitions;
+
+  const RENDER_SCALE = WORLD_SCALE || (WORLD_TILE / (BASE_TILE || 16)) || 1;
+  const W = CANVAS_W / RENDER_SCALE;
+  const H = CANVAS_H / RENDER_SCALE;
+  const VIEW_H = CANVAS_VIEW_H / RENDER_SCALE;
+  const HUD_H = CANVAS_HUD_H / RENDER_SCALE;
+  const TILE = WORLD_TILE / RENDER_SCALE;
+
+  function worldToDraw(value) {
+    return value / RENDER_SCALE;
+  }
+
+  function screenX(worldX, cam) {
+    return worldToDraw(worldX) - cam.x;
+  }
+
+  function screenY(worldY, cam) {
+    return worldToDraw(worldY) - cam.y;
+  }
+
+  function worldTileX(worldX) {
+    return Math.floor(worldX / WORLD_TILE);
+  }
+
+  function worldTileY(worldY) {
+    return Math.floor(worldY / WORLD_TILE);
+  }
 
   const {
     clamp,
@@ -55,6 +84,55 @@
   let guidanceText;
   let contextPromptText;
   let selectedItemCount;
+
+  const PLAYER_SPRITE_SIZE = 32;
+  const PLAYER_DRAW_SIZE = 22;
+  const NPC_DRAW_SCALE = 1.18;
+
+  // Primary player sprite loading mode:
+  //   assets/player/<direction>_<pose>.png
+  //
+  // This keeps each generated 32x32 frame independent, so the game no longer
+  // depends on a perfectly aligned 256x32 sprite strip during development.
+  const PLAYER_SPRITE_PATHS = {
+    down: { idle: "assets/player/down_idle.png", walk: "assets/player/down_walk.png" },
+    left: { idle: "assets/player/left_idle.png", walk: "assets/player/left_walk.png" },
+    right: { idle: "assets/player/right_idle.png", walk: "assets/player/right_walk.png" },
+    up: { idle: "assets/player/up_idle.png", walk: "assets/player/up_walk.png" },
+  };
+
+  // Optional legacy fallback:
+  //   assets/player.png
+  //   256x32 strip ordered down idle, down walk, left idle, left walk,
+  //   right idle, right walk, up idle, up walk.
+  const PLAYER_SPRITE_FRAMES = {
+    down: { idle: 0, walk: 1 },
+    left: { idle: 2, walk: 3 },
+    right: { idle: 4, walk: 5 },
+    up: { idle: 6, walk: 7 },
+  };
+
+  function loadPlayerSpriteFrames(paths) {
+    const images = {};
+    for (const [dir, poses] of Object.entries(paths)) {
+      images[dir] = {};
+      for (const [pose, src] of Object.entries(poses)) {
+        const image = new Image();
+        image.src = src;
+        images[dir][pose] = image;
+      }
+    }
+    return images;
+  }
+
+  function imageReady(image) {
+    return Boolean(image && image.complete && image.naturalWidth > 0);
+  }
+
+  const playerSpriteImages = loadPlayerSpriteFrames(PLAYER_SPRITE_PATHS);
+  const playerSpriteImage = new Image();
+  playerSpriteImage.src = "assets/player.png";
+
 
   function useRenderContext(context) {
     if (!context?.canvas || !context?.ctx || !context?.ui || !context?.state || !context?.player) {
@@ -87,8 +165,15 @@
 
 function draw(context) {
   useRenderContext(context);
-  const cam = getCamera();
-  ctx.clearRect(0, 0, W, H);
+  const worldCam = getCamera();
+  const cam = { x: worldToDraw(worldCam.x), y: worldToDraw(worldCam.y) };
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+  ctx.save();
+  ctx.scale(RENDER_SCALE, RENDER_SCALE);
+
   drawWorld(cam);
   drawWorldAtmosphere(cam);
   drawFieldDetails(cam);
@@ -112,6 +197,9 @@ function draw(context) {
   if (state.gameOver) drawOverlay("GAME OVER", "R");
   if (state.victory && !state.elderReported) drawVictoryBanner();
   if (state.elderReported) drawOverlay("QUEST CLEAR", "CLEAR");
+
+  ctx.restore();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 function drawInfoPanel() {
@@ -150,8 +238,8 @@ function drawWorld(cam) {
 
 function drawWorldAtmosphere(cam) {
   const time = performance.now();
-  const tx = Math.floor((player.x + player.w / 2) / TILE);
-  const ty = Math.floor((player.y + player.h / 2) / TILE);
+  const tx = worldTileX(player.x + player.w / 2);
+  const ty = worldTileY(player.y + player.h / 2);
 
   if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) {
     ctx.fillStyle = "rgba(75, 24, 18, 0.22)";
@@ -712,8 +800,8 @@ function drawTerrainEdges(tile, sx, sy, tx, ty) {
 
 function drawNpcs(cam) {
   for (const npc of state.npcs) {
-    const sx = Math.round(npc.x - cam.x);
-    const sy = Math.round(npc.y - cam.y);
+    const sx = Math.round(screenX(npc.x, cam));
+    const sy = Math.round(screenY(npc.y, cam));
     if (sy > VIEW_H || sx < -16 || sx > W) continue;
     drawHumanSprite(sx, sy, npc.type === "smith" ? "#d14f2b" : npc.type === "healer" ? "#40c6ff" : "#efe35a", npc.dir, npc.type);
   }
@@ -722,86 +810,120 @@ function drawNpcs(cam) {
 function drawEntities(cam) {
   const drawables = [...state.monsters, player].sort((a, b) => a.y + a.h - (b.y + b.h));
   for (const actor of drawables) {
-    if (actor === player) drawPlayer(Math.round(actor.x - cam.x), Math.round(actor.y - cam.y));
-    else drawMonster(actor, Math.round(actor.x - cam.x), Math.round(actor.y - cam.y));
+    if (actor === player) drawPlayer(Math.round(screenX(actor.x, cam)), Math.round(screenY(actor.y, cam)));
+    else drawMonster(actor, Math.round(screenX(actor.x, cam)), Math.round(screenY(actor.y, cam)));
   }
 }
 
 function drawHumanSprite(sx, sy, body, dir, role = "elder") {
-  drawActorShadow(sx + 1, sy + 12, 10);
+  const baseW = 16;
+  const baseH = 16;
+  ctx.save();
+  ctx.translate(
+    Math.round(sx + baseW / 2),
+    Math.round(sy + baseH),
+  );
+  ctx.scale(NPC_DRAW_SCALE, NPC_DRAW_SCALE);
+  drawHumanSpriteBase(
+    Math.round(-baseW / 2),
+    -baseH,
+    body,
+    dir,
+    role,
+  );
+  ctx.restore();
+}
+
+function drawHumanSpriteBase(sx, sy, body, dir, role = "elder") {
+  drawActorShadow(sx + 2, sy + 14, 12);
   ctx.fillStyle = role === "elder" ? "#f5f5f5" : "#2b1a18";
-  ctx.fillRect(sx + 2, sy - 1, 8, 3);
+  ctx.fillRect(sx + 4, sy, 8, 3);
   ctx.fillStyle = "#ffd08a";
-  ctx.fillRect(sx + 3, sy, 6, 5);
+  ctx.fillRect(sx + 5, sy + 3, 6, 5);
   ctx.fillStyle = body;
-  ctx.fillRect(sx + 2, sy + 5, 8, 7);
+  ctx.fillRect(sx + 4, sy + 8, 8, 6);
   ctx.fillStyle = "#162033";
-  ctx.fillRect(sx + 2, sy + 11, 3, 2);
-  ctx.fillRect(sx + 7, sy + 11, 3, 2);
+  ctx.fillRect(sx + 4, sy + 14, 3, 2);
+  ctx.fillRect(sx + 9, sy + 14, 3, 2);
   if (role === "smith") {
     ctx.fillStyle = "#4a291d";
-    ctx.fillRect(sx + 4, sy + 6, 4, 5);
+    ctx.fillRect(sx + 5, sy + 9, 6, 5);
     ctx.fillStyle = "#d7e2ea";
-    ctx.fillRect(sx + 9, sy + 7, 3, 1);
+    ctx.fillRect(sx + 12, sy + 10, 3, 1);
   }
   if (role === "healer") {
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(sx + 5, sy + 6, 2, 5);
-    ctx.fillRect(sx + 3, sy + 8, 6, 1);
+    ctx.fillRect(sx + 7, sy + 9, 2, 5);
+    ctx.fillRect(sx + 5, sy + 11, 6, 1);
   }
   if (role === "elder") {
     ctx.fillStyle = "#fff4b0";
-    ctx.fillRect(sx + 3, sy + 6, 6, 2);
+    ctx.fillRect(sx + 5, sy + 9, 6, 2);
   }
   ctx.fillStyle = "#111018";
-  if (dir === "left") ctx.fillRect(sx + 2, sy + 2, 2, 1);
-  else if (dir === "right") ctx.fillRect(sx + 8, sy + 2, 2, 1);
-  else ctx.fillRect(sx + 4, sy + 2, 1, 1);
+  if (dir === "left") ctx.fillRect(sx + 4, sy + 5, 2, 1);
+  else if (dir === "right") ctx.fillRect(sx + 10, sy + 5, 2, 1);
+  else ctx.fillRect(sx + 6, sy + 5, 1, 1);
 }
 
 function drawPlayer(sx, sy) {
   const blink = player.invuln > 0 && Math.floor(performance.now() / 80) % 2 === 0;
   if (blink) return;
+
+  const bob = Math.floor(player.step % 2);
+  const pose = bob ? "walk" : "idle";
+  const dirFrames = PLAYER_SPRITE_FRAMES[player.dir] || PLAYER_SPRITE_FRAMES.down;
+  const frameIndex = dirFrames[pose];
+  const frameImage = playerSpriteImages[player.dir]?.[pose] || playerSpriteImages.down[pose];
+
+  const playerDrawW = Math.max(1, PLAYER_DRAW_SIZE);
+  const playerDrawH = Math.max(1, PLAYER_DRAW_SIZE);
+  const actorW = worldToDraw(player.w);
+  const actorH = worldToDraw(player.h);
+  const drawX = sx - Math.floor((playerDrawW - actorW) / 2);
+  const drawY = sy - Math.max(0, playerDrawH - actorH);
+
   if (player.guard > 0) {
     ctx.strokeStyle = "#6de4ff";
-    ctx.strokeRect(sx - 2, sy - 2, 15, 16);
-    ctx.fillStyle = "rgba(109, 228, 255, 0.32)";
-    ctx.fillRect(sx - 1, sy - 1, 13, 14);
+    ctx.strokeRect(drawX + 1, drawY + 1, Math.max(1, playerDrawW - 2), Math.max(1, playerDrawH - 2));
+    ctx.fillStyle = "rgba(109, 228, 255, 0.24)";
+    ctx.fillRect(drawX + 2, drawY + 2, Math.max(1, playerDrawW - 4), Math.max(1, playerDrawH - 4));
   }
-  drawActorShadow(sx, sy + 12, 12);
-  const bob = Math.floor(player.step % 2);
+
+  if (imageReady(frameImage)) {
+    ctx.drawImage(frameImage, drawX, drawY, playerDrawW, playerDrawH);
+    return;
+  }
+
+  if (imageReady(playerSpriteImage)) {
+    ctx.drawImage(
+      playerSpriteImage,
+      frameIndex * PLAYER_SPRITE_SIZE,
+      0,
+      PLAYER_SPRITE_SIZE,
+      PLAYER_SPRITE_SIZE,
+      drawX,
+      drawY,
+      playerDrawW,
+      playerDrawH,
+    );
+    return;
+  }
+
+  // Fallback: sprite images not loaded yet.
+  drawActorShadow(sx + 2, sy + 14, 12);
   ctx.fillStyle = "#2b1a18";
-  ctx.fillRect(sx + 2, sy - 1 + bob, 8, 3);
+  ctx.fillRect(sx + 4, sy + bob, 8, 3);
   ctx.fillStyle = "#ffd68e";
-  ctx.fillRect(sx + 3, sy + bob, 6, 5);
-  if (player.dir === "up") {
-    ctx.fillStyle = "#3d231b";
-    ctx.fillRect(sx + 3, sy + bob, 6, 5);
-    ctx.fillStyle = "#2b1a18";
-    ctx.fillRect(sx + 2, sy + 1 + bob, 8, 2);
-  }
-  ctx.fillStyle = player.armor >= 2 ? "#4b6c8f" : "#1956d2";
-  ctx.fillRect(sx + 2, sy + 5 + bob, 8, 7);
-  ctx.fillStyle = "#69d7ff";
-  ctx.fillRect(sx + 2, sy + 5 + bob, 8, 1);
-  ctx.fillStyle = player.armor >= 3 ? "#d7e2ea" : "#0f348f";
-  ctx.fillRect(sx + 1, sy + 6 + bob, 2, 4);
-  ctx.fillRect(sx + 9, sy + 6 + bob, 2, 4);
-  ctx.fillStyle = "#f5f5f5";
-  ctx.fillRect(sx + 4, sy + 7 + bob, 4, 2);
-  ctx.fillStyle = "#0e1624";
-  ctx.fillRect(sx + 2, sy + 11 + bob, 3, 2);
-  ctx.fillRect(sx + 7, sy + 11 + bob, 3, 2);
-  ctx.fillStyle = "#1b1230";
-  if (player.dir === "down") {
-    ctx.fillRect(sx + 4, sy + 2 + bob, 1, 1);
-    ctx.fillRect(sx + 7, sy + 2 + bob, 1, 1);
-  } else if (player.dir === "left") {
-    ctx.fillRect(sx + 3, sy + 2 + bob, 1, 1);
-  } else if (player.dir === "right") {
-    ctx.fillRect(sx + 8, sy + 2 + bob, 1, 1);
-  }
-  drawWeapon(sx, sy + bob);
+  ctx.fillRect(sx + 5, sy + 3 + bob, 6, 5);
+  ctx.fillStyle = "#d87aa8";
+  ctx.fillRect(sx + 4, sy + 8 + bob, 8, 6);
+  ctx.fillStyle = "#f5f5ff";
+  ctx.fillRect(sx + 3, sy + 9 + bob, 2, 4);
+  ctx.fillRect(sx + 11, sy + 9 + bob, 2, 4);
+  ctx.fillStyle = "#ff8ab3";
+  ctx.fillRect(sx + 11, sy + bob, 3, 2);
+  drawWeapon(sx + 2, sy + bob);
 }
 
 function drawActorShadow(sx, sy, w) {
@@ -823,10 +945,12 @@ function drawWeapon(sx, sy) {
 function drawMonster(monster, sx, sy) {
   if (sy > VIEW_H || sx < -30 || sx > W + 10) return;
   const mainColor = monster.hurt > 0 ? "#ffffff" : monster.color;
-  drawActorShadow(sx + 1, sy + monster.h - 1, monster.w);
+  const spriteW = worldToDraw(monster.w);
+  const spriteH = worldToDraw(monster.h);
+  drawActorShadow(sx + 1, sy + spriteH - 1, spriteW);
   if (monster.windup > 0) {
     ctx.strokeStyle = "#ffef8a";
-    ctx.strokeRect(sx - 2, sy - 2, monster.w + 4, monster.h + 4);
+    ctx.strokeRect(sx - 2, sy - 2, spriteW + 4, spriteH + 4);
   }
   if (monster.type === "dragon") {
     drawDragon(monster, sx, sy);
@@ -971,28 +1095,31 @@ function drawMonsterHp(monster, sx, sy) {
 
 function drawEffects(cam) {
   if (state.pointerMove) {
+    const pointerX = Math.round(worldToDraw(state.pointerMove.x));
+    const pointerY = Math.round(worldToDraw(state.pointerMove.y));
     ctx.strokeStyle = "rgba(109, 228, 255, 0.9)";
-    ctx.strokeRect(Math.round(state.pointerMove.x) - 4, Math.round(state.pointerMove.y) - 4, 8, 8);
+    ctx.strokeRect(pointerX - 4, pointerY - 4, 8, 8);
     ctx.fillStyle = "rgba(109, 228, 255, 0.55)";
-    ctx.fillRect(Math.round(state.pointerMove.x) - 1, Math.round(state.pointerMove.y) - 1, 2, 2);
+    ctx.fillRect(pointerX - 1, pointerY - 1, 2, 2);
   }
 
   for (const p of state.projectiles) {
-    const sx = Math.round(p.x - cam.x);
-    const sy = Math.round(p.y - cam.y);
+    const sx = Math.round(screenX(p.x, cam));
+    const sy = Math.round(screenY(p.y, cam));
+    const radius = worldToDraw(p.r);
     ctx.fillStyle = "rgba(255, 120, 58, 0.32)";
-    ctx.fillRect(sx - p.r - 1, sy - p.r - 1, p.r * 2 + 2, p.r * 2 + 2);
+    ctx.fillRect(sx - radius - 1, sy - radius - 1, radius * 2 + 2, radius * 2 + 2);
     ctx.fillStyle = p.color;
-    ctx.fillRect(sx - p.r, sy - p.r, p.r * 2, p.r * 2);
+    ctx.fillRect(sx - radius, sy - radius, radius * 2, radius * 2);
     ctx.fillStyle = "#fff2a6";
     ctx.fillRect(sx - 1, sy - 1, 2, 2);
   }
 
   for (const r of state.rings) {
     const t = 1 - r.life / r.max;
-    const radius = Math.max(2, Math.floor(r.radius * t));
-    const x = Math.round(r.x - cam.x);
-    const y = Math.round(r.y - cam.y);
+    const radius = Math.max(2, Math.floor(worldToDraw(r.radius) * t));
+    const x = Math.round(screenX(r.x, cam));
+    const y = Math.round(screenY(r.y, cam));
     ctx.globalAlpha = clamp(r.life / r.max, 0, 1);
     ctx.strokeStyle = r.color;
     ctx.strokeRect(x - radius, y - Math.floor(radius * 0.55), radius * 2, Math.max(3, Math.floor(radius * 1.1)));
@@ -1001,8 +1128,8 @@ function drawEffects(cam) {
 
   for (const s of state.slashes) {
     const alpha = clamp(s.life / s.max, 0, 1);
-    const x = Math.round(s.x - cam.x);
-    const y = Math.round(s.y - cam.y);
+    const x = Math.round(screenX(s.x, cam));
+    const y = Math.round(screenY(s.y, cam));
     ctx.globalAlpha = alpha;
     ctx.fillStyle = s.color;
     if (s.dir === "left" || s.dir === "right") {
@@ -1019,7 +1146,7 @@ function drawEffects(cam) {
 
   for (const p of state.particles) {
     ctx.fillStyle = p.color;
-    ctx.fillRect(Math.round(p.x - cam.x), Math.round(p.y - cam.y), 2, 2);
+    ctx.fillRect(Math.round(screenX(p.x, cam)), Math.round(screenY(p.y, cam)), 2, 2);
   }
 
   ctx.font = "8px monospace";
@@ -1027,16 +1154,16 @@ function drawEffects(cam) {
   for (const f of state.floaters) {
     ctx.globalAlpha = clamp(f.life / f.max, 0, 1);
     ctx.fillStyle = "#000";
-    ctx.fillText(f.text, Math.round(f.x - cam.x) + 1, Math.round(f.y - cam.y) + 1);
+    ctx.fillText(f.text, Math.round(screenX(f.x, cam)) + 1, Math.round(screenY(f.y, cam)) + 1);
     ctx.fillStyle = f.color;
-    ctx.fillText(f.text, Math.round(f.x - cam.x), Math.round(f.y - cam.y));
+    ctx.fillText(f.text, Math.round(screenX(f.x, cam)), Math.round(screenY(f.y, cam)));
     ctx.globalAlpha = 1;
   }
 }
 
 function drawScreenGrade(cam) {
-  const tx = Math.floor((player.x + player.w / 2) / TILE);
-  const ty = Math.floor((player.y + player.h / 2) / TILE);
+  const tx = worldTileX(player.x + player.w / 2);
+  const ty = worldTileY(player.y + player.h / 2);
   const inCave = tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19;
   const gradient = ctx.createLinearGradient(0, 0, 0, VIEW_H);
   gradient.addColorStop(0, inCave ? "rgba(35, 10, 8, 0.18)" : "rgba(255, 244, 192, 0.08)");

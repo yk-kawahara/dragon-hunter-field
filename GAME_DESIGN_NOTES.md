@@ -740,6 +740,28 @@ The village should provide a clear feeling of relief after surviving dangerous e
 Visual design should clearly communicate safety through walls, gates, recovery points, and NPC placement.
 
 
+\## Player Character Sprite Direction
+
+
+The player character art now supports independent 32x32 frame files under `assets/player/`.
+
+
+This is the preferred workflow for the girl-style protagonist design because each direction and pose can be improved separately:
+
+
+\* `down_idle.png`
+\* `down_walk.png`
+\* `left_idle.png`
+\* `left_walk.png`
+\* `right_idle.png`
+\* `right_walk.png`
+\* `up_idle.png`
+\* `up_walk.png`
+
+
+The legacy `assets/player.png` 256x32 strip remains available as a fallback, but future character art work should favor replacing individual frame files.
+
+
 
 \## World Progression Principle
 

@@ -84,3 +84,21 @@
 - No gameplay design changes are intended by this handoff update.
 - Next session should prioritize verification over feature work: syntax checks for all JS files, `git diff --check`, browser startup, desktop/mobile smoke QA, save/load, enemy AI, contact combat, projectiles, Guardian defeat, red dragon defeat, and elder report.
 - Real browser QA and full manual playthrough remain required before new gameplay content or further architecture changes.
+
+## 2026-06-05 Player Sprite Asset Pass
+- Recognized user-led manual changes after the previous handoff: the project now contains a broader behavior-neutral extraction into `src/core`, `src/data`, and `src/systems`; new audio support/assets are present; and `src/systems/render.js` has a primary loader for independent player frame files under `assets/player/`.
+- Confirmed `assets/player.png` is a 256x32, 8-frame horizontal strip with 32x32 frames.
+- Split `assets/player.png` into eight independent frame files:
+  - `assets/player/down_idle.png`
+  - `assets/player/down_walk.png`
+  - `assets/player/left_idle.png`
+  - `assets/player/left_walk.png`
+  - `assets/player/right_idle.png`
+  - `assets/player/right_walk.png`
+  - `assets/player/up_idle.png`
+  - `assets/player/up_walk.png`
+- Verified all eight generated files are 32x32 PNGs.
+- Did not alter gameplay logic or overwrite the user's manual refactor/code changes.
+- `git diff --check` passed after the sprite split and documentation updates.
+- Git commit was intentionally not created in this pass because the working tree contains broad user-led manual changes that should be reviewed/staged intentionally.
+- Remaining risk: real browser visual QA is still needed to confirm the new player frames appear correctly in motion and at the current in-game draw scale.

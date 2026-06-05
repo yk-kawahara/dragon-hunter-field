@@ -13,6 +13,7 @@
 
   const {
     TILE,
+    WORLD_SCALE,
     MAP_W,
     MAP_H,
     TOWN_GATES,
@@ -156,9 +157,9 @@
     ensureRewardSitesReachable(context);
 
     state.npcs = [
-      { x: 9 * TILE + 3, y: 47 * TILE + 2, w: 10, h: 12, dir: "down", type: "elder" },
-      { x: 15 * TILE + 4, y: 48 * TILE + 1, w: 10, h: 12, dir: "left", type: "smith" },
-      { x: 13 * TILE + 3, y: 43 * TILE + 2, w: 10, h: 12, dir: "down", type: "healer" },
+      { x: 9 * TILE + 3 * WORLD_SCALE, y: 47 * TILE + 2 * WORLD_SCALE, w: 10 * WORLD_SCALE, h: 12 * WORLD_SCALE, dir: "down", type: "elder" },
+      { x: 15 * TILE + 4 * WORLD_SCALE, y: 48 * TILE + 1 * WORLD_SCALE, w: 10 * WORLD_SCALE, h: 12 * WORLD_SCALE, dir: "left", type: "smith" },
+      { x: 13 * TILE + 3 * WORLD_SCALE, y: 43 * TILE + 2 * WORLD_SCALE, w: 10 * WORLD_SCALE, h: 12 * WORLD_SCALE, dir: "down", type: "healer" },
     ];
   }
 

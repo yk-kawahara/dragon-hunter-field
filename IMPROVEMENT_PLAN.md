@@ -61,6 +61,7 @@ Current refactor guidance:
 * Do not start ES Modules, Vite, bundling, or import/export migration in the next pass.
 * The next priority is verification and regression repair, not new architecture.
 * Gameplay content changes should wait until the refactored structure has passed browser QA and a full manual playthrough.
+* Player art now supports one-file-per-frame replacement through `assets/player/<direction>_<pose>.png`, so future character design iteration can focus on one 32x32 frame at a time.
 
 Expected `index.html` script order:
 
@@ -462,6 +463,13 @@ Current status:
 * Add equipment review screen.
 * Improve equipment comparison.
 * Improve visibility of survival-related stats.
+
+### Player Character Art
+
+* Current player source strip: `assets/player.png` at 256x32.
+* Split frame output: `assets/player/down_idle.png`, `down_walk.png`, `left_idle.png`, `left_walk.png`, `right_idle.png`, `right_walk.png`, `up_idle.png`, and `up_walk.png`.
+* Each frame is 32x32 and matches the primary render loader paths in `src/systems/render.js`.
+* Future sprite improvements should replace individual frame PNGs instead of requiring a perfect 8-frame strip.
 
 ### Refactoring
 

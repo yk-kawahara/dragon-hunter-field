@@ -78,6 +78,8 @@ Important note:
 * Extracted map/collision, spawn/region, rewards/items, effects, text, rendering, projectiles, NPC, controls, save/load, combat stat helpers, player movement/update, actions, UI, and monster AI/contact-combat systems.
 * Kept non-module script loading through `globalThis.DRAGON_HUNTER_*` to preserve direct local browser play without a dev server.
 * Kept the survival-range expansion game design unchanged.
+* Added player art support through independent frame files under `assets/player/`.
+* Split `assets/player.png` into eight 32x32 frame PNGs matching the render loader paths.
 
 ## Remaining Critical / High Priority
 
@@ -88,6 +90,7 @@ Important note:
 * Verify save/load after opened chests, discovered hidden rewards, equipment upgrades, seal crest, boss defeat, and elder report.
 * Verify objective guidance and context prompts fit the small mobile-style screen.
 * Verify the refactored script loading order in `index.html` exactly matches the expected order above.
+* Verify the new player frame files render correctly in all four directions and both idle/walk poses.
 
 ## First Task For Next Codex
 
@@ -113,6 +116,8 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `DEVELOPMENT_LO
 * `git diff --check`
 * `index.html` script order matches the handoff order.
 * Browser startup does not show a black screen.
+* Player sprite loads from `assets/player/<direction>_<pose>.png`.
+* Fallback `assets/player.png` still works if individual frame loading fails.
 * Desktop viewport smoke QA.
 * Mobile-like viewport smoke QA.
 * Keyboard movement.
@@ -135,3 +140,4 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `DEVELOPMENT_LO
 * Red dragon enrage, summons, defeat, victory state.
 * Elder report and final clear state.
 * Objective/guidance/context prompts fit the screen.
+* Player frame animation looks correct for down, left, right, and up movement.

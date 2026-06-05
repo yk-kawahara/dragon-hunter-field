@@ -1,6 +1,10 @@
 "use strict";
 
 (() => {
+  const definitions = globalThis.DRAGON_HUNTER_DEFINITIONS || {};
+  const WORLD_SCALE = definitions.WORLD_SCALE || 1;
+  const worldPx = (value) => value * WORLD_SCALE;
+
   const mathHelpers = globalThis.DRAGON_HUNTER_MATH;
   if (!mathHelpers) {
     throw new Error("DRAGON_HUNTER_MATH must be loaded before monster helpers");
@@ -72,29 +76,29 @@
 
       if (monster.boss && !monster.enraged && monster.hp <= monster.hpMax * 0.5) {
         monster.enraged = true;
-        monster.speed += 6;
+        monster.speed += worldPx(6);
         monster.atk += 4;
         monster.fireCooldown = 120;
         state.shake = Math.max(state.shake, 260);
-        addRing(c.x, c.y, "#ff543d", 48);
+        addRing(c.x, c.y, "#ff543d", worldPx(48));
         say("赤竜が怒り狂う!", 2600);
       }
 
       if (monster.boss && monster.enraged && !monster.summoned && monster.hp <= monster.hpMax * 0.42) {
         monster.summoned = true;
-        spawnIfClear("dragonling", monster.x - 28, monster.y + 26);
-        spawnIfClear("wisp", monster.x + 34, monster.y + 20);
+        spawnIfClear("dragonling", monster.x - worldPx(28), monster.y + worldPx(26));
+        spawnIfClear("wisp", monster.x + worldPx(34), monster.y + worldPx(20));
         say("赤竜が眷属を呼んだ!", 2200);
       }
 
-      if (monster.type === "boar" && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < 92) {
+      if (monster.type === "boar" && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < worldPx(92)) {
         monster.chargeVector = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
         monster.windup = 360;
         monster.chargeCooldown = 1700;
-        addRing(c.x, c.y, "#ff8a3d", 15);
+        addRing(c.x, c.y, "#ff8a3d", worldPx(15));
       }
 
-      if ((monster.type === "wisp" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < (monster.boss ? 180 : monster.midboss ? 150 : 130)) {
+      if ((monster.type === "wisp" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.boss ? 180 : monster.midboss ? 150 : 130)) {
         if (monster.boss && monster.enraged) {
           shootProjectile(monster, playerCenter, -0.28);
           shootProjectile(monster, playerCenter, 0);
@@ -112,7 +116,7 @@
       } else if (monster.chargeTime > 0) {
         vx = monster.chargeVector.x;
         vy = monster.chargeVector.y;
-      } else if (monster.boss || dist < 230) {
+      } else if (monster.boss || dist < worldPx(230)) {
         const chase = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
         vx = chase.x;
         vy = chase.y;
@@ -180,7 +184,7 @@
     const pc = centerOf(player);
     const mc = centerOf(monster);
     const away = normalize(mc.x - pc.x, mc.y - pc.y);
-    moveActor(monster, away.x * 6, away.y * 6);
+    moveActor(monster, away.x * worldPx(6), away.y * worldPx(6));
 
     if (hurt > 0 && player.invuln <= 0) {
       player.hp = Math.max(0, player.hp - hurt);
@@ -188,7 +192,7 @@
       state.shake = 120;
       addFloater(player.x + player.w / 2, player.y, String(hurt), "#ffeb61");
       burst(player.x + player.w / 2, player.y + player.h / 2, "#ff5444", 5);
-      moveActor(player, -away.x * 4, -away.y * 4);
+      moveActor(player, -away.x * worldPx(4), -away.y * worldPx(4));
       if (player.hp <= 0) {
         state.gameOver = true;
         say("倒れた... Rで再挑戦", 5000);
@@ -197,7 +201,7 @@
     }
 
     if (player.guard > 0 && hurt === 0) {
-      addFloater(player.x + player.w / 2, player.y - 2, "GUARD", "#6de4ff");
+      addFloater(player.x + player.w / 2, player.y - worldPx(2), "GUARD", "#6de4ff");
       burst(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 3);
     }
 
@@ -212,13 +216,13 @@
     const { player, addFloater } = requireMonsterContext(context);
     if (monster.type === "slime") {
       player.slow = Math.max(player.slow, 1200);
-      addFloater(player.x + player.w / 2, player.y - 7, "SLOW", "#9df27f");
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "SLOW", "#9df27f");
     } else if (monster.type === "bat") {
       player.stamina = Math.max(0, player.stamina - 12);
-      addFloater(player.x + player.w / 2, player.y - 7, "ST-", "#d7b5ff");
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#d7b5ff");
     } else if (monster.type === "wisp" || monster.type === "dragonling" || monster.boss) {
       player.burn = Math.max(player.burn, monster.boss ? 2600 : 1500);
-      addFloater(player.x + player.w / 2, player.y - 7, "BURN", "#ff8a3d");
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "BURN", "#ff8a3d");
     }
   }
 
@@ -240,9 +244,9 @@
     player.xp += monster.xp;
     player.gold += goldGain;
     burst(monster.x + monster.w / 2, monster.y + monster.h / 2, monster.color, monster.boss ? 34 : 14);
-    addFloater(monster.x + monster.w / 2, monster.y - 6, `+${goldGain}G`, "#fff36b");
+    addFloater(monster.x + monster.w / 2, monster.y - worldPx(6), `+${goldGain}G`, "#fff36b");
     if (player.combo >= 2) {
-      addFloater(monster.x + monster.w / 2, monster.y - 14, `${player.combo}連`, "#6de4ff");
+      addFloater(monster.x + monster.w / 2, monster.y - worldPx(14), `${player.combo}連`, "#6de4ff");
     }
 
     grantMonsterDefeatDrops(monster);

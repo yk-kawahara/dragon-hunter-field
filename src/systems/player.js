@@ -13,6 +13,7 @@
 
   const {
     TILE,
+    WORLD_SCALE,
     MAP_W,
     MAP_H,
     HEAL_CIRCLE,
@@ -27,6 +28,8 @@
     normalize,
     directionFromVector,
   } = mathHelpers;
+
+  const worldPx = (value) => value * WORLD_SCALE;
 
   function requirePlayerContext(context) {
     if (!context?.state || !context?.player) {
@@ -69,7 +72,7 @@
     const py = player.y + player.h / 2 - cam.y;
     const dx = state.pointerMove.x - px;
     const dy = state.pointerMove.y - py;
-    if (Math.hypot(dx, dy) < 10) return { x: 0, y: 0 };
+    if (Math.hypot(dx, dy) < worldPx(10)) return { x: 0, y: 0 };
     return normalize(dx, dy);
   }
 
@@ -136,7 +139,7 @@
     return TOWN_GATES.some((gate) => {
       const gx = (gate.x + gate.w / 2) * TILE;
       const gy = (gate.y + gate.h / 2) * TILE;
-      return Math.hypot(pc.x - gx, pc.y - gy) < 42;
+      return Math.hypot(pc.x - gx, pc.y - gy) < worldPx(42);
     });
   }
 
@@ -160,12 +163,12 @@
     const pc = centerOf(player);
     const hx = (HEAL_CIRCLE.x + 0.5) * TILE;
     const hy = (HEAL_CIRCLE.y + 0.5) * TILE;
-    if (Math.hypot(pc.x - hx, pc.y - hy) > 11 || state.healCooldown > 0 || player.hp <= 0) return;
+    if (Math.hypot(pc.x - hx, pc.y - hy) > worldPx(11) || state.healCooldown > 0 || player.hp <= 0) return;
     state.healCooldown = 1400;
     if (player.hp < player.hpMax) {
       player.hp = player.hpMax;
       player.guard = Math.max(player.guard, 900);
-      addRing(hx, hy, "#6de4ff", 30);
+      addRing(hx, hy, "#6de4ff", worldPx(30));
       burst(hx, hy, "#74ff8f", 18);
       say("魔法陣が傷を癒やした");
     }
@@ -177,12 +180,12 @@
       const pc = centerOf(player);
       const sx = (spring.x + 0.5) * TILE;
       const sy = (spring.y + 0.5) * TILE;
-      if (Math.hypot(pc.x - sx, pc.y - sy) > 11 || state.healCooldown > 0 || player.hp <= 0) continue;
+      if (Math.hypot(pc.x - sx, pc.y - sy) > worldPx(11) || state.healCooldown > 0 || player.hp <= 0) continue;
       state.healCooldown = 1400;
       player.hp = player.hpMax;
       player.stamina = player.staminaMax;
       player.guard = Math.max(player.guard, 600);
-      addRing(sx, sy, "#74ff8f", 24);
+      addRing(sx, sy, "#74ff8f", worldPx(24));
       burst(sx, sy, "#74ff8f", 12);
       say("隠し泉で回復した");
     }
@@ -199,10 +202,10 @@
     player.invuln = Math.max(player.invuln, 260);
     player.step += 1;
     for (let i = 0; i < 5; i += 1) {
-      moveActor(context, player, dir.x * 7, dir.y * 7);
-      burst(player.x + player.w / 2 - dir.x * 4, player.y + player.h / 2 - dir.y * 4, "#6de4ff", 1);
+      moveActor(context, player, dir.x * worldPx(7), dir.y * worldPx(7));
+      burst(player.x + player.w / 2 - dir.x * worldPx(4), player.y + player.h / 2 - dir.y * worldPx(4), "#6de4ff", 1);
     }
-    addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 18);
+    addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", worldPx(18));
   }
 
   globalThis.DRAGON_HUNTER_PLAYER = {

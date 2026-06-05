@@ -8,6 +8,7 @@
 
   const {
     DASH_COST,
+    WORLD_SCALE,
     armorDefense,
   } = definitions;
 
@@ -32,7 +33,7 @@
 
   function playerMoveSpeed(context) {
     const { player } = requireCombatContext(context);
-    const armorMoveBonus = player.armor >= 1 ? 4 : 0;
+    const armorMoveBonus = player.armor >= 1 ? 4 * WORLD_SCALE : 0;
     const slowPenalty = player.slow > 0 ? 0.72 : 1;
     return (player.speed + armorMoveBonus) * slowPenalty;
   }
