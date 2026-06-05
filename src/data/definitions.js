@@ -83,7 +83,7 @@
     bat: {
       name: "コウモリ",
       hp: 14,
-      atk: 9,
+      atk: 11,
       def: 0,
       speed: 34,
       xp: 14,
@@ -96,7 +96,7 @@
     boar: {
       name: "突進獣",
       hp: 34,
-      atk: 15,
+      atk: 25,
       def: 2,
       speed: 25,
       xp: 24,
@@ -108,7 +108,7 @@
     wisp: {
       name: "火霊",
       hp: 28,
-      atk: 17,
+      atk: 27,
       def: 1,
       speed: 22,
       xp: 32,
@@ -120,7 +120,7 @@
     dragonling: {
       name: "小竜",
       hp: 58,
-      atk: 22,
+      atk: 42,
       def: 5,
       speed: 21,
       xp: 62,
@@ -132,7 +132,7 @@
     guardian: {
       name: "森の守護者",
       hp: 150,
-      atk: 22,
+      atk: 52,
       def: 6,
       speed: 24,
       xp: 180,
@@ -145,7 +145,7 @@
     dragon: {
       name: "赤竜",
       hp: 280,
-      atk: 27,
+      atk: 107,
       def: 7,
       speed: 18,
       xp: 500,

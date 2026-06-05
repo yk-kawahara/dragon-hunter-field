@@ -83,6 +83,87 @@ const {
   makeRect,
 } = mathHelpers;
 
+const mapHelpers = globalThis.DRAGON_HUNTER_MAP;
+if (!mapHelpers) {
+  throw new Error("DRAGON_HUNTER_MAP must be loaded before src/game.js");
+}
+
+function mapContext() {
+  return { state };
+}
+
+const rewardHelpers = globalThis.DRAGON_HUNTER_REWARDS;
+if (!rewardHelpers) {
+  throw new Error("DRAGON_HUNTER_REWARDS must be loaded before src/game.js");
+}
+
+const {
+  rewardIds,
+  savedIdSet,
+} = rewardHelpers;
+
+function rewardContext() {
+  return {
+    player,
+    state,
+    say,
+    burst,
+    addFloater,
+    addRing,
+    refreshDerivedStats,
+  };
+}
+
+const effectHelpers = globalThis.DRAGON_HUNTER_EFFECTS;
+if (!effectHelpers) {
+  throw new Error("DRAGON_HUNTER_EFFECTS must be loaded before src/game.js");
+}
+
+const textHelpers = globalThis.DRAGON_HUNTER_TEXT;
+if (!textHelpers) {
+  throw new Error("DRAGON_HUNTER_TEXT must be loaded before src/game.js");
+}
+
+function effectContext() {
+  return { state, ui, rand };
+}
+
+
+const spawnHelpers = globalThis.DRAGON_HUNTER_SPAWN;
+if (!spawnHelpers) {
+  throw new Error("DRAGON_HUNTER_SPAWN must be loaded before src/game.js");
+}
+
+function spawnContext() {
+  return {
+    state,
+    player,
+    rand,
+    irand,
+    isPassableRect,
+    inTown,
+    say,
+    addRing,
+  };
+}
+
+function textContext() {
+  return {
+    state,
+    player,
+    inTown,
+    currentRegion,
+    areaDangerText,
+    canChallengeDragon,
+    guardianReady,
+    nearestNpc,
+    nearestChest,
+    nearestDiscovery,
+    playerNearCave,
+    tileAt,
+  };
+}
+
 const state = {
   keys: new Set(),
   virtualKeys: new Set(),
@@ -167,361 +248,95 @@ function irand(min, max) {
 }
 
 function tileAt(tx, ty) {
-  if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return TILE_WALL;
-  return state.map[ty * MAP_W + tx];
+  return mapHelpers.tileAt(mapContext(), tx, ty);
 }
 
 function setTile(tx, ty, tile) {
-  if (tx >= 0 && ty >= 0 && tx < MAP_W && ty < MAP_H) {
-    state.map[ty * MAP_W + tx] = tile;
-  }
+  return mapHelpers.setTile(mapContext(), tx, ty, tile);
 }
 
 function isBlockedTile(tile, actor) {
-  if (tile === TILE_WATER) return !actor?.flying;
-  return tile === TILE_TREE || tile === TILE_WALL || tile === TILE_ROOF;
+  return mapHelpers.isBlockedTile(mapContext(), tile, actor);
 }
 
 function inTownTile(tx, ty) {
-  return tx >= 5 && tx <= 18 && ty >= 39 && ty <= 55;
+  return mapHelpers.inTownTile(mapContext(), tx, ty);
 }
 
 function tileInGate(tx, ty) {
-  return TOWN_GATES.some((gate) => tx >= gate.x && tx < gate.x + gate.w && ty >= gate.y && ty < gate.y + gate.h);
-}
-
-function blocksClosedTownGate(actor, tx, ty) {
-  if (!actor?.isMonster || state.townGateOpen) return false;
-  const current = centerOf(actor);
-  const currentTx = Math.floor(current.x / TILE);
-  const currentTy = Math.floor(current.y / TILE);
-  if (inTownTile(currentTx, currentTy)) return false;
-  if (!inTownTile(tx, ty)) return false;
-  return true;
-}
-
-function blocksTownEntry(actor, x, y) {
-  if (!actor?.isMonster) return false;
-  const current = centerOf(actor);
-  const next = { x: x + actor.w / 2, y: y + actor.h / 2 };
-  const currentTile = { x: Math.floor(current.x / TILE), y: Math.floor(current.y / TILE) };
-  const nextTile = { x: Math.floor(next.x / TILE), y: Math.floor(next.y / TILE) };
-  const wasInside = inTownTile(currentTile.x, currentTile.y);
-  const willBeInside = inTownTile(nextTile.x, nextTile.y);
-  if (wasInside === willBeInside) return false;
-  if (!state.townGateOpen) return true;
-  return !(tileInGate(currentTile.x, currentTile.y) || tileInGate(nextTile.x, nextTile.y));
+  return mapHelpers.tileInGate(mapContext(), tx, ty);
 }
 
 function isPassableRect(actor, x = actor.x, y = actor.y) {
-  if (blocksTownEntry(actor, x, y)) return false;
-  const left = Math.floor(x / TILE);
-  const right = Math.floor((x + actor.w - 1) / TILE);
-  const top = Math.floor(y / TILE);
-  const bottom = Math.floor((y + actor.h - 1) / TILE);
-  for (let ty = top; ty <= bottom; ty += 1) {
-    for (let tx = left; tx <= right; tx += 1) {
-      if (isBlockedTile(tileAt(tx, ty), actor)) return false;
-      if (blocksClosedTownGate(actor, tx, ty)) return false;
-    }
-  }
-  return true;
+  return mapHelpers.isPassableRect(mapContext(), actor, x, y);
 }
 
 function createMap() {
-  state.map = Array.from({ length: MAP_W * MAP_H }, () => TILE_GRASS);
-
-  for (let y = 0; y < MAP_H; y += 1) {
-    for (let x = 0; x < MAP_W; x += 1) {
-      const n = hashNoise(x, y);
-      if (x === 0 || y === 0 || x === MAP_W - 1 || y === MAP_H - 1) setTile(x, y, TILE_TREE);
-      else if (n > 0.86) setTile(x, y, TILE_FLOWER);
-      else if (n < 0.06) setTile(x, y, TILE_FIELD);
-    }
-  }
-
-  for (let y = 3; y < MAP_H - 2; y += 1) {
-    const riverX = 44 + Math.floor(Math.sin(y * 0.37) * 4);
-    for (let x = riverX; x < riverX + 4; x += 1) setTile(x, y, TILE_WATER);
-  }
-
-  fillEllipse(16, 15, 9, 7, TILE_TREE);
-  fillEllipse(47, 43, 11, 8, TILE_TREE);
-  fillEllipse(55, 15, 8, 7, TILE_WALL);
-
-  for (let x = 7; x <= 55; x += 1) setTile(x, 49, TILE_PATH);
-  for (let y = 13; y <= 53; y += 1) setTile(11, y, TILE_PATH);
-  for (let y = 39; y <= 55; y += 1) {
-    for (let x = 5; x <= 17; x += 1) setTile(x, y, TILE_FLOOR);
-  }
-  for (let x = 8; x <= 13; x += 1) setTile(x, 49, TILE_PATH);
-  for (let y = 44; y <= 51; y += 1) setTile(16, y, TILE_PATH);
-  placeHouse(6, 40, 5, 5);
-  placeHouse(13, 41, 5, 5);
-  placeHouse(7, 52, 6, 4);
-
-  for (let x = 47; x <= 55; x += 1) {
-    for (let y = 10; y <= 18; y += 1) {
-      if (x === 47 || x === 55 || y === 10 || y === 18) setTile(x, y, TILE_WALL);
-      else setTile(x, y, TILE_PATH);
-    }
-  }
-  setTile(51, 18, TILE_CAVE);
-  setTile(51, 17, TILE_CAVE);
-  ensureRewardSitesReachable();
-
-  state.npcs = [
-    { x: 9 * TILE + 3, y: 47 * TILE + 2, w: 10, h: 12, dir: "down", type: "elder" },
-    { x: 15 * TILE + 4, y: 48 * TILE + 1, w: 10, h: 12, dir: "left", type: "smith" },
-    { x: 13 * TILE + 3, y: 43 * TILE + 2, w: 10, h: 12, dir: "down", type: "healer" },
-  ];
-}
-
-function ensureRewardSitesReachable() {
-  for (const chest of TREASURE_CHESTS) {
-    carveRewardClearing(chest.x, chest.y);
-  }
-  for (const discovery of DISCOVERY_POINTS) {
-    carveRewardClearing(discovery.x, discovery.y);
-  }
-  carveRewardClearing(GUARDIAN_SITE.x, GUARDIAN_SITE.y);
-}
-
-function carveRewardClearing(cx, cy) {
-  for (let y = cy - 1; y <= cy + 1; y += 1) {
-    for (let x = cx - 1; x <= cx + 1; x += 1) {
-      if (x <= 0 || y <= 0 || x >= MAP_W - 1 || y >= MAP_H - 1) continue;
-      const tile = tileAt(x, y);
-      if (tile === TILE_WALL || tile === TILE_ROOF || tile === TILE_TREE || tile === TILE_WATER) {
-        setTile(x, y, inTownTile(x, y) ? TILE_FLOOR : TILE_PATH);
-      }
-    }
-  }
-}
-
-function fillEllipse(cx, cy, rx, ry, tile) {
-  for (let y = cy - ry; y <= cy + ry; y += 1) {
-    for (let x = cx - rx; x <= cx + rx; x += 1) {
-      const dx = (x - cx) / rx;
-      const dy = (y - cy) / ry;
-      if (dx * dx + dy * dy <= 1) setTile(x, y, tile);
-    }
-  }
-}
-
-function placeHouse(tx, ty, tw, th) {
-  for (let y = ty; y < ty + th; y += 1) {
-    for (let x = tx; x < tx + tw; x += 1) {
-      if (y === ty) setTile(x, y, TILE_ROOF);
-      else if (x === tx || x === tx + tw - 1 || y === ty + th - 1) setTile(x, y, TILE_WALL);
-      else setTile(x, y, TILE_FLOOR);
-    }
-  }
-  setTile(tx + Math.floor(tw / 2), ty + th - 1, TILE_FLOOR);
+  return mapHelpers.createMap(mapContext());
 }
 
 function spawnMonster(typeName, x, y) {
-  const template = monsterTypes[typeName];
-  const size = template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11;
-  const monster = {
-    type: typeName,
-    name: template.name,
-    x,
-    y,
-    w: size,
-    h: size,
-    dir: "down",
-    hp: template.hp,
-    hpMax: template.hp,
-    atk: template.atk,
-    def: template.def,
-    speed: template.speed,
-    xp: template.xp,
-    gold: template.gold,
-    color: template.color,
-    shadow: template.shadow,
-    drop: template.drop,
-    flying: Boolean(template.flying),
-    boss: Boolean(template.boss),
-    midboss: Boolean(template.midboss),
-    isMonster: true,
-    contactTimer: rand(0, 300),
-    fireCooldown: rand(900, 1800),
-    windup: 0,
-    chargeTime: 0,
-    chargeCooldown: rand(500, 1200),
-    chargeVector: { x: 0, y: 0 },
-    wanderTimer: rand(500, 1600),
-    vx: 0,
-    vy: 0,
-    hurt: 0,
-    enraged: false,
-    summoned: false,
-    age: 0,
-  };
-  state.monsters.push(monster);
+  return spawnHelpers.spawnMonster(spawnContext(), typeName, x, y);
 }
 
 function spawnIfClear(typeName, x, y) {
-  const template = monsterTypes[typeName];
-  const size = template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11;
-  const actor = { x, y, w: size, h: size, flying: Boolean(template.flying), isMonster: true };
-  if (isPassableRect(actor)) spawnMonster(typeName, x, y);
+  return spawnHelpers.spawnIfClear(spawnContext(), typeName, x, y);
 }
 
 function monsterChoice() {
-  const pool = monsterPoolForRegion(currentRegion());
-  return pool[irand(0, pool.length - 1)];
+  return spawnHelpers.monsterChoice(spawnContext());
 }
 
 function currentRegion() {
-  const tx = Math.floor((player.x + player.w / 2) / TILE);
-  const ty = Math.floor((player.y + player.h / 2) / TILE);
-  if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
-  if (tx > 40) return "east";
-  if (ty < 25) return "north";
-  if (distanceFromVillage() > 330) return "wilds";
-  return "grassland";
+  return spawnHelpers.currentRegion(spawnContext());
 }
 
 function distanceFromVillage() {
-  const townCenterX = 12 * TILE;
-  const townCenterY = 48 * TILE;
-  const pc = centerOf(player);
-  return Math.hypot(pc.x - townCenterX, pc.y - townCenterY);
+  return spawnHelpers.distanceFromVillage(spawnContext());
 }
 
 function monsterPoolForRegion(region) {
-  const lv = player.level;
-  const pool = [...(REGION_SPAWNS[region] || REGION_SPAWNS.grassland).pool];
-  if (lv <= 1) {
-    const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => type !== "dragonling" && type !== "wisp");
-    return safePool.length ? safePool : ["bat", "boar"];
-  }
-  if (lv >= 3 && region === "grassland") pool.push("boar");
-  if (lv >= 4 && region !== "grassland") pool.push("dragonling");
-  return pool;
+  return spawnHelpers.monsterPoolForRegion(spawnContext(), region);
 }
 
 function trySpawnMonster(dt) {
-  if (state.gameOver || state.victory) return;
-  pruneDistantMonsters();
-  state.spawnTimer -= dt;
-  const region = currentRegion();
-  const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
-  const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
-  if (state.spawnTimer > 0 || state.monsters.length >= maxMonsters) return;
-  state.spawnTimer = rand(780, 1320) / regionInfo.danger;
-
-  for (let i = 0; i < 40; i += 1) {
-    const angle = rand(0, Math.PI * 2);
-    const radius = rand(92, 190 + regionInfo.danger * 18);
-    const x = clamp(player.x + Math.cos(angle) * radius, TILE, MAP_W * TILE - TILE * 2);
-    const y = clamp(player.y + Math.sin(angle) * radius, TILE, MAP_H * TILE - TILE * 2);
-    const actor = { x, y, w: 12, h: 12, flying: false };
-    if (inTown(x, y)) continue;
-    if (isPassableRect(actor)) {
-      spawnMonster(monsterChoice(), x, y);
-      return;
-    }
-  }
+  return spawnHelpers.trySpawnMonster(spawnContext(), dt);
 }
 
 function updateRegionSpawns(dt) {
-  if (state.gameOver || state.victory || inTown(player.x, player.y)) return;
-  pruneDistantMonsters();
-  state.regionSpawnTimer = Math.max(0, state.regionSpawnTimer - dt);
-  const region = currentRegion();
-  const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
-  const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
-  const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : 5;
-  if (region !== state.lastRegion) {
-    state.lastRegion = region;
-    state.regionSpawnTimer = 0;
-    say(areaDangerText(region), 1300);
-  }
-  let nearby = countNearbyMonsters(210);
-  if (nearby < target) {
-    pruneDistantMonsters(230);
-    nearby = countNearbyMonsters(210);
-  }
-  if (state.regionSpawnTimer > 0 || state.monsters.length >= maxMonsters) return;
-  state.regionSpawnTimer = 1600;
-  for (let i = nearby; i < target && state.monsters.length < maxMonsters; i += 1) {
-    spawnNearPlayer(region, 105 + i * 16, 235 + i * 10);
-  }
+  return spawnHelpers.updateRegionSpawns(spawnContext(), dt);
 }
 
 function pruneDistantMonsters(maxDistance = 520) {
-  const pc = centerOf(player);
-  state.monsters = state.monsters.filter((monster) => {
-    if (monster.boss || monster.midboss) return true;
-    const mc = centerOf(monster);
-    return Math.hypot(mc.x - pc.x, mc.y - pc.y) < maxDistance;
-  });
+  return spawnHelpers.pruneDistantMonsters(spawnContext(), maxDistance);
 }
 
 function countNearbyMonsters(radius) {
-  const pc = centerOf(player);
-  return state.monsters.filter((monster) => {
-    if (monster.hp <= 0) return false;
-    const mc = centerOf(monster);
-    return Math.hypot(mc.x - pc.x, mc.y - pc.y) < radius;
-  }).length;
+  return spawnHelpers.countNearbyMonsters(spawnContext(), radius);
 }
 
 function spawnNearPlayer(region, minRadius, maxRadius) {
-  const pool = monsterPoolForRegion(region);
-  for (let i = 0; i < 35; i += 1) {
-    const angle = rand(0, Math.PI * 2);
-    const radius = rand(minRadius, maxRadius);
-    const x = clamp(player.x + Math.cos(angle) * radius, TILE, MAP_W * TILE - TILE * 2);
-    const y = clamp(player.y + Math.sin(angle) * radius, TILE, MAP_H * TILE - TILE * 2);
-    if (inTown(x, y)) continue;
-    const type = pool[irand(0, pool.length - 1)];
-    const template = monsterTypes[type];
-    const size = type === "dragonling" ? 14 : 11;
-    const actor = { x, y, w: size, h: size, flying: Boolean(template.flying), isMonster: true };
-    if (isPassableRect(actor)) {
-      spawnMonster(type, x, y);
-      return true;
-    }
-  }
-  return false;
+  return spawnHelpers.spawnNearPlayer(spawnContext(), region, minRadius, maxRadius);
 }
 
 function areaDangerText(region) {
-  if (region === "north") return "北森: 強敵の気配";
-  if (region === "east") return "東の森: 魔力が濃い";
-  if (region === "cave") return "竜洞: 危険";
-  if (region === "wilds") return "荒野: 村から遠い";
-  return "草原: 村の近く";
+  return spawnHelpers.areaDangerText(region);
 }
 
 function guardianReady() {
-  return !state.guardianDefeated && player.level >= 3 && player.scales >= 2;
+  return spawnHelpers.guardianReady(spawnContext());
 }
 
 function playerNearGuardianSite() {
-  const pc = centerOf(player);
-  const gx = (GUARDIAN_SITE.x + 0.5) * TILE;
-  const gy = (GUARDIAN_SITE.y + 0.5) * TILE;
-  return Math.hypot(pc.x - gx, pc.y - gy) < 86;
+  return spawnHelpers.playerNearGuardianSite(spawnContext());
 }
 
 function updateStoryEvents() {
-  if (state.gameOver || state.victory) return;
-  if (guardianReady() && !state.spawnedGuardian && playerNearGuardianSite()) {
-    state.spawnedGuardian = true;
-    spawnMonster("guardian", GUARDIAN_SITE.x * TILE, GUARDIAN_SITE.y * TILE);
-    say("北森の守護者が現れた!", 2600);
-  }
+  return spawnHelpers.updateStoryEvents(spawnContext());
 }
 
 function inTown(x, y) {
-  const tx = Math.floor(x / TILE);
-  const ty = Math.floor(y / TILE);
-  return tx >= 4 && tx <= 19 && ty >= 38 && ty <= 57;
+  return mapHelpers.inTown(mapContext(), x, y);
 }
 
 function playerAttack() {
@@ -573,34 +388,16 @@ function regenRate() {
   return 0.28 + (player.armor >= 3 ? 0.12 : 0) + (player.armor >= 4 ? 0.18 : 0);
 }
 
-function rewardIds(list) {
-  return new Set(list.map((entry) => entry.id));
-}
-
-function savedIdSet(ids, validIds) {
-  return new Set((Array.isArray(ids) ? ids : []).filter((id) => validIds.has(id)));
-}
-
 function grantWeaponAtLeast(rank, upgradedMessage, keptMessage = "既により良い剣を持っている") {
-  const target = clamp(rank, 0, weaponNames.length - 1);
-  if (player.weapon >= target) {
-    say(keptMessage);
-    return false;
-  }
-  player.weapon = target;
-  say(upgradedMessage || `${weaponNames[player.weapon]}を手に入れた`);
-  return true;
+  return rewardHelpers.grantWeaponAtLeast(rewardContext(), rank, upgradedMessage, keptMessage);
 }
 
 function grantArmorAtLeast(rank, upgradedMessage, keptMessage = "既により良い鎧を持っている") {
-  const target = clamp(rank, 0, armorNames.length - 1);
-  if (player.armor >= target) {
-    say(keptMessage);
-    return false;
-  }
-  player.armor = target;
-  say(upgradedMessage || `${armorNames[player.armor]}を手に入れた`);
-  return true;
+  return rewardHelpers.grantArmorAtLeast(rewardContext(), rank, upgradedMessage, keptMessage);
+}
+
+function grantMonsterDefeatDrops(monster) {
+  return rewardHelpers.grantMonsterDefeatDrops(rewardContext(), monster);
 }
 
 function levelUp() {
@@ -1148,10 +945,7 @@ function defeatMonster(monster) {
     addFloater(monster.x + monster.w / 2, monster.y - 14, `${player.combo}連`, "#6de4ff");
   }
 
-  if (Math.random() < monster.drop && !monster.boss) {
-    player.scales = Math.min(3, player.scales + 1);
-    say("竜の鱗を拾った");
-  }
+  grantMonsterDefeatDrops(monster);
 
   if (monster.midboss) {
     state.guardianDefeated = true;
@@ -1161,20 +955,6 @@ function defeatMonster(monster) {
     player.bombs = Math.min(9, player.bombs + 1);
     addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#55c7a0", 42);
     say("封印の紋章を手に入れた!", 4200);
-  }
-
-  if (!monster.boss && !monster.midboss) {
-    const drop = Math.random();
-    if (drop < 0.18) {
-      player.potions = Math.min(9, player.potions + 1);
-      say("薬草を拾った");
-    } else if (drop < 0.29) {
-      player.bombs = Math.min(9, player.bombs + 1);
-      say("火瓶を拾った");
-    } else if (drop < 0.36) {
-      player.wards = Math.min(9, player.wards + 1);
-      say("護符を拾った");
-    }
   }
 
   if (monster.boss) {
@@ -1189,58 +969,23 @@ function defeatMonster(monster) {
 }
 
 function addFloater(x, y, text, color) {
-  state.floaters.push({ x, y, text, color, life: 700, max: 700 });
+  return effectHelpers.addFloater(effectContext(), x, y, text, color);
 }
 
 function addSlash(x, y, dir, color) {
-  state.slashes.push({ x, y, dir, color, life: 180, max: 180 });
+  return effectHelpers.addSlash(effectContext(), x, y, dir, color);
 }
 
 function addRing(x, y, color, radius = 32) {
-  state.rings.push({ x, y, color, radius, life: 360, max: 360 });
+  return effectHelpers.addRing(effectContext(), x, y, color, radius);
 }
 
 function burst(x, y, color, count) {
-  for (let i = 0; i < count; i += 1) {
-    const a = rand(0, Math.PI * 2);
-    const speed = rand(12, 42);
-    state.particles.push({
-      x,
-      y,
-      vx: Math.cos(a) * speed,
-      vy: Math.sin(a) * speed,
-      color,
-      life: rand(240, 640),
-    });
-  }
+  return effectHelpers.burst(effectContext(), x, y, color, count);
 }
 
 function updateEffects(dt) {
-  state.shake = Math.max(0, state.shake - dt);
-  state.floaters = state.floaters.filter((f) => {
-    f.y -= dt * 0.023;
-    f.life -= dt;
-    return f.life > 0;
-  });
-  state.slashes = state.slashes.filter((s) => {
-    s.life -= dt;
-    return s.life > 0;
-  });
-  state.rings = state.rings.filter((r) => {
-    r.life -= dt;
-    return r.life > 0;
-  });
-  state.particles = state.particles.filter((p) => {
-    p.x += p.vx * dt * 0.001;
-    p.y += p.vy * dt * 0.001;
-    p.vy += 28 * dt * 0.001;
-    p.life -= dt;
-    return p.life > 0;
-  });
-
-  if (performance.now() > state.messageUntil) {
-    ui.toast.classList.remove("show");
-  }
+  return effectHelpers.updateEffects(effectContext(), dt);
 }
 
 function contextAction() {
@@ -1393,27 +1138,7 @@ function openChest(chest) {
 }
 
 function grantChestReward(reward) {
-  if (reward === "starter") {
-    player.gold += 45;
-    player.potions = Math.min(9, player.potions + 2);
-    say("宝箱から45Gと薬を見つけた");
-  } else if (reward === "weapon") {
-    player.gold += 30;
-    const rank = Math.min(weaponNames.length - 1, player.weapon + 1);
-    grantWeaponAtLeast(rank, `${weaponNames[rank]}を手に入れた`, "既により良い剣を持っている (+30G)");
-  } else if (reward === "armor") {
-    player.wards = Math.min(9, player.wards + 1);
-    const rank = Math.min(armorNames.length - 1, player.armor + 1);
-    grantArmorAtLeast(rank, `${armorNames[rank]}を手に入れた`, "既により良い鎧を持っている (+護符)");
-  } else if (reward === "ward") {
-    player.bombs = Math.min(9, player.bombs + 2);
-    player.wards = Math.min(9, player.wards + 2);
-    player.regenCharm = true;
-    say("再生の指輪を見つけた");
-  } else if (reward === "scale") {
-    player.scales = Math.min(3, player.scales + 1);
-    say("古い竜の鱗を見つけた");
-  }
+  return rewardHelpers.grantChestReward(rewardContext(), reward);
 }
 
 function nearestNpc() {
@@ -1559,116 +1284,40 @@ function revealDiscovery(discovery) {
   const dx = (discovery.x + 0.5) * TILE;
   const dy = (discovery.y + 0.5) * TILE;
   addRing(dx, dy, "#bafc87", 24);
-  if (discovery.kind === "spring") {
-    player.hp = player.hpMax;
-    player.stamina = player.staminaMax;
-    burst(dx, dy, "#74ff8f", 18);
-    say("隠し泉を見つけた。ここで回復できる");
-  } else if (discovery.kind === "ore") {
-    player.gold += 90;
-    burst(dx, dy, "#d7e2ea", 16);
-    grantWeaponAtLeast(2, "古鉄鉱を見つけ、鉄剣を得た", "古鉄鉱を見つけた。既により良い剣を持っている");
-  } else if (discovery.kind === "cache") {
-    player.hunterCharm = true;
-    refreshDerivedStats();
-    player.stamina = player.staminaMax;
-    player.bombs = Math.min(9, player.bombs + 1);
-    player.wards = Math.min(9, player.wards + 1);
-    burst(dx, dy, "#ffd166", 18);
-    say("狩人の小箱から俊足の印を得た");
-  }
+  grantDiscoveryReward(discovery, dx, dy);
+}
+
+function grantDiscoveryReward(discovery, x, y) {
+  return rewardHelpers.grantDiscoveryReward(rewardContext(), discovery, x, y);
 }
 
 function gainFoundItem(tile) {
-  const roll = Math.random();
-  if (tile === TILE_FIELD || roll < 0.58) {
-    player.potions = Math.min(9, player.potions + 1);
-    say("薬草を見つけた");
-  } else if (roll < 0.84) {
-    player.bombs = Math.min(9, player.bombs + 1);
-    say("火瓶を見つけた");
-  } else {
-    player.wards = Math.min(9, player.wards + 1);
-    say("護符を見つけた");
-  }
+  return rewardHelpers.gainFoundItem(rewardContext(), tile);
 }
-
 function useSelectedItem() {
-  if (player.selectedItem === "potion") usePotion();
-  if (player.selectedItem === "bomb") useBomb();
-  if (player.selectedItem === "ward") useWard();
+  return rewardHelpers.useSelectedItem(rewardContext());
 }
 
 function usePotion() {
-  if (player.hp <= 0) return;
-  if (player.hp >= player.hpMax) {
-    say("HPは満タンだ");
-    return;
-  }
-  if (player.potions <= 0) {
-    say("薬がない");
-    return;
-  }
-  player.potions -= 1;
-  player.hp = Math.min(player.hpMax, player.hp + 30 + player.level * 6);
-  burst(player.x + player.w / 2, player.y + player.h / 2, "#74ff8f", 10);
-  say("薬を使った");
+  return rewardHelpers.usePotion(rewardContext());
 }
 
 function useBomb() {
-  if (player.hp <= 0) return;
-  if (player.bombs <= 0) {
-    say("火瓶がない");
-    return;
-  }
-  player.bombs -= 1;
-  const pc = centerOf(player);
-  const radius = 46;
-  const damage = 30 + player.level * 8 + player.weapon * 5;
-  let hitCount = 0;
-  for (const monster of state.monsters) {
-    const mc = centerOf(monster);
-    const dist = Math.hypot(mc.x - pc.x, mc.y - pc.y);
-    if (dist <= radius) {
-      const dealt = Math.max(8, Math.round(damage * (1 - dist / (radius * 1.8))));
-      monster.hp -= dealt;
-      monster.hurt = 180;
-      hitCount += 1;
-      addFloater(mc.x, mc.y - 4, String(dealt), "#ffef8a");
-      burst(mc.x, mc.y, "#ff8a3d", monster.boss ? 12 : 8);
-    }
-  }
-  state.shake = 180;
-  addRing(pc.x, pc.y, "#ff8a3d", radius);
-  burst(pc.x, pc.y, "#ff8a3d", 26);
-  say(hitCount ? `火瓶が${hitCount}体を巻き込んだ` : "火瓶が炸裂した");
+  return rewardHelpers.useBomb(rewardContext());
 }
 
 function useWard() {
-  if (player.hp <= 0) return;
-  if (player.wards <= 0) {
-    say("護符がない");
-    return;
-  }
-  player.wards -= 1;
-  player.guard = 5200 + (player.armor >= 3 ? 1400 : 0);
-  player.invuln = Math.max(player.invuln, 500);
-  addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 28);
-  burst(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 16);
-  say("護符をかざした");
+  return rewardHelpers.useWard(rewardContext());
 }
 
 function selectItem(item) {
-  if (!itemOrder.includes(item)) return;
-  player.selectedItem = item;
+  return rewardHelpers.selectItem(rewardContext(), item);
 }
 
 function cycleItem(step) {
-  const index = itemOrder.indexOf(player.selectedItem);
-  player.selectedItem = itemOrder[(index + step + itemOrder.length) % itemOrder.length];
-  const names = { potion: "薬", bomb: "火瓶", ward: "護符" };
-  say(`${names[player.selectedItem]}を選んだ`, 900);
+  return rewardHelpers.cycleItem(rewardContext(), step);
 }
+
 
 function showStats() {
   const page = statsPanelPages()[state.statsPage];
@@ -2712,70 +2361,31 @@ function drawScreenGrade(cam) {
 }
 
 function objectiveText() {
-  const stage = gameStage();
-  if (stage === "cleared") return "CLEAR: 村に朝が戻った";
-  if (stage === "report") return "目的: 村へ戻って長老に報告";
-  if (stage === "dragon") return "目的: 洞穴の赤竜を倒す";
-  if (stage === "cave") return "目的: 北東の竜洞へ向かう";
-  if (stage === "guardian") return "目的: 北森の守護者を倒す";
-  if (stage === "level") return `目的: LV${BOSS_REQUIREMENTS.level}まで鍛える`;
-  if (stage === "ruin") return "目的: 北森の遺跡を探す";
-  const unopened = TREASURE_CHESTS.length - state.chests.size;
-  const hidden = DISCOVERY_POINTS.length - state.discoveries.size;
-  return `目的: 竜の鱗 ${player.scales}/${BOSS_REQUIREMENTS.scales} 宝${unopened} 隠${hidden}`;
+  return textHelpers.objectiveText(textContext());
 }
 
 function guidanceText() {
-  if (inTown(player.x, player.y)) {
-    if (player.hp < player.hpMax) return "安全: 回復陣で全快できる";
-    const nextCost = nextUpgradeCost();
-    if (nextCost > 0 && player.gold < nextCost) return `準備: ${nextCost}Gで次の装備`;
-    if (nextCost > 0) return "準備: 鍛冶屋で生存圏を広げる";
-    return "安全: 外へ出てより遠くを目指す";
-  }
-  const hpRate = player.hp / player.hpMax;
-  if (hpRate < 0.35) return "危険: 村へ戻って立て直す";
-  const stage = gameStage();
-  if (stage === "scales") return player.armor === 0 ? "近場で稼ぎ 革鎧を買う" : "遠方ほど鱗と報酬が良い";
-  if (stage === "ruin") return "北森の遺跡で守護者の手掛かり";
-  if (stage === "level") return "強敵で鍛え 装備も更新";
-  if (stage === "guardian") return "北森は準備して挑む";
-  if (stage === "cave") return "北東の竜洞へ";
-  if (stage === "dragon") return "炎と接触に注意";
-  if (stage === "report") return "村は安全 長老へ";
-  return areaDangerText(currentRegion());
+  return textHelpers.guidanceText(textContext());
 }
 
 function nextUpgradeCost() {
-  const target = player.armor <= player.weapon ? "armor" : "weapon";
-  const rank = player[target] + 1;
-  if (rank >= weaponNames.length) return 0;
-  return target === "weapon" ? weaponCosts[rank] : armorCosts[rank];
+  return textHelpers.nextUpgradeCost(textContext());
 }
 
 function gameStage() {
-  if (state.elderReported) return "cleared";
-  if (state.victory || state.bossDefeated) return "report";
-  if (state.spawnedBoss) return "dragon";
-  if (canChallengeDragon()) return "cave";
-  if (!state.guardianDefeated && guardianReady()) return "guardian";
-  if (player.scales >= BOSS_REQUIREMENTS.scales && player.level < BOSS_REQUIREMENTS.level) return "level";
-  if (player.scales >= 2 && !state.guardianDefeated) return "ruin";
-  return "scales";
+  return textHelpers.gameStage(textContext());
 }
 
 function stageName(stage) {
-  const names = {
-    scales: "鱗集め",
-    ruin: "北森探索",
-    level: "鍛錬",
-    guardian: "守護者",
-    cave: "竜洞",
-    dragon: "赤竜戦",
-    report: "報告",
-    cleared: "クリア",
-  };
-  return names[stage] || "旅";
+  return textHelpers.stageName(stage);
+}
+
+function contextPromptText() {
+  return textHelpers.contextPromptText(textContext());
+}
+
+function npcRoleName(type) {
+  return textHelpers.npcRoleName(type);
 }
 
 function drawObjective() {
@@ -2792,27 +2402,6 @@ function drawObjective() {
   ctx.fillText(text, 9, 14);
   ctx.fillStyle = inTown(player.x, player.y) ? "#74ff8f" : player.hp / player.hpMax < 0.35 ? "#ff8a3d" : "#d7e2ea";
   ctx.fillText(guide, 9, 24);
-}
-
-function contextPromptText() {
-  const npc = nearestNpc();
-  if (npc) return `話す: ${npcRoleName(npc.type)}`;
-  const chest = nearestChest();
-  if (chest) return "調べる: 宝箱";
-  if (nearestDiscovery()) return "調べる: 気になる場所";
-  if (playerNearCave()) return canChallengeDragon() ? "入る: 竜洞" : "封印: 条件不足";
-  const tx = Math.floor((player.x + player.w / 2) / TILE);
-  const ty = Math.floor((player.y + player.h / 2) / TILE);
-  const tile = tileAt(tx, ty);
-  if (tile === TILE_FLOWER || tile === TILE_FIELD) return "採取: 旅道具";
-  return "";
-}
-
-function npcRoleName(type) {
-  if (type === "elder") return "長老";
-  if (type === "smith") return "鍛冶屋";
-  if (type === "healer") return "薬師";
-  return "人";
 }
 
 function drawContextPrompt() {
@@ -2858,12 +2447,10 @@ function drawHud() {
   drawItemChip(183, VIEW_H + 5);
   drawMiniCompass(216, VIEW_H + 8);
 }
-
 function selectedItemCount() {
-  if (player.selectedItem === "potion") return player.potions;
-  if (player.selectedItem === "bomb") return player.bombs;
-  return player.wards;
+  return rewardHelpers.selectedItemCount(rewardContext());
 }
+
 
 function drawItemChip(x, y) {
   const labels = { potion: "薬", bomb: "爆", ward: "護" };
