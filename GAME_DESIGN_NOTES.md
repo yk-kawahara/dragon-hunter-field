@@ -203,6 +203,49 @@ Old mobile-style contact-combat action RPG where the player leaves a safe villag
 The dragon quest is the current clear objective, but the deeper design goal is the feeling of becoming strong enough to survive farther from the village.
 
 
+\## Replanning Thesis: From Complete Loop To Memorable Route
+
+The current game has the necessary skeleton for a complete browser RPG: village, field combat, rewards, equipment, save/load, Guardian, Red Dragon, and clear reporting.
+
+The next design goal is to turn that skeleton into a memorable survival route.
+
+Target 20-30 minute slice:
+
+1\. The player starts in the safe village and learns that the dragon route is too dangerous now.
+2\. The player farms village-outskirts enemies, retreats often, and buys the first armor/weapon upgrade.
+3\. The player pushes into grassland and North Forest pressure, learning that distance from town means danger and better reward.
+4\. The player reaches the river/east route and finds a sustain or survivability reward that extends exploration time.
+5\. The player optionally explores east/southeast fixed-map space for a reward or shortcut that makes the final route feel earned.
+6\. The player defeats the North Forest Guardian, enters the dragon cave, beats the Red Dragon, then reports to the elder.
+
+The ideal feeling is not "I checked every requirement."
+
+The ideal feeling is:
+
+\* "I used to be scared outside town."
+\* "My new gear made old enemies manageable."
+\* "I can now survive this farther route."
+\* "The dragon cave is dangerous, but I prepared for it."
+
+\## Fixed Map Area Roles
+
+The fixed world should support memory and route planning:
+
+\* Village: safe base, full recovery, smith, healer, elder, save confidence.
+\* Village outskirts: painful but fair early enemies, first gold loop, retreat practice.
+\* Grassland/Wilds: longer travel pressure, mixed enemies, better drops than the outskirts.
+\* North Forest: first serious survival gate, Guardian pressure, seal crest.
+\* River/East route: mid-game sustain, ranged danger, optional exploration rewards.
+\* East/Southeast expansion: next content target; should become a deliberate risky route with a reward that extends survivable range.
+\* Dragon cave: final danger route and Red Dragon arena.
+
+Reward philosophy:
+
+\* Rewards should change where the player can safely go.
+\* Plain gold is useful near the village, but deeper rewards should feel like new survivability, route access, sustain, or protection.
+\* One-time rewards must remain persistent across save/load and must never downgrade equipment.
+
+
 
 \# Core Fun
 
@@ -895,6 +938,7 @@ The code is now expected to be organized as:
 ```text
 src/data/
   definitions.js  Static constants, tiles, equipment data, monster definitions, treasure/discovery definitions.
+  maps/world.js   Human-editable fixed world map rows and map object placements.
 
 src/core/
   math.js         Pure math/geometry helpers.
@@ -902,7 +946,7 @@ src/core/
   context.js      Context factory that wires state/player/helpers into each system.
 
 src/systems/
-  map.js          Map generation, tile access, town/gate/collision helpers.
+  map.js          Map data loading, validation, tile access, town/gate/collision helpers.
   spawn.js        Region selection, monster spawning, regional replenishment, Guardian spawn story events.
   monsters.js     Enemy AI, contact combat, contact status effects, monster defeat, level-up side effects.
   combat.js       Player combat/stat calculations and equipment multipliers.

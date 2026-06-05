@@ -17,6 +17,39 @@ Current focus:
 * Prepare `src/game.js` for safe behavior-neutral refactoring before major new systems are added.
 ---
 
+## Replanning Snapshot - 2026-06-05
+
+Current diagnosis:
+
+* The technical foundation is much healthier than before: gameplay systems are split into `src/data`, `src/core`, and `src/systems`, and the world is now a fixed hand-editable map in `src/data/maps/world.js`.
+* Automated VM smoke coverage is useful and repeatable, especially for script order, fixed-map reachability, save/load, one-time rewards, equipment anti-downgrade, Guardian, Red Dragon, and elder report.
+* The biggest remaining risk is not another missing subsystem. It is whether the game feels good in a real browser from a fresh save: movement, UI fit, player sprite readability, village relief, gold/EXP pace, enemy pressure, and the final route.
+* The biggest design opportunity is turning the new fixed east/southeast map space into a memorable survival-range route instead of empty expansion terrain.
+
+Next development order:
+
+1. **Real Browser QA Checkpoint**
+   Verify startup, rendering, input, sprite frames, UI fit, save/load, village safety, and full route flow in desktop and mobile-like viewports. Fix regressions before adding content.
+
+2. **Survival Route Content Pass**
+   Use the fixed map to create a clearer 20-30 minute route: village outskirts -> grassland gear farming -> north/river pressure -> east/southeast optional reward -> Guardian -> cave -> dragon -> elder report.
+
+3. **Survival-Range Reward Pass**
+   Add or tune one high-value exploration reward that changes where the player can safely go. Prefer sustain, damage reduction, shortcut access, local healing, or enemy-specific protection over plain gold.
+
+4. **Readable Command/UI Pass**
+   Improve how the player checks equipment, items, regeneration, boss requirements, and current objective. Keep the old mobile RPG feel; prioritize readable decisions over decoration.
+
+5. **Polish After Loop Validation**
+   Player art, audio, ending text, extra enemies, and extra quests should follow only after the survival route feels coherent.
+
+Planning constraints:
+
+* Do not reintroduce random or noise-based terrain generation.
+* Terrain edits belong in `src/data/maps/world.js`; regenerate `docs/world-map-preview.png` / `.svg` after map edits.
+* Use `WORLD_OBJECTS` for future map object migration where practical, but do not start a broad data migration unless it directly helps gameplay or editing.
+* Do not split architecture further just for tidiness. Verification and gameplay feel now matter more than file-count changes.
+
 
 
 ## Current Refactor Handoff Status
@@ -518,6 +551,8 @@ Current automated verification:
 * Script-order VM smoke passes for all 22 `index.html` scripts, including `src/data/maps/world.js` and `src/data/audio.js`.
 * Save/load VM smoke passes for opened chests, discoveries, equipment, charms, boss flags, elder report state, and weak-equipment anti-downgrade guards.
 * Fixed map preview exists at `docs/world-map-preview.png` / `docs/world-map-preview.svg` and was visually inspected for the village, North Forest, river, dragon cave, and east/southeast expansion.
+* `scripts/verify-game-smoke.js` now provides repeatable VM verification for script order, map reachability, save/load, equipment anti-downgrade, Guardian, Red Dragon, and elder report flow.
+* `scripts/generate-map-preview.ps1` regenerates both PNG and SVG fixed-map previews.
 
 Still required:
 

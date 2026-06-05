@@ -144,3 +144,43 @@
 - VM script-order smoke passed by loading all 22 `index.html` scripts in order with DOM/canvas/audio stubs. This confirms `src/data/maps/world.js` and `src/data/audio.js` are documented and loaded in the expected order.
 - VM save/load persistence smoke passed for opened chests, discovered rewards, equipment ranks, scales, seal crest, hunter charm, regeneration charm, Guardian defeated state, dragon defeated state, elder report state, and weaker equipment anti-downgrade guards.
 - Remaining risk: actual browser desktop/mobile QA and a full manual playthrough still require browser interaction that is not available in this tool session.
+
+## 2026-06-05 Verification Script Pass
+- Added `scripts/verify-game-smoke.js` as a repeatable VM verification entrypoint for high-priority non-browser checks.
+- The smoke script verifies:
+  - `index.html` script order.
+  - Fixed map data loading and reachability.
+  - NPC placement from `WORLD_OBJECTS`.
+  - Save/load persistence for chests, discoveries, equipment, charms, boss flags, and elder report state.
+  - Equipment anti-downgrade guards.
+  - Guardian spawn/defeat, seal crest grant, dragon challenge, dragon defeat, victory state, and elder report clear state.
+  - Full `index.html` script-load smoke with DOM/canvas/audio stubs.
+- Added `scripts/generate-map-preview.js` for SVG preview regeneration and `scripts/generate-map-preview.ps1` for PNG/SVG preview regeneration.
+- Ran both preview generators successfully and visually inspected `docs/world-map-preview.png`.
+- `scripts/verify-game-smoke.js` passed with `guardianDefeated`, `bossDefeated`, and `elderReported` all true.
+
+## 2026-06-05 Replanning Documentation Pass
+- Reviewed the current management docs and current project state for a planning-only pass.
+- Current diagnosis: the project now has a stronger technical base than before, with behavior split across `src/data`, `src/core`, and `src/systems`, a fixed map in `src/data/maps/world.js`, repeatable VM smoke coverage, persistent one-time rewards, and equipment anti-downgrade protection.
+- Current main risk: real browser and full manual playthrough QA are still not complete. VM checks can prove many invariants, but they cannot fully verify screen fit, sprite readability, movement feel, village relief, audio/asset loading feel, or the 20-30 minute route.
+- Current main design gap: the fixed east/southeast expansion exists but still needs a clear gameplay purpose. It should become a deliberate survival-range destination with stronger danger and a reward that helps the player survive farther from the village.
+- Updated `IMPROVEMENT_PLAN.md` with a new replanning snapshot and next development order: browser QA, survival route content pass, survival-range reward pass, readable command/UI pass, then polish.
+- Updated `GAME_DESIGN_NOTES.md` with a target 20-30 minute route, fixed-map area roles, and reward philosophy focused on expanding survivable range rather than only granting gold.
+- Updated `TODO.md` with a current next-work-order section separating Critical, High, and Medium/Deferred items.
+- Updated `NEXT_CODEX_TASK.md` with the recommended next development pass, including the branch between browser-QA-first work and safe non-browser content work.
+- No gameplay code was intentionally changed in this pass.
+
+## 2026-06-05 Real Browser Rendering QA
+- Ran bundled Node syntax checks for all JavaScript files under `src/` and `scripts/`; all passed.
+- Ran `scripts/verify-game-smoke.js`; it passed with `guardianDefeated`, `bossDefeated`, and `elderReported` all true.
+- The in-app Browser connection still failed in this environment with the same Windows browser-session startup issue seen previously.
+- Used Microsoft Edge headless as a real browser engine fallback and loaded `index.html` through a `file://` URL.
+- Desktop viewport screenshot succeeded at `docs/browser-qa-desktop.png`.
+- Mobile portrait viewport screenshot succeeded at `docs/browser-qa-mobile.png`.
+- Mobile landscape-like screenshot succeeded at `docs/browser-qa-landscape.png`.
+- Result: the game boots and renders in a real browser engine. Canvas, village map, player sprite, HUD, command buttons, touch controls, and status panels are visible.
+- Desktop result: playable-looking initial screen with no black screen or missing primary assets.
+- Mobile portrait result: the game renders, but horizontal overflow is visible; the right side of the play area/action controls is clipped unless the page is scrolled or the layout is adjusted.
+- Mobile landscape result: the main screen renders, but vertical scrolling is still needed to reach touch controls.
+- Edge startup log check did not find fatal game script errors such as `Uncaught`, `ReferenceError`, `TypeError`, `SyntaxError`, or missing local files. The only captured warning was an Edge registry observation warning unrelated to the game.
+- Remaining risk: this pass verified real browser rendering through screenshots, not live manual input. Keyboard/touch movement, combat interaction, save/load UI, and full fresh-save playthrough should still be tested interactively.

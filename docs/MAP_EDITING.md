@@ -74,3 +74,16 @@ Then verify:
 * Browser visual QA still passes.
 
 Regenerate the map preview after terrain edits so the whole world can be inspected quickly.
+
+Use:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-map-preview.ps1
+```
+
+The Node version updates the SVG preview only:
+
+```powershell
+$node='C:\Users\nanai\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+& $node scripts/generate-map-preview.js
+```

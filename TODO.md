@@ -1,5 +1,31 @@
 # TODO
 
+## Current Replan - Next Work Order
+
+This is the recommended order for the next development passes. Do not treat the older TODO sections as a strict top-to-bottom checklist.
+
+### Critical
+
+* Run interactive desktop browser QA and confirm keyboard movement, action/context input, combat, save/load UI, and full route flow.
+* Fix mobile layout overflow found in Edge rendering QA: portrait clips the right side of the play/action area, and landscape still requires vertical scrolling to reach touch controls.
+* Perform a fresh-save manual route test: village -> outskirts gear farming -> North Forest/river -> Guardian -> dragon cave -> Red Dragon -> elder report.
+* Verify that the fixed 80x72 map feels navigable in motion, especially village gates, North Forest access, river/east access, dragon cave access, and east/southeast expansion.
+
+### High
+
+* Turn the east/southeast expansion into a deliberate survival-range destination rather than unused space.
+* Add or tune one exploration reward that extends survivable range, such as local recovery, sustain, damage reduction, shortcut access, or area-specific protection.
+* Balance gold/EXP/shop prices so the first armor purchase, level 4 timing, Guardian readiness, and dragon readiness feel natural in a normal playthrough.
+* Improve equipment/item review only where it helps decisions: current gear, next upgrade value, regeneration, boss requirements, and progression items.
+* Add a short elder ending/report sequence after the survival route is verified.
+
+### Medium / Deferred
+
+* Add equipment inventory only if future rewards introduce sidegrade choices rather than simple rank upgrades.
+* Add more enemies, quests, or bosses only after browser QA and the core survival route feel good.
+* Continue player art polish one frame at a time under `assets/player/`, but do not let sprite polish outrank route/balance fixes.
+* Move more map objects into `WORLD_OBJECTS` only when it directly improves hand editing or reduces placement bugs.
+
 ## Done This Pass
 
 * Fixed a concise progression plan.
@@ -57,6 +83,8 @@
 * Updated script-order documentation to include `src/data/maps/world.js` and `src/data/audio.js`.
 * Verified `index.html` script order with a VM DOM/canvas/audio smoke test.
 * Verified save/load persistence for chests, discoveries, equipment, charms, boss flags, and elder report state with a VM smoke test.
+* Added `scripts/verify-game-smoke.js` for repeatable VM checks covering script order, map reachability, save/load, equipment anti-downgrade, Guardian, Red Dragon, and elder report flow.
+* Added `scripts/generate-map-preview.js` and `scripts/generate-map-preview.ps1` for regenerating fixed-map previews after terrain edits.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -102,7 +130,7 @@
 
 ## Remaining High Priority
 
-* Run real desktop and mobile browser visual QA when browser automation is available.
+* Run interactive desktop and mobile browser play QA when browser automation is available.
 * Perform a full manual playthrough from new save to red dragon clear and elder report.
 * Real-browser verify save/load UI behavior after opened chests, discoveries, equipment upgrades, boss defeat, and elder report.
 * Continue balance testing for whether gold, EXP, medicines, and shop prices make the first armor purchase and level 4 timing feel natural.
@@ -185,6 +213,7 @@
 
 * Browser visual test on desktop and mobile viewport.
 * Regenerate `docs/world-map-preview.png` after future terrain edits.
+* Run `scripts/verify-game-smoke.js` after future behavior or map edits.
 * Balance a full playthrough from level 1 to dragon clear.
 * Manually verify that first armor purchase timing feels natural in browser play.
 * Tune EXP and gold so a normal run reaches level 4 naturally.
