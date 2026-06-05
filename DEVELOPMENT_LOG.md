@@ -70,3 +70,17 @@
 - Cycle 13 verification: bundled Node syntax checks passed for `src/core/math.js`, `src/data/definitions.js`, and `src/game.js`; `git diff --check` passed; VM smoke checks passed for math helper loading, helper behavior, static reward reachability, region pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
 - Cycle 13 remaining risk: real browser visual QA remains pending because Browser tooling was not available in this turn.
 - Cycle 13 Git status: final commit/push is pending because escalated command approval was blocked by the Codex usage limit after implementation and verification.
+
+
+## 2026-06-05 Refactor Handoff Update
+- Completed a large behavior-neutral extraction phase after the earlier definitions/math preparation passes.
+- Expected architecture now separates static data, core helpers, runtime context creation, and gameplay systems.
+- Added/expected core files: `src/core/state.js` and `src/core/context.js` in addition to `src/core/math.js`.
+- Added/expected system files: `map.js`, `spawn.js`, `monsters.js`, `combat.js`, `player.js`, `actions.js`, `rewards.js`, `projectiles.js`, `npc.js`, `save.js`, `effects.js`, `text.js`, `render.js`, `ui.js`, and `controls.js`.
+- `src/game.js` should now function primarily as the entrypoint/司令塔: DOM binding, helper lookup, state/player creation, thin facades, main loop, and init.
+- `src/systems/monsters.js` is the final large extraction target for this phase and owns enemy AI, contact combat, contact status effects, monster defeat, and level-up side effects.
+- `src/core/context.js` owns the context factory wiring that supplies state/player/helpers to each system.
+- The refactor intentionally preserves non-module script loading via `globalThis.DRAGON_HUNTER_*` to keep direct browser loading viable.
+- No gameplay design changes are intended by this handoff update.
+- Next session should prioritize verification over feature work: syntax checks for all JS files, `git diff --check`, browser startup, desktop/mobile smoke QA, save/load, enemy AI, contact combat, projectiles, Guardian defeat, red dragon defeat, and elder report.
+- Real browser QA and full manual playthrough remain required before new gameplay content or further architecture changes.

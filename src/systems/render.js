@@ -1,0 +1,1177 @@
+"use strict";
+
+(() => {
+  const definitions = globalThis.DRAGON_HUNTER_DEFINITIONS;
+  if (!definitions) {
+    throw new Error("DRAGON_HUNTER_DEFINITIONS must be loaded before render helpers");
+  }
+
+  const mathHelpers = globalThis.DRAGON_HUNTER_MATH;
+  if (!mathHelpers) {
+    throw new Error("DRAGON_HUNTER_MATH must be loaded before render helpers");
+  }
+
+  const {
+    W,
+    H,
+    VIEW_H,
+    HUD_H,
+    TILE,
+    HEAL_CIRCLE,
+    TOWN_GATES,
+    TREASURE_CHESTS,
+    DISCOVERY_POINTS,
+    GUARDIAN_SITE,
+    TILE_GRASS,
+    TILE_PATH,
+    TILE_WATER,
+    TILE_TREE,
+    TILE_WALL,
+    TILE_ROOF,
+    TILE_FLOOR,
+    TILE_CAVE,
+    TILE_FLOWER,
+    TILE_FIELD,
+  } = definitions;
+
+  const {
+    clamp,
+    hashNoise,
+    centerOf,
+  } = mathHelpers;
+
+  let canvas;
+  let ctx;
+  let ui;
+  let state;
+  let player;
+  let getCamera;
+  let tileAt;
+  let inTownTile;
+  let inTown;
+  let currentRegion;
+  let areaDangerText;
+  let objectiveText;
+  let guidanceText;
+  let contextPromptText;
+  let selectedItemCount;
+
+  function useRenderContext(context) {
+    if (!context?.canvas || !context?.ctx || !context?.ui || !context?.state || !context?.player) {
+      throw new Error("render helpers require { canvas, ctx, ui, state, player }");
+    }
+    if (!context.getCamera || !context.tileAt || !context.inTownTile || !context.inTown) {
+      throw new Error("render helpers require map/camera helpers");
+    }
+    if (!context.currentRegion || !context.areaDangerText || !context.objectiveText || !context.guidanceText || !context.contextPromptText || !context.selectedItemCount) {
+      throw new Error("render helpers require text/status helpers");
+    }
+    ({
+      canvas,
+      ctx,
+      ui,
+      state,
+      player,
+      getCamera,
+      tileAt,
+      inTownTile,
+      inTown,
+      currentRegion,
+      areaDangerText,
+      objectiveText,
+      guidanceText,
+      contextPromptText,
+      selectedItemCount,
+    } = context);
+  }
+
+function draw(context) {
+  useRenderContext(context);
+  const cam = getCamera();
+  ctx.clearRect(0, 0, W, H);
+  drawWorld(cam);
+  drawWorldAtmosphere(cam);
+  drawFieldDetails(cam);
+  drawTownDetails(cam);
+  drawVillageRoleMarkers(cam);
+  drawHealCircle(cam);
+  drawTownFence(cam);
+  drawTownGates(cam);
+  drawChests(cam);
+  drawDiscoveries(cam);
+  drawGuardianSite(cam);
+  drawNpcs(cam);
+  drawEntities(cam);
+  drawEffects(cam);
+  drawScreenGrade(cam);
+  drawObjective();
+  drawContextPrompt();
+  drawHud();
+  drawInfoPanel();
+
+  if (state.gameOver) drawOverlay("GAME OVER", "R");
+  if (state.victory && !state.elderReported) drawVictoryBanner();
+  if (state.elderReported) drawOverlay("QUEST CLEAR", "CLEAR");
+}
+
+function drawInfoPanel() {
+  const panel = state.infoPanel;
+  if (!panel || performance.now() > panel.until) return;
+  const x = 37;
+  const y = 17;
+  const w = 166;
+  const h = 58;
+  ctx.fillStyle = "rgba(5, 8, 18, 0.9)";
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = "#6de4ff";
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = "#ffd166";
+  ctx.font = "9px monospace";
+  ctx.textAlign = "left";
+  ctx.fillText(panel.title, x + 7, y + 12);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "8px monospace";
+  for (let i = 0; i < panel.lines.length; i += 1) {
+    ctx.fillText(panel.lines[i], x + 7, y + 25 + i * 11);
+  }
+}
+
+function drawWorld(cam) {
+  const startX = Math.floor(cam.x / TILE);
+  const startY = Math.floor(cam.y / TILE);
+  const endX = Math.ceil((cam.x + W) / TILE);
+  const endY = Math.ceil((cam.y + VIEW_H) / TILE);
+  for (let ty = startY; ty <= endY; ty += 1) {
+    for (let tx = startX; tx <= endX; tx += 1) {
+      drawTile(tileAt(tx, ty), tx * TILE - cam.x, ty * TILE - cam.y, tx, ty);
+    }
+  }
+}
+
+function drawWorldAtmosphere(cam) {
+  const time = performance.now();
+  const tx = Math.floor((player.x + player.w / 2) / TILE);
+  const ty = Math.floor((player.y + player.h / 2) / TILE);
+
+  if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) {
+    ctx.fillStyle = "rgba(75, 24, 18, 0.22)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 12; i += 1) {
+      const x = (i * 29 + Math.floor(time / 90)) % W;
+      const y = (i * 17 + Math.floor(time / 140)) % VIEW_H;
+      ctx.fillStyle = i % 2 ? "#ff9a3d" : "#ffd166";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (tx > 38 || ty < 24) {
+    ctx.fillStyle = "rgba(8, 40, 24, 0.12)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 10; i += 1) {
+      const x = (i * 37 + Math.floor(time / 130)) % W;
+      const y = (i * 19 + Math.floor(time / 210)) % VIEW_H;
+      ctx.fillStyle = "#bafc87";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+}
+
+function drawTownDetails(cam) {
+  drawWell(8 * TILE - cam.x, 46 * TILE - cam.y);
+  drawBench(9 * TILE - cam.x, 50 * TILE - cam.y, "x");
+  drawBench(14 * TILE - cam.x, 50 * TILE - cam.y, "x");
+  drawCrates(16 * TILE - cam.x, 52 * TILE - cam.y);
+  drawFlowerBed(6 * TILE - cam.x, 51 * TILE - cam.y);
+  drawFlowerBed(14 * TILE - cam.x, 45 * TILE - cam.y);
+  drawLamp(17 * TILE - cam.x, 46 * TILE - cam.y);
+  drawLamp(6 * TILE - cam.x, 46 * TILE - cam.y);
+  drawSign(12 * TILE - cam.x, 48 * TILE - cam.y);
+}
+
+function drawVillageRoleMarkers(cam) {
+  drawRoleMarker(9 * TILE - cam.x, 46 * TILE - cam.y, "長", "#fff2a6");
+  drawRoleMarker(15 * TILE - cam.x, 47 * TILE - cam.y, "鍛", "#ffd166");
+  drawRoleMarker(13 * TILE - cam.x, 42 * TILE - cam.y, "薬", "#74ff8f");
+  drawRoleMarker(HEAL_CIRCLE.x * TILE - cam.x, (HEAL_CIRCLE.y - 1) * TILE - cam.y, "回", "#6de4ff");
+  for (const gate of TOWN_GATES) {
+    drawRoleMarker(gate.x * TILE - cam.x, (gate.y - 1) * TILE - cam.y, state.townGateOpen ? "開" : "門", state.townGateOpen ? "#ffd166" : "#d7e2ea");
+  }
+}
+
+function drawRoleMarker(sx, sy, text, color) {
+  if (sx < -16 || sy < -16 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(5, 8, 18, 0.72)";
+  ctx.fillRect(sx + 1, sy + 1, 10, 10);
+  ctx.strokeStyle = color;
+  ctx.strokeRect(sx + 1, sy + 1, 10, 10);
+  ctx.font = "8px monospace";
+  ctx.textAlign = "left";
+  ctx.fillStyle = color;
+  ctx.fillText(text, sx + 3, sy + 9);
+}
+
+function drawFieldDetails(cam) {
+  const startX = Math.floor(cam.x / TILE);
+  const startY = Math.floor(cam.y / TILE);
+  const endX = Math.ceil((cam.x + W) / TILE);
+  const endY = Math.ceil((cam.y + VIEW_H) / TILE);
+  for (let ty = startY; ty <= endY; ty += 1) {
+    for (let tx = startX; tx <= endX; tx += 1) {
+      if (inTownTile(tx, ty)) continue;
+      const tile = tileAt(tx, ty);
+      const sx = tx * TILE - cam.x;
+      const sy = ty * TILE - cam.y;
+      const n = hashNoise(tx * 3 + 7, ty * 5 + 11);
+      if (tile === TILE_GRASS || tile === TILE_FLOWER) {
+        if (n > 0.88) drawRock(sx + 5, sy + 8);
+        else if (n > 0.76) drawGrassClump(sx + 3, sy + 7);
+        else if (n < 0.08) drawTinyFlowers(sx + 3, sy + 4);
+      }
+      if (tile === TILE_FIELD && n > 0.7) {
+        drawCropBundle(sx + 5, sy + 3);
+      }
+      if (tile === TILE_WATER) {
+        const edge = tileAt(tx - 1, ty) !== TILE_WATER || tileAt(tx + 1, ty) !== TILE_WATER;
+        if (edge && n > 0.45) drawReeds(sx + (n > 0.7 ? 2 : 12), sy + 5);
+      }
+      if (tile === TILE_PATH && n > 0.82) {
+        drawPebbles(sx + 3, sy + 6);
+      }
+    }
+  }
+}
+
+function drawRock(sx, sy) {
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
+  ctx.fillRect(sx + 1, sy + 4, 7, 2);
+  ctx.fillStyle = "#6f7780";
+  ctx.fillRect(sx + 1, sy + 1, 7, 4);
+  ctx.fillStyle = "#aeb7bf";
+  ctx.fillRect(sx + 2, sy, 4, 2);
+  ctx.fillStyle = "#3f464d";
+  ctx.fillRect(sx + 6, sy + 3, 2, 2);
+}
+
+function drawGrassClump(sx, sy) {
+  ctx.fillStyle = "#1f7d36";
+  ctx.fillRect(sx + 1, sy + 5, 11, 2);
+  ctx.fillStyle = "#6dde69";
+  ctx.fillRect(sx + 2, sy + 2, 1, 5);
+  ctx.fillRect(sx + 5, sy, 1, 7);
+  ctx.fillRect(sx + 8, sy + 1, 1, 6);
+  ctx.fillRect(sx + 11, sy + 3, 1, 4);
+}
+
+function drawTinyFlowers(sx, sy) {
+  ctx.fillStyle = "#2d8d30";
+  ctx.fillRect(sx + 1, sy + 4, 10, 2);
+  ctx.fillStyle = "#ffd166";
+  ctx.fillRect(sx + 2, sy + 2, 2, 2);
+  ctx.fillStyle = "#ff8ab3";
+  ctx.fillRect(sx + 7, sy + 3, 2, 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(sx + 11, sy + 1, 1, 1);
+}
+
+function drawCropBundle(sx, sy) {
+  ctx.fillStyle = "#4d9f37";
+  ctx.fillRect(sx + 1, sy + 8, 9, 2);
+  ctx.fillStyle = "#fff06b";
+  ctx.fillRect(sx + 2, sy, 1, 9);
+  ctx.fillRect(sx + 5, sy + 1, 1, 8);
+  ctx.fillRect(sx + 8, sy, 1, 9);
+}
+
+function drawReeds(sx, sy) {
+  ctx.fillStyle = "#195f3d";
+  ctx.fillRect(sx + 1, sy + 2, 1, 8);
+  ctx.fillRect(sx + 4, sy, 1, 10);
+  ctx.fillRect(sx + 7, sy + 3, 1, 7);
+  ctx.fillStyle = "#c98945";
+  ctx.fillRect(sx + 3, sy, 3, 2);
+}
+
+function drawPebbles(sx, sy) {
+  ctx.fillStyle = "#7c5f41";
+  ctx.fillRect(sx, sy + 2, 2, 1);
+  ctx.fillRect(sx + 6, sy, 3, 2);
+  ctx.fillRect(sx + 11, sy + 5, 2, 1);
+}
+
+function drawWell(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(0,0,0,0.24)";
+  ctx.fillRect(sx + 1, sy + 10, 15, 4);
+  ctx.fillStyle = "#66717c";
+  ctx.fillRect(sx + 2, sy + 6, 12, 7);
+  ctx.fillStyle = "#aeb7bf";
+  ctx.fillRect(sx + 3, sy + 5, 10, 2);
+  ctx.fillStyle = "#172636";
+  ctx.fillRect(sx + 5, sy + 8, 6, 3);
+  ctx.fillStyle = "#8b3f32";
+  ctx.fillRect(sx + 1, sy + 1, 14, 3);
+  ctx.fillStyle = "#d9704c";
+  ctx.fillRect(sx + 3, sy, 10, 2);
+}
+
+function drawBench(sx, sy, axis) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
+  ctx.fillRect(sx + 1, sy + 8, 17, 3);
+  ctx.fillStyle = "#5f371b";
+  ctx.fillRect(sx, sy + 4, 18, 3);
+  ctx.fillStyle = "#c98945";
+  ctx.fillRect(sx + 1, sy + 2, 16, 2);
+  ctx.fillStyle = "#2c2018";
+  ctx.fillRect(sx + 3, sy + 7, 2, 3);
+  ctx.fillRect(sx + 13, sy + 7, 2, 3);
+}
+
+function drawCrates(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  drawCrate(sx, sy + 3);
+  drawCrate(sx + 8, sy);
+  drawCrate(sx + 9, sy + 9);
+}
+
+function drawCrate(sx, sy) {
+  ctx.fillStyle = "#7b4b25";
+  ctx.fillRect(sx, sy, 7, 7);
+  ctx.fillStyle = "#c3853f";
+  ctx.fillRect(sx + 1, sy + 1, 5, 1);
+  ctx.fillRect(sx + 1, sy + 5, 5, 1);
+  ctx.fillStyle = "#4f2e17";
+  ctx.fillRect(sx + 3, sy + 1, 1, 5);
+}
+
+function drawFlowerBed(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "#3b7b37";
+  ctx.fillRect(sx, sy, 16, 8);
+  ctx.fillStyle = "#2d5c2b";
+  ctx.fillRect(sx, sy + 7, 16, 1);
+  ctx.fillStyle = "#ffd166";
+  ctx.fillRect(sx + 3, sy + 2, 2, 2);
+  ctx.fillStyle = "#ff6b8a";
+  ctx.fillRect(sx + 8, sy + 3, 2, 2);
+  ctx.fillStyle = "#eaffff";
+  ctx.fillRect(sx + 12, sy + 1, 2, 2);
+}
+
+function drawLamp(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  const flicker = Math.floor(performance.now() / 200 + sx + sy) % 2;
+  ctx.fillStyle = "#3a2718";
+  ctx.fillRect(sx + 7, sy + 4, 2, 10);
+  ctx.fillStyle = "#ffd166";
+  ctx.fillRect(sx + 5, sy + 1, 6, 5);
+  ctx.fillStyle = flicker ? "#fff2a6" : "#ff9a3d";
+  ctx.fillRect(sx + 6, sy + 2, 4, 3);
+}
+
+function drawSign(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "#4f2e17";
+  ctx.fillRect(sx + 7, sy + 5, 2, 9);
+  ctx.fillStyle = "#c98945";
+  ctx.fillRect(sx + 2, sy + 1, 12, 6);
+  ctx.fillStyle = "#2c2018";
+  ctx.fillRect(sx + 4, sy + 3, 8, 1);
+}
+
+function drawChests(cam) {
+  for (const chest of TREASURE_CHESTS) {
+    const sx = chest.x * TILE - cam.x;
+    const sy = chest.y * TILE - cam.y;
+    if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) continue;
+    drawChest(sx + 3, sy + 5, state.chests.has(chest.id));
+  }
+}
+
+function drawChest(sx, sy, opened) {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+  ctx.fillRect(sx, sy + 8, 11, 3);
+  ctx.fillStyle = opened ? "#5f4630" : "#9f5b28";
+  ctx.fillRect(sx, sy + 4, 11, 7);
+  ctx.fillStyle = opened ? "#3b2b20" : "#d28a3c";
+  ctx.fillRect(sx + 1, sy + 2, 9, 4);
+  ctx.fillStyle = "#2c2018";
+  ctx.fillRect(sx, sy + 6, 11, 1);
+  ctx.fillStyle = opened ? "#1b1410" : "#ffd166";
+  ctx.fillRect(sx + 5, sy + 5, 2, 3);
+  if (!opened) {
+    ctx.fillStyle = "#fff2a6";
+    ctx.fillRect(sx + 2, sy + 3, 3, 1);
+  }
+}
+
+function drawGuardianSite(cam) {
+  if (state.guardianDefeated) return;
+  const sx = GUARDIAN_SITE.x * TILE - cam.x;
+  const sy = GUARDIAN_SITE.y * TILE - cam.y;
+  if (sx < -24 || sy < -24 || sx > W || sy > VIEW_H) return;
+  const pulse = Math.floor(performance.now() / 260) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+  ctx.fillRect(sx - 1, sy + 14, 22, 3);
+  ctx.fillStyle = "#475569";
+  ctx.fillRect(sx + 5, sy + 4, 10, 12);
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillRect(sx + 6, sy + 2, 8, 4);
+  ctx.fillStyle = guardianReady() ? "#55c7a0" : "#53606f";
+  ctx.fillRect(sx + 8, sy + 7, 4, 5);
+  if (guardianReady()) {
+    ctx.strokeStyle = pulse ? "#55c7a0" : "#d8fff1";
+    ctx.strokeRect(sx + 2, sy, 16, 18);
+  }
+}
+
+function drawDiscoveries(cam) {
+  for (const discovery of DISCOVERY_POINTS) {
+    const sx = discovery.x * TILE - cam.x;
+    const sy = discovery.y * TILE - cam.y;
+    if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) continue;
+    const found = state.discoveries.has(discovery.id);
+    if (discovery.kind === "spring") {
+      if (!found) {
+        drawGlint(sx + 7, sy + 9, "#74ff8f");
+      } else {
+        ctx.fillStyle = "rgba(116, 255, 143, 0.28)";
+        ctx.fillRect(sx + 2, sy + 5, 12, 8);
+        ctx.strokeStyle = "#74ff8f";
+        ctx.strokeRect(sx + 3, sy + 6, 10, 6);
+        ctx.fillStyle = "#d8fff1";
+        ctx.fillRect(sx + 7, sy + 8, 2, 2);
+      }
+    } else if (discovery.kind === "ore") {
+      ctx.fillStyle = found ? "#6f7780" : "#374151";
+      ctx.fillRect(sx + 4, sy + 8, 9, 5);
+      drawGlint(sx + 7, sy + 7, found ? "#d7e2ea" : "#8dd7ff");
+    } else if (discovery.kind === "cache") {
+      ctx.fillStyle = found ? "#4f2e17" : "#7b4b25";
+      ctx.fillRect(sx + 4, sy + 7, 8, 6);
+      if (!found) drawGlint(sx + 11, sy + 6, "#ffd166");
+    }
+  }
+}
+
+function drawGlint(sx, sy, color) {
+  const pulse = Math.floor(performance.now() / 240) % 2;
+  ctx.fillStyle = color;
+  ctx.fillRect(sx, sy + 1, 3, 1);
+  ctx.fillRect(sx + 1, sy, 1, 3);
+  if (pulse) ctx.fillRect(sx + 1, sy + 1, 1, 1);
+}
+
+function drawHealCircle(cam) {
+  const sx = HEAL_CIRCLE.x * TILE - cam.x;
+  const sy = HEAL_CIRCLE.y * TILE - cam.y;
+  if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) return;
+  const pulse = Math.floor(performance.now() / 180) % 3;
+  ctx.fillStyle = "rgba(26, 75, 88, 0.45)";
+  ctx.fillRect(sx + 1, sy + 2, 14, 12);
+  ctx.strokeStyle = "#6de4ff";
+  ctx.strokeRect(sx + 2 - pulse, sy + 3 - pulse, 12 + pulse * 2, 10 + pulse * 2);
+  ctx.fillStyle = "#eaffff";
+  ctx.fillRect(sx + 7, sy + 4, 2, 8);
+  ctx.fillRect(sx + 4, sy + 7, 8, 2);
+  ctx.fillStyle = "#74ff8f";
+  ctx.fillRect(sx + 3, sy + 3, 2, 2);
+  ctx.fillRect(sx + 11, sy + 11, 2, 2);
+}
+
+function drawTownFence(cam) {
+  const left = 5;
+  const right = 18;
+  const top = 39;
+  const bottom = 55;
+  for (let tx = left; tx <= right; tx += 1) {
+    if (!tileInGate(tx, top)) drawFenceSegment(tx * TILE - cam.x, top * TILE - cam.y, "x");
+    if (!tileInGate(tx, bottom)) drawFenceSegment(tx * TILE - cam.x, bottom * TILE - cam.y + 11, "x");
+  }
+  for (let ty = top; ty <= bottom; ty += 1) {
+    if (!tileInGate(left, ty)) drawFenceSegment(left * TILE - cam.x, ty * TILE - cam.y, "y");
+    if (!tileInGate(right, ty)) drawFenceSegment(right * TILE - cam.x + 11, ty * TILE - cam.y, "y");
+  }
+}
+
+function drawFenceSegment(sx, sy, axis) {
+  if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.24)";
+  if (axis === "x") {
+    ctx.fillRect(sx, sy + 6, TILE, 4);
+    ctx.fillStyle = "#394759";
+    ctx.fillRect(sx, sy + 2, TILE, 7);
+    ctx.fillStyle = "#7c8a99";
+    ctx.fillRect(sx, sy + 2, TILE, 2);
+    ctx.fillRect(sx + 2, sy + 5, 5, 2);
+    ctx.fillRect(sx + 10, sy + 5, 5, 2);
+  } else {
+    ctx.fillRect(sx + 6, sy, 4, TILE);
+    ctx.fillStyle = "#394759";
+    ctx.fillRect(sx + 2, sy, 7, TILE);
+    ctx.fillStyle = "#7c8a99";
+    ctx.fillRect(sx + 2, sy, 2, TILE);
+    ctx.fillRect(sx + 5, sy + 2, 2, 5);
+    ctx.fillRect(sx + 5, sy + 10, 2, 5);
+  }
+}
+
+function drawTownGates(cam) {
+  for (const gate of TOWN_GATES) {
+    const sx = gate.x * TILE - cam.x;
+    const sy = gate.y * TILE - cam.y;
+    if (sx < -TILE * 2 || sy < -TILE * 2 || sx > W + TILE || sy > VIEW_H + TILE) continue;
+    drawGate(gate, sx, sy);
+  }
+}
+
+function drawGate(gate, sx, sy) {
+  const open = state.townGateOpen;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+  ctx.fillRect(sx, sy + gate.h * TILE - 3, gate.w * TILE, 3);
+  ctx.fillStyle = "#4b2a16";
+  ctx.fillRect(sx, sy, gate.w * TILE, gate.h * TILE);
+  ctx.fillStyle = "#9b5c2b";
+  if (gate.axis === "x") {
+    ctx.fillRect(sx, sy + 2, gate.w * TILE, 3);
+    ctx.fillRect(sx, sy + 10, gate.w * TILE, 3);
+    ctx.fillStyle = "#d8a04d";
+    if (open) {
+      ctx.fillRect(sx + 2, sy - 7, 5, TILE + 7);
+      ctx.fillRect(sx + gate.w * TILE - 7, sy - 7, 5, TILE + 7);
+    } else {
+      for (let x = 4; x < gate.w * TILE; x += 9) ctx.fillRect(sx + x, sy - 2, 4, TILE + 4);
+    }
+  } else {
+    ctx.fillRect(sx + 2, sy, 3, gate.h * TILE);
+    ctx.fillRect(sx + 10, sy, 3, gate.h * TILE);
+    ctx.fillStyle = "#d8a04d";
+    if (open) {
+      ctx.fillRect(sx - 7, sy + 2, TILE + 7, 5);
+      ctx.fillRect(sx - 7, sy + gate.h * TILE - 7, TILE + 7, 5);
+    } else {
+      for (let y = 4; y < gate.h * TILE; y += 9) ctx.fillRect(sx - 2, sy + y, TILE + 4, 4);
+    }
+  }
+  ctx.fillStyle = open ? "#74ff8f" : "#ff6b5f";
+  ctx.fillRect(sx + Math.floor(gate.w * TILE / 2) - 1, sy + Math.floor(gate.h * TILE / 2) - 1, 3, 3);
+}
+
+function drawTile(tile, sx, sy, tx, ty) {
+  if (sy > VIEW_H || sx > W || sx < -TILE || sy < -TILE) return;
+  const n = hashNoise(tx, ty);
+  if (tile === TILE_GRASS || tile === TILE_FLOWER || tile === TILE_FIELD) {
+    ctx.fillStyle = tile === TILE_FIELD ? "#7bd957" : n > 0.72 ? "#43bf52" : "#3daf49";
+    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = n > 0.5 ? "#2b8a34" : "#6dde69";
+    ctx.fillRect(sx + 2, sy + 5, 2, 1);
+    ctx.fillRect(sx + 11, sy + 10, 2, 1);
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.fillRect(sx + 5, sy + 2, 1, 1);
+    ctx.fillRect(sx + 13, sy + 6, 1, 1);
+    if (tile === TILE_FLOWER) {
+      ctx.fillStyle = "#ffeb61";
+      ctx.fillRect(sx + 5, sy + 6, 2, 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(sx + 8, sy + 9, 2, 2);
+    }
+    if (tile === TILE_FIELD) {
+      ctx.fillStyle = "#d7e44d";
+      for (let y = 1; y < TILE; y += 4) ctx.fillRect(sx, sy + y, TILE, 1);
+      ctx.fillStyle = "#43943b";
+      ctx.fillRect(sx + 2, sy, 1, TILE);
+      ctx.fillRect(sx + 10, sy, 1, TILE);
+    }
+    drawTerrainEdges(tile, sx, sy, tx, ty);
+    return;
+  }
+
+  if (tile === TILE_PATH || tile === TILE_CAVE) {
+    ctx.fillStyle = tile === TILE_CAVE ? "#4c3428" : "#b98b55";
+    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = tile === TILE_CAVE ? "#1b1410" : "#8c673d";
+    ctx.fillRect(sx + 2, sy + 3, 5, 2);
+    ctx.fillRect(sx + 10, sy + 11, 4, 2);
+    ctx.fillStyle = tile === TILE_CAVE ? "#0f0b08" : "#d0a86a";
+    ctx.fillRect(sx, sy, TILE, 1);
+    drawTerrainEdges(tile, sx, sy, tx, ty);
+    return;
+  }
+
+  if (tile === TILE_WATER) {
+    ctx.fillStyle = "#1d75d8";
+    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = "#45b7ff";
+    ctx.fillRect(sx, sy, TILE, 4);
+    ctx.fillStyle = "#b9f4ff";
+    const offset = Math.floor(performance.now() / 180 + tx + ty) % 8;
+    ctx.fillRect(sx + offset - 4, sy + 4, 8, 1);
+    ctx.fillRect(sx + 9 - offset, sy + 11, 8, 1);
+    drawTerrainEdges(tile, sx, sy, tx, ty);
+    return;
+  }
+
+  if (tile === TILE_TREE) {
+    ctx.fillStyle = "#2c8933";
+    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = "#115f25";
+    ctx.fillRect(sx + 6, sy + 8, 4, 7);
+    ctx.fillStyle = "#177a2c";
+    ctx.fillRect(sx + 3, sy + 3, 10, 7);
+    ctx.fillStyle = "#31c54a";
+    ctx.fillRect(sx + 5, sy + 1, 7, 6);
+    ctx.fillStyle = "#7bea73";
+    ctx.fillRect(sx + 7, sy + 2, 2, 2);
+    ctx.fillStyle = "#0d4119";
+    ctx.fillRect(sx + 1, sy + 11, 14, 2);
+    drawTerrainEdges(tile, sx, sy, tx, ty);
+    return;
+  }
+
+  if (tile === TILE_WALL) {
+    ctx.fillStyle = "#8a8f98";
+    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = "#3e4148";
+    ctx.fillRect(sx, sy + 4, TILE, 1);
+    ctx.fillRect(sx, sy + 11, TILE, 1);
+    ctx.fillRect(sx + 7, sy, 1, TILE);
+    ctx.fillStyle = "#c2c7ce";
+    ctx.fillRect(sx + 1, sy + 1, 4, 1);
+    drawTerrainEdges(tile, sx, sy, tx, ty);
+    return;
+  }
+
+  if (tile === TILE_ROOF) {
+    ctx.fillStyle = "#a61f32";
+    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = "#681119";
+    for (let y = 2; y < TILE; y += 5) ctx.fillRect(sx, sy + y, TILE, 1);
+    ctx.fillStyle = "#f07855";
+    ctx.fillRect(sx + 2, sy + 2, 12, 2);
+    ctx.fillStyle = "#f7b267";
+    ctx.fillRect(sx + 4, sy + 7, 8, 1);
+    drawTerrainEdges(tile, sx, sy, tx, ty);
+    return;
+  }
+
+  if (tile === TILE_FLOOR) {
+    const floorTone = hashNoise(tx + 101, ty + 203);
+    ctx.fillStyle = floorTone > 0.66 ? "#b4ad9b" : floorTone < 0.22 ? "#928b7a" : "#a69d8a";
+    ctx.fillRect(sx, sy, TILE, TILE);
+    ctx.fillStyle = "#756f63";
+    ctx.fillRect(sx, sy + 7, TILE, 1);
+    ctx.fillRect(sx + 7, sy, 1, TILE);
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.fillRect(sx + 2, sy + 2, 4, 1);
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    if (floorTone > 0.8) ctx.fillRect(sx + 10, sy + 11, 4, 1);
+    if (floorTone < 0.12) ctx.fillRect(sx + 3, sy + 12, 2, 2);
+    drawTerrainEdges(tile, sx, sy, tx, ty);
+  }
+}
+
+function drawTerrainEdges(tile, sx, sy, tx, ty) {
+  const n = {
+    up: tileAt(tx, ty - 1),
+    down: tileAt(tx, ty + 1),
+    left: tileAt(tx - 1, ty),
+    right: tileAt(tx + 1, ty),
+  };
+  const water = TILE_WATER;
+  const hard = [TILE_WALL, TILE_ROOF, TILE_TREE];
+  const paved = [TILE_PATH, TILE_FLOOR, TILE_CAVE];
+
+  if (tile !== water) {
+    ctx.fillStyle = "#2c6b48";
+    if (n.up === water) ctx.fillRect(sx, sy, TILE, 2);
+    if (n.down === water) ctx.fillRect(sx, sy + TILE - 2, TILE, 2);
+    if (n.left === water) ctx.fillRect(sx, sy, 2, TILE);
+    if (n.right === water) ctx.fillRect(sx + TILE - 2, sy, 2, TILE);
+  }
+
+  if (tile === water) {
+    ctx.fillStyle = "#b8f4ff";
+    if (n.up !== water) ctx.fillRect(sx, sy, TILE, 1);
+    if (n.down !== water) ctx.fillRect(sx, sy + TILE - 1, TILE, 1);
+    if (n.left !== water) ctx.fillRect(sx, sy, 1, TILE);
+    if (n.right !== water) ctx.fillRect(sx + TILE - 1, sy, 1, TILE);
+  }
+
+  if (tile === TILE_GRASS || tile === TILE_FLOWER || tile === TILE_FIELD) {
+    ctx.fillStyle = "rgba(57, 42, 24, 0.28)";
+    if (paved.includes(n.up)) ctx.fillRect(sx, sy, TILE, 1);
+    if (paved.includes(n.down)) ctx.fillRect(sx, sy + TILE - 1, TILE, 1);
+    if (paved.includes(n.left)) ctx.fillRect(sx, sy, 1, TILE);
+    if (paved.includes(n.right)) ctx.fillRect(sx + TILE - 1, sy, 1, TILE);
+  }
+
+  if (hard.includes(tile)) {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.24)";
+    ctx.fillRect(sx + 1, sy + TILE - 2, TILE - 1, 2);
+    ctx.fillRect(sx + TILE - 2, sy + 2, 2, TILE - 2);
+  }
+}
+
+function drawNpcs(cam) {
+  for (const npc of state.npcs) {
+    const sx = Math.round(npc.x - cam.x);
+    const sy = Math.round(npc.y - cam.y);
+    if (sy > VIEW_H || sx < -16 || sx > W) continue;
+    drawHumanSprite(sx, sy, npc.type === "smith" ? "#d14f2b" : npc.type === "healer" ? "#40c6ff" : "#efe35a", npc.dir, npc.type);
+  }
+}
+
+function drawEntities(cam) {
+  const drawables = [...state.monsters, player].sort((a, b) => a.y + a.h - (b.y + b.h));
+  for (const actor of drawables) {
+    if (actor === player) drawPlayer(Math.round(actor.x - cam.x), Math.round(actor.y - cam.y));
+    else drawMonster(actor, Math.round(actor.x - cam.x), Math.round(actor.y - cam.y));
+  }
+}
+
+function drawHumanSprite(sx, sy, body, dir, role = "elder") {
+  drawActorShadow(sx + 1, sy + 12, 10);
+  ctx.fillStyle = role === "elder" ? "#f5f5f5" : "#2b1a18";
+  ctx.fillRect(sx + 2, sy - 1, 8, 3);
+  ctx.fillStyle = "#ffd08a";
+  ctx.fillRect(sx + 3, sy, 6, 5);
+  ctx.fillStyle = body;
+  ctx.fillRect(sx + 2, sy + 5, 8, 7);
+  ctx.fillStyle = "#162033";
+  ctx.fillRect(sx + 2, sy + 11, 3, 2);
+  ctx.fillRect(sx + 7, sy + 11, 3, 2);
+  if (role === "smith") {
+    ctx.fillStyle = "#4a291d";
+    ctx.fillRect(sx + 4, sy + 6, 4, 5);
+    ctx.fillStyle = "#d7e2ea";
+    ctx.fillRect(sx + 9, sy + 7, 3, 1);
+  }
+  if (role === "healer") {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(sx + 5, sy + 6, 2, 5);
+    ctx.fillRect(sx + 3, sy + 8, 6, 1);
+  }
+  if (role === "elder") {
+    ctx.fillStyle = "#fff4b0";
+    ctx.fillRect(sx + 3, sy + 6, 6, 2);
+  }
+  ctx.fillStyle = "#111018";
+  if (dir === "left") ctx.fillRect(sx + 2, sy + 2, 2, 1);
+  else if (dir === "right") ctx.fillRect(sx + 8, sy + 2, 2, 1);
+  else ctx.fillRect(sx + 4, sy + 2, 1, 1);
+}
+
+function drawPlayer(sx, sy) {
+  const blink = player.invuln > 0 && Math.floor(performance.now() / 80) % 2 === 0;
+  if (blink) return;
+  if (player.guard > 0) {
+    ctx.strokeStyle = "#6de4ff";
+    ctx.strokeRect(sx - 2, sy - 2, 15, 16);
+    ctx.fillStyle = "rgba(109, 228, 255, 0.32)";
+    ctx.fillRect(sx - 1, sy - 1, 13, 14);
+  }
+  drawActorShadow(sx, sy + 12, 12);
+  const bob = Math.floor(player.step % 2);
+  ctx.fillStyle = "#2b1a18";
+  ctx.fillRect(sx + 2, sy - 1 + bob, 8, 3);
+  ctx.fillStyle = "#ffd68e";
+  ctx.fillRect(sx + 3, sy + bob, 6, 5);
+  if (player.dir === "up") {
+    ctx.fillStyle = "#3d231b";
+    ctx.fillRect(sx + 3, sy + bob, 6, 5);
+    ctx.fillStyle = "#2b1a18";
+    ctx.fillRect(sx + 2, sy + 1 + bob, 8, 2);
+  }
+  ctx.fillStyle = player.armor >= 2 ? "#4b6c8f" : "#1956d2";
+  ctx.fillRect(sx + 2, sy + 5 + bob, 8, 7);
+  ctx.fillStyle = "#69d7ff";
+  ctx.fillRect(sx + 2, sy + 5 + bob, 8, 1);
+  ctx.fillStyle = player.armor >= 3 ? "#d7e2ea" : "#0f348f";
+  ctx.fillRect(sx + 1, sy + 6 + bob, 2, 4);
+  ctx.fillRect(sx + 9, sy + 6 + bob, 2, 4);
+  ctx.fillStyle = "#f5f5f5";
+  ctx.fillRect(sx + 4, sy + 7 + bob, 4, 2);
+  ctx.fillStyle = "#0e1624";
+  ctx.fillRect(sx + 2, sy + 11 + bob, 3, 2);
+  ctx.fillRect(sx + 7, sy + 11 + bob, 3, 2);
+  ctx.fillStyle = "#1b1230";
+  if (player.dir === "down") {
+    ctx.fillRect(sx + 4, sy + 2 + bob, 1, 1);
+    ctx.fillRect(sx + 7, sy + 2 + bob, 1, 1);
+  } else if (player.dir === "left") {
+    ctx.fillRect(sx + 3, sy + 2 + bob, 1, 1);
+  } else if (player.dir === "right") {
+    ctx.fillRect(sx + 8, sy + 2 + bob, 1, 1);
+  }
+  drawWeapon(sx, sy + bob);
+}
+
+function drawActorShadow(sx, sy, w) {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+  ctx.fillRect(sx, sy, w, 2);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
+  ctx.fillRect(sx + 2, sy - 1, Math.max(1, w - 4), 1);
+}
+
+function drawWeapon(sx, sy) {
+  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166"];
+  ctx.fillStyle = colors[player.weapon] || "#ffd166";
+  if (player.dir === "up") ctx.fillRect(sx + 5, sy - 4, 2, 7);
+  if (player.dir === "down") ctx.fillRect(sx + 5, sy + 10, 2, 7);
+  if (player.dir === "left") ctx.fillRect(sx - 4, sy + 6, 7, 2);
+  if (player.dir === "right") ctx.fillRect(sx + 8, sy + 6, 7, 2);
+}
+
+function drawMonster(monster, sx, sy) {
+  if (sy > VIEW_H || sx < -30 || sx > W + 10) return;
+  const mainColor = monster.hurt > 0 ? "#ffffff" : monster.color;
+  drawActorShadow(sx + 1, sy + monster.h - 1, monster.w);
+  if (monster.windup > 0) {
+    ctx.strokeStyle = "#ffef8a";
+    ctx.strokeRect(sx - 2, sy - 2, monster.w + 4, monster.h + 4);
+  }
+  if (monster.type === "dragon") {
+    drawDragon(monster, sx, sy);
+    return;
+  }
+  if (monster.type === "bat") {
+    const flap = Math.floor(monster.age / 160) % 2;
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx - 1, sy + 4 + flap, 6, 4);
+    ctx.fillRect(sx + 8, sy + 4 + flap, 6, 4);
+    ctx.fillRect(sx + 1, sy + 7 + flap, 3, 2);
+    ctx.fillRect(sx + 9, sy + 7 + flap, 3, 2);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 6, 7);
+    ctx.fillRect(sx + 3, sy, 2, 2);
+    ctx.fillRect(sx + 9, sy, 2, 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(sx + 5, sy + 4, 1, 1);
+    ctx.fillRect(sx + 8, sy + 4, 1, 1);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(sx + 6, sy + 8, 1, 2);
+    ctx.fillRect(sx + 8, sy + 8, 1, 2);
+  } else if (monster.type === "wisp") {
+    ctx.fillStyle = "rgba(255, 219, 82, 0.36)";
+    ctx.fillRect(sx + 1, sy + 3, 10, 9);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 5, 8, 7);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 1, 5, 9);
+    ctx.fillStyle = "#ff9a3d";
+    ctx.fillRect(sx + 5, sy, 3, 3);
+    ctx.fillRect(sx + 7, sy + 7, 2, 4);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(sx + 5, sy + 4, 2, 2);
+  } else if (monster.type === "boar") {
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 5, 11, 6);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 2, sy + 3, 9, 7);
+    ctx.fillRect(sx + 9, sy + 5, 4, 4);
+    ctx.fillStyle = "#f8d4a0";
+    ctx.fillRect(sx + 3, sy + 2, 2, 2);
+    ctx.fillRect(sx + 8, sy + 2, 2, 2);
+    ctx.fillRect(sx + 12, sy + 6, 2, 1);
+    ctx.fillRect(sx + 12, sy + 8, 2, 1);
+    ctx.fillStyle = "#352013";
+    ctx.fillRect(sx + 3, sy + 10, 2, 2);
+    ctx.fillRect(sx + 8, sy + 10, 2, 2);
+  } else if (monster.type === "guardian") {
+    const pulse = Math.floor(monster.age / 180) % 2;
+    ctx.fillStyle = "rgba(85, 199, 160, 0.28)";
+    ctx.fillRect(sx - 2, sy + 2 - pulse, 22, 17);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 6, 14, 11);
+    ctx.fillRect(sx - 1, sy + 9, 5, 5);
+    ctx.fillRect(sx + 14, sy + 9, 5, 5);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 2, 12, 13);
+    ctx.fillRect(sx + 1, sy + 7, 16, 7);
+    ctx.fillStyle = "#d8fff1";
+    ctx.fillRect(sx + 5, sy + 5, 2, 2);
+    ctx.fillRect(sx + 11, sy + 5, 2, 2);
+    ctx.fillStyle = "#1d5c4b";
+    ctx.fillRect(sx + 4, sy + 15, 4, 3);
+    ctx.fillRect(sx + 11, sy + 15, 4, 3);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(sx + 8, sy, 3, 4);
+  } else if (monster.type === "dragonling") {
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 3, 12, 10);
+    ctx.fillRect(sx - 1, sy + 6, 4, 5);
+    ctx.fillRect(sx + 11, sy + 6, 4, 5);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 1, 8, 10);
+    ctx.fillRect(sx + 9, sy + 4, 5, 4);
+    ctx.fillStyle = "#ffcf5a";
+    ctx.fillRect(sx + 6, sy + 5, 2, 2);
+    ctx.fillStyle = "#ffd6a8";
+    ctx.fillRect(sx + 2, sy, 2, 3);
+    ctx.fillRect(sx + 10, sy, 2, 3);
+    ctx.fillStyle = "#6b0d0b";
+    ctx.fillRect(sx + 1, sy + 11, 3, 2);
+    ctx.fillRect(sx + 9, sy + 11, 3, 2);
+  } else {
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 7, 10, 4);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 2, sy + 3, 8, 8);
+    ctx.fillRect(sx + 4, sy + 1, 4, 3);
+    ctx.fillStyle = "#8dff8b";
+    ctx.fillRect(sx + 4, sy + 3, 4, 1);
+    ctx.fillStyle = "#eafff0";
+    ctx.fillRect(sx + 4, sy + 5, 1, 1);
+    ctx.fillRect(sx + 7, sy + 5, 1, 1);
+  }
+  drawMonsterHp(monster, sx, sy);
+}
+
+function drawDragon(monster, sx, sy) {
+  const mainColor = monster.hurt > 0 ? "#ffffff" : monster.color;
+  const pulse = Math.floor(monster.age / 140) % 2;
+  ctx.fillStyle = monster.enraged ? "rgba(255, 42, 42, 0.38)" : "rgba(255, 88, 42, 0.25)";
+  ctx.fillRect(sx - (monster.enraged ? 6 : 3), sy + 4 - pulse, monster.enraged ? 36 : 30, 18);
+  ctx.fillStyle = monster.shadow;
+  ctx.fillRect(sx - 5, sy + 6, 9, 10);
+  ctx.fillRect(sx + 17, sy + 5, 9, 11);
+  ctx.fillRect(sx + 1, sy + 7, 22, 13);
+  ctx.fillStyle = mainColor;
+  ctx.fillRect(sx - 4, sy + 8, 8, 6);
+  ctx.fillRect(sx + 18, sy + 7, 8, 7);
+  ctx.fillRect(sx + 5, sy + 4, 13, 14);
+  ctx.fillRect(sx + 16, sy + 8, 8, 8);
+  ctx.fillStyle = "#ff8c3e";
+  ctx.fillRect(sx + 1, sy + 6, 7, 6);
+  ctx.fillRect(sx + 10, sy, 3, 5);
+  ctx.fillRect(sx + 16, sy, 3, 5);
+  ctx.fillStyle = "#ffd166";
+  ctx.fillRect(sx + 11, sy - 2, 2, 3);
+  ctx.fillRect(sx + 17, sy - 2, 2, 3);
+  ctx.fillRect(sx + 9, sy + 9, 2, 2);
+  ctx.fillRect(sx + 13, sy + 12, 2, 2);
+  ctx.fillStyle = "#fff2a6";
+  ctx.fillRect(sx + 18, sy + 10, 2, 2);
+  ctx.fillStyle = "#211010";
+  ctx.fillRect(sx + 21, sy + 11, 2, 1);
+  ctx.fillStyle = "#ff4e36";
+  ctx.fillRect(sx + 24, sy + 10, 4 + pulse, 2);
+  ctx.fillStyle = "#fff2a6";
+  ctx.fillRect(sx + 26, sy + 10, 2, 1);
+  drawMonsterHp(monster, sx, sy - 3);
+}
+
+function drawMonsterHp(monster, sx, sy) {
+  if (monster.hp >= monster.hpMax && monster.hurt <= 0) return;
+  const w = monster.boss ? 24 : 13;
+  ctx.fillStyle = "#111";
+  ctx.fillRect(sx, sy - 5, w, 3);
+  ctx.fillStyle = monster.boss ? "#ff4949" : "#f8e44a";
+  const fill = Math.floor((w - 2) * clamp(monster.hp / monster.hpMax, 0, 1));
+  ctx.fillRect(sx + 1, sy - 4, fill, 1);
+}
+
+function drawEffects(cam) {
+  if (state.pointerMove) {
+    ctx.strokeStyle = "rgba(109, 228, 255, 0.9)";
+    ctx.strokeRect(Math.round(state.pointerMove.x) - 4, Math.round(state.pointerMove.y) - 4, 8, 8);
+    ctx.fillStyle = "rgba(109, 228, 255, 0.55)";
+    ctx.fillRect(Math.round(state.pointerMove.x) - 1, Math.round(state.pointerMove.y) - 1, 2, 2);
+  }
+
+  for (const p of state.projectiles) {
+    const sx = Math.round(p.x - cam.x);
+    const sy = Math.round(p.y - cam.y);
+    ctx.fillStyle = "rgba(255, 120, 58, 0.32)";
+    ctx.fillRect(sx - p.r - 1, sy - p.r - 1, p.r * 2 + 2, p.r * 2 + 2);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(sx - p.r, sy - p.r, p.r * 2, p.r * 2);
+    ctx.fillStyle = "#fff2a6";
+    ctx.fillRect(sx - 1, sy - 1, 2, 2);
+  }
+
+  for (const r of state.rings) {
+    const t = 1 - r.life / r.max;
+    const radius = Math.max(2, Math.floor(r.radius * t));
+    const x = Math.round(r.x - cam.x);
+    const y = Math.round(r.y - cam.y);
+    ctx.globalAlpha = clamp(r.life / r.max, 0, 1);
+    ctx.strokeStyle = r.color;
+    ctx.strokeRect(x - radius, y - Math.floor(radius * 0.55), radius * 2, Math.max(3, Math.floor(radius * 1.1)));
+    ctx.globalAlpha = 1;
+  }
+
+  for (const s of state.slashes) {
+    const alpha = clamp(s.life / s.max, 0, 1);
+    const x = Math.round(s.x - cam.x);
+    const y = Math.round(s.y - cam.y);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = s.color;
+    if (s.dir === "left" || s.dir === "right") {
+      ctx.fillRect(x - 7, y - 1, 14, 2);
+      ctx.fillRect(x - 3, y - 4, 7, 1);
+      ctx.fillRect(x - 3, y + 3, 7, 1);
+    } else {
+      ctx.fillRect(x - 1, y - 7, 2, 14);
+      ctx.fillRect(x - 4, y - 3, 1, 7);
+      ctx.fillRect(x + 3, y - 3, 1, 7);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  for (const p of state.particles) {
+    ctx.fillStyle = p.color;
+    ctx.fillRect(Math.round(p.x - cam.x), Math.round(p.y - cam.y), 2, 2);
+  }
+
+  ctx.font = "8px monospace";
+  ctx.textAlign = "center";
+  for (const f of state.floaters) {
+    ctx.globalAlpha = clamp(f.life / f.max, 0, 1);
+    ctx.fillStyle = "#000";
+    ctx.fillText(f.text, Math.round(f.x - cam.x) + 1, Math.round(f.y - cam.y) + 1);
+    ctx.fillStyle = f.color;
+    ctx.fillText(f.text, Math.round(f.x - cam.x), Math.round(f.y - cam.y));
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawScreenGrade(cam) {
+  const tx = Math.floor((player.x + player.w / 2) / TILE);
+  const ty = Math.floor((player.y + player.h / 2) / TILE);
+  const inCave = tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19;
+  const gradient = ctx.createLinearGradient(0, 0, 0, VIEW_H);
+  gradient.addColorStop(0, inCave ? "rgba(35, 10, 8, 0.18)" : "rgba(255, 244, 192, 0.08)");
+  gradient.addColorStop(0.52, "rgba(0, 0, 0, 0)");
+  gradient.addColorStop(1, "rgba(0, 0, 0, 0.18)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, W, VIEW_H);
+
+  ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
+  ctx.fillRect(0, 0, 3, VIEW_H);
+  ctx.fillRect(W - 3, 0, 3, VIEW_H);
+  ctx.fillRect(0, 0, W, 2);
+}
+
+function drawObjective() {
+  const text = objectiveText();
+  const guide = guidanceText();
+  ctx.font = "7px monospace";
+  ctx.textAlign = "left";
+  const w = Math.min(W - 10, Math.max(132, Math.max(text.length, guide.length) * 7 + 9));
+  ctx.fillStyle = "rgba(5, 8, 18, 0.72)";
+  ctx.fillRect(5, 5, w, 23);
+  ctx.strokeStyle = "rgba(255, 209, 102, 0.74)";
+  ctx.strokeRect(5, 5, w, 23);
+  ctx.fillStyle = "#fff2a6";
+  ctx.fillText(text, 9, 14);
+  ctx.fillStyle = inTown(player.x, player.y) ? "#74ff8f" : player.hp / player.hpMax < 0.35 ? "#ff8a3d" : "#d7e2ea";
+  ctx.fillText(guide, 9, 24);
+}
+
+function drawContextPrompt() {
+  const text = contextPromptText();
+  if (!text) return;
+  ctx.font = "7px monospace";
+  ctx.textAlign = "left";
+  const w = Math.min(W - 10, Math.max(74, text.length * 7 + 12));
+  const x = 5;
+  const y = 31;
+  ctx.fillStyle = "rgba(5, 8, 18, 0.68)";
+  ctx.fillRect(x, y, w, 12);
+  ctx.strokeStyle = "rgba(109, 228, 255, 0.72)";
+  ctx.strokeRect(x, y, w, 12);
+  ctx.fillStyle = "#d7e2ea";
+  ctx.fillText(text, x + 5, y + 9);
+}
+
+function drawHud() {
+  ctx.fillStyle = "#07111c";
+  ctx.fillRect(0, VIEW_H, W, HUD_H);
+  ctx.fillStyle = "#162a3a";
+  ctx.fillRect(0, VIEW_H, W, 2);
+  ctx.strokeStyle = "#6de4ff";
+  ctx.strokeRect(1, VIEW_H + 1, W - 2, HUD_H - 2);
+
+  ctx.font = "8px monospace";
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(`LV ${player.level}`, 5, VIEW_H + 10);
+  ctx.fillText(`G ${player.gold}`, 5, VIEW_H + 22);
+
+  drawBar(43, VIEW_H + 5, 68, 7, player.hp / player.hpMax, "#54d66f", "#ff5252");
+  drawBar(43, VIEW_H + 18, 68, 5, player.xp / player.xpNext, "#6de4ff", "#1b367e");
+  drawBar(43, VIEW_H + 26, 68, 4, player.stamina / player.staminaMax, "#ffd166", "#7d4d20");
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(`HP ${Math.ceil(player.hp)}/${player.hpMax}`, 116, VIEW_H + 10);
+  ctx.fillText(`EXP ${player.xp}/${player.xpNext}`, 116, VIEW_H + 22);
+  const status = player.burn > 0 ? "燃" : player.slow > 0 ? "鈍" : "";
+  ctx.fillText(`ST ${Math.floor(player.stamina)}${status}`, 116, VIEW_H + 30);
+
+  drawItemChip(183, VIEW_H + 5);
+  drawMiniCompass(216, VIEW_H + 8);
+}
+
+function drawItemChip(x, y) {
+  const labels = { potion: "薬", bomb: "爆", ward: "護" };
+  ctx.fillStyle = "#0d1724";
+  ctx.fillRect(x, y, 28, 19);
+  ctx.strokeStyle = player.guard > 0 ? "#6de4ff" : "#ffd166";
+  ctx.strokeRect(x, y, 28, 19);
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "left";
+  ctx.fillText(labels[player.selectedItem], x + 4, y + 8);
+  ctx.fillStyle = "#fff2a6";
+  ctx.fillText(String(selectedItemCount()), x + 17, y + 17);
+  if (player.combo > 0) {
+    ctx.fillStyle = "#6de4ff";
+    ctx.fillText(`${player.combo}連`, x - 1, y + 28);
+  }
+}
+
+function drawBar(x, y, w, h, t, good, bad) {
+  ctx.fillStyle = "#111827";
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = "#f4f4f4";
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = t > 0.28 ? good : bad;
+  ctx.fillRect(x + 1, y + 1, Math.max(0, Math.floor((w - 2) * clamp(t, 0, 1))), h - 2);
+}
+
+function drawMiniCompass(x, y) {
+  ctx.fillStyle = "#0a1038";
+  ctx.fillRect(x, y, 20, 18);
+  ctx.strokeStyle = "#8dd7ff";
+  ctx.strokeRect(x, y, 20, 18);
+  ctx.fillStyle = "#ffffff";
+  const p = { up: [10, 3], right: [15, 8], down: [10, 13], left: [5, 8] }[player.dir];
+  ctx.fillRect(x + p[0] - 1, y + p[1] - 1, 3, 3);
+}
+
+function drawOverlay(title, small) {
+  ctx.fillStyle = "rgba(0,0,0,0.64)";
+  ctx.fillRect(0, 0, W, VIEW_H);
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.font = "16px monospace";
+  ctx.fillText(title, W / 2, 65);
+  ctx.font = "8px monospace";
+  ctx.fillText(small === "R" ? "R" : "CLEAR", W / 2, 80);
+}
+
+function drawVictoryBanner() {
+  ctx.fillStyle = "rgba(5, 8, 18, 0.82)";
+  ctx.fillRect(24, 25, W - 48, 34);
+  ctx.strokeStyle = "#ffd166";
+  ctx.strokeRect(24, 25, W - 48, 34);
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#fff2a6";
+  ctx.font = "10px monospace";
+  ctx.fillText("DRAGON SEALED", W / 2, 39);
+  ctx.font = "7px monospace";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("村へ戻り長老に報告", W / 2, 52);
+}
+  globalThis.DRAGON_HUNTER_RENDER = {
+    draw,
+  };
+})();

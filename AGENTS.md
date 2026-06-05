@@ -790,3 +790,77 @@ Automatic equipment replacement must never downgrade the player's power.
 
 Treasure rewards and one-time discoveries should be persistent across save/load.
 
+
+
+## Current Code Architecture Handoff
+
+The project has completed a behavior-neutral extraction phase. Treat the current architecture below as the expected map before making new changes.
+
+```text
+src/data/
+  definitions.js  Static constants, tiles, equipment data, monster definitions, treasure/discovery definitions.
+
+src/core/
+  math.js         Pure math/geometry helpers.
+  state.js        Initial state/player factory.
+  context.js      Context factory that wires state/player/helpers into each system.
+
+src/systems/
+  map.js          Map generation, tile access, town/gate/collision helpers.
+  spawn.js        Region selection, monster spawning, regional replenishment, Guardian spawn story events.
+  monsters.js     Enemy AI, contact combat, contact status effects, monster defeat, level-up side effects.
+  combat.js       Player combat/stat calculations and equipment multipliers.
+  player.js       Player movement, dash, town gate, heal circle, discovery spring updates.
+  actions.js      Context action, attack action, chest opening, gathering, hidden discovery reveal.
+  rewards.js      Chest/discovery/monster reward grants, item use, equipment anti-downgrade helpers.
+  projectiles.js  Enemy projectile firing, movement, collision, damage/status application.
+  npc.js          NPC interaction, cave entry, dragon challenge requirement checks.
+  save.js         localStorage save/load/reset using SAVE_KEY.
+  effects.js      Floaters, slashes, rings, particles, toast expiry.
+  text.js         Objective/guidance/context prompt/stage text.
+  render.js       Canvas drawing only.
+  ui.js           DOM status updates and strength/info panel data.
+  controls.js     Keyboard/touch/button event binding.
+
+src/game.js       Entrypoint/司令塔: DOM binding, helper lookup, state/player creation, facades, loop, init.
+```
+
+
+Expected non-module script order in `index.html`:
+
+```html
+<script src="src/data/definitions.js"></script>
+<script src="src/core/math.js"></script>
+<script src="src/core/state.js"></script>
+<script src="src/core/context.js"></script>
+
+<script src="src/systems/combat.js"></script>
+<script src="src/systems/player.js"></script>
+<script src="src/systems/map.js"></script>
+<script src="src/systems/rewards.js"></script>
+<script src="src/systems/save.js"></script>
+<script src="src/systems/effects.js"></script>
+<script src="src/systems/text.js"></script>
+<script src="src/systems/spawn.js"></script>
+<script src="src/systems/npc.js"></script>
+<script src="src/systems/actions.js"></script>
+<script src="src/systems/projectiles.js"></script>
+<script src="src/systems/monsters.js"></script>
+<script src="src/systems/render.js"></script>
+<script src="src/systems/ui.js"></script>
+<script src="src/systems/controls.js"></script>
+<script src="src/game.js"></script>
+```
+
+
+Rules for the next Codex session:
+
+* Do not continue splitting files only for line-count reduction.
+* Do not convert to ES Modules, Vite, a bundler, or import/export unless explicitly requested.
+* Do not change game balance while verifying the refactor.
+* First verify that the refactored structure boots and that the survival-range expansion loop still works.
+* If a regression is found, make the smallest behavior-neutral fix possible.
+* Keep `src/game.js` as the entrypoint/司令塔.
+* Keep `src/core/context.js` as the central wiring layer for system contexts.
+* Keep `src/systems/monsters.js` as the owner of enemy AI, contact combat, contact status effects, defeat flow, and level-up side effects.
+* Update `DEVELOPMENT_LOG.md` and `NEXT_CODEX_TASK.md` with exact verification results.

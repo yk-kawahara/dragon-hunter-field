@@ -832,3 +832,53 @@ Visual readability is more important than decorative detail.
 
 
 Signs, building layouts, props, walls, gates, and terrain should communicate function clearly.
+
+
+# Refactor Architecture Note
+
+This section documents architecture only. It does not change the game design.
+
+The current implementation should preserve the same core design: survival range expansion, safe village retreat, contact/facing combat, equipment-driven survivability, exploration rewards, Guardian gate, red dragon clear, and elder report.
+
+The code is now expected to be organized as:
+
+```text
+src/data/
+  definitions.js  Static constants, tiles, equipment data, monster definitions, treasure/discovery definitions.
+
+src/core/
+  math.js         Pure math/geometry helpers.
+  state.js        Initial state/player factory.
+  context.js      Context factory that wires state/player/helpers into each system.
+
+src/systems/
+  map.js          Map generation, tile access, town/gate/collision helpers.
+  spawn.js        Region selection, monster spawning, regional replenishment, Guardian spawn story events.
+  monsters.js     Enemy AI, contact combat, contact status effects, monster defeat, level-up side effects.
+  combat.js       Player combat/stat calculations and equipment multipliers.
+  player.js       Player movement, dash, town gate, heal circle, discovery spring updates.
+  actions.js      Context action, attack action, chest opening, gathering, hidden discovery reveal.
+  rewards.js      Chest/discovery/monster reward grants, item use, equipment anti-downgrade helpers.
+  projectiles.js  Enemy projectile firing, movement, collision, damage/status application.
+  npc.js          NPC interaction, cave entry, dragon challenge requirement checks.
+  save.js         localStorage save/load/reset using SAVE_KEY.
+  effects.js      Floaters, slashes, rings, particles, toast expiry.
+  text.js         Objective/guidance/context prompt/stage text.
+  render.js       Canvas drawing only.
+  ui.js           DOM status updates and strength/info panel data.
+  controls.js     Keyboard/touch/button event binding.
+
+src/game.js       Entrypoint/司令塔: DOM binding, helper lookup, state/player creation, facades, loop, init.
+```
+
+
+Design work should continue to prioritize:
+
+* Survival range expansion.
+* Safe village readability and relief.
+* Equipment upgrades that visibly reduce danger.
+* Distant areas that feel more dangerous and more rewarding.
+* Responsive movement and contact combat.
+* Clear feedback for progression, equipment, regeneration, boss requirements, and clear state.
+
+Do not use the refactor as a reason to change balance or content accidentally. Behavior changes should be made only as explicit gameplay improvement passes.

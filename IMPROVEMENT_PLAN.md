@@ -17,6 +17,78 @@ Current focus:
 * Prepare `src/game.js` for safe behavior-neutral refactoring before major new systems are added.
 ---
 
+
+
+## Current Refactor Handoff Status
+
+The behavior-neutral `src/game.js` extraction pass is now considered structurally complete for this phase.
+
+Current architecture:
+
+```text
+src/data/
+  definitions.js  Static constants, tiles, equipment data, monster definitions, treasure/discovery definitions.
+
+src/core/
+  math.js         Pure math/geometry helpers.
+  state.js        Initial state/player factory.
+  context.js      Context factory that wires state/player/helpers into each system.
+
+src/systems/
+  map.js          Map generation, tile access, town/gate/collision helpers.
+  spawn.js        Region selection, monster spawning, regional replenishment, Guardian spawn story events.
+  monsters.js     Enemy AI, contact combat, contact status effects, monster defeat, level-up side effects.
+  combat.js       Player combat/stat calculations and equipment multipliers.
+  player.js       Player movement, dash, town gate, heal circle, discovery spring updates.
+  actions.js      Context action, attack action, chest opening, gathering, hidden discovery reveal.
+  rewards.js      Chest/discovery/monster reward grants, item use, equipment anti-downgrade helpers.
+  projectiles.js  Enemy projectile firing, movement, collision, damage/status application.
+  npc.js          NPC interaction, cave entry, dragon challenge requirement checks.
+  save.js         localStorage save/load/reset using SAVE_KEY.
+  effects.js      Floaters, slashes, rings, particles, toast expiry.
+  text.js         Objective/guidance/context prompt/stage text.
+  render.js       Canvas drawing only.
+  ui.js           DOM status updates and strength/info panel data.
+  controls.js     Keyboard/touch/button event binding.
+
+src/game.js       Entrypoint/司令塔: DOM binding, helper lookup, state/player creation, facades, loop, init.
+```
+
+
+Current refactor guidance:
+
+* Do not split more files merely to reduce `src/game.js` line count.
+* Do not start ES Modules, Vite, bundling, or import/export migration in the next pass.
+* The next priority is verification and regression repair, not new architecture.
+* Gameplay content changes should wait until the refactored structure has passed browser QA and a full manual playthrough.
+
+Expected `index.html` script order:
+
+```html
+<script src="src/data/definitions.js"></script>
+<script src="src/core/math.js"></script>
+<script src="src/core/state.js"></script>
+<script src="src/core/context.js"></script>
+
+<script src="src/systems/combat.js"></script>
+<script src="src/systems/player.js"></script>
+<script src="src/systems/map.js"></script>
+<script src="src/systems/rewards.js"></script>
+<script src="src/systems/save.js"></script>
+<script src="src/systems/effects.js"></script>
+<script src="src/systems/text.js"></script>
+<script src="src/systems/spawn.js"></script>
+<script src="src/systems/npc.js"></script>
+<script src="src/systems/actions.js"></script>
+<script src="src/systems/projectiles.js"></script>
+<script src="src/systems/monsters.js"></script>
+<script src="src/systems/render.js"></script>
+<script src="src/systems/ui.js"></script>
+<script src="src/systems/controls.js"></script>
+<script src="src/game.js"></script>
+```
+
+
 ## Recent Cycle Notes
 
 ### Cycle 1
@@ -393,11 +465,11 @@ Current status:
 
 ### Refactoring
 
-* Completed first split: static definitions now live in `src/data/definitions.js`.
-* Completed second split: pure math helpers now live in `src/core/math.js`.
-* Next split: extract pure reward ID validation and equipment comparison helpers.
-* Do not split behavior hubs until the above are green and repeatable VM checks are available.
-* Use `docs/REFACTOR_CHECKLIST.md` for each extraction.
+* Current major behavior-neutral extraction phase is complete for this pass.
+* `src/game.js` should now be treated as the entrypoint/司令塔: DOM binding, helper lookup, state/player creation, thin facades, loop, and init.
+* Refactored files now live under `src/data`, `src/core`, and `src/systems`.
+* Next refactor priority is not more splitting; it is verification, documentation, and minimal regression repair.
+* Avoid ES Modules, bundlers, or import/export migration until browser QA and a full manual playthrough pass.
 
 ### Ending
 
