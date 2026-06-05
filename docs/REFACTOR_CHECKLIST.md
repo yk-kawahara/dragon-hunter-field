@@ -24,14 +24,16 @@ Use this checklist before and after every future `src/game.js` split.
 * Region spawn definitions. Done: `src/data/definitions.js`.
 * Tile and direction constants. Done: `src/data/definitions.js`.
 * Tempo constants. Done: `src/data/definitions.js`.
-* Pure math helpers.
+* Pure math helpers. Done: `src/core/math.js`.
 * Pure reward ID validation helpers.
 * Pure equipment comparison helpers.
 
 ## Current Loading Contract
 
 * `index.html` must load `src/data/definitions.js` before `src/game.js`.
+* `index.html` must load `src/core/math.js` after definitions and before `src/game.js`.
 * `src/data/definitions.js` must define `globalThis.DRAGON_HUNTER_DEFINITIONS`.
+* `src/core/math.js` must define `globalThis.DRAGON_HUNTER_MATH`.
 * `src/game.js` must keep using the same local constant names after destructuring.
 * Do not convert to ES modules unless a local dev-server workflow is introduced and verified.
 
@@ -52,6 +54,7 @@ Use this checklist before and after every future `src/game.js` split.
 
 * `node --check src/game.js`
 * `node --check src/data/definitions.js`
+* `node --check src/core/math.js`
 * `git diff --check`
 * Static reward reachability VM check.
 * Region spawn VM check.

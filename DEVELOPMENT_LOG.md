@@ -62,3 +62,11 @@
 - Cycle 12 decision: did not split player update, enemy AI, contact combat, projectiles, rewards, NPCs, save/load, boss flow, drawing orchestration, input, loop, or init.
 - Cycle 12 verification: bundled Node syntax checks passed for `src/data/definitions.js` and `src/game.js`; `git diff --check` passed; VM smoke checks passed for definitions loading, static reward reachability, region pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
 - Cycle 12 remaining risk: real browser visual QA remains pending because Browser tooling was not available in this turn.
+- Refactor extraction analysis: the next safe target was deterministic pure math and geometry helpers. Random helpers were intentionally left in `src/game.js` to avoid changing spawn randomness.
+- Cycle 13: Added `src/core/math.js` and moved `clamp`, `hashNoise`, `rectsOverlap`, `centerOf`, `normalize`, `facingDot`, `directionFromVector`, and `makeRect` into it.
+- Cycle 13: Updated `index.html` to load `src/core/math.js` after definitions and before `src/game.js`.
+- Cycle 13: Updated `src/game.js` to destructure the same local helper names from `globalThis.DRAGON_HUNTER_MATH`.
+- Cycle 13 decision: did not split player update, enemy AI, contact combat, projectiles, rewards, NPCs, save/load, boss flow, drawing orchestration, input, loop, or init.
+- Cycle 13 verification: bundled Node syntax checks passed for `src/core/math.js`, `src/data/definitions.js`, and `src/game.js`; `git diff --check` passed; VM smoke checks passed for math helper loading, helper behavior, static reward reachability, region pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
+- Cycle 13 remaining risk: real browser visual QA remains pending because Browser tooling was not available in this turn.
+- Cycle 13 Git status: final commit/push is pending because escalated command approval was blocked by the Codex usage limit after implementation and verification.

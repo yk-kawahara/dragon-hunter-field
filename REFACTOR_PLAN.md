@@ -153,6 +153,8 @@ Risk:
 
    Include `clamp`, `hashNoise`, `rectsOverlap`, `centerOf`, `normalize`, `facingDot`, `directionFromVector`, and `makeRect`. Keep random helpers in `game.js` at first if deterministic VM tests are not ready.
 
+   Current status: completed with `src/core/math.js`. The app still uses non-module scripts; `src/core/math.js` is loaded after definitions and exposes `globalThis.DRAGON_HUNTER_MATH`.
+
 3. Extract pure reward/equipment comparison helpers.
 
    Create pure helpers such as `isEquipmentUpgrade(currentRank, rewardRank, maxRank)` and `savedKnownIdSet(ids, validEntries)`. Keep mutation wrappers (`grantWeaponAtLeast`, `grantArmorAtLeast`, `openChest`, `revealDiscovery`) in `game.js`.
@@ -202,7 +204,7 @@ Implementation guard:
 
 ## Next Low-Risk Split Candidate
 
-Next target:
+Completed target:
 
 * `clamp`
 * `hashNoise`
@@ -213,15 +215,33 @@ Next target:
 * `directionFromVector`
 * `makeRect`
 
-Recommended file:
+Implemented file:
 
 * `src/core/math.js`
 
+Guard status:
+
+* `rand` and `irand` stayed in `src/game.js`.
+* All behavior hubs stayed in `src/game.js`.
+* Syntax and VM smoke checks must remain green after every later extraction.
+
+## Next Low-Risk Split Candidate
+
+Next target:
+
+* `rewardIds`
+* `savedIdSet`
+* A new pure equipment comparison helper that can support `grantWeaponAtLeast` and `grantArmorAtLeast`
+
+Recommended file:
+
+* `src/core/rewards.js`
+
 Guard:
 
-* Keep `rand` and `irand` in `src/game.js` during the next pass unless deterministic spawn tests are strengthened.
-* Keep all behavior hubs in `src/game.js`.
-* Run the same VM smoke checks after extraction.
+* Keep `grantWeaponAtLeast`, `grantArmorAtLeast`, `openChest`, and `revealDiscovery` in `src/game.js`.
+* Do not change save data shape.
+* Re-run chest/discovery persistence and equipment anti-downgrade VM checks.
 
 ## Do Not Split Yet
 

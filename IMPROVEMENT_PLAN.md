@@ -227,6 +227,25 @@ Verified:
 * `git diff --check` passed.
 * VM smoke checks passed for definitions loading, static reward reachability, region spawn pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
 
+### Refactor Extraction Pass Cycle 13
+
+Problem:
+
+* `src/game.js` still contained low-risk pure math and geometry helpers, forcing simple helper edits through the main gameplay file.
+
+Implemented:
+
+* Extracted deterministic pure helpers to `src/core/math.js`: `clamp`, `hashNoise`, `rectsOverlap`, `centerOf`, `normalize`, `facingDot`, `directionFromVector`, and `makeRect`.
+* Loaded `src/core/math.js` after `src/data/definitions.js` and before `src/game.js`.
+* Kept `rand` and `irand` in `src/game.js` to avoid changing random/spawn behavior in this pass.
+* Left all behavior hubs in `src/game.js`: player update, enemy AI, combat, save/load, NPCs, boss flow, drawing orchestration, input, loop, and init.
+
+Verified:
+
+* Bundled Node syntax checks passed for `src/core/math.js`, `src/data/definitions.js`, and `src/game.js`.
+* `git diff --check` passed.
+* VM smoke checks passed for math helper loading, helper behavior, static reward reachability, region spawn pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
+
 ---
 
 ## Critical Issues Discovered During Real Playtesting
@@ -375,8 +394,8 @@ Current status:
 ### Refactoring
 
 * Completed first split: static definitions now live in `src/data/definitions.js`.
-* Next split: extract pure math helpers to `src/core/math.js`.
-* Later split: extract pure reward ID validation and equipment comparison helpers.
+* Completed second split: pure math helpers now live in `src/core/math.js`.
+* Next split: extract pure reward ID validation and equipment comparison helpers.
 * Do not split behavior hubs until the above are green and repeatable VM checks are available.
 * Use `docs/REFACTOR_CHECKLIST.md` for each extraction.
 

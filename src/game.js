@@ -67,6 +67,22 @@ const {
   monsterTypes,
 } = gameDefinitions;
 
+const mathHelpers = globalThis.DRAGON_HUNTER_MATH;
+if (!mathHelpers) {
+  throw new Error("DRAGON_HUNTER_MATH must be loaded before src/game.js");
+}
+
+const {
+  clamp,
+  hashNoise,
+  rectsOverlap,
+  centerOf,
+  normalize,
+  facingDot,
+  directionFromVector,
+  makeRect,
+} = mathHelpers;
+
 const state = {
   keys: new Set(),
   virtualKeys: new Set(),
@@ -142,53 +158,12 @@ const player = {
   step: 0,
 };
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
 function rand(min = 0, max = 1) {
   return min + Math.random() * (max - min);
 }
 
 function irand(min, max) {
   return Math.floor(rand(min, max + 1));
-}
-
-function hashNoise(x, y) {
-  let n = x * 374761393 + y * 668265263;
-  n = (n ^ (n >> 13)) * 1274126177;
-  n = (n ^ (n >> 16)) >>> 0;
-  return n / 4294967295;
-}
-
-function rectsOverlap(a, b) {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-
-function centerOf(actor) {
-  return { x: actor.x + actor.w / 2, y: actor.y + actor.h / 2 };
-}
-
-function normalize(x, y) {
-  const len = Math.hypot(x, y) || 1;
-  return { x: x / len, y: y / len, len };
-}
-
-function facingDot(actor, target) {
-  const a = centerOf(actor);
-  const b = centerOf(target);
-  const toTarget = normalize(b.x - a.x, b.y - a.y);
-  const dir = DIRS[actor.dir] || DIRS.down;
-  return dir.x * toTarget.x + dir.y * toTarget.y;
-}
-
-function directionFromVector(x, y, current = "down") {
-  if (Math.abs(x) < 0.01 && Math.abs(y) < 0.01) return current;
-  return Math.abs(x) > Math.abs(y) ? (x > 0 ? "right" : "left") : y > 0 ? "down" : "up";
-}
-
-function makeRect(x, y, w, h) {
-  return { x, y, w, h };
 }
 
 function tileAt(tx, ty) {
