@@ -11,15 +11,17 @@
     throw new Error("DRAGON_HUNTER_MATH must be loaded before map helpers");
   }
 
+  const worldMapData = globalThis.DRAGON_HUNTER_WORLD_MAP;
+  if (!worldMapData) {
+    throw new Error("DRAGON_HUNTER_WORLD_MAP must be loaded before map helpers");
+  }
+
   const {
     TILE,
     WORLD_SCALE,
     MAP_W,
     MAP_H,
     TOWN_GATES,
-    TREASURE_CHESTS,
-    DISCOVERY_POINTS,
-    GUARDIAN_SITE,
     TILE_GRASS,
     TILE_PATH,
     TILE_WATER,
@@ -32,7 +34,20 @@
     TILE_FIELD,
   } = definitions;
 
-  const { hashNoise, centerOf } = mathHelpers;
+  const { centerOf } = mathHelpers;
+  const { rows: WORLD_MAP, objects: WORLD_OBJECTS = [] } = worldMapData;
+  const TILE_BY_CHAR = {
+    ".": TILE_GRASS,
+    "+": TILE_PATH,
+    "~": TILE_WATER,
+    "T": TILE_TREE,
+    "#": TILE_WALL,
+    "^": TILE_ROOF,
+    "_": TILE_FLOOR,
+    "C": TILE_CAVE,
+    "*": TILE_FLOWER,
+    "=": TILE_FIELD,
+  };
 
   function requireMapContext(context) {
     if (!context?.state) {
@@ -115,95 +130,46 @@
 
   function createMap(context) {
     const { state } = requireMapContext(context);
-    state.map = Array.from({ length: MAP_W * MAP_H }, () => TILE_GRASS);
-
+    validateWorldMap();
+    state.map = [];
     for (let y = 0; y < MAP_H; y += 1) {
+      const row = WORLD_MAP[y];
       for (let x = 0; x < MAP_W; x += 1) {
-        const n = hashNoise(x, y);
-        if (x === 0 || y === 0 || x === MAP_W - 1 || y === MAP_H - 1) setTile(context, x, y, TILE_TREE);
-        else if (n > 0.86) setTile(context, x, y, TILE_FLOWER);
-        else if (n < 0.06) setTile(context, x, y, TILE_FIELD);
+        state.map.push(TILE_BY_CHAR[row[x]] ?? TILE_GRASS);
       }
     }
+    state.npcs = WORLD_OBJECTS.filter((object) => object.type === "npc").map(objectToNpc);
+  }
 
-    for (let y = 3; y < MAP_H - 2; y += 1) {
-      const riverX = 44 + Math.floor(Math.sin(y * 0.37) * 4);
-      for (let x = riverX; x < riverX + 4; x += 1) setTile(context, x, y, TILE_WATER);
+  function validateWorldMap() {
+    if (worldMapData.width !== MAP_W || worldMapData.height !== MAP_H) {
+      throw new Error(`WORLD_MAP size ${worldMapData.width}x${worldMapData.height} must match definitions ${MAP_W}x${MAP_H}`);
     }
-
-    fillEllipse(context, 16, 15, 9, 7, TILE_TREE);
-    fillEllipse(context, 47, 43, 11, 8, TILE_TREE);
-    fillEllipse(context, 55, 15, 8, 7, TILE_WALL);
-
-    for (let x = 7; x <= 55; x += 1) setTile(context, x, 49, TILE_PATH);
-    for (let y = 13; y <= 53; y += 1) setTile(context, 11, y, TILE_PATH);
-    for (let y = 39; y <= 55; y += 1) {
-      for (let x = 5; x <= 17; x += 1) setTile(context, x, y, TILE_FLOOR);
+    if (!Array.isArray(WORLD_MAP) || WORLD_MAP.length !== MAP_H) {
+      throw new Error(`WORLD_MAP must contain ${MAP_H} rows`);
     }
-    for (let x = 8; x <= 13; x += 1) setTile(context, x, 49, TILE_PATH);
-    for (let y = 44; y <= 51; y += 1) setTile(context, 16, y, TILE_PATH);
-    placeHouse(context, 6, 40, 5, 5);
-    placeHouse(context, 13, 41, 5, 5);
-    placeHouse(context, 7, 52, 6, 4);
-
-    for (let x = 47; x <= 55; x += 1) {
-      for (let y = 10; y <= 18; y += 1) {
-        if (x === 47 || x === 55 || y === 10 || y === 18) setTile(context, x, y, TILE_WALL);
-        else setTile(context, x, y, TILE_PATH);
+    for (let y = 0; y < MAP_H; y += 1) {
+      const row = WORLD_MAP[y];
+      if (typeof row !== "string" || row.length !== MAP_W) {
+        throw new Error(`WORLD_MAP row ${y} must be a ${MAP_W}-character string`);
       }
-    }
-    setTile(context, 51, 18, TILE_CAVE);
-    setTile(context, 51, 17, TILE_CAVE);
-    ensureRewardSitesReachable(context);
-
-    state.npcs = [
-      { x: 9 * TILE + 3 * WORLD_SCALE, y: 47 * TILE + 2 * WORLD_SCALE, w: 10 * WORLD_SCALE, h: 12 * WORLD_SCALE, dir: "down", type: "elder" },
-      { x: 15 * TILE + 4 * WORLD_SCALE, y: 48 * TILE + 1 * WORLD_SCALE, w: 10 * WORLD_SCALE, h: 12 * WORLD_SCALE, dir: "left", type: "smith" },
-      { x: 13 * TILE + 3 * WORLD_SCALE, y: 43 * TILE + 2 * WORLD_SCALE, w: 10 * WORLD_SCALE, h: 12 * WORLD_SCALE, dir: "down", type: "healer" },
-    ];
-  }
-
-  function ensureRewardSitesReachable(context) {
-    for (const chest of TREASURE_CHESTS) {
-      carveRewardClearing(context, chest.x, chest.y);
-    }
-    for (const discovery of DISCOVERY_POINTS) {
-      carveRewardClearing(context, discovery.x, discovery.y);
-    }
-    carveRewardClearing(context, GUARDIAN_SITE.x, GUARDIAN_SITE.y);
-  }
-
-  function carveRewardClearing(context, cx, cy) {
-    for (let y = cy - 1; y <= cy + 1; y += 1) {
-      for (let x = cx - 1; x <= cx + 1; x += 1) {
-        if (x <= 0 || y <= 0 || x >= MAP_W - 1 || y >= MAP_H - 1) continue;
-        const tile = tileAt(context, x, y);
-        if (tile === TILE_WALL || tile === TILE_ROOF || tile === TILE_TREE || tile === TILE_WATER) {
-          setTile(context, x, y, inTownTile(context, x, y) ? TILE_FLOOR : TILE_PATH);
+      for (let x = 0; x < MAP_W; x += 1) {
+        if (!(row[x] in TILE_BY_CHAR)) {
+          throw new Error(`WORLD_MAP has unknown tile '${row[x]}' at ${x},${y}`);
         }
       }
     }
   }
 
-  function fillEllipse(context, cx, cy, rx, ry, tile) {
-    for (let y = cy - ry; y <= cy + ry; y += 1) {
-      for (let x = cx - rx; x <= cx + rx; x += 1) {
-        const dx = (x - cx) / rx;
-        const dy = (y - cy) / ry;
-        if (dx * dx + dy * dy <= 1) setTile(context, x, y, tile);
-      }
-    }
-  }
-
-  function placeHouse(context, tx, ty, tw, th) {
-    for (let y = ty; y < ty + th; y += 1) {
-      for (let x = tx; x < tx + tw; x += 1) {
-        if (y === ty) setTile(context, x, y, TILE_ROOF);
-        else if (x === tx || x === tx + tw - 1 || y === ty + th - 1) setTile(context, x, y, TILE_WALL);
-        else setTile(context, x, y, TILE_FLOOR);
-      }
-    }
-    setTile(context, tx + Math.floor(tw / 2), ty + th - 1, TILE_FLOOR);
+  function objectToNpc(object) {
+    return {
+      x: object.x * TILE + (object.offsetX || 0) * WORLD_SCALE,
+      y: object.y * TILE + (object.offsetY || 0) * WORLD_SCALE,
+      w: (object.w || 10) * WORLD_SCALE,
+      h: (object.h || 12) * WORLD_SCALE,
+      dir: object.dir || "down",
+      type: object.npcType,
+    };
   }
 
   globalThis.DRAGON_HUNTER_MAP = {

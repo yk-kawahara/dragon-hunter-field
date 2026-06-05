@@ -102,3 +102,45 @@
 - `git diff --check` passed after the sprite split and documentation updates.
 - Git commit was intentionally not created in this pass because the working tree contains broad user-led manual changes that should be reviewed/staged intentionally.
 - Remaining risk: real browser visual QA is still needed to confirm the new player frames appear correctly in motion and at the current in-game draw scale.
+
+## 2026-06-05 Fixed Map Pass
+- Replaced the old pseudo-random map fill in `src/systems/map.js` with a fixed, hand-editable tile layout.
+- Removed map-generation dependency on `hashNoise` and sine-based river placement; the map now uses explicit fixed painters such as world border, ground detail patches, river, forests/ridges, roads, village, and dragon cave.
+- Expanded the world size from 64x64 tiles to 80x72 tiles in `src/data/definitions.js`.
+- Added fixed east/southeast expansion space while preserving the existing village, North Forest, river/east area, Guardian site, treasure/discovery coordinates, and dragon cave progression.
+- Fixed a first-pass connectivity issue where the North Forest reward area and dragon cave became isolated by the new fixed forest/ridge painting. Added explicit road cuts to the North Forest, Guardian site, dragon cache, and cave entrance.
+- Verification:
+  - Bundled Node syntax checks passed for all JavaScript files under `src/`.
+  - VM map creation check passed: map size 80x72, 0 blocked important sites, and all 3 NPCs placed.
+  - BFS reachability from the player start passed for all treasure chests, hidden discoveries, Guardian site, dragon cave entrance, north road, far-east road, and the new east expansion path.
+  - Region spawn spot checks passed for grassland, wilds, north, east, cave, and expansion samples, each with nearby passable spawn space.
+  - `src/systems/map.js` no longer contains map-generation random/noise/sine references.
+- Remaining risk: real browser visual QA is still needed to confirm the expanded fixed map feels good in motion and that the screen framing around the new east/southeast area is readable.
+
+## 2026-06-05 Map Data Extraction Pass
+- Created `src/data/maps/world.js` as the dedicated human-editable world map data file.
+- `src/data/maps/world.js` now owns:
+  - `WORLD_MAP`: 80x72 fixed tile rows using a simple character legend.
+  - `WORLD_OBJECTS`: initial object data for NPC placement, separated from terrain tiles.
+- Updated `index.html` to load `src/data/maps/world.js` after definitions and before `src/systems/map.js`.
+- Reworked `src/systems/map.js` so terrain is loaded from `DRAGON_HUNTER_WORLD_MAP` instead of being painted procedurally by code.
+- Removed the temporary fixed-map painter functions from `src/systems/map.js`; future terrain edits should change `src/data/maps/world.js`.
+- Verification:
+  - Bundled Node syntax checks passed for all JavaScript files under `src/`.
+  - VM world-map data load passed: data size 80x72 matched definitions.
+  - BFS reachability from the player start passed for all treasure chests, hidden discoveries, Guardian site, dragon cave entrance, north road, far-east road, and east expansion path.
+  - Region spawn spot checks passed for grassland, wilds, north, east, cave, and expansion samples.
+  - NPC object conversion produced elder, smith, and healer placements.
+- Remaining risk: browser visual QA is still needed to confirm the data-driven fixed map looks good in the actual canvas.
+
+## 2026-06-05 Remaining Task Cleanup Pass
+- Updated stale architecture and script-order documentation in `AGENTS.md`, `IMPROVEMENT_PLAN.md`, and `NEXT_CODEX_TASK.md` so `src/data/maps/world.js` loads after definitions and before `src/systems/map.js`, and `src/data/audio.js` is reflected before `src/game.js`.
+- Corrected the saved verification target in `NEXT_CODEX_TASK.md` from the old `dragon-hunter-field-save-v1` key to the current `dragon-hunter-field-save-v2-32px` key.
+- Added `docs/MAP_EDITING.md` to document how to edit `WORLD_MAP`, how `WORLD_OBJECTS` is used, and what must be verified after terrain edits.
+- Generated fixed-map preview artifacts:
+  - `docs/world-map-preview.png`
+  - `docs/world-map-preview.svg`
+- Visual preview inspection shows the fixed world has a readable village, North Forest, river, dragon cave area, and east/southeast expansion path.
+- VM script-order smoke passed by loading all 22 `index.html` scripts in order with DOM/canvas/audio stubs. This confirms `src/data/maps/world.js` and `src/data/audio.js` are documented and loaded in the expected order.
+- VM save/load persistence smoke passed for opened chests, discovered rewards, equipment ranks, scales, seal crest, hunter charm, regeneration charm, Guardian defeated state, dragon defeated state, elder report state, and weaker equipment anti-downgrade guards.
+- Remaining risk: actual browser desktop/mobile QA and a full manual playthrough still require browser interaction that is not available in this tool session.

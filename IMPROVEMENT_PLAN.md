@@ -28,6 +28,7 @@ Current architecture:
 ```text
 src/data/
   definitions.js  Static constants, tiles, equipment data, monster definitions, treasure/discovery definitions.
+  maps/world.js   Human-editable fixed world map rows and map object placements.
 
 src/core/
   math.js         Pure math/geometry helpers.
@@ -35,7 +36,7 @@ src/core/
   context.js      Context factory that wires state/player/helpers into each system.
 
 src/systems/
-  map.js          Map generation, tile access, town/gate/collision helpers.
+  map.js          Map data loading, validation, tile access, town/gate/collision helpers.
   spawn.js        Region selection, monster spawning, regional replenishment, Guardian spawn story events.
   monsters.js     Enemy AI, contact combat, contact status effects, monster defeat, level-up side effects.
   combat.js       Player combat/stat calculations and equipment multipliers.
@@ -67,6 +68,7 @@ Expected `index.html` script order:
 
 ```html
 <script src="src/data/definitions.js"></script>
+<script src="src/data/maps/world.js"></script>
 <script src="src/core/math.js"></script>
 <script src="src/core/state.js"></script>
 <script src="src/core/context.js"></script>
@@ -86,6 +88,7 @@ Expected `index.html` script order:
 <script src="src/systems/render.js"></script>
 <script src="src/systems/ui.js"></script>
 <script src="src/systems/controls.js"></script>
+<script src="src/data/audio.js"></script>
 <script src="src/game.js"></script>
 ```
 
@@ -438,6 +441,12 @@ Current status:
 
 ### Exploration
 
+* Map terrain is now fixed rather than pseudo-random, with a hand-editable 80x72 layout in `src/data/maps/world.js`.
+* `src/systems/map.js` should stay as a loader/validator/collision helper; terrain edits belong in the map data file.
+* `WORLD_OBJECTS` in `src/data/maps/world.js` is the first step toward separating NPCs, future bosses, treasure, and landmarks from terrain tiles.
+* `docs/MAP_EDITING.md` documents the map editing workflow.
+* `docs/world-map-preview.png` and `docs/world-map-preview.svg` provide whole-map previews for quick visual checks after edits.
+* Prefer improving the fixed east/southeast expansion with deliberate rewards, shortcuts, or danger gradients instead of reintroducing random terrain generation.
 * Add additional exploration rewards that increase survivability.
 * Add more events to East Forest and River areas.
 * Improve hidden discovery placement.
@@ -506,6 +515,9 @@ Current automated verification:
 * Strength command info-panel cycling simulation passes for equipment, survival, and inventory pages.
 * Dragon spawn, defeat, elder report, save/load persistence smoke test passes.
 * Balance spot-check supports the intended power reversal: leather sharply reduces early slime damage and chain armor can make weak enemies nearly harmless.
+* Script-order VM smoke passes for all 22 `index.html` scripts, including `src/data/maps/world.js` and `src/data/audio.js`.
+* Save/load VM smoke passes for opened chests, discoveries, equipment, charms, boss flags, elder report state, and weak-equipment anti-downgrade guards.
+* Fixed map preview exists at `docs/world-map-preview.png` / `docs/world-map-preview.svg` and was visually inspected for the village, North Forest, river, dragon cave, and east/southeast expansion.
 
 Still required:
 

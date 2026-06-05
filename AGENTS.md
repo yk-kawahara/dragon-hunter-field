@@ -799,6 +799,7 @@ The project has completed a behavior-neutral extraction phase. Treat the current
 ```text
 src/data/
   definitions.js  Static constants, tiles, equipment data, monster definitions, treasure/discovery definitions.
+  maps/world.js   Human-editable fixed world map rows and map object placements.
 
 src/core/
   math.js         Pure math/geometry helpers.
@@ -806,7 +807,7 @@ src/core/
   context.js      Context factory that wires state/player/helpers into each system.
 
 src/systems/
-  map.js          Map generation, tile access, town/gate/collision helpers.
+  map.js          Map data loading, validation, tile access, town/gate/collision helpers.
   spawn.js        Region selection, monster spawning, regional replenishment, Guardian spawn story events.
   monsters.js     Enemy AI, contact combat, contact status effects, monster defeat, level-up side effects.
   combat.js       Player combat/stat calculations and equipment multipliers.
@@ -830,6 +831,7 @@ Expected non-module script order in `index.html`:
 
 ```html
 <script src="src/data/definitions.js"></script>
+<script src="src/data/maps/world.js"></script>
 <script src="src/core/math.js"></script>
 <script src="src/core/state.js"></script>
 <script src="src/core/context.js"></script>
@@ -849,6 +851,7 @@ Expected non-module script order in `index.html`:
 <script src="src/systems/render.js"></script>
 <script src="src/systems/ui.js"></script>
 <script src="src/systems/controls.js"></script>
+<script src="src/data/audio.js"></script>
 <script src="src/game.js"></script>
 ```
 

@@ -798,6 +798,34 @@ Empty distant areas should be avoided.
 The player should never feel that the most valuable gameplay remains near the village after becoming stronger.
 
 
+\## Fixed Map Direction
+
+
+The world map should be treated as a fixed, hand-authored tile map.
+
+
+This project previously used deterministic pseudo-random terrain detail, but future map work should favor explicit tile painting so areas can be adjusted by hand.
+
+
+Current fixed-map direction:
+
+\* `src/data/definitions.js` defines an 80x72 world.
+
+\* `src/data/maps/world.js` is the primary human-editable world map data file.
+
+\* `WORLD_MAP` in `src/data/maps/world.js` defines terrain rows using a compact character legend.
+
+\* `WORLD_OBJECTS` in `src/data/maps/world.js` stores map objects such as NPC placements separately from terrain.
+
+\* `src/systems/map.js` should load and validate map data; it should not become a terrain painting script again.
+
+\* `docs/MAP_EDITING.md` documents the editing workflow, and `docs/world-map-preview.png` gives a quick whole-world visual check.
+
+\* The fixed east/southeast expansion should become a deliberate survival-range destination, not empty filler.
+
+\* Random/noise terrain should not be reintroduced unless there is a very clear gameplay reason.
+
+
 
 \## Tempo Principle
 

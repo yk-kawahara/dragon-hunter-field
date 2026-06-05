@@ -8,8 +8,8 @@
   const VIEW_H = 144 * WORLD_SCALE;
   const HUD_H = H - VIEW_H;
   const TILE = BASE_TILE * WORLD_SCALE;
-  const MAP_W = 64;
-  const MAP_H = 64;
+  const MAP_W = 80;
+  const MAP_H = 72;
   const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const TOWN_GATES = [

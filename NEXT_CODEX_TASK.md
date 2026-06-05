@@ -9,6 +9,7 @@ Expected current structure:
 ```text
 src/data/
   definitions.js  Static constants, tiles, equipment data, monster definitions, treasure/discovery definitions.
+  maps/world.js   Human-editable fixed world map rows and map object placements.
 
 src/core/
   math.js         Pure math/geometry helpers.
@@ -16,7 +17,7 @@ src/core/
   context.js      Context factory that wires state/player/helpers into each system.
 
 src/systems/
-  map.js          Map generation, tile access, town/gate/collision helpers.
+  map.js          Map data loading, validation, tile access, town/gate/collision helpers.
   spawn.js        Region selection, monster spawning, regional replenishment, Guardian spawn story events.
   monsters.js     Enemy AI, contact combat, contact status effects, monster defeat, level-up side effects.
   combat.js       Player combat/stat calculations and equipment multipliers.
@@ -40,6 +41,7 @@ Expected script loading order in `index.html`:
 
 ```html
 <script src="src/data/definitions.js"></script>
+<script src="src/data/maps/world.js"></script>
 <script src="src/core/math.js"></script>
 <script src="src/core/state.js"></script>
 <script src="src/core/context.js"></script>
@@ -59,6 +61,7 @@ Expected script loading order in `index.html`:
 <script src="src/systems/render.js"></script>
 <script src="src/systems/ui.js"></script>
 <script src="src/systems/controls.js"></script>
+<script src="src/data/audio.js"></script>
 <script src="src/game.js"></script>
 ```
 
@@ -80,6 +83,10 @@ Important note:
 * Kept the survival-range expansion game design unchanged.
 * Added player art support through independent frame files under `assets/player/`.
 * Split `assets/player.png` into eight 32x32 frame PNGs matching the render loader paths.
+* Converted the terrain from pseudo-random generation to a fixed 80x72 hand-editable map in `src/systems/map.js`.
+* Moved the fixed terrain data into `src/data/maps/world.js`; future map edits should change `WORLD_MAP` rows there.
+* Added `WORLD_OBJECTS` in `src/data/maps/world.js` for NPC placement separate from terrain tiles.
+* Added `docs/MAP_EDITING.md` and whole-map previews at `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
 
 ## Remaining Critical / High Priority
 
@@ -89,8 +96,10 @@ Important note:
 * Verify that enemy AI, contact combat, projectiles, monster defeat, level-up, Guardian defeat, red dragon defeat, and elder report still work after the `monsters.js` split.
 * Verify save/load after opened chests, discovered hidden rewards, equipment upgrades, seal crest, boss defeat, and elder report.
 * Verify objective guidance and context prompts fit the small mobile-style screen.
-* Verify the refactored script loading order in `index.html` exactly matches the expected order above.
+* Verify save/load, objective guidance, context prompts, and script loading in a real browser. VM smoke tests already pass, but browser QA is still required.
+* Verify `docs/world-map-preview.png` reflects the current `WORLD_MAP` after any terrain edits.
 * Verify the new player frame files render correctly in all four directions and both idle/walk poses.
+* Verify the fixed 80x72 map in browser, especially North Forest access, river/east access, dragon cave access, and the new east/southeast expansion.
 
 ## First Task For Next Codex
 
@@ -128,7 +137,7 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `DEVELOPMENT_LO
 * Hidden discovery reveal.
 * Gathering.
 * Item use: medicine, fire bottle, ward.
-* Save/load from localStorage key `dragon-hunter-field-save-v1`.
+* Save/load from localStorage key `dragon-hunter-field-save-v2-32px`.
 * Enemy spawn in grassland, Wilds, North Forest, East Forest/River, and Dragon Cave.
 * Enemy movement and contact combat.
 * Boar charge.
@@ -141,3 +150,6 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `DEVELOPMENT_LO
 * Elder report and final clear state.
 * Objective/guidance/context prompts fit the screen.
 * Player frame animation looks correct for down, left, right, and up movement.
+* Fixed map visual QA: no blocked-feeling roads, no confusing river crossings, no unreachable-looking rewards, and no empty-feeling expansion area.
+* Future terrain changes should edit `src/data/maps/world.js`, not procedural painters in `src/systems/map.js`.
+* Regenerate whole-map previews after terrain edits.

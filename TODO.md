@@ -51,6 +51,12 @@
 * Recognized new audio/player asset work, including `assets/audio/field.ogg`, `src/data/audio.js`, and `assets/player.png`.
 * Split `assets/player.png` into eight independent 32x32 player frames under `assets/player/`.
 * Confirmed the generated frame names match the current render loader: `down_idle`, `down_walk`, `left_idle`, `left_walk`, `right_idle`, `right_walk`, `up_idle`, and `up_walk`.
+* Moved terrain data into `src/data/maps/world.js` so the world can be edited directly by hand.
+* Added `WORLD_OBJECTS` in `src/data/maps/world.js` for NPC placement separate from terrain.
+* Added `docs/MAP_EDITING.md` and generated `docs/world-map-preview.png` / `docs/world-map-preview.svg` for fixed-map editing support.
+* Updated script-order documentation to include `src/data/maps/world.js` and `src/data/audio.js`.
+* Verified `index.html` script order with a VM DOM/canvas/audio smoke test.
+* Verified save/load persistence for chests, discoveries, equipment, charms, boss flags, and elder report state with a VM smoke test.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -98,6 +104,7 @@
 
 * Run real desktop and mobile browser visual QA when browser automation is available.
 * Perform a full manual playthrough from new save to red dragon clear and elder report.
+* Real-browser verify save/load UI behavior after opened chests, discoveries, equipment upgrades, boss defeat, and elder report.
 * Continue balance testing for whether gold, EXP, medicines, and shop prices make the first armor purchase and level 4 timing feel natural.
 * Manually verify whether the new local monster pruning feels natural during long-distance travel.
 * Manually verify that the new objective guidance and context prompts do not clutter the small mobile-style screen.
@@ -177,6 +184,7 @@
 ## Gameplay and Balance
 
 * Browser visual test on desktop and mobile viewport.
+* Regenerate `docs/world-map-preview.png` after future terrain edits.
 * Balance a full playthrough from level 1 to dragon clear.
 * Manually verify that first armor purchase timing feels natural in browser play.
 * Tune EXP and gold so a normal run reaches level 4 naturally.
@@ -187,6 +195,9 @@
 
 ## Exploration
 
+* Current map generation is now fixed and hand-editable through `src/data/maps/world.js`; future terrain edits should change `WORLD_MAP` rows there rather than adding random/noise terrain.
+* Keep map objects separated from terrain where practical; `WORLD_OBJECTS` in `src/data/maps/world.js` currently owns NPC placements.
+* Use the new 80x72 map space to add meaningful east/southeast exploration only after browser QA confirms the fixed expansion feels good.
 * Add two more meaningful exploration rewards outside the main path.
 * Add more map events in the east forest and river area.
 * Add a dangerous optional area that is painful early but rewarding later.
