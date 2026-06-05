@@ -208,6 +208,25 @@ Verified:
 * No gameplay code was intentionally split in this pass.
 * Bundled Node syntax check, `git diff --check`, and VM smoke checks passed before commit.
 
+### Refactor Extraction Pass Cycle 12
+
+Problem:
+
+* `src/game.js` still contained all static definitions, making routine balance/data edits require opening the largest file in the project.
+
+Implemented:
+
+* Extracted static definitions to `src/data/definitions.js`: screen/map constants, save key, town gates, treasure, discoveries, boss requirements, regions, tile/direction constants, tempo constants, equipment data, item order, and monster definitions.
+* Loaded `src/data/definitions.js` before `src/game.js` in `index.html`.
+* Kept the app as non-module scripts using `globalThis.DRAGON_HUNTER_DEFINITIONS` so local direct browser loading remains viable.
+* Left all behavior hubs in `src/game.js`: player update, enemy AI, combat, save/load, NPCs, boss flow, drawing orchestration, input, loop, and init.
+
+Verified:
+
+* Bundled Node syntax checks passed for `src/data/definitions.js` and `src/game.js`.
+* `git diff --check` passed.
+* VM smoke checks passed for definitions loading, static reward reachability, region spawn pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
+
 ---
 
 ## Critical Issues Discovered During Real Playtesting
@@ -355,9 +374,9 @@ Current status:
 
 ### Refactoring
 
-* First future split: extract static definitions to `src/data/definitions.js`.
-* Second future split: extract pure math helpers to `src/core/math.js`.
-* Third future split: extract pure reward ID validation and equipment comparison helpers.
+* Completed first split: static definitions now live in `src/data/definitions.js`.
+* Next split: extract pure math helpers to `src/core/math.js`.
+* Later split: extract pure reward ID validation and equipment comparison helpers.
 * Do not split behavior hubs until the above are green and repeatable VM checks are available.
 * Use `docs/REFACTOR_CHECKLIST.md` for each extraction.
 

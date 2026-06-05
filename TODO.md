@@ -42,6 +42,9 @@
 * Created `docs/REFACTOR_CHECKLIST.md` for future behavior-neutral extraction passes.
 * Identified static data and pure helpers as the first low-risk refactor targets.
 * Explicitly marked player update, enemy AI, combat, save/load, NPC behavior, draw orchestration, input, and boss flow as high-risk targets to avoid in the first split.
+* Extracted static gameplay definitions into `src/data/definitions.js`.
+* Kept `index.html` as non-module scripts by loading definitions before `src/game.js`, preserving direct local browser compatibility.
+* Left behavior hubs in `src/game.js`; no player, enemy AI, combat, save/load, NPC, boss, draw orchestration, input, loop, or init logic was split.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -219,7 +222,7 @@
 
 ## Refactoring Plan
 
-- Current state: `src/game.js` responsibilities are classified in `REFACTOR_PLAN.md`.
+- Current state: `src/game.js` responsibilities are classified in `REFACTOR_PLAN.md`; static definitions now live in `src/data/definitions.js`.
 - Do not perform large file splitting until static data and pure helpers are extracted and verified.
 - Proposed future modules:
   - `src/core/state.js`
@@ -235,7 +238,7 @@
   - `src/systems/save.js`
   - `src/ui/hud.js`
   - `src/ui/menu.js`
-- First refactor should extract only static definitions and pure helper functions.
+- First refactor extracted static definitions. Next refactor should extract only pure helper functions.
 - Avoid changing behavior during the first split.
 - Verify the game after every small extraction.
 - Use `docs/REFACTOR_CHECKLIST.md` before and after each future split.

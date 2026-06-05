@@ -55,3 +55,10 @@
 - Cycle 11: Created `docs/REFACTOR_CHECKLIST.md` so the next refactor pass can follow a repeatable checklist before and after extraction.
 - Cycle 11 decision: did not split `src/game.js` yet. Static definitions and pure helpers should be extracted first; behavior hubs such as player update, enemy AI, combat, save/load, NPCs, drawing orchestration, input, bosses, and loop/init should remain in place until the safe extractions are verified.
 - Verification note: no gameplay behavior was intentionally changed in this pass. Syntax, VM smoke checks, and `git diff --check` were run before commit.
+- Refactor extraction analysis: the first low-risk split was static definitions, because they are read by many systems but do not own runtime behavior.
+- Cycle 12: Added `src/data/definitions.js` and moved screen/map constants, save key, town gates, treasure, discoveries, boss requirements, region spawns, tile/direction constants, tempo constants, equipment data, item order, and monster definitions into it.
+- Cycle 12: Updated `index.html` to load `src/data/definitions.js` before `src/game.js`; kept non-module scripts to avoid breaking direct local HTML loading.
+- Cycle 12: Updated `src/game.js` to destructure the same local names from `globalThis.DRAGON_HUNTER_DEFINITIONS`, leaving behavior code unchanged.
+- Cycle 12 decision: did not split player update, enemy AI, contact combat, projectiles, rewards, NPCs, save/load, boss flow, drawing orchestration, input, loop, or init.
+- Cycle 12 verification: bundled Node syntax checks passed for `src/data/definitions.js` and `src/game.js`; `git diff --check` passed; VM smoke checks passed for definitions loading, static reward reachability, region pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
+- Cycle 12 remaining risk: real browser visual QA remains pending because Browser tooling was not available in this turn.

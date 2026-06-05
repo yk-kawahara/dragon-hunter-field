@@ -17,16 +17,23 @@ Use this checklist before and after every future `src/game.js` split.
 
 ## Safe First Targets
 
-* Equipment definitions.
-* Enemy definitions.
-* Treasure chest definitions.
-* Discovery point definitions.
-* Region spawn definitions.
-* Tile and direction constants.
-* Tempo constants.
+* Equipment definitions. Done: `src/data/definitions.js`.
+* Enemy definitions. Done: `src/data/definitions.js`.
+* Treasure chest definitions. Done: `src/data/definitions.js`.
+* Discovery point definitions. Done: `src/data/definitions.js`.
+* Region spawn definitions. Done: `src/data/definitions.js`.
+* Tile and direction constants. Done: `src/data/definitions.js`.
+* Tempo constants. Done: `src/data/definitions.js`.
 * Pure math helpers.
 * Pure reward ID validation helpers.
 * Pure equipment comparison helpers.
+
+## Current Loading Contract
+
+* `index.html` must load `src/data/definitions.js` before `src/game.js`.
+* `src/data/definitions.js` must define `globalThis.DRAGON_HUNTER_DEFINITIONS`.
+* `src/game.js` must keep using the same local constant names after destructuring.
+* Do not convert to ES modules unless a local dev-server workflow is introduced and verified.
 
 ## Do Not Move Without Stronger Tests
 
@@ -44,6 +51,7 @@ Use this checklist before and after every future `src/game.js` split.
 ## Required Checks
 
 * `node --check src/game.js`
+* `node --check src/data/definitions.js`
 * `git diff --check`
 * Static reward reachability VM check.
 * Region spawn VM check.

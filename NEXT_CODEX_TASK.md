@@ -10,6 +10,9 @@
 * Updated `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, and `DEVELOPMENT_LOG.md`.
 * Created `REFACTOR_PLAN.md` and `docs/REFACTOR_CHECKLIST.md` for safe future `src/game.js` extraction.
 * Classified `src/game.js` responsibilities and marked static definitions/pure helpers as the first low-risk split targets.
+* Extracted static definitions into `src/data/definitions.js`.
+* Updated `index.html` so definitions load before `src/game.js`.
+* Preserved non-module script loading to avoid requiring a dev server for local play.
 
 ## Remaining Critical / High Priority
 
@@ -18,15 +21,15 @@
 * Balance-test gold, EXP, medicines, shop prices, and level 4 timing in a real run.
 * Verify that objective guidance and context prompts fit the small mobile-style screen.
 * Consider a simple equipment inventory or comparison screen if future rewards become sidegrades instead of rank upgrades.
-* Begin behavior-neutral refactoring only with static definitions and pure helpers; do not split behavior hubs yet.
+* Continue behavior-neutral refactoring only with pure helpers; do not split behavior hubs yet.
 
 ## First Task For Next Codex
 
-If the next task is refactoring, read `REFACTOR_PLAN.md` and `docs/REFACTOR_CHECKLIST.md`, then perform only the first low-risk extraction: move static definitions to `src/data/definitions.js` without changing names, values, save shape, or gameplay behavior. If the next task is playtesting, run a full browser playtest pass focused on whether the survival-range expansion loop feels good from a new save through the first armor purchase, North Forest exploration, dragon scale collection, Guardian defeat, red dragon defeat, and elder report.
+If the next task is refactoring, read `REFACTOR_PLAN.md` and `docs/REFACTOR_CHECKLIST.md`, then perform only the next low-risk extraction: move pure math helpers to `src/core/math.js` without moving player update, enemy AI, combat, save/load, NPCs, drawing orchestration, input, boss flow, loop, or init. If the next task is playtesting, run a full browser playtest pass focused on whether the survival-range expansion loop feels good from a new save through the first armor purchase, North Forest exploration, dragon scale collection, Guardian defeat, red dragon defeat, and elder report.
 
 ## Recommended Prompt
 
-Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `TODO.md`, `IMPROVEMENT_PLAN.md`, `DEVELOPMENT_LOG.md`, `NEXT_CODEX_TASK.md`, `REFACTOR_PLAN.md`, and `docs/REFACTOR_CHECKLIST.md` first. This is a behavior-neutral refactor pass. Extract only static definitions from `src/game.js` into a data module, keep names and values unchanged, do not move player update, enemy AI, combat, save/load, NPCs, drawing orchestration, input, boss flow, loop, or init. Run syntax, diff, and VM smoke checks, update management files, commit, and push.
+Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `TODO.md`, `IMPROVEMENT_PLAN.md`, `DEVELOPMENT_LOG.md`, `NEXT_CODEX_TASK.md`, `REFACTOR_PLAN.md`, and `docs/REFACTOR_CHECKLIST.md` first. This is a behavior-neutral refactor pass. Static definitions are already in `src/data/definitions.js`; next extract only pure math helpers into `src/core/math.js`, keep names and behavior unchanged, and do not move player update, enemy AI, combat, save/load, NPCs, drawing orchestration, input, boss flow, loop, or init. Run syntax, diff, and VM smoke checks, update management files, commit, and push.
 
 ## Verification Items
 
@@ -44,3 +47,5 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `TODO.md`, `IMPROVEMENT_PLAN.md`, `DEV
 * Static definitions extraction keeps all values identical
 * Reward ID validation still rejects unknown saved IDs
 * Equipment anti-downgrade behavior still passes after imports are introduced
+* `src/data/definitions.js` loads before `src/game.js`
+* Pure helper extraction keeps VM smoke checks green

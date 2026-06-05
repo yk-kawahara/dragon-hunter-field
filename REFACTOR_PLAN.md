@@ -147,6 +147,8 @@ Risk:
 
    Include equipment definitions, enemy definitions, treasure definitions, discovery definitions, region definitions, tile constants, direction constants, and tempo constants. Keep exported names identical.
 
+   Current status: completed with `src/data/definitions.js`. To preserve direct browser/file loading, definitions are loaded before `src/game.js` and exposed through `globalThis.DRAGON_HUNTER_DEFINITIONS` instead of converting the app to ES modules.
+
 2. Extract pure utility helpers into `src/core/math.js`.
 
    Include `clamp`, `hashNoise`, `rectsOverlap`, `centerOf`, `normalize`, `facingDot`, `directionFromVector`, and `makeRect`. Keep random helpers in `game.js` at first if deterministic VM tests are not ready.
@@ -194,9 +196,32 @@ Why:
 
 Implementation guard:
 
-* Extract in one small commit.
-* Keep names exactly the same at import sites.
-* Run syntax check, VM reward persistence checks, region spawn checks, clear-flow checks, and `git diff --check`.
+* Completed in one small extraction.
+* Names remain the same inside `src/game.js` through destructuring from the definitions object.
+* Syntax check, VM reward persistence checks, region spawn checks, clear-flow checks, and `git diff --check` must remain green.
+
+## Next Low-Risk Split Candidate
+
+Next target:
+
+* `clamp`
+* `hashNoise`
+* `rectsOverlap`
+* `centerOf`
+* `normalize`
+* `facingDot`
+* `directionFromVector`
+* `makeRect`
+
+Recommended file:
+
+* `src/core/math.js`
+
+Guard:
+
+* Keep `rand` and `irand` in `src/game.js` during the next pass unless deterministic spawn tests are strengthened.
+* Keep all behavior hubs in `src/game.js`.
+* Run the same VM smoke checks after extraction.
 
 ## Do Not Split Yet
 
