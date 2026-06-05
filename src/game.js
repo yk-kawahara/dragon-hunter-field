@@ -41,6 +41,8 @@ const TREASURE_CHESTS = [
   { id: "east-grove", x: 56, y: 43, reward: "armor" },
   { id: "dragon-cache", x: 50, y: 16, reward: "scale" },
 ];
+const GUARDIAN_SITE = { x: 20, y: 16 };
+const BOSS_REQUIREMENTS = { level: 4, scales: 3 };
 
 const TILE_GRASS = 0;
 const TILE_PATH = 1;
@@ -130,6 +132,19 @@ const monsterTypes = {
     shadow: "#6b0d0b",
     drop: 0.5,
   },
+  guardian: {
+    name: "森の守護者",
+    hp: 150,
+    atk: 22,
+    def: 6,
+    speed: 24,
+    xp: 180,
+    gold: 140,
+    color: "#55c7a0",
+    shadow: "#1d5c4b",
+    midboss: true,
+    drop: 1,
+  },
   dragon: {
     name: "赤竜",
     hp: 280,
@@ -160,6 +175,9 @@ const state = {
   chests: new Set(),
   spawnedBoss: false,
   bossDefeated: false,
+  spawnedGuardian: false,
+  guardianDefeated: false,
+  elderReported: false,
   spawnTimer: 600,
   message: "",
   messageUntil: 0,
@@ -194,6 +212,7 @@ const player = {
   wards: 0,
   selectedItem: "potion",
   scales: 0,
+  sealCrest: false,
   stamina: 100,
   staminaMax: 100,
   attackCooldown: 0,
@@ -388,7 +407,7 @@ function placeHouse(tx, ty, tw, th) {
 
 function spawnMonster(typeName, x, y) {
   const template = monsterTypes[typeName];
-  const size = template.boss ? 22 : typeName === "dragonling" ? 14 : 11;
+  const size = template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11;
   const monster = {
     type: typeName,
     name: template.name,
@@ -409,6 +428,7 @@ function spawnMonster(typeName, x, y) {
     drop: template.drop,
     flying: Boolean(template.flying),
     boss: Boolean(template.boss),
+    midboss: Boolean(template.midboss),
     isMonster: true,
     contactTimer: rand(0, 300),
     fireCooldown: rand(900, 1800),
@@ -452,6 +472,26 @@ function trySpawnMonster(dt) {
       spawnMonster(monsterChoice(), x, y);
       return;
     }
+  }
+}
+
+function guardianReady() {
+  return !state.guardianDefeated && player.level >= 3 && player.scales >= 2;
+}
+
+function playerNearGuardianSite() {
+  const pc = centerOf(player);
+  const gx = (GUARDIAN_SITE.x + 0.5) * TILE;
+  const gy = (GUARDIAN_SITE.y + 0.5) * TILE;
+  return Math.hypot(pc.x - gx, pc.y - gy) < 86;
+}
+
+function updateStoryEvents() {
+  if (state.gameOver || state.victory) return;
+  if (guardianReady() && !state.spawnedGuardian && playerNearGuardianSite()) {
+    state.spawnedGuardian = true;
+    spawnMonster("guardian", GUARDIAN_SITE.x * TILE, GUARDIAN_SITE.y * TILE);
+    say("北森の守護者が現れた!", 2600);
   }
 }
 
@@ -502,13 +542,17 @@ function saveGame() {
       wards: player.wards,
       selectedItem: player.selectedItem,
       scales: player.scales,
+      sealCrest: player.sealCrest,
     },
     spawnedBoss: state.spawnedBoss,
     bossDefeated: state.bossDefeated,
+    spawnedGuardian: state.spawnedGuardian,
+    guardianDefeated: state.guardianDefeated,
+    elderReported: state.elderReported,
     chests: Array.from(state.chests),
   };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-  say("保存しました");
+  say(`保存しました (${stageName(gameStage())})`);
 }
 
 function loadGame() {
@@ -518,6 +562,7 @@ function loadGame() {
     Object.assign(player, data.player);
     player.bombs ??= 1;
     player.wards ??= 0;
+    player.sealCrest = Boolean(player.sealCrest);
     player.staminaMax ??= 100;
     player.stamina = player.staminaMax;
     player.attackCooldown = 0;
@@ -526,8 +571,11 @@ function loadGame() {
     player.combo = 0;
     player.comboTimer = 0;
     player.guard = 0;
-    state.spawnedBoss = Boolean(data.spawnedBoss);
     state.bossDefeated = Boolean(data.bossDefeated);
+    state.guardianDefeated = Boolean(data.guardianDefeated);
+    state.spawnedBoss = state.bossDefeated ? Boolean(data.spawnedBoss) : false;
+    state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
+    state.elderReported = Boolean(data.elderReported);
     state.chests = new Set(data.chests || []);
     say("旅を再開しました");
     return true;
@@ -555,6 +603,7 @@ function resetGame() {
     bombs: 1,
     wards: 0,
     selectedItem: "potion",
+    sealCrest: false,
     invuln: 0,
     guard: 0,
     stamina: 100,
@@ -575,6 +624,9 @@ function resetGame() {
   state.projectiles = [];
   state.spawnedBoss = false;
   state.bossDefeated = false;
+  state.spawnedGuardian = false;
+  state.guardianDefeated = false;
+  state.elderReported = false;
   state.gameOver = false;
   state.victory = false;
   state.healCooldown = 0;
@@ -730,9 +782,9 @@ function updateMonsters(dt) {
       addRing(c.x, c.y, "#ff8a3d", 15);
     }
 
-    if ((monster.type === "wisp" || monster.boss) && monster.fireCooldown <= 0 && dist < (monster.boss ? 180 : 130)) {
+    if ((monster.type === "wisp" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < (monster.boss ? 180 : monster.midboss ? 150 : 130)) {
       shootProjectile(monster, playerCenter);
-      monster.fireCooldown = monster.boss ? rand(850, 1400) : rand(1300, 2100);
+      monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : rand(1300, 2100);
     }
 
     if (monster.windup > 0) {
@@ -774,18 +826,18 @@ function updateMonsters(dt) {
 function shootProjectile(monster, target) {
   const c = centerOf(monster);
   const aim = normalize(target.x - c.x, target.y - c.y);
-  const speed = monster.boss ? 78 : 62;
+  const speed = monster.boss ? 78 : monster.midboss ? 68 : 62;
   state.projectiles.push({
     x: c.x,
     y: c.y,
     vx: aim.x * speed,
     vy: aim.y * speed,
-    r: monster.boss ? 4 : 3,
-    damage: monster.boss ? 14 : 8,
-    color: monster.boss ? "#ff543d" : "#ffd166",
-    life: monster.boss ? 1500 : 1200,
+    r: monster.boss ? 4 : monster.midboss ? 3 : 3,
+    damage: monster.boss ? 14 : monster.midboss ? 11 : 8,
+    color: monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166",
+    life: monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
   });
-  addSlash(c.x + aim.x * 8, c.y + aim.y * 8, monster.dir, monster.boss ? "#ff543d" : "#ffd166");
+  addSlash(c.x + aim.x * 8, c.y + aim.y * 8, monster.dir, monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166");
 }
 
 function updateProjectiles(dt) {
@@ -891,7 +943,17 @@ function defeatMonster(monster) {
     say("竜の鱗を拾った");
   }
 
-  if (!monster.boss) {
+  if (monster.midboss) {
+    state.guardianDefeated = true;
+    player.sealCrest = true;
+    player.scales = Math.min(3, player.scales + 1);
+    player.wards = Math.min(9, player.wards + 2);
+    player.bombs = Math.min(9, player.bombs + 1);
+    addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#55c7a0", 42);
+    say("封印の紋章を手に入れた!", 4200);
+  }
+
+  if (!monster.boss && !monster.midboss) {
     const drop = Math.random();
     if (drop < 0.18) {
       player.potions = Math.min(9, player.potions + 1);
@@ -908,6 +970,7 @@ function defeatMonster(monster) {
   if (monster.boss) {
     state.bossDefeated = true;
     state.victory = true;
+    state.elderReported = false;
     player.scales = 3;
     say("赤竜を封じた!", 5000);
   }
@@ -1149,9 +1212,20 @@ function nearestNpc() {
 
 function handleNpc(npc) {
   if (npc.type === "elder") {
-    if (state.bossDefeated) say("長老「風が静かになったな」");
-    else if (player.scales >= 3) say("長老「北東の洞穴へ向かえ」");
-    else say("長老「魔物から竜の鱗を三枚集めよ」");
+    if (state.bossDefeated) {
+      state.elderReported = true;
+      say("長老「竜は封じられた。村は救われた」", 4200);
+    } else if (canChallengeDragon()) {
+      say("長老「封印は解けた。北東の竜洞へ向かえ」");
+    } else if (!state.guardianDefeated && guardianReady()) {
+      say("長老「北森の守護者を越え、紋章を得よ」");
+    } else if (player.scales < BOSS_REQUIREMENTS.scales) {
+      say(`長老「竜の鱗を${BOSS_REQUIREMENTS.scales}枚集めよ」`);
+    } else if (player.level < BOSS_REQUIREMENTS.level) {
+      say(`長老「赤竜にはLV${BOSS_REQUIREMENTS.level}が要る」`);
+    } else {
+      say("長老「北森に封印を守る者がいる」");
+    }
   }
 
   if (npc.type === "smith") {
@@ -1199,8 +1273,9 @@ function handleCave() {
     say("洞穴は静まり返っている");
     return;
   }
-  if (player.scales < 3) {
-    say("竜の鱗が三枚必要だ");
+  const missing = bossMissingRequirements();
+  if (missing.length > 0) {
+    say(`封印が拒む: ${missing.join(" / ")}`, 2600);
     return;
   }
   if (!state.spawnedBoss) {
@@ -1210,6 +1285,18 @@ function handleCave() {
   } else {
     say("洞穴の奥から熱風が来る");
   }
+}
+
+function canChallengeDragon() {
+  return bossMissingRequirements().length === 0;
+}
+
+function bossMissingRequirements() {
+  const missing = [];
+  if (player.scales < BOSS_REQUIREMENTS.scales) missing.push(`鱗${player.scales}/${BOSS_REQUIREMENTS.scales}`);
+  if (player.level < BOSS_REQUIREMENTS.level) missing.push(`LV${player.level}/${BOSS_REQUIREMENTS.level}`);
+  if (!player.sealCrest || !state.guardianDefeated) missing.push("紋章");
+  return missing;
 }
 
 function searchGround() {
@@ -1354,7 +1441,7 @@ function updateUi() {
   ui.bomb.textContent = String(player.bombs);
   ui.ward.textContent = String(player.wards);
   ui.combo.textContent = player.combo > 0 ? `${player.combo}` : "0";
-  ui.scale.textContent = `${player.scales}/3`;
+  ui.scale.textContent = player.sealCrest ? `${player.scales}/3 紋` : `${player.scales}/3`;
   for (const button of ui.items) {
     button.classList.toggle("is-selected", button.dataset.item === player.selectedItem);
   }
@@ -1372,6 +1459,7 @@ function draw() {
   drawTownFence(cam);
   drawTownGates(cam);
   drawChests(cam);
+  drawGuardianSite(cam);
   drawNpcs(cam);
   drawEntities(cam);
   drawEffects(cam);
@@ -1380,7 +1468,8 @@ function draw() {
   drawHud();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
-  if (state.victory) drawOverlay("DRAGON SEALED", "CLEAR");
+  if (state.victory && !state.elderReported) drawVictoryBanner();
+  if (state.elderReported) drawOverlay("QUEST CLEAR", "CLEAR");
 }
 
 function drawWorld(cam) {
@@ -1625,6 +1714,26 @@ function drawChest(sx, sy, opened) {
   if (!opened) {
     ctx.fillStyle = "#fff2a6";
     ctx.fillRect(sx + 2, sy + 3, 3, 1);
+  }
+}
+
+function drawGuardianSite(cam) {
+  if (state.guardianDefeated) return;
+  const sx = GUARDIAN_SITE.x * TILE - cam.x;
+  const sy = GUARDIAN_SITE.y * TILE - cam.y;
+  if (sx < -24 || sy < -24 || sx > W || sy > VIEW_H) return;
+  const pulse = Math.floor(performance.now() / 260) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+  ctx.fillRect(sx - 1, sy + 14, 22, 3);
+  ctx.fillStyle = "#475569";
+  ctx.fillRect(sx + 5, sy + 4, 10, 12);
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillRect(sx + 6, sy + 2, 8, 4);
+  ctx.fillStyle = guardianReady() ? "#55c7a0" : "#53606f";
+  ctx.fillRect(sx + 8, sy + 7, 4, 5);
+  if (guardianReady()) {
+    ctx.strokeStyle = pulse ? "#55c7a0" : "#d8fff1";
+    ctx.strokeRect(sx + 2, sy, 16, 18);
   }
 }
 
@@ -2041,6 +2150,25 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#352013";
     ctx.fillRect(sx + 3, sy + 10, 2, 2);
     ctx.fillRect(sx + 8, sy + 10, 2, 2);
+  } else if (monster.type === "guardian") {
+    const pulse = Math.floor(monster.age / 180) % 2;
+    ctx.fillStyle = "rgba(85, 199, 160, 0.28)";
+    ctx.fillRect(sx - 2, sy + 2 - pulse, 22, 17);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 6, 14, 11);
+    ctx.fillRect(sx - 1, sy + 9, 5, 5);
+    ctx.fillRect(sx + 14, sy + 9, 5, 5);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 2, 12, 13);
+    ctx.fillRect(sx + 1, sy + 7, 16, 7);
+    ctx.fillStyle = "#d8fff1";
+    ctx.fillRect(sx + 5, sy + 5, 2, 2);
+    ctx.fillRect(sx + 11, sy + 5, 2, 2);
+    ctx.fillStyle = "#1d5c4b";
+    ctx.fillRect(sx + 4, sy + 15, 4, 3);
+    ctx.fillRect(sx + 11, sy + 15, 4, 3);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(sx + 8, sy, 3, 4);
   } else if (monster.type === "dragonling") {
     ctx.fillStyle = monster.shadow;
     ctx.fillRect(sx + 1, sy + 3, 12, 10);
@@ -2199,11 +2327,41 @@ function drawScreenGrade(cam) {
 }
 
 function objectiveText() {
-  if (state.victory || state.bossDefeated) return "目的: 村へ戻って長老に報告";
-  if (state.spawnedBoss) return "目的: 洞穴の赤竜を倒す";
-  if (player.scales >= 3) return "目的: 北東の洞穴へ向かう";
+  const stage = gameStage();
+  if (stage === "cleared") return "CLEAR: 村に朝が戻った";
+  if (stage === "report") return "目的: 村へ戻って長老に報告";
+  if (stage === "dragon") return "目的: 洞穴の赤竜を倒す";
+  if (stage === "cave") return "目的: 北東の竜洞へ向かう";
+  if (stage === "guardian") return "目的: 北森の守護者を倒す";
+  if (stage === "level") return `目的: LV${BOSS_REQUIREMENTS.level}まで鍛える`;
+  if (stage === "ruin") return "目的: 北森の遺跡を探す";
   const unopened = TREASURE_CHESTS.length - state.chests.size;
-  return `目的: 竜の鱗を集める ${player.scales}/3  宝箱${unopened}`;
+  return `目的: 竜の鱗を集める ${player.scales}/${BOSS_REQUIREMENTS.scales}  宝箱${unopened}`;
+}
+
+function gameStage() {
+  if (state.elderReported) return "cleared";
+  if (state.victory || state.bossDefeated) return "report";
+  if (state.spawnedBoss) return "dragon";
+  if (canChallengeDragon()) return "cave";
+  if (!state.guardianDefeated && guardianReady()) return "guardian";
+  if (player.scales >= BOSS_REQUIREMENTS.scales && player.level < BOSS_REQUIREMENTS.level) return "level";
+  if (player.scales >= 2 && !state.guardianDefeated) return "ruin";
+  return "scales";
+}
+
+function stageName(stage) {
+  const names = {
+    scales: "鱗集め",
+    ruin: "北森探索",
+    level: "鍛錬",
+    guardian: "守護者",
+    cave: "竜洞",
+    dragon: "赤竜戦",
+    report: "報告",
+    cleared: "クリア",
+  };
+  return names[stage] || "旅";
 }
 
 function drawObjective() {
@@ -2299,6 +2457,20 @@ function drawOverlay(title, small) {
   ctx.fillText(small === "R" ? "R" : "CLEAR", W / 2, 80);
 }
 
+function drawVictoryBanner() {
+  ctx.fillStyle = "rgba(5, 8, 18, 0.82)";
+  ctx.fillRect(24, 25, W - 48, 34);
+  ctx.strokeStyle = "#ffd166";
+  ctx.strokeRect(24, 25, W - 48, 34);
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#fff2a6";
+  ctx.font = "10px monospace";
+  ctx.fillText("DRAGON SEALED", W / 2, 39);
+  ctx.font = "7px monospace";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("村へ戻り長老に報告", W / 2, 52);
+}
+
 function command(name) {
   if (name === "talk") interact();
   if (name === "search") searchGround();
@@ -2391,6 +2563,7 @@ function loop(now) {
 
   if (!state.gameOver) {
     updatePlayer(dt);
+    updateStoryEvents();
     updateMonsters(dt);
     updateProjectiles(dt);
     trySpawnMonster(dt);
