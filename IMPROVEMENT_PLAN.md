@@ -133,6 +133,24 @@ Implemented:
 * The panel cycles through equipment, survival stats, and inventory/progression pages.
 * Verified panel page cycling with VM simulation.
 
+### Survival Range Expansion QA Cycle 8
+
+Problem:
+
+* Whole-map single-position checks passed, but a real-play scenario could still starve distant spawns: old monsters near the village filled the global monster cap after the player moved far away.
+
+Implemented:
+
+* Added local monster pruning when the player has too few nearby enemies.
+* Preserved bosses and midbosses while allowing stale ordinary monsters to be replaced by regional threats near the player.
+* Added a `wilds` region for far non-north/non-east areas so distant grassland-like map areas gain mid-danger enemies.
+* Prevented late-game dragonlings from appearing in village-adjacent grassland pools.
+
+Verified:
+
+* Whole-map sampled spawn pass with old village enemies pre-filled: 134 passable non-town points, 0 spawn holes.
+* Region pools now preserve the intended curve: grassland remains slime/bat/boar, while Wilds/North/East/Cave can carry stronger enemies.
+
 ---
 
 ## Critical Issues Discovered During Real Playtesting
@@ -156,7 +174,8 @@ This is currently the highest gameplay priority.
 Current status:
 
 * Addressed with region-aware spawn pools and regional replenishment.
-* VM verification confirms enemies spawn in grassland, North Forest, East Forest/River, and Dragon Cave.
+* VM verification confirms enemies spawn in grassland, Wilds, North Forest, East Forest/River, and Dragon Cave.
+* VM verification confirms stale old enemies no longer prevent distant local replenishment.
 
 ### Village Safety
 
@@ -294,6 +313,7 @@ Current automated verification:
 * Equipment progression simulation passes.
 * Regeneration simulation passes.
 * Region spawn simulation passes for grassland, North Forest, East Forest/River, and Dragon Cave.
+* Whole-map stale-cap spawn simulation passes for 134 passable non-town sample points with 0 holes.
 * Reward reachability simulation passes for all static treasure, discoveries, and Guardian site.
 * Village projectile safety simulation passes for closed-gate blocking.
 * Monster gate simulation passes: closed gates block, open gates allow gate entry, walls still block.
@@ -308,3 +328,4 @@ Still required:
 * Full manual playthrough.
 * Manual verification of movement and combat tempo.
 * Manual verification of inventory and equipment panel usability.
+* Manual verification that local monster pruning feels natural during long-distance travel.

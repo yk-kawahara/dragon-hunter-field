@@ -50,6 +50,7 @@ const GUARDIAN_SITE = { x: 20, y: 16 };
 const BOSS_REQUIREMENTS = { level: 4, scales: 3 };
 const REGION_SPAWNS = {
   grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
+  wilds: { danger: 2, maxBonus: 1, pool: ["bat", "boar", "slime", "wisp"] },
   north: { danger: 2, maxBonus: 2, pool: ["boar", "boar", "bat", "wisp"] },
   east: { danger: 3, maxBonus: 3, pool: ["wisp", "boar", "dragonling", "bat"] },
   cave: { danger: 4, maxBonus: 4, pool: ["dragonling", "wisp", "dragonling"] },
@@ -514,20 +515,32 @@ function currentRegion() {
   if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
   if (tx > 40) return "east";
   if (ty < 25) return "north";
+  if (distanceFromVillage() > 330) return "wilds";
   return "grassland";
+}
+
+function distanceFromVillage() {
+  const townCenterX = 12 * TILE;
+  const townCenterY = 48 * TILE;
+  const pc = centerOf(player);
+  return Math.hypot(pc.x - townCenterX, pc.y - townCenterY);
 }
 
 function monsterPoolForRegion(region) {
   const lv = player.level;
   const pool = [...(REGION_SPAWNS[region] || REGION_SPAWNS.grassland).pool];
-  if (lv <= 1) return region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => type !== "dragonling");
+  if (lv <= 1) {
+    const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => type !== "dragonling" && type !== "wisp");
+    return safePool.length ? safePool : ["bat", "boar"];
+  }
   if (lv >= 3 && region === "grassland") pool.push("boar");
-  if (lv >= 4) pool.push("dragonling");
+  if (lv >= 4 && region !== "grassland") pool.push("dragonling");
   return pool;
 }
 
 function trySpawnMonster(dt) {
   if (state.gameOver || state.victory) return;
+  pruneDistantMonsters();
   state.spawnTimer -= dt;
   const region = currentRegion();
   const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
@@ -551,22 +564,36 @@ function trySpawnMonster(dt) {
 
 function updateRegionSpawns(dt) {
   if (state.gameOver || state.victory || inTown(player.x, player.y)) return;
+  pruneDistantMonsters();
   state.regionSpawnTimer = Math.max(0, state.regionSpawnTimer - dt);
   const region = currentRegion();
   const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
   const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
+  const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : 5;
   if (region !== state.lastRegion) {
     state.lastRegion = region;
     state.regionSpawnTimer = 0;
     say(areaDangerText(region), 1300);
   }
+  let nearby = countNearbyMonsters(210);
+  if (nearby < target) {
+    pruneDistantMonsters(230);
+    nearby = countNearbyMonsters(210);
+  }
   if (state.regionSpawnTimer > 0 || state.monsters.length >= maxMonsters) return;
   state.regionSpawnTimer = 1600;
-  const nearby = countNearbyMonsters(210);
-  const target = region === "grassland" ? 3 : region === "north" ? 4 : region === "east" ? 5 : 5;
   for (let i = nearby; i < target && state.monsters.length < maxMonsters; i += 1) {
     spawnNearPlayer(region, 105 + i * 16, 235 + i * 10);
   }
+}
+
+function pruneDistantMonsters(maxDistance = 520) {
+  const pc = centerOf(player);
+  state.monsters = state.monsters.filter((monster) => {
+    if (monster.boss || monster.midboss) return true;
+    const mc = centerOf(monster);
+    return Math.hypot(mc.x - pc.x, mc.y - pc.y) < maxDistance;
+  });
 }
 
 function countNearbyMonsters(radius) {
@@ -602,6 +629,7 @@ function areaDangerText(region) {
   if (region === "north") return "北森: 強敵の気配";
   if (region === "east") return "東の森: 魔力が濃い";
   if (region === "cave") return "竜洞: 危険";
+  if (region === "wilds") return "荒野: 村から遠い";
   return "草原: 村の近く";
 }
 
@@ -1797,6 +1825,7 @@ function updateZone() {
   else if (tileAt(tx, ty) === TILE_WATER) name = "水辺";
   else if (tx > 40) name = "東の森";
   else if (ty < 25) name = "北森";
+  else if (distanceFromVillage() > 330) name = "荒野";
   ui.zone.textContent = name;
 }
 

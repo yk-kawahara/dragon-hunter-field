@@ -26,6 +26,10 @@
 * Increased player movement speed, dash distance, and stamina recovery to improve old mobile action-RPG tempo.
 * Expanded the strength command into rotating equipment, survival, and inventory/progression readouts.
 * Upgraded the strength command from toast-only text to a short-lived in-game info panel for equipment, survival stats, and inventory/progression review.
+* Fixed a remaining spawn starvation case where old monsters near the village could fill the global cap and prevent enemies from appearing after the player moved far away.
+* Added a `wilds` region for far non-north/non-east areas so distant grassland-like map areas are not treated like safe village outskirts.
+* Tightened grassland enemy pools so village-adjacent areas stay weak even after the player reaches late game.
+* Verified a whole-map sampled spawn pass with pre-filled old enemies: 134 passable non-town sample points, 0 spawn holes.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -33,6 +37,8 @@
 
   * Implemented region-aware spawn pools and regional replenishment around the player.
   * Verified grassland, North Forest, East Forest/River, and Dragon Cave all spawn region-appropriate enemies.
+  * Added local monster pruning so old off-screen enemies cannot block new regional spawns.
+  * Added the Wilds region for far areas that were previously classified as grassland.
 * Prevent enemy projectiles and magic from threatening the player inside the village.
 
   * Implemented projectile town-entry blocking.
@@ -49,6 +55,7 @@
 * Verify the full enemy spawn system by area.
 
   * Grassland: verified early enemies.
+  * Wilds: verified mixed mid-danger enemies away from the village.
   * North Forest: verified stronger enemies.
   * East Forest/River: verified ranged/late enemy pressure.
   * Dragon Cave: verified late enemies.
@@ -58,6 +65,7 @@
 * Run real desktop and mobile browser visual QA when browser automation is available.
 * Perform a full manual playthrough from new save to red dragon clear and elder report.
 * Continue balance testing for whether gold, EXP, medicines, and shop prices make the first armor purchase and level 4 timing feel natural.
+* Manually verify whether the new local monster pruning feels natural during long-distance travel.
 
 ## Next Priority: Survival Range Expansion
 

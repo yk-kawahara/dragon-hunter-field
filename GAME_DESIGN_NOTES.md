@@ -288,6 +288,18 @@ Early monsters and basic gathering.
 
 This should be the first training zone where enemies are dangerous at the start but become manageable after early equipment purchases.
 
+Village-adjacent grassland should remain mostly weak even late in the game, so returning toward the village feels safer than pushing outward.
+
+
+
+\## Wilds
+
+
+
+Far grassland-like areas outside the village's immediate survival range.
+
+These areas should not feel as safe as the village outskirts; they can mix bats, boars, wisps, and later dragonlings to keep long-distance exploration populated.
+
 
 
 \## North Forest
@@ -649,6 +661,10 @@ The ending should reinforce that the player has grown from a fragile village-bou
 \* Survival-range rebalance: early contact damage is painful, shop armor visibly reduces it, and mid-game regeneration extends exploration without replacing retreat.
 
 \* Region-aware enemy populations so distant North Forest, East Forest/River, and Dragon Cave areas maintain stronger enemy pressure.
+
+\* Local monster pruning so stale ordinary enemies near old locations do not prevent fresh threats from appearing around the player after long-distance travel.
+
+\* A Wilds region for far non-north/non-east areas, keeping distant map spaces populated without making village-adjacent grassland too dangerous.
 
 \* Village safety rules for projectiles and monsters: closed gates block danger, open gates allow danger through gate tiles only.
 
