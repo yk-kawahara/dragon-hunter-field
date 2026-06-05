@@ -14,6 +14,7 @@ Current focus:
 * Reward persistence and equipment safety.
 * The player must never become weaker because of treasure reopening or save/load behavior.
 * Consider an item or equipment inventory only after one-time rewards are safe.
+* Prepare `src/game.js` for safe behavior-neutral refactoring before major new systems are added.
 ---
 
 ## Recent Cycle Notes
@@ -188,6 +189,25 @@ Verified:
 
 * VM checks pass for chest save/reload persistence, hidden discovery save/reload persistence, duplicate reward prevention, weaker equipment reward prevention, and equipment save/load preservation.
 
+### Refactor Preparation Pass Cycle 11
+
+Problem:
+
+* `src/game.js` has grown to about 3180 lines and combines static data, state, map logic, spawning, player update, enemy AI, contact combat, rewards, save/load, UI, drawing, input, and the main loop.
+* Splitting behavior hubs too early would risk regressions in survival range expansion, village safety, one-time rewards, and the dragon clear flow.
+
+Implemented:
+
+* Created `REFACTOR_PLAN.md` with a responsibility map, low-risk split targets, high-risk targets, recommended split order, and required VM behavior checks.
+* Created `docs/REFACTOR_CHECKLIST.md` for future extraction passes.
+* Chose static definitions and pure helpers as the first safe extraction path.
+* Deferred all high-coupling behavior splits, including player update, enemy AI, combat, boss flow, save/load, NPCs, draw orchestration, input binding, and the main loop.
+
+Verified:
+
+* No gameplay code was intentionally split in this pass.
+* Bundled Node syntax check, `git diff --check`, and VM smoke checks passed before commit.
+
 ---
 
 ## Critical Issues Discovered During Real Playtesting
@@ -332,6 +352,14 @@ Current status:
 * Add equipment review screen.
 * Improve equipment comparison.
 * Improve visibility of survival-related stats.
+
+### Refactoring
+
+* First future split: extract static definitions to `src/data/definitions.js`.
+* Second future split: extract pure math helpers to `src/core/math.js`.
+* Third future split: extract pure reward ID validation and equipment comparison helpers.
+* Do not split behavior hubs until the above are green and repeatable VM checks are available.
+* Use `docs/REFACTOR_CHECKLIST.md` for each extraction.
 
 ### Ending
 

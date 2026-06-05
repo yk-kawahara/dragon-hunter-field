@@ -38,6 +38,10 @@
 * Added direct re-entry guards so already opened chests and already revealed discoveries cannot grant rewards again.
 * Added equipment reward safety helpers so weaker or equal equipment rewards never downgrade the current weapon or armor.
 * Verified treasure persistence, hidden reward persistence, equipment anti-downgrade behavior, and save/load preservation with VM smoke tests.
+* Created `REFACTOR_PLAN.md` to classify `src/game.js` responsibilities and define a safe split order.
+* Created `docs/REFACTOR_CHECKLIST.md` for future behavior-neutral extraction passes.
+* Identified static data and pure helpers as the first low-risk refactor targets.
+* Explicitly marked player update, enemy AI, combat, save/load, NPC behavior, draw orchestration, input, and boss flow as high-risk targets to avoid in the first split.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -215,11 +219,13 @@
 
 ## Refactoring Plan
 
-- Analyze `src/game.js` responsibilities before splitting files.
-- Do not perform large file splitting until gameplay-critical bugs are fixed.
+- Current state: `src/game.js` responsibilities are classified in `REFACTOR_PLAN.md`.
+- Do not perform large file splitting until static data and pure helpers are extracted and verified.
 - Proposed future modules:
   - `src/core/state.js`
   - `src/core/constants.js`
+  - `src/core/math.js`
+  - `src/data/definitions.js`
   - `src/world/map.js`
   - `src/world/spawn.js`
   - `src/entities/player.js`
@@ -229,6 +235,7 @@
   - `src/systems/save.js`
   - `src/ui/hud.js`
   - `src/ui/menu.js`
-- First refactor should extract only constants and pure helper functions.
+- First refactor should extract only static definitions and pure helper functions.
 - Avoid changing behavior during the first split.
 - Verify the game after every small extraction.
+- Use `docs/REFACTOR_CHECKLIST.md` before and after each future split.

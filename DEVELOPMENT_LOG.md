@@ -50,3 +50,8 @@
 - Cycle 10 decision: deferred a larger equipment inventory because the current equipment model is rank-based. Anti-downgrade protection fixes the immediate Critical issue with less UI and save-data risk.
 - Verification: `node --check src/game.js` passed. `git diff --check` passed. VM checks passed for chest save/reload persistence, chest duplicate payout prevention, hidden discovery save/reload persistence, direct duplicate discovery prevention, weaker weapon/armor reward prevention, and equipment save/load preservation.
 - Remaining high-priority risk: real browser QA, full manual playthrough, and a future equipment inventory or comparison screen if sidegrade equipment rewards are added.
+- Refactor preparation analysis: `src/game.js` is about 3180 lines and currently owns static data, mutable state, map/collision, spawning, player update, enemy AI, projectiles, contact combat, rewards, NPCs, save/load, UI, drawing, input binding, and the main loop.
+- Cycle 11: Created `REFACTOR_PLAN.md` with responsibility classification, safe split order, first low-risk candidates, high-risk no-split areas, and required behavior checks.
+- Cycle 11: Created `docs/REFACTOR_CHECKLIST.md` so the next refactor pass can follow a repeatable checklist before and after extraction.
+- Cycle 11 decision: did not split `src/game.js` yet. Static definitions and pure helpers should be extracted first; behavior hubs such as player update, enemy AI, combat, save/load, NPCs, drawing orchestration, input, bosses, and loop/init should remain in place until the safe extractions are verified.
+- Verification note: no gameplay behavior was intentionally changed in this pass. Syntax, VM smoke checks, and `git diff --check` were run before commit.
