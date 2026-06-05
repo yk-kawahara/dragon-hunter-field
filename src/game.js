@@ -75,13 +75,16 @@ const weaponNames = ["木剣", "銅剣", "鉄剣", "銀剣", "竜剣"];
 const armorNames = ["布服", "革鎧", "鎖鎧", "鋼鎧", "竜鎧"];
 const weaponTraits = ["基本", "正面", "側撃", "背撃", "竜特効"];
 const armorTraits = ["軽装", "疾走", "受け", "護符", "竜耐性"];
+const weaponCosts = [0, 38, 90, 180, 340];
+const armorCosts = [0, 34, 86, 175, 330];
+const armorDefense = [0, 5, 10, 17, 26];
 const itemOrder = ["potion", "bomb", "ward"];
 
 const monsterTypes = {
   slime: {
     name: "スライム",
     hp: 18,
-    atk: 5,
+    atk: 8,
     def: 0,
     speed: 18,
     xp: 10,
@@ -93,7 +96,7 @@ const monsterTypes = {
   bat: {
     name: "コウモリ",
     hp: 14,
-    atk: 7,
+    atk: 9,
     def: 0,
     speed: 34,
     xp: 14,
@@ -106,7 +109,7 @@ const monsterTypes = {
   boar: {
     name: "突進獣",
     hp: 34,
-    atk: 11,
+    atk: 15,
     def: 2,
     speed: 25,
     xp: 24,
@@ -118,7 +121,7 @@ const monsterTypes = {
   wisp: {
     name: "火霊",
     hp: 28,
-    atk: 15,
+    atk: 17,
     def: 1,
     speed: 22,
     xp: 32,
@@ -130,7 +133,7 @@ const monsterTypes = {
   dragonling: {
     name: "小竜",
     hp: 58,
-    atk: 19,
+    atk: 22,
     def: 5,
     speed: 21,
     xp: 62,
@@ -222,6 +225,7 @@ const player = {
   scales: 0,
   sealCrest: false,
   hunterCharm: false,
+  regenCharm: false,
   stamina: 100,
   staminaMax: 100,
   attackCooldown: 0,
@@ -528,8 +532,8 @@ function playerAttack() {
 }
 
 function playerDefense() {
-  const guardBonus = player.guard > 0 ? 10 + player.armor * 2 : 0;
-  return 2 + player.level + player.armor * 4 + guardBonus;
+  const guardBonus = player.guard > 0 ? 9 + player.armor * 3 : 0;
+  return 1 + player.level + (armorDefense[player.armor] || 0) + guardBonus;
 }
 
 function playerMoveSpeed() {
@@ -566,6 +570,11 @@ function refreshDerivedStats() {
   player.stamina = Math.min(player.stamina, player.staminaMax);
 }
 
+function regenRate() {
+  if (!player.regenCharm) return 0;
+  return 0.28 + (player.armor >= 3 ? 0.12 : 0) + (player.armor >= 4 ? 0.18 : 0);
+}
+
 function levelUp() {
   while (player.xp >= player.xpNext) {
     player.xp -= player.xpNext;
@@ -599,6 +608,7 @@ function saveGame() {
       scales: player.scales,
       sealCrest: player.sealCrest,
       hunterCharm: player.hunterCharm,
+      regenCharm: player.regenCharm,
     },
     spawnedBoss: state.spawnedBoss,
     bossDefeated: state.bossDefeated,
@@ -621,6 +631,7 @@ function loadGame() {
     player.wards ??= 0;
     player.sealCrest = Boolean(player.sealCrest);
     player.hunterCharm = Boolean(player.hunterCharm);
+    player.regenCharm = Boolean(player.regenCharm);
     refreshDerivedStats();
     player.stamina = player.staminaMax;
     player.attackCooldown = 0;
@@ -667,6 +678,7 @@ function resetGame() {
     selectedItem: "potion",
     sealCrest: false,
     hunterCharm: false,
+    regenCharm: false,
     invuln: 0,
     guard: 0,
     slow: 0,
@@ -784,6 +796,10 @@ function updatePlayer(dt) {
     player.burnTick = 620;
     player.hp = Math.max(1, player.hp - 1);
     addFloater(player.x + player.w / 2, player.y - 2, "BURN", "#ff8a3d");
+  }
+  const regen = regenRate();
+  if (regen > 0 && player.burn <= 0 && player.hp > 0 && player.hp < player.hpMax) {
+    player.hp = Math.min(player.hpMax, player.hp + regen * dt * 0.001);
   }
   player.attackCooldown = Math.max(0, player.attackCooldown - dt);
   player.dashCooldown = Math.max(0, player.dashCooldown - dt);
@@ -982,6 +998,8 @@ function updateProjectiles(dt) {
       if (player.invuln <= 0 && player.hp > 0) {
         const source = p.source === "wisp" || p.source === "dragon" ? "fire" : "projectile";
         let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon" }, 0, source)));
+        if (p.source === "dragon" && hurt < 3) hurt = 3;
+        if (p.source === "guardian" && hurt < 2) hurt = 2;
         if (player.guard > 0) hurt = Math.floor(hurt * 0.3);
         player.hp = Math.max(0, player.hp - hurt);
         player.invuln = 320;
@@ -1018,6 +1036,7 @@ function resolveContact(monster) {
   const gearMult = weaponDamageMultiplier(monster, pDot, mDot);
   const hit = Math.max(1, Math.round((playerAttack() - monster.def + rand(0, 3)) * pMult * critMult * gearMult));
   let hurt = Math.max(0, Math.round((monster.atk - playerDefense() + rand(0, 2)) * mMult * armorDamageMultiplier(monster, pDot)));
+  if ((monster.boss || monster.midboss) && hurt < 2) hurt = 2;
   if (player.guard > 0) hurt = Math.floor(hurt * 0.35);
 
   monster.hp -= hit;
@@ -1342,7 +1361,8 @@ function grantChestReward(reward) {
   } else if (reward === "ward") {
     player.bombs = Math.min(9, player.bombs + 2);
     player.wards = Math.min(9, player.wards + 2);
-    say("火瓶と護符を見つけた");
+    player.regenCharm = true;
+    say("再生の指輪を見つけた");
   } else if (reward === "scale") {
     player.scales = Math.min(3, player.scales + 1);
     say("古い竜の鱗を見つけた");
@@ -1376,19 +1396,21 @@ function handleNpc(npc) {
   }
 
   if (npc.type === "smith") {
-    const target = player.weapon <= player.armor ? "weapon" : "armor";
+    const target = player.armor <= player.weapon ? "armor" : "weapon";
     const rank = player[target] + 1;
     if (rank >= weaponNames.length) {
       say("鍛冶屋「これ以上は鍛えられん」");
       return;
     }
-    const cost = 42 + rank * 52;
+    const cost = target === "weapon" ? weaponCosts[rank] : armorCosts[rank];
     if (player.gold >= cost) {
       player.gold -= cost;
       player[target] += 1;
-      say(target === "weapon" ? "剣を鍛えた" : "鎧を直した");
+      say(target === "weapon" ? `${weaponNames[player.weapon]}: ${weaponTraits[player.weapon]}` : `${armorNames[player.armor]}: ${armorTraits[player.armor]}`);
     } else {
-      say(`鍛冶屋「${cost}Gで強くできる」`);
+      const name = target === "weapon" ? weaponNames[rank] : armorNames[rank];
+      const trait = target === "weapon" ? weaponTraits[rank] : armorTraits[rank];
+      say(`鍛冶屋「${name}(${trait})は${cost}G」`);
     }
   }
 
@@ -1601,9 +1623,9 @@ function cycleItem(step) {
 function showStats() {
   state.statsFlip = !state.statsFlip;
   if (state.statsFlip) {
-    say(`攻${playerAttack()} ${weaponTraits[player.weapon]} / 防${playerDefense()} ${armorTraits[player.armor]}`);
+    say(`攻${playerAttack()} ${weaponNames[player.weapon]}:${weaponTraits[player.weapon]} / 防${playerDefense()} ${armorNames[player.armor]}:${armorTraits[player.armor]}`, 2600);
   } else {
-    say(`次${player.xpNext - player.xp} 連${player.combo} 護${Math.ceil(player.guard / 1000)}秒`);
+    say(`次${player.xpNext - player.xp} 回避${dashCost()}ST 再生${regenRate().toFixed(1)}/秒`, 2600);
   }
 }
 
@@ -1624,8 +1646,8 @@ function updateUi() {
   ui.level.textContent = String(player.level);
   ui.hp.textContent = `${Math.ceil(player.hp)}/${player.hpMax}`;
   ui.exp.textContent = `${player.xp}/${player.xpNext}`;
-  ui.weapon.textContent = weaponNames[player.weapon] || "竜";
-  ui.armor.textContent = armorNames[player.armor] || "竜";
+  ui.weapon.textContent = `${weaponNames[player.weapon] || "竜"} ${weaponTraits[player.weapon] || ""}`;
+  ui.armor.textContent = `${armorNames[player.armor] || "竜"} ${armorTraits[player.armor] || ""}`;
   ui.potion.textContent = String(player.potions);
   ui.bomb.textContent = String(player.bombs);
   ui.ward.textContent = String(player.wards);

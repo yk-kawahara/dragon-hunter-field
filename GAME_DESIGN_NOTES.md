@@ -164,6 +164,30 @@ HP regeneration should support the survival-range expansion loop, not replace it
 
 
 
+\## Current Survival Range Balance
+
+
+
+Current implemented target:
+
+
+
+\* Early slime contact is intentionally painful enough to encourage retreating to the village.
+
+\* The first armor purchase sharply reduces early contact damage.
+
+\* Mid armor makes early enemies manageable while stronger enemies remain dangerous.
+
+\* Final armor makes old enemies feel weak, but bosses retain minimum threat damage.
+
+\* Passive HP regeneration is not available at the start.
+
+\* The river shrine chest grants a regeneration ring for mid-game survival range expansion.
+
+\* Regeneration is weak, disabled while burning, and becomes more valuable only when combined with better armor.
+
+
+
 \---
 
 
@@ -622,6 +646,8 @@ The ending should reinforce that the player has grown from a fragile village-bou
 
 \* Enemy status effects and red dragon phase change.
 
+\* Survival-range rebalance: early contact damage is painful, shop armor visibly reduces it, and mid-game regeneration extends exploration without replacing retreat.
+
 
 
 \# Future Design Priorities
@@ -647,6 +673,4 @@ The ending should reinforce that the player has grown from a fragile village-bou
 9\. Add ending dialogue after the victory report.
 
 10\. Run browser visual QA on desktop and mobile viewport.
-
-
 

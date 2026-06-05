@@ -15,3 +15,8 @@
 - Cycle 1 analysis: equipment rewards were mostly numeric. Implemented weapon traits for front/flank/back/dragon attacks and armor traits for movement, frontal receiving, ward duration, and fire resistance.
 - Cycle 2 analysis: exploration rewards did not change play enough. Implemented persistent hidden spring, ore, and hunter cache rewards.
 - Cycle 3 analysis: final boss was too close to a high-HP enemy. Implemented red dragon enrage, spread shots, and summons.
+- Survival range pass Cycle 1: early contact danger was too soft for the retreat-to-village loop. Increased early enemy attack values, changed armor defense to stepped values, and kept boss minimum damage.
+- Survival range pass Cycle 2: shop equipment needed clearer value. Lowered early weapon/armor costs, made the smith prioritize armor on equal ranks, and displayed equipment traits in messages/status.
+- Survival range pass Cycle 3: mid-game sustain was missing. Added regeneration ring from the river shrine chest; regeneration is weak, saved, disabled by burn, and scales slightly with armor.
+- Verification: `node --check src/game.js` passed. VM simulation showed slime damage sample 6 -> 2 after leather armor, boar sample 11 -> 3 after chain armor, no early regeneration, weak mid/late regeneration, saved regen/charm fields, and complete guardian-to-dragon-to-report flow.
+- Browser visual QA remains pending in this run.

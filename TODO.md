@@ -56,9 +56,13 @@
 
 \* Add a weak HP regeneration source in the mid game, such as a ring, armor trait, shrine blessing, or rare equipment.
 
-\* Make HP regeneration intentionally weak at first, then stronger only when combined with late-game defense or rare equipment.
+\* \[x] Make HP regeneration intentionally weak at first, then stronger only when combined with late-game defense or rare equipment.
 
-\* Add one mid-game treasure or exploration reward that extends exploration range rather than only giving gold.
+\* \[x] Add one mid-game treasure or exploration reward that extends exploration range rather than only giving gold.
+
+\* \[x] Tune early contact damage and first armor purchase so the player feels safer after buying gear.
+
+\* \[x] Show equipment traits and regeneration rate through the strength command.
 
 
 
@@ -69,6 +73,8 @@
 \* Browser visual test on desktop and mobile viewport.
 
 \* Balance a full playthrough from level 1 to dragon clear.
+
+\* Manually verify that first armor purchase timing feels natural in browser play.
 
 \* Tune EXP and gold so a normal run reaches level 4 naturally.
 
@@ -165,6 +171,5 @@
 &#x20; \* Dragon defeated state.
 
 &#x20; \* Elder report / clear state.
-
 
 
