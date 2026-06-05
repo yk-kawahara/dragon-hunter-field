@@ -1,71 +1,652 @@
-# GAME DESIGN NOTES
+\# GAME\_DESIGN\_NOTES
 
-## Concept
-Old mobile-style contact-combat action RPG where the player leaves a safe village, grows through risky field battles, breaks the dragon seal, and defeats the red dragon.
 
-## Core Fun
-The fun is deciding when to push deeper into dangerous fields and when to retreat to town, while using facing, contact timing, items, and upgrades to survive.
 
-## Progression
-1. Start in the village and hear the elder's objective.
-2. Leave town, defeat roaming monsters, gain EXP/gold/items.
-3. Explore fields and open treasure chests for supplies and upgrades.
-4. Collect 3 dragon scales.
-5. Reach level 4 and defeat the North Forest Guardian to obtain the seal crest.
-6. Enter the northeast dragon cave.
-7. Defeat the red dragon.
-8. See a clear state and return/report to the elder.
+\# Core Design Update: Survival Range Expansion
 
-## Areas
-- Village: safe base, healer, smith, recovery circle, gates.
-- Grassland: early monsters and basic gathering.
-- North Forest: stronger enemies and the Guardian.
-- East Forest/River: treasure and ranged enemies.
-- Dragon Cave: final boss arena.
 
-## Enemies
-- Slime: slow early enemy.
-- Bat: fast low-HP enemy.
-- Boar: charge windup enemy.
-- Wisp: ranged fire enemy.
-- Dragonling: late stronger enemy with scale drops.
-- North Forest Guardian: midboss gatekeeper.
-- Red Dragon: final boss.
 
-## Rewards
-- EXP and gold from monsters.
-- Item drops: medicine, fire bottles, wards, dragon scales.
-- Treasure: gold, supplies, weapon/armor upgrade, scale.
-- Hidden discoveries: recovery spring, old iron ore, hunter cache.
-- Guardian reward: seal crest and a scale.
+The core fun of this game is not simply completing quests.
 
-## Growth
-- Level raises HP and basic attack/defense.
-- Smith upgrades weapon/armor with gold.
-- Weapon ranks change combat incentives: frontal, flank, back attack, and dragon-slaying bonuses.
-- Armor ranks change survival style: movement, frontal receiving, longer ward duration, dragon/fire resistance.
-- Hunter cache increases stamina capacity.
-- Items create tactical safety.
-- Seal crest unlocks final boss challenge.
+The core fun is expanding the player's survivable range.
 
-## Boss Design
-- North Forest Guardian is a midboss with ranged pressure and seal crest reward.
-- Red Dragon enrages below half HP, fires spread shots, and summons lesser enemies.
 
-## Boss Challenge Conditions
-- 3 dragon scales.
-- Level 4 or higher.
-- North Forest Guardian defeated.
 
-## Clear Condition
-Defeat the red dragon. The game enters victory state and displays a clear overlay.
+At the beginning, the player should only feel safe near the village.
 
-## Scope Implemented This Pass
-- Explicit game stage/objective text.
-- Midboss and final boss gate.
-- Expanded save data.
-- More complete hint messages.
-- Progression rewards and clear reporting.
-- Equipment traits tied to facing/contact combat.
-- Hidden exploration discoveries with persistent rewards.
-- Enemy status effects and red dragon phase change.
+Enemy contact damage should feel dangerous, and pushing too far from the base should create tension.
+
+
+
+As the player defeats enemies, earns gold, buys better equipment, and levels up, incoming damage should visibly decrease.
+
+Enemies and areas that were once dangerous should gradually become manageable.
+
+
+
+The player should feel:
+
+
+
+\* "This enemy used to hurt a lot, but now I can handle it."
+
+\* "I can stay outside longer than before."
+
+\* "I can finally reach a farther area."
+
+\* "Buying better equipment made a clear difference."
+
+\* "Weak enemies are no longer a real threat."
+
+
+
+\## Main Design Principle
+
+
+
+This game should be designed around the loop:
+
+
+
+1\. Leave the safe base.
+
+2\. Fight nearby enemies.
+
+3\. Take meaningful damage.
+
+4\. Return to the base to fully recover.
+
+5\. Earn gold and buy better equipment.
+
+6\. Reduce incoming damage through gear and levels.
+
+7\. Explore farther than before.
+
+8\. Find stronger enemies and better rewards.
+
+9\. Repeat.
+
+
+
+The village is not just a quest hub.
+
+It is a safe recovery point that gives the player relief after surviving dangerous areas.
+
+
+
+\## Growth Feeling
+
+
+
+The most important growth feeling is not just seeing numbers increase.
+
+
+
+The key feeling is a reversal of power:
+
+
+
+\* Early: an enemy can take a large portion of the player's HP on contact.
+
+\* Later: that same enemy deals very little damage.
+
+\* Eventually: the player's defense or HP regeneration can offset weak enemy damage.
+
+\* At that point, the player can move through previously dangerous areas with confidence.
+
+
+
+\## Equipment Progression
+
+
+
+Early progression should mainly come from shop equipment.
+
+
+
+The player should be able to earn gold near the village, buy better weapons and armor, and clearly feel that incoming damage has decreased.
+
+
+
+Mid-game and late-game progression can shift toward treasure, hidden rewards, dangerous-area rewards, and rare equipment.
+
+
+
+Equipment should not only increase numbers.
+
+Whenever possible, equipment should change survivability, exploration range, or contact-combat behavior.
+
+
+
+Examples:
+
+
+
+\* Armor that sharply reduces contact damage.
+
+\* Weapons that let the player defeat old enemies much faster.
+
+\* Gear that improves survivability in specific areas.
+
+\* Equipment that gives weak HP regeneration.
+
+\* Rare late-game gear that makes old enemies nearly harmless.
+
+
+
+\## HP Regeneration
+
+
+
+A weak HP regeneration element should exist from the mid-game onward.
+
+
+
+It should not make the early game too easy.
+
+
+
+The intended curve is:
+
+
+
+\* Early game: enemy damage is higher than recovery, so returning to base matters.
+
+\* Mid game: weak regeneration extends exploration time.
+
+\* Late game: strong defense plus regeneration can offset weak enemy damage.
+
+\* End game: the player feels powerful because old threats become manageable or harmless.
+
+
+
+HP regeneration should support the survival-range expansion loop, not replace it.
+
+
+
+\---
+
+
+
+\# Current Game Concept
+
+
+
+Old mobile-style contact-combat action RPG where the player leaves a safe village, grows through risky field battles, gradually expands survivable range, breaks the dragon seal, and defeats the red dragon.
+
+
+
+The dragon quest is the current clear objective, but the deeper design goal is the feeling of becoming strong enough to survive farther from the village.
+
+
+
+\# Core Fun
+
+
+
+The fun is deciding when to push deeper into dangerous fields and when to retreat to town, while using facing, contact timing, items, equipment, and upgrades to survive.
+
+
+
+The player should repeatedly experience:
+
+
+
+\* Going slightly too far.
+
+\* Taking dangerous damage.
+
+\* Returning to the village for safety.
+
+\* Buying or finding stronger gear.
+
+\* Revisiting the same area and feeling stronger.
+
+\* Reaching a previously dangerous area more safely.
+
+
+
+\# Progression
+
+
+
+Current implemented progression:
+
+
+
+1\. Start in the village and learn the objective.
+
+2\. Leave town, defeat roaming monsters, and gain EXP, gold, and items.
+
+3\. Explore fields and open treasure chests for supplies and upgrades.
+
+4\. Collect 3 dragon scales.
+
+5\. Reach level 4 and defeat the North Forest Guardian to obtain the seal crest.
+
+6\. Enter the northeast dragon cave.
+
+7\. Defeat the red dragon.
+
+8\. Return to the village and report victory for the final clear state.
+
+
+
+Dragon scales are the current boss-gating item, but they should not become the main identity of the game.
+
+The main identity should remain survival range expansion through growth, equipment, and exploration.
+
+
+
+\# Areas
+
+
+
+\## Village
+
+
+
+Safe base, healer, smith, recovery circle, gates, and objective guidance.
+
+
+
+The village should feel safe.
+
+It should be the place where the player returns after taking risks outside.
+
+
+
+\## Grassland
+
+
+
+Early monsters and basic gathering.
+
+This should be the first training zone where enemies are dangerous at the start but become manageable after early equipment purchases.
+
+
+
+\## North Forest
+
+
+
+Stronger enemies and the North Forest Guardian.
+
+This area should initially feel risky, then become manageable as the player upgrades gear.
+
+
+
+\## East Forest / River
+
+
+
+Treasure, ranged enemies, hidden discoveries, and optional rewards.
+
+This should support mid-game exploration and survival range expansion.
+
+
+
+\## Dragon Cave
+
+
+
+Final boss arena.
+
+This area should feel dangerous and require preparation.
+
+
+
+\# Enemies
+
+
+
+\## Slime
+
+
+
+Slow early enemy.
+
+Should be dangerous enough at level 1 to teach the player that contact damage matters.
+
+
+
+\## Bat
+
+
+
+Fast low-HP enemy.
+
+Should pressure movement and stamina.
+
+
+
+\## Boar
+
+
+
+Charge windup enemy.
+
+Should reward avoiding direct frontal contact.
+
+
+
+\## Wisp
+
+
+
+Ranged fire enemy.
+
+Should introduce area-specific danger and make fire resistance meaningful.
+
+
+
+\## Dragonling
+
+
+
+Late stronger enemy with scale drops.
+
+Should make the player feel that they are approaching dragon-level danger.
+
+
+
+\## North Forest Guardian
+
+
+
+Midboss gatekeeper with ranged pressure and seal crest reward.
+
+
+
+\## Red Dragon
+
+
+
+Final boss.
+
+Enrages below half HP, fires spread shots, and summons lesser enemies.
+
+
+
+\# Rewards
+
+
+
+\## Basic Rewards
+
+
+
+\* EXP from monsters.
+
+\* Gold from monsters.
+
+\* Medicine, fire bottles, and wards.
+
+\* Dragon scales from relevant enemies or rewards.
+
+
+
+\## Treasure Rewards
+
+
+
+\* Gold.
+
+\* Supplies.
+
+\* Weapon upgrades.
+
+\* Armor upgrades.
+
+\* Dragon scale or equivalent progression item.
+
+
+
+\## Hidden Discoveries
+
+
+
+\* Recovery spring.
+
+\* Old iron ore.
+
+\* Hunter cache.
+
+
+
+Future hidden rewards should focus on extending the player's survivable range rather than only giving gold.
+
+
+
+\# Growth
+
+
+
+\## Level Growth
+
+
+
+Level raises HP and basic attack/defense.
+
+
+
+Leveling should matter, but it should not be the only source of power.
+
+
+
+\## Shop and Smith Growth
+
+
+
+Smith upgrades weapon and armor with gold.
+
+
+
+Early game should strongly emphasize earning gold and buying better equipment.
+
+Equipment purchases should visibly reduce incoming damage.
+
+
+
+\## Weapon Traits
+
+
+
+Weapon ranks change combat incentives:
+
+
+
+\* Frontal attack bonuses.
+
+\* Flank attack bonuses.
+
+\* Back attack bonuses.
+
+\* Dragon-slaying bonuses.
+
+
+
+These traits should reinforce contact and facing combat.
+
+
+
+\## Armor Traits
+
+
+
+Armor ranks change survival style:
+
+
+
+\* Movement bonuses.
+
+\* Frontal receiving bonuses.
+
+\* Longer ward duration.
+
+\* Dragon/fire resistance.
+
+\* Future HP regeneration effects.
+
+
+
+Armor should help the player survive farther from the village.
+
+
+
+\## Stamina and Exploration Growth
+
+
+
+Hunter cache increases stamina capacity.
+
+
+
+Future exploration rewards should include upgrades that let the player safely travel farther, survive longer, or recover more efficiently outside the village.
+
+
+
+\## HP Regeneration Growth
+
+
+
+A weak HP regeneration source should be added in the mid game.
+
+
+
+It should start small and become powerful only when combined with better armor or late-game equipment.
+
+
+
+The ideal end-game feeling is that weak enemies can no longer overcome the player's defense and regeneration.
+
+
+
+\# Boss Design
+
+
+
+\## North Forest Guardian
+
+
+
+A midboss with ranged pressure and seal crest reward.
+
+
+
+Its purpose is to test whether the player has expanded their survivable range enough to handle the North Forest.
+
+
+
+\## Red Dragon
+
+
+
+The final boss.
+
+
+
+It should not merely be a high-HP enemy.
+
+It should include:
+
+
+
+\* Enrage phase.
+
+\* Spread shots.
+
+\* Summons.
+
+\* Clear visual danger.
+
+\* A strong sense that preparation matters.
+
+
+
+\# Boss Challenge Conditions
+
+
+
+Current implemented conditions:
+
+
+
+\* 3 dragon scales.
+
+\* Level 4 or higher.
+
+\* North Forest Guardian defeated.
+
+\* Seal crest obtained.
+
+
+
+These conditions should remain understandable to the player.
+
+If future changes make a different gate more natural, prefer survival-range logic over arbitrary checklist collection.
+
+
+
+\# Clear Condition
+
+
+
+Defeat the red dragon.
+
+The game enters a victory state, then the player returns to the village and reports victory for the final clear state.
+
+
+
+The ending should reinforce that the player has grown from a fragile village-bound hunter into someone capable of surviving the dragon's domain.
+
+
+
+\# Implemented Scope So Far
+
+
+
+\* Explicit game stage and objective text.
+
+\* Midboss and final boss gate.
+
+\* Expanded save data.
+
+\* More complete hint messages.
+
+\* Progression rewards and clear reporting.
+
+\* Equipment traits tied to facing/contact combat.
+
+\* Hidden exploration discoveries with persistent rewards.
+
+\* Enemy status effects and red dragon phase change.
+
+
+
+\# Future Design Priorities
+
+
+
+1\. Rebalance the full playthrough around survival range expansion.
+
+2\. Make early enemy damage feel dangerous but fair.
+
+3\. Make shop equipment visibly reduce incoming damage.
+
+4\. Add weak mid-game HP regeneration.
+
+5\. Add late-game gear that makes old enemies nearly harmless.
+
+6\. Add exploration rewards that extend travel range.
+
+7\. Improve equipment UI so players understand why they became stronger.
+
+8\. Make the village feel like a safe recovery point, not just a quest hub.
+
+9\. Add ending dialogue after the victory report.
+
+10\. Run browser visual QA on desktop and mobile viewport.
+
+
+
