@@ -708,6 +708,36 @@ function regenRate() {
   return 0.28 + (player.armor >= 3 ? 0.12 : 0) + (player.armor >= 4 ? 0.18 : 0);
 }
 
+function rewardIds(list) {
+  return new Set(list.map((entry) => entry.id));
+}
+
+function savedIdSet(ids, validIds) {
+  return new Set((Array.isArray(ids) ? ids : []).filter((id) => validIds.has(id)));
+}
+
+function grantWeaponAtLeast(rank, upgradedMessage, keptMessage = "既により良い剣を持っている") {
+  const target = clamp(rank, 0, weaponNames.length - 1);
+  if (player.weapon >= target) {
+    say(keptMessage);
+    return false;
+  }
+  player.weapon = target;
+  say(upgradedMessage || `${weaponNames[player.weapon]}を手に入れた`);
+  return true;
+}
+
+function grantArmorAtLeast(rank, upgradedMessage, keptMessage = "既により良い鎧を持っている") {
+  const target = clamp(rank, 0, armorNames.length - 1);
+  if (player.armor >= target) {
+    say(keptMessage);
+    return false;
+  }
+  player.armor = target;
+  say(upgradedMessage || `${armorNames[player.armor]}を手に入れた`);
+  return true;
+}
+
 function levelUp() {
   while (player.xp >= player.xpNext) {
     player.xp -= player.xpNext;
@@ -781,8 +811,8 @@ function loadGame() {
     state.spawnedBoss = state.bossDefeated ? Boolean(data.spawnedBoss) : false;
     state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
     state.elderReported = Boolean(data.elderReported);
-    state.chests = new Set(data.chests || []);
-    state.discoveries = new Set(data.discoveries || []);
+    state.chests = savedIdSet(data.chests, rewardIds(TREASURE_CHESTS));
+    state.discoveries = savedIdSet(data.discoveries, rewardIds(DISCOVERY_POINTS));
     say("旅を再開しました");
     return true;
   } catch {
@@ -1503,13 +1533,13 @@ function grantChestReward(reward) {
     player.potions = Math.min(9, player.potions + 2);
     say("宝箱から45Gと薬を見つけた");
   } else if (reward === "weapon") {
-    player.weapon = Math.min(weaponNames.length - 1, player.weapon + 1);
     player.gold += 30;
-    say(`${weaponNames[player.weapon]}を手に入れた`);
+    const rank = Math.min(weaponNames.length - 1, player.weapon + 1);
+    grantWeaponAtLeast(rank, `${weaponNames[rank]}を手に入れた`, "既により良い剣を持っている (+30G)");
   } else if (reward === "armor") {
-    player.armor = Math.min(armorNames.length - 1, player.armor + 1);
     player.wards = Math.min(9, player.wards + 1);
-    say(`${armorNames[player.armor]}を手に入れた`);
+    const rank = Math.min(armorNames.length - 1, player.armor + 1);
+    grantArmorAtLeast(rank, `${armorNames[rank]}を手に入れた`, "既により良い鎧を持っている (+護符)");
   } else if (reward === "ward") {
     player.bombs = Math.min(9, player.bombs + 2);
     player.wards = Math.min(9, player.wards + 2);
@@ -1656,6 +1686,10 @@ function nearestDiscovery() {
 }
 
 function revealDiscovery(discovery) {
+  if (state.discoveries.has(discovery.id)) {
+    say("既に調べた場所だ");
+    return;
+  }
   state.discoveries.add(discovery.id);
   const dx = (discovery.x + 0.5) * TILE;
   const dy = (discovery.y + 0.5) * TILE;
@@ -1667,9 +1701,8 @@ function revealDiscovery(discovery) {
     say("隠し泉を見つけた。ここで回復できる");
   } else if (discovery.kind === "ore") {
     player.gold += 90;
-    if (player.weapon < 2) player.weapon = 2;
     burst(dx, dy, "#d7e2ea", 16);
-    say("古鉄鉱を見つけ、鉄剣を得た");
+    grantWeaponAtLeast(2, "古鉄鉱を見つけ、鉄剣を得た", "古鉄鉱を見つけた。既により良い剣を持っている");
   } else if (discovery.kind === "cache") {
     player.hunterCharm = true;
     refreshDerivedStats();

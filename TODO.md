@@ -34,8 +34,25 @@
 * Added a second objective line that gives survival-range guidance such as healing, buying the next equipment upgrade, retreating at low HP, or pushing toward the next danger area.
 * Added contextual action prompts for NPCs, treasure, discoveries, cave entry, and gathering spots.
 * Improved combat tempo with shorter attack, dash, and contact intervals without changing the contact-combat identity.
+* Hardened one-time treasure and hidden discovery persistence across save/load.
+* Added direct re-entry guards so already opened chests and already revealed discoveries cannot grant rewards again.
+* Added equipment reward safety helpers so weaker or equal equipment rewards never downgrade the current weapon or armor.
+* Verified treasure persistence, hidden reward persistence, equipment anti-downgrade behavior, and save/load preservation with VM smoke tests.
 
 ## Critical Playtest Issues - Addressed This Pass
+
+* Fix treasure chest persistence.
+
+  * Save data already included opened chest IDs; this pass sanitizes loaded IDs and verifies reopened chests cannot pay out again after reload.
+* Fix exploration reward persistence.
+
+  * Save data already included discovered hidden reward IDs; this pass adds a direct duplicate guard and verifies hidden rewards cannot pay out again after reload.
+* Prevent automatic equipment downgrade.
+
+  * Treasure and discovery equipment rewards now go through `grantWeaponAtLeast` / `grantArmorAtLeast`, preserving stronger current gear and showing a better-gear message.
+* Design equipment inventory system.
+
+  * Deferred for now. The current game has rank-based weapon/armor progression rather than multiple equippable copies, so anti-downgrade protection is the higher-value fix.
 
 * Fix enemy spawning outside the village-adjacent areas.
 
@@ -71,6 +88,7 @@
 * Continue balance testing for whether gold, EXP, medicines, and shop prices make the first armor purchase and level 4 timing feel natural.
 * Manually verify whether the new local monster pruning feels natural during long-distance travel.
 * Manually verify that the new objective guidance and context prompts do not clutter the small mobile-style screen.
+* Consider a simple equipment inventory only if future rewards introduce multiple sidegrade items instead of rank upgrades.
 
 ## Next Priority: Survival Range Expansion
 

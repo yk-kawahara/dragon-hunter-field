@@ -778,3 +778,15 @@ Before adding major new content, verify:
 
 Fix major gameplay problems before expanding game scope.
 
+
+
+Player progression must never regress unexpectedly.
+
+
+
+Automatic equipment replacement must never downgrade the player's power.
+
+
+
+Treasure rewards and one-time discoveries should be persistent across save/load.
+

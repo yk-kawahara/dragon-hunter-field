@@ -11,7 +11,9 @@ Current focus:
 * Equipment upgrades must visibly expand survivable range.
 * Movement and combat tempo should feel fast and responsive.
 * Exploration should naturally lead players farther from the village.
-
+* Reward persistence and equipment safety.
+* The player must never become weaker because of treasure reopening or save/load behavior.
+* Consider an item or equipment inventory only after one-time rewards are safe.
 ---
 
 ## Recent Cycle Notes
@@ -167,6 +169,24 @@ Implemented:
 Verified:
 
 * VM checks pass for inside-town gate closure, outside gate opening, projectile blocking, monster gate rules, guidance text, action prompts, reward reachability, info panels, tempo constants, clear flow, and save/load persistence.
+
+### Playtest Improvement Pass Cycle 10
+
+Problem:
+
+* One-time treasure and hidden discovery rewards could undermine survival-range progression if they were reacquired after save/load.
+* Equipment rewards needed a hard guard against replacing stronger current gear with weaker or equal gear.
+
+Implemented:
+
+* Sanitized loaded chest and discovery IDs against known reward definitions.
+* Added duplicate guards to hidden discovery reveals so a discovered reward cannot pay out again even if called directly.
+* Added weapon and armor reward helpers that only upgrade when the reward is stronger than the current gear.
+* Kept rank-based equipment progression instead of adding a larger inventory, because the immediate player-facing risk was reward regression rather than equipment choice depth.
+
+Verified:
+
+* VM checks pass for chest save/reload persistence, hidden discovery save/reload persistence, duplicate reward prevention, weaker equipment reward prevention, and equipment save/load preservation.
 
 ---
 

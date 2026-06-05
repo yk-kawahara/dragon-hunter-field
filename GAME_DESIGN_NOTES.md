@@ -684,6 +684,10 @@ The ending should reinforce that the player has grown from a fragile village-bou
 
 \* Strength-command info panels for equipment traits, survival stats, and inventory/progression items.
 
+\* One-time treasure and hidden discovery rewards persist across save/load and cannot be reacquired after reload.
+
+\* Equipment rewards are protected against downgrade: weaker or equal rewards leave the current weapon or armor equipped.
+
 
 
 \# Future Design Priorities
