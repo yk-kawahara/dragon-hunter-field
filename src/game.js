@@ -41,6 +41,11 @@ const TREASURE_CHESTS = [
   { id: "east-grove", x: 56, y: 43, reward: "armor" },
   { id: "dragon-cache", x: 50, y: 16, reward: "scale" },
 ];
+const DISCOVERY_POINTS = [
+  { id: "river-spring", x: 43, y: 36, kind: "spring" },
+  { id: "north-ore", x: 23, y: 20, kind: "ore" },
+  { id: "hunter-cache", x: 57, y: 28, kind: "cache" },
+];
 const GUARDIAN_SITE = { x: 20, y: 16 };
 const BOSS_REQUIREMENTS = { level: 4, scales: 3 };
 
@@ -68,6 +73,8 @@ const DASH_COST = 34;
 
 const weaponNames = ["木剣", "銅剣", "鉄剣", "銀剣", "竜剣"];
 const armorNames = ["布服", "革鎧", "鎖鎧", "鋼鎧", "竜鎧"];
+const weaponTraits = ["基本", "正面", "側撃", "背撃", "竜特効"];
+const armorTraits = ["軽装", "疾走", "受け", "護符", "竜耐性"];
 const itemOrder = ["potion", "bomb", "ward"];
 
 const monsterTypes = {
@@ -173,6 +180,7 @@ const state = {
   projectiles: [],
   npcs: [],
   chests: new Set(),
+  discoveries: new Set(),
   spawnedBoss: false,
   bossDefeated: false,
   spawnedGuardian: false,
@@ -213,12 +221,16 @@ const player = {
   selectedItem: "potion",
   scales: 0,
   sealCrest: false,
+  hunterCharm: false,
   stamina: 100,
   staminaMax: 100,
   attackCooldown: 0,
   dashCooldown: 0,
   invuln: 0,
   guard: 0,
+  slow: 0,
+  burn: 0,
+  burnTick: 0,
   combo: 0,
   comboTimer: 0,
   speed: 58,
@@ -440,9 +452,18 @@ function spawnMonster(typeName, x, y) {
     vx: 0,
     vy: 0,
     hurt: 0,
+    enraged: false,
+    summoned: false,
     age: 0,
   };
   state.monsters.push(monster);
+}
+
+function spawnIfClear(typeName, x, y) {
+  const template = monsterTypes[typeName];
+  const size = template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11;
+  const actor = { x, y, w: size, h: size, flying: Boolean(template.flying), isMonster: true };
+  if (isPassableRect(actor)) spawnMonster(typeName, x, y);
 }
 
 function monsterChoice() {
@@ -511,6 +532,40 @@ function playerDefense() {
   return 2 + player.level + player.armor * 4 + guardBonus;
 }
 
+function playerMoveSpeed() {
+  const armorMoveBonus = player.armor >= 1 ? 4 : 0;
+  const slowPenalty = player.slow > 0 ? 0.72 : 1;
+  return (player.speed + armorMoveBonus) * slowPenalty;
+}
+
+function dashCost() {
+  const armorDiscount = player.armor >= 1 ? 6 : 0;
+  return Math.max(20, DASH_COST - armorDiscount);
+}
+
+function weaponDamageMultiplier(monster, pDot, mDot) {
+  let mult = 1;
+  const flanking = Math.abs(mDot) < 0.35;
+  const behind = mDot < -0.55;
+  if (player.weapon >= 1 && pDot > 0.58) mult += 0.08;
+  if (player.weapon >= 2 && flanking) mult += 0.18;
+  if (player.weapon >= 3 && behind) mult += 0.34;
+  if (player.weapon >= 4 && (monster.boss || monster.midboss || monster.type === "dragonling")) mult += 0.25;
+  return mult;
+}
+
+function armorDamageMultiplier(monster, pDot, source = "contact") {
+  let mult = 1;
+  if (player.armor >= 2 && source === "contact" && pDot > 0.58) mult *= 0.8;
+  if (player.armor >= 4 && (monster?.boss || monster?.type === "dragonling" || source === "fire")) mult *= 0.78;
+  return mult;
+}
+
+function refreshDerivedStats() {
+  player.staminaMax = 100 + (player.hunterCharm ? 15 : 0);
+  player.stamina = Math.min(player.stamina, player.staminaMax);
+}
+
 function levelUp() {
   while (player.xp >= player.xpNext) {
     player.xp -= player.xpNext;
@@ -543,6 +598,7 @@ function saveGame() {
       selectedItem: player.selectedItem,
       scales: player.scales,
       sealCrest: player.sealCrest,
+      hunterCharm: player.hunterCharm,
     },
     spawnedBoss: state.spawnedBoss,
     bossDefeated: state.bossDefeated,
@@ -550,6 +606,7 @@ function saveGame() {
     guardianDefeated: state.guardianDefeated,
     elderReported: state.elderReported,
     chests: Array.from(state.chests),
+    discoveries: Array.from(state.discoveries),
   };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   say(`保存しました (${stageName(gameStage())})`);
@@ -563,7 +620,8 @@ function loadGame() {
     player.bombs ??= 1;
     player.wards ??= 0;
     player.sealCrest = Boolean(player.sealCrest);
-    player.staminaMax ??= 100;
+    player.hunterCharm = Boolean(player.hunterCharm);
+    refreshDerivedStats();
     player.stamina = player.staminaMax;
     player.attackCooldown = 0;
     player.dashCooldown = 0;
@@ -571,12 +629,16 @@ function loadGame() {
     player.combo = 0;
     player.comboTimer = 0;
     player.guard = 0;
+    player.slow = 0;
+    player.burn = 0;
+    player.burnTick = 0;
     state.bossDefeated = Boolean(data.bossDefeated);
     state.guardianDefeated = Boolean(data.guardianDefeated);
     state.spawnedBoss = state.bossDefeated ? Boolean(data.spawnedBoss) : false;
     state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
     state.elderReported = Boolean(data.elderReported);
     state.chests = new Set(data.chests || []);
+    state.discoveries = new Set(data.discoveries || []);
     say("旅を再開しました");
     return true;
   } catch {
@@ -604,8 +666,12 @@ function resetGame() {
     wards: 0,
     selectedItem: "potion",
     sealCrest: false,
+    hunterCharm: false,
     invuln: 0,
     guard: 0,
+    slow: 0,
+    burn: 0,
+    burnTick: 0,
     stamina: 100,
     staminaMax: 100,
     attackCooldown: 0,
@@ -622,6 +688,7 @@ function resetGame() {
   state.floaters = [];
   state.particles = [];
   state.projectiles = [];
+  state.discoveries = new Set();
   state.spawnedBoss = false;
   state.bossDefeated = false;
   state.spawnedGuardian = false;
@@ -633,6 +700,7 @@ function resetGame() {
   state.townGateOpen = false;
   state.townGateHold = 0;
   state.pointerMove = null;
+  refreshDerivedStats();
   localStorage.removeItem(SAVE_KEY);
   say("新しい旅が始まった");
 }
@@ -704,11 +772,19 @@ function updatePlayer(dt) {
   if (dx || dy) {
     player.dir = directionFromVector(n.x, n.y, player.dir);
     player.step += dt * 0.012;
-    moveActor(player, n.x * player.speed * dt * 0.001, n.y * player.speed * dt * 0.001);
+    moveActor(player, n.x * playerMoveSpeed() * dt * 0.001, n.y * playerMoveSpeed() * dt * 0.001);
   }
 
   player.invuln = Math.max(0, player.invuln - dt);
   player.guard = Math.max(0, player.guard - dt);
+  player.slow = Math.max(0, player.slow - dt);
+  player.burn = Math.max(0, player.burn - dt);
+  player.burnTick = Math.max(0, player.burnTick - dt);
+  if (player.burn > 0 && player.burnTick <= 0 && player.hp > 1) {
+    player.burnTick = 620;
+    player.hp = Math.max(1, player.hp - 1);
+    addFloater(player.x + player.w / 2, player.y - 2, "BURN", "#ff8a3d");
+  }
   player.attackCooldown = Math.max(0, player.attackCooldown - dt);
   player.dashCooldown = Math.max(0, player.dashCooldown - dt);
   player.stamina = Math.min(player.staminaMax, player.stamina + dt * 0.027);
@@ -718,6 +794,7 @@ function updatePlayer(dt) {
   state.healCooldown = Math.max(0, state.healCooldown - dt);
   updateTownGate(dt);
   updateHealCircle();
+  updateDiscoverySprings();
 }
 
 function playerNearTownGate() {
@@ -757,6 +834,22 @@ function updateHealCircle() {
   }
 }
 
+function updateDiscoverySprings() {
+  for (const spring of DISCOVERY_POINTS.filter((d) => d.kind === "spring" && state.discoveries.has(d.id))) {
+    const pc = centerOf(player);
+    const sx = (spring.x + 0.5) * TILE;
+    const sy = (spring.y + 0.5) * TILE;
+    if (Math.hypot(pc.x - sx, pc.y - sy) > 11 || state.healCooldown > 0 || player.hp <= 0) continue;
+    state.healCooldown = 1400;
+    player.hp = player.hpMax;
+    player.stamina = player.staminaMax;
+    player.guard = Math.max(player.guard, 600);
+    addRing(sx, sy, "#74ff8f", 24);
+    burst(sx, sy, "#74ff8f", 12);
+    say("隠し泉で回復した");
+  }
+}
+
 function updateMonsters(dt) {
   const playerCenter = centerOf(player);
   for (const monster of state.monsters) {
@@ -775,6 +868,23 @@ function updateMonsters(dt) {
     let vx = 0;
     let vy = 0;
 
+    if (monster.boss && !monster.enraged && monster.hp <= monster.hpMax * 0.5) {
+      monster.enraged = true;
+      monster.speed += 6;
+      monster.atk += 4;
+      monster.fireCooldown = 120;
+      state.shake = Math.max(state.shake, 260);
+      addRing(c.x, c.y, "#ff543d", 48);
+      say("赤竜が怒り狂う!", 2600);
+    }
+
+    if (monster.boss && monster.enraged && !monster.summoned && monster.hp <= monster.hpMax * 0.42) {
+      monster.summoned = true;
+      spawnIfClear("dragonling", monster.x - 28, monster.y + 26);
+      spawnIfClear("wisp", monster.x + 34, monster.y + 20);
+      say("赤竜が眷属を呼んだ!", 2200);
+    }
+
     if (monster.type === "boar" && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < 92) {
       monster.chargeVector = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
       monster.windup = 360;
@@ -783,7 +893,13 @@ function updateMonsters(dt) {
     }
 
     if ((monster.type === "wisp" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < (monster.boss ? 180 : monster.midboss ? 150 : 130)) {
-      shootProjectile(monster, playerCenter);
+      if (monster.boss && monster.enraged) {
+        shootProjectile(monster, playerCenter, -0.28);
+        shootProjectile(monster, playerCenter, 0);
+        shootProjectile(monster, playerCenter, 0.28);
+      } else {
+        shootProjectile(monster, playerCenter);
+      }
       monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : rand(1300, 2100);
     }
 
@@ -823,9 +939,15 @@ function updateMonsters(dt) {
   });
 }
 
-function shootProjectile(monster, target) {
+function shootProjectile(monster, target, angleOffset = 0) {
   const c = centerOf(monster);
-  const aim = normalize(target.x - c.x, target.y - c.y);
+  const baseAim = normalize(target.x - c.x, target.y - c.y);
+  const cos = Math.cos(angleOffset);
+  const sin = Math.sin(angleOffset);
+  const aim = {
+    x: baseAim.x * cos - baseAim.y * sin,
+    y: baseAim.x * sin + baseAim.y * cos,
+  };
   const speed = monster.boss ? 78 : monster.midboss ? 68 : 62;
   state.projectiles.push({
     x: c.x,
@@ -835,6 +957,7 @@ function shootProjectile(monster, target) {
     r: monster.boss ? 4 : monster.midboss ? 3 : 3,
     damage: monster.boss ? 14 : monster.midboss ? 11 : 8,
     color: monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166",
+    source: monster.boss ? "dragon" : monster.midboss ? "guardian" : monster.type,
     life: monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
   });
   addSlash(c.x + aim.x * 8, c.y + aim.y * 8, monster.dir, monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166");
@@ -857,7 +980,8 @@ function updateProjectiles(dt) {
     const hitbox = { x: p.x - p.r, y: p.y - p.r, w: p.r * 2, h: p.r * 2 };
     if (rectsOverlap(player, hitbox)) {
       if (player.invuln <= 0 && player.hp > 0) {
-        let hurt = Math.max(1, p.damage - Math.floor(playerDefense() * 0.45));
+        const source = p.source === "wisp" || p.source === "dragon" ? "fire" : "projectile";
+        let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon" }, 0, source)));
         if (player.guard > 0) hurt = Math.floor(hurt * 0.3);
         player.hp = Math.max(0, player.hp - hurt);
         player.invuln = 320;
@@ -867,6 +991,11 @@ function updateProjectiles(dt) {
         if (player.hp <= 0) {
           state.gameOver = true;
           say("倒れた... Rで再挑戦", 5000);
+        }
+        if (p.source === "wisp" || p.source === "dragon") {
+          player.burn = Math.max(player.burn, p.source === "dragon" ? 2600 : 1500);
+        } else if (p.source === "guardian") {
+          player.slow = Math.max(player.slow, 1500);
         }
       }
       return false;
@@ -886,8 +1015,9 @@ function resolveContact(monster) {
   const mMult = mDot > 0.58 ? 1.25 : mDot > -0.18 ? 0.85 : 0.42;
   const crit = pDot > 0.78 && Math.random() < 0.22 + player.weapon * 0.03;
   const critMult = crit ? 1.55 : 1;
-  const hit = Math.max(1, Math.round((playerAttack() - monster.def + rand(0, 3)) * pMult * critMult));
-  let hurt = Math.max(0, Math.round((monster.atk - playerDefense() + rand(0, 2)) * mMult));
+  const gearMult = weaponDamageMultiplier(monster, pDot, mDot);
+  const hit = Math.max(1, Math.round((playerAttack() - monster.def + rand(0, 3)) * pMult * critMult * gearMult));
+  let hurt = Math.max(0, Math.round((monster.atk - playerDefense() + rand(0, 2)) * mMult * armorDamageMultiplier(monster, pDot)));
   if (player.guard > 0) hurt = Math.floor(hurt * 0.35);
 
   monster.hp -= hit;
@@ -911,6 +1041,7 @@ function resolveContact(monster) {
       state.gameOver = true;
       say("倒れた... Rで再挑戦", 5000);
     }
+    applyContactStatus(monster);
   }
 
   if (player.guard > 0 && hurt === 0) {
@@ -922,6 +1053,19 @@ function resolveContact(monster) {
     burst(monster.x + monster.w / 2, monster.y + monster.h / 2, "#fff36b", monster.boss ? 12 : 7);
   } else {
     burst(monster.x + monster.w / 2, monster.y + monster.h / 2, "#ff9c52", 4);
+  }
+}
+
+function applyContactStatus(monster) {
+  if (monster.type === "slime") {
+    player.slow = Math.max(player.slow, 1200);
+    addFloater(player.x + player.w / 2, player.y - 7, "SLOW", "#9df27f");
+  } else if (monster.type === "bat") {
+    player.stamina = Math.max(0, player.stamina - 12);
+    addFloater(player.x + player.w / 2, player.y - 7, "ST-", "#d7b5ff");
+  } else if (monster.type === "wisp" || monster.type === "dragonling" || monster.boss) {
+    player.burn = Math.max(player.burn, monster.boss ? 2600 : 1500);
+    addFloater(player.x + player.w / 2, player.y - 7, "BURN", "#ff8a3d");
   }
 }
 
@@ -1107,9 +1251,11 @@ function performAttack() {
 }
 
 function hitMonster(monster, power = 1, color = "#ffffff") {
+  const pDot = facingDot(player, monster);
+  const mDot = facingDot(monster, player);
   const crit = Math.random() < 0.12 + player.weapon * 0.03;
   const critMult = crit ? 1.55 : 1;
-  const hit = Math.max(1, Math.round((playerAttack() - monster.def + rand(0, 4)) * power * critMult));
+  const hit = Math.max(1, Math.round((playerAttack() - monster.def + rand(0, 4)) * power * critMult * weaponDamageMultiplier(monster, pDot, mDot)));
   monster.hp -= hit;
   monster.hurt = 150;
   player.stamina = Math.min(player.staminaMax, player.stamina + 5);
@@ -1122,10 +1268,11 @@ function hitMonster(monster, power = 1, color = "#ffffff") {
 }
 
 function dash() {
-  if (state.gameOver || player.hp <= 0 || player.dashCooldown > 0 || player.stamina < DASH_COST) return;
+  const cost = dashCost();
+  if (state.gameOver || player.hp <= 0 || player.dashCooldown > 0 || player.stamina < cost) return;
   const input = inputMoveVector();
   const dir = input.x || input.y ? input : facingVector();
-  player.stamina = Math.max(0, player.stamina - DASH_COST);
+  player.stamina = Math.max(0, player.stamina - cost);
   player.dashCooldown = 360;
   player.invuln = Math.max(player.invuln, 260);
   player.step += 1;
@@ -1307,6 +1454,11 @@ function searchGround() {
     openChest(chest);
     return;
   }
+  const discovery = nearestDiscovery();
+  if (discovery) {
+    revealDiscovery(discovery);
+    return;
+  }
   const tx = Math.floor((player.x + player.w / 2) / TILE);
   const ty = Math.floor((player.y + player.h / 2) / TILE);
   const tile = tileAt(tx, ty);
@@ -1315,6 +1467,43 @@ function searchGround() {
     setTile(tx, ty, TILE_GRASS);
   } else {
     say("何も見つからない");
+  }
+}
+
+function nearestDiscovery() {
+  const pc = centerOf(player);
+  for (const discovery of DISCOVERY_POINTS) {
+    if (state.discoveries.has(discovery.id)) continue;
+    const dx = (discovery.x + 0.5) * TILE;
+    const dy = (discovery.y + 0.5) * TILE;
+    if (Math.hypot(pc.x - dx, pc.y - dy) < 20) return discovery;
+  }
+  return null;
+}
+
+function revealDiscovery(discovery) {
+  state.discoveries.add(discovery.id);
+  const dx = (discovery.x + 0.5) * TILE;
+  const dy = (discovery.y + 0.5) * TILE;
+  addRing(dx, dy, "#bafc87", 24);
+  if (discovery.kind === "spring") {
+    player.hp = player.hpMax;
+    player.stamina = player.staminaMax;
+    burst(dx, dy, "#74ff8f", 18);
+    say("隠し泉を見つけた。ここで回復できる");
+  } else if (discovery.kind === "ore") {
+    player.gold += 90;
+    if (player.weapon < 2) player.weapon = 2;
+    burst(dx, dy, "#d7e2ea", 16);
+    say("古鉄鉱を見つけ、鉄剣を得た");
+  } else if (discovery.kind === "cache") {
+    player.hunterCharm = true;
+    refreshDerivedStats();
+    player.stamina = player.staminaMax;
+    player.bombs = Math.min(9, player.bombs + 1);
+    player.wards = Math.min(9, player.wards + 1);
+    burst(dx, dy, "#ffd166", 18);
+    say("狩人の小箱から俊足の印を得た");
   }
 }
 
@@ -1390,7 +1579,7 @@ function useWard() {
     return;
   }
   player.wards -= 1;
-  player.guard = 5200;
+  player.guard = 5200 + (player.armor >= 3 ? 1400 : 0);
   player.invuln = Math.max(player.invuln, 500);
   addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 28);
   burst(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", 16);
@@ -1412,9 +1601,9 @@ function cycleItem(step) {
 function showStats() {
   state.statsFlip = !state.statsFlip;
   if (state.statsFlip) {
-    say(`攻${playerAttack()} 防${playerDefense()} 次${player.xpNext - player.xp}`);
+    say(`攻${playerAttack()} ${weaponTraits[player.weapon]} / 防${playerDefense()} ${armorTraits[player.armor]}`);
   } else {
-    say(`連${player.combo} 護${Math.ceil(player.guard / 1000)}秒`);
+    say(`次${player.xpNext - player.xp} 連${player.combo} 護${Math.ceil(player.guard / 1000)}秒`);
   }
 }
 
@@ -1459,6 +1648,7 @@ function draw() {
   drawTownFence(cam);
   drawTownGates(cam);
   drawChests(cam);
+  drawDiscoveries(cam);
   drawGuardianSite(cam);
   drawNpcs(cam);
   drawEntities(cam);
@@ -1735,6 +1925,43 @@ function drawGuardianSite(cam) {
     ctx.strokeStyle = pulse ? "#55c7a0" : "#d8fff1";
     ctx.strokeRect(sx + 2, sy, 16, 18);
   }
+}
+
+function drawDiscoveries(cam) {
+  for (const discovery of DISCOVERY_POINTS) {
+    const sx = discovery.x * TILE - cam.x;
+    const sy = discovery.y * TILE - cam.y;
+    if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) continue;
+    const found = state.discoveries.has(discovery.id);
+    if (discovery.kind === "spring") {
+      if (!found) {
+        drawGlint(sx + 7, sy + 9, "#74ff8f");
+      } else {
+        ctx.fillStyle = "rgba(116, 255, 143, 0.28)";
+        ctx.fillRect(sx + 2, sy + 5, 12, 8);
+        ctx.strokeStyle = "#74ff8f";
+        ctx.strokeRect(sx + 3, sy + 6, 10, 6);
+        ctx.fillStyle = "#d8fff1";
+        ctx.fillRect(sx + 7, sy + 8, 2, 2);
+      }
+    } else if (discovery.kind === "ore") {
+      ctx.fillStyle = found ? "#6f7780" : "#374151";
+      ctx.fillRect(sx + 4, sy + 8, 9, 5);
+      drawGlint(sx + 7, sy + 7, found ? "#d7e2ea" : "#8dd7ff");
+    } else if (discovery.kind === "cache") {
+      ctx.fillStyle = found ? "#4f2e17" : "#7b4b25";
+      ctx.fillRect(sx + 4, sy + 7, 8, 6);
+      if (!found) drawGlint(sx + 11, sy + 6, "#ffd166");
+    }
+  }
+}
+
+function drawGlint(sx, sy, color) {
+  const pulse = Math.floor(performance.now() / 240) % 2;
+  ctx.fillStyle = color;
+  ctx.fillRect(sx, sy + 1, 3, 1);
+  ctx.fillRect(sx + 1, sy, 1, 3);
+  if (pulse) ctx.fillRect(sx + 1, sy + 1, 1, 1);
 }
 
 function drawHealCircle(cam) {
@@ -2203,8 +2430,8 @@ function drawMonster(monster, sx, sy) {
 function drawDragon(monster, sx, sy) {
   const mainColor = monster.hurt > 0 ? "#ffffff" : monster.color;
   const pulse = Math.floor(monster.age / 140) % 2;
-  ctx.fillStyle = "rgba(255, 88, 42, 0.25)";
-  ctx.fillRect(sx - 3, sy + 4 - pulse, 30, 18);
+  ctx.fillStyle = monster.enraged ? "rgba(255, 42, 42, 0.38)" : "rgba(255, 88, 42, 0.25)";
+  ctx.fillRect(sx - (monster.enraged ? 6 : 3), sy + 4 - pulse, monster.enraged ? 36 : 30, 18);
   ctx.fillStyle = monster.shadow;
   ctx.fillRect(sx - 5, sy + 6, 9, 10);
   ctx.fillRect(sx + 17, sy + 5, 9, 11);
@@ -2336,7 +2563,8 @@ function objectiveText() {
   if (stage === "level") return `目的: LV${BOSS_REQUIREMENTS.level}まで鍛える`;
   if (stage === "ruin") return "目的: 北森の遺跡を探す";
   const unopened = TREASURE_CHESTS.length - state.chests.size;
-  return `目的: 竜の鱗を集める ${player.scales}/${BOSS_REQUIREMENTS.scales}  宝箱${unopened}`;
+  const hidden = DISCOVERY_POINTS.length - state.discoveries.size;
+  return `目的: 竜の鱗 ${player.scales}/${BOSS_REQUIREMENTS.scales} 宝${unopened} 隠${hidden}`;
 }
 
 function gameStage() {
@@ -2398,7 +2626,8 @@ function drawHud() {
   ctx.fillStyle = "#ffffff";
   ctx.fillText(`HP ${Math.ceil(player.hp)}/${player.hpMax}`, 116, VIEW_H + 10);
   ctx.fillText(`EXP ${player.xp}/${player.xpNext}`, 116, VIEW_H + 22);
-  ctx.fillText(`ST ${Math.floor(player.stamina)}`, 116, VIEW_H + 30);
+  const status = player.burn > 0 ? "燃" : player.slow > 0 ? "鈍" : "";
+  ctx.fillText(`ST ${Math.floor(player.stamina)}${status}`, 116, VIEW_H + 30);
 
   drawItemChip(183, VIEW_H + 5);
   drawMiniCompass(216, VIEW_H + 8);

@@ -12,3 +12,6 @@
 - Verified syntax with `node --check src/game.js`.
 - Verified progression with a VM simulation: Guardian spawn/defeat, dragon unlock/spawn/defeat, elder report, and saved fields.
 - Browser visual QA is pending because a browser control tool was not available in this run.
+- Cycle 1 analysis: equipment rewards were mostly numeric. Implemented weapon traits for front/flank/back/dragon attacks and armor traits for movement, frontal receiving, ward duration, and fire resistance.
+- Cycle 2 analysis: exploration rewards did not change play enough. Implemented persistent hidden spring, ore, and hunter cache rewards.
+- Cycle 3 analysis: final boss was too close to a high-HP enemy. Implemented red dragon enrage, spread shots, and summons.

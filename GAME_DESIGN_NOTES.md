@@ -36,13 +36,21 @@ The fun is deciding when to push deeper into dangerous fields and when to retrea
 - EXP and gold from monsters.
 - Item drops: medicine, fire bottles, wards, dragon scales.
 - Treasure: gold, supplies, weapon/armor upgrade, scale.
+- Hidden discoveries: recovery spring, old iron ore, hunter cache.
 - Guardian reward: seal crest and a scale.
 
 ## Growth
 - Level raises HP and basic attack/defense.
 - Smith upgrades weapon/armor with gold.
+- Weapon ranks change combat incentives: frontal, flank, back attack, and dragon-slaying bonuses.
+- Armor ranks change survival style: movement, frontal receiving, longer ward duration, dragon/fire resistance.
+- Hunter cache increases stamina capacity.
 - Items create tactical safety.
 - Seal crest unlocks final boss challenge.
+
+## Boss Design
+- North Forest Guardian is a midboss with ranged pressure and seal crest reward.
+- Red Dragon enrages below half HP, fires spread shots, and summons lesser enemies.
 
 ## Boss Challenge Conditions
 - 3 dragon scales.
@@ -58,3 +66,6 @@ Defeat the red dragon. The game enters victory state and displays a clear overla
 - Expanded save data.
 - More complete hint messages.
 - Progression rewards and clear reporting.
+- Equipment traits tied to facing/contact combat.
+- Hidden exploration discoveries with persistent rewards.
+- Enemy status effects and red dragon phase change.
