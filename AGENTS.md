@@ -618,3 +618,163 @@ Do not leave finished work uncommitted.
 
 
 
+\## Real Playtest Rules
+
+
+
+When improving the game, prioritize actual gameplay problems discovered through playtesting over adding new content.
+
+
+
+Do not assume that adding more enemies, quests, items, or mechanics automatically improves the game.
+
+
+
+First verify that the existing gameplay loop feels good.
+
+
+
+\### Safe Village Rule
+
+
+
+The village must function as a true safe zone.
+
+
+
+Ordinary enemies should not enter the village.
+
+
+
+Enemy projectiles, magic, and hostile effects should not threaten players inside the village.
+
+
+
+If a player returns to the village after dangerous exploration, they should immediately feel safe.
+
+
+
+\### World Population Rule
+
+
+
+Enemy populations should increase in danger and value as distance from the village increases.
+
+
+
+Avoid empty distant areas.
+
+
+
+The player should always find meaningful enemies, rewards, or challenges in areas that are farther from the village.
+
+
+
+A stronger player should naturally travel farther from the village because the rewards justify the risk.
+
+
+
+\### Tempo Rule
+
+
+
+Favor responsiveness and fast traversal.
+
+
+
+Danger should come from enemy damage, enemy behavior, positioning, and area design.
+
+
+
+Danger should not come from slow movement, long waiting times, sluggish controls, or excessive travel time.
+
+
+
+When in doubt, prefer a slightly faster game.
+
+
+
+\### Readability Rule
+
+
+
+Functional readability is more important than decorative graphics.
+
+
+
+Players should immediately understand:
+
+
+
+\* Where to heal.
+
+\* Where to buy equipment.
+
+\* Where to buy items.
+
+\* Where to receive objectives.
+
+\* Where danger begins.
+
+
+
+Use signs, building layouts, props, gates, walls, landmarks, and NPC placement to communicate function.
+
+
+
+Do not rely solely on dialogue.
+
+
+
+\### Menu and Information Rule
+
+
+
+Players should be able to easily understand:
+
+
+
+\* Current equipment.
+
+\* Equipment effects.
+
+\* Current items.
+
+\* Progression items.
+
+\* Regeneration effects.
+
+\* Survival-related bonuses.
+
+
+
+If a system exists but the player cannot easily see or understand it, improving visibility is often more valuable than adding new mechanics.
+
+
+
+\### Playtest Before Expansion Rule
+
+
+
+Before adding major new content, verify:
+
+
+
+\* Enemy distribution.
+
+\* Village safety.
+
+\* Equipment progression.
+
+\* Inventory usability.
+
+\* Movement speed.
+
+\* Combat pacing.
+
+\* Full-playthrough balance.
+
+
+
+Fix major gameplay problems before expanding game scope.
+

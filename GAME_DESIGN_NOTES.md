@@ -674,3 +674,125 @@ The ending should reinforce that the player has grown from a fragile village-bou
 
 10\. Run browser visual QA on desktop and mobile viewport.
 
+
+
+\# Design Rules Derived From Playtesting
+
+
+
+\## Safe Village Principle
+
+
+
+The village should be a true safe zone.
+
+
+
+Ordinary enemies should never enter the village.
+
+
+
+Enemy projectiles, magic, and hostile effects should not threaten the player inside the village.
+
+
+
+The village should provide a clear feeling of relief after surviving dangerous exploration.
+
+
+
+Visual design should clearly communicate safety through walls, gates, recovery points, and NPC placement.
+
+
+
+\## World Progression Principle
+
+
+
+The world should become more dangerous as distance from the village increases.
+
+
+
+Areas farther from the village should generally contain:
+
+
+
+\* Stronger enemies.
+
+\* Higher enemy density.
+
+\* Better rewards.
+
+\* Better treasure.
+
+\* More risk.
+
+
+
+The player should naturally feel that expanding survivable range allows access to more valuable parts of the world.
+
+
+
+Empty distant areas should be avoided.
+
+
+
+The player should never feel that the most valuable gameplay remains near the village after becoming stronger.
+
+
+
+\## Tempo Principle
+
+
+
+The game should feel fast and responsive.
+
+
+
+Danger should come from enemy strength, positioning, and area design.
+
+
+
+Danger should not come from slow movement, excessive waiting, or sluggish controls.
+
+
+
+Travel between the village, hunting grounds, and dangerous areas should feel quick and satisfying.
+
+
+
+As the player becomes stronger, old enemies should be defeated rapidly and movement through previously dangerous areas should feel effortless.
+
+
+
+\## Readability Principle
+
+
+
+The player should immediately understand the function of important locations.
+
+
+
+Without talking to NPCs, players should be able to recognize:
+
+
+
+\* The Elder
+
+\* The Smith
+
+\* The Healer or Item Seller
+
+\* The Village Gate
+
+\* Recovery Locations
+
+\* Dangerous Area Entrances
+
+
+
+Visual readability is more important than decorative detail.
+
+
+
+Signs, building layouts, props, walls, gates, and terrain should communicate function clearly.
+
