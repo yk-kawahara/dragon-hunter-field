@@ -418,6 +418,7 @@ Current pilot content:
 \* `泡吐き`, a bubble projectile enemy that slows and drains stamina.
 \* `southwest-mine-cache`, a one-time gold reward that supports later equipment purchases.
 \* Southwest frontier camp near the mine route. It is a safe base with a recovery circle, visible camp props, and a supply NPC so the player can push beyond the original village survival radius.
+\* The frontier supply NPC sells a mine charm / bubble ward. This reduces bubble damage, slow duration, and stamina loss, making the mine a region the player can gradually master instead of a one-time loot stop.
 
 
 \## Dragon Cave
@@ -790,6 +791,7 @@ The ending should reinforce that the player has grown from a fragile village-bou
 \* Southwest mine pilot content: the mine has its own region classification, hidden cache reward, and the `泡吐き` enemy with slow bubble projectiles.
 
 \* First remote safe-base content: the southwest frontier camp is recognized as a safe zone, blocks ordinary monster entry, provides a second recovery circle, and includes a supply NPC for mine expeditions.
+\* Mine-specific equipment progression: the frontier camp sells a bubble-protection charm that makes `泡吐き` contact and projectile pressure more manageable.
 
 \* Village safety rules for projectiles and monsters: closed gates block danger, open gates allow danger through gate tiles only.
 

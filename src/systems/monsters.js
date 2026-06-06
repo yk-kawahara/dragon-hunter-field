@@ -290,8 +290,8 @@
       player.slow = Math.max(player.slow, 1200);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "SLOW", "#9df27f");
     } else if (monster.type === "bubbler") {
-      player.slow = Math.max(player.slow, 1200);
-      player.stamina = Math.max(0, player.stamina - 8);
+      player.slow = Math.max(player.slow, player.mineCharm ? 520 : 1200);
+      player.stamina = Math.max(0, player.stamina - (player.mineCharm ? 3 : 8));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
     } else if (monster.type === "bat") {
       player.stamina = Math.max(0, player.stamina - 12);

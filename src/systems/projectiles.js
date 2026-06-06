@@ -94,7 +94,7 @@
       const hitbox = { x: p.x - p.r, y: p.y - p.r, w: p.r * 2, h: p.r * 2 };
       if (rectsOverlap(player, hitbox)) {
         if (player.invuln <= 0 && player.hp > 0) {
-          const source = p.source === "wisp" || p.source === "dragon" ? "fire" : "projectile";
+          const source = p.source === "wisp" || p.source === "dragon" ? "fire" : p.source === "bubbler" ? "bubble" : "projectile";
           let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon" }, 0, source)));
           if (p.source === "dragon" && hurt < 3) hurt = 3;
           if (p.source === "guardian" && hurt < 2) hurt = 2;
@@ -112,8 +112,8 @@
           if (p.source === "wisp" || p.source === "dragon") {
             player.burn = Math.max(player.burn, p.source === "dragon" ? 2600 : 1500);
           } else if (p.source === "bubbler") {
-            player.slow = Math.max(player.slow, 1400);
-            player.stamina = Math.max(0, player.stamina - 6);
+            player.slow = Math.max(player.slow, player.mineCharm ? 560 : 1400);
+            player.stamina = Math.max(0, player.stamina - (player.mineCharm ? 2 : 6));
             addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
           } else if (p.source === "guardian") {
             player.slow = Math.max(player.slow, 1500);

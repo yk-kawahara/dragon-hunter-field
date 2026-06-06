@@ -111,12 +111,20 @@
     }
 
     if (npc.type === "frontier") {
+      const charmCost = 180;
       const kitCost = 28 + player.level * 6;
       if (player.hp < player.hpMax || player.stamina < player.staminaMax) {
         player.hp = player.hpMax;
         player.stamina = player.staminaMax;
         player.guard = Math.max(player.guard, 700);
         say("補給隊「ここで立て直せ。廃坑は泡に足を取られる」");
+      } else if (!player.mineCharm && player.gold >= charmCost) {
+        player.gold -= charmCost;
+        player.mineCharm = true;
+        player.wards = Math.min(9, player.wards + 1);
+        say("補給隊から泡除けの護符を買った。廃坑で足を取られにくい");
+      } else if (!player.mineCharm) {
+        say(`補給隊「泡除けの護符は${charmCost}Gだ。廃坑で稼いで戻れ」`);
       } else if (player.gold >= kitCost && (player.potions < 7 || player.bombs < 4 || player.wards < 3)) {
         player.gold -= kitCost;
         player.potions = Math.min(9, player.potions + 2);

@@ -57,6 +57,7 @@
         regenCharm: player.regenCharm,
         trailCharm: player.trailCharm,
         aegisCharm: player.aegisCharm,
+        mineCharm: player.mineCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -85,6 +86,7 @@
       player.regenCharm = Boolean(player.regenCharm);
       player.trailCharm = Boolean(player.trailCharm);
       player.aegisCharm = Boolean(player.aegisCharm);
+      player.mineCharm = Boolean(player.mineCharm);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
       player.attackCooldown = 0;
@@ -137,6 +139,7 @@
       regenCharm: false,
       trailCharm: false,
       aegisCharm: false,
+      mineCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,

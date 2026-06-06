@@ -317,4 +317,27 @@
 - Remaining risk:
   - In-app Browser interaction still failed with the known Windows browser-session startup issue, so live keyboard/touch play at the new camp was not verified.
   - The camp's exact visual placement near the southwest mine should be checked interactively in a browser once browser control is available.
+  - Mine charm follow-up was implemented in the next pass.
+
+## 2026-06-06 Volume Expansion Pass / Mine Charm
+- Goal: make the new southwest frontier camp more than a recovery marker by giving it a region-specific purchase that changes how far the player can safely push into the mine.
+- Analysis: the mine has a distinct enemy (`泡吐き`) and a remote safe base, but the player still needed a clear "I bought this and the mine became easier" progression beat.
+- Implemented `mineCharm` as an accessory-like progression flag.
+- Added `mineCharm` to initial player state, save data, load data, reset data, UI info panels, and VM smoke verification.
+- Frontier supply NPC now sells the mine charm / bubble ward for 180G before ordinary expedition supplies.
+- Mine charm effects:
+  - Reduces `泡吐き` contact damage.
+  - Reduces bubble projectile damage by treating bubbler shots as `bubble` source damage.
+  - Reduces bubble slow duration.
+  - Reduces bubble stamina loss from both contact and projectiles.
+- Design impact:
+  - Adds a region-specific equipment-like choice without doing the full inventory rewrite yet.
+  - Strengthens the survival range loop around the mine: enter mine, take bubble pressure, retreat to camp, earn/buy the charm, then push deeper more safely.
+- Verification:
+  - Syntax checks passed for all 24 JavaScript files under `src/` and `scripts/`.
+  - `scripts/verify-game-smoke.js` passed and now verifies mine charm purchase, persistence, and damage reduction against `泡吐き`.
+  - `git diff --check` passed with CRLF warnings only.
+- Remaining risk:
+  - Manual tuning is needed to decide whether 180G is the right price and whether the reduction is too strong or too subtle.
+  - This is still a flag-based accessory. A future `もちもの` / accessory menu should expose it as an equipable item once equipment sidegrades exist.
   - The next high-value content pass should either expand this camp into a stronger shop/town step, add the next dungeon route, or begin the real `もちもの` inventory.

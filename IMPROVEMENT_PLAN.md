@@ -395,6 +395,8 @@ Implemented:
 * Added a `frontier` supply NPC through `WORLD_OBJECTS`.
 * Added visible camp props: tents, stakes, campfire, supply marker, and recovery marker.
 * Updated zone/UI text so the player sees `前線キャンプ` and `廃坑`.
+* Added a purchasable mine charm at the frontier supply NPC.
+* The mine charm reduces `泡吐き` contact damage, bubble projectile damage, slow duration, and stamina loss.
 
 Verified:
 
@@ -406,6 +408,7 @@ Expected design value:
 * Creates the first concrete step toward multiple towns/frontier bases.
 * Makes the southwest mine a more viable repeat expedition route.
 * Supports survival range expansion by letting the player's safe radius move outward from the starting village.
+* Adds the first region-specific accessory-like purchase, pointing toward the future real inventory/accessory system without requiring the full menu rewrite yet.
 
 ### Playtest Improvement Pass Cycle 9
 

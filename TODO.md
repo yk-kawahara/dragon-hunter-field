@@ -112,6 +112,8 @@ The current game is roughly a 20-minute route. Future work must actively grow it
 * Added the southwest frontier camp as the first remote safe base outside the starting village.
 * Added a second recovery circle and `frontier` supply NPC near the southwest mine route.
 * Verified the frontier camp safe zone, recovery circle, supply purchase, and monster-entry blocking in the VM smoke script.
+* Added the purchasable mine charm / bubble ward at the frontier camp.
+* Mine charm now persists through save/load and reduces `泡吐き` contact, bubble projectile damage, slow duration, and stamina loss.
 
 ## Critical Playtest Issues - Addressed This Pass
 

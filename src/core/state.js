@@ -75,6 +75,7 @@
       regenCharm: false,
       trailCharm: false,
       aegisCharm: false,
+      mineCharm: false,
       stamina: 100,
       staminaMax: 100,
       attackCooldown: 0,

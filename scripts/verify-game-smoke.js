@@ -276,6 +276,7 @@ function assertSaveLoadAndEquipment() {
   player.regenCharm = true;
   player.trailCharm = true;
   player.aegisCharm = true;
+  player.mineCharm = true;
   state.chests.add("town-cache");
   state.chests.add("north-ruin");
   state.chests.add("south-outpost");
@@ -297,6 +298,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.regenCharm, "regen charm should persist");
   assert(restored.player.trailCharm, "trail charm should persist");
   assert(restored.player.aegisCharm, "aegis charm should persist");
+  assert(restored.player.mineCharm, "mine charm should persist");
   const baseline = createRuntime();
   baseline.player.armor = restored.player.armor;
   baseline.player.weapon = restored.player.weapon;
@@ -412,10 +414,24 @@ function assertFrontierCamp() {
   player.bombs = 0;
   player.wards = 0;
   player.level = 3;
+  player.mineCharm = false;
+  player.gold = 220;
+  runtime.handleNpc(frontier);
+  assert(player.mineCharm, "frontier supply NPC should sell mine charm before supplies");
+  assert(player.gold === 40, "mine charm should cost 180G");
+  const withCharm = runtime.armorDamageMultiplier({ type: "bubbler" }, 0.2, "contact");
+  player.mineCharm = false;
+  const withoutCharm = runtime.armorDamageMultiplier({ type: "bubbler" }, 0.2, "contact");
+  assert(withCharm < withoutCharm, "mine charm should reduce bubbler contact damage");
+  player.mineCharm = true;
+  player.gold = 120;
+  player.potions = 0;
+  player.bombs = 0;
+  player.wards = 0;
   runtime.handleNpc(frontier);
   assert(player.potions >= 2 && player.bombs >= 1 && player.wards >= 1, "frontier supply NPC should sell expedition supplies");
   assert(player.gold < 120, "frontier supply NPC should charge gold for supplies");
-  return { safe: runtime.inTown(player.x, player.y), supplies: { potions: player.potions, bombs: player.bombs, wards: player.wards } };
+  return { safe: runtime.inTown(player.x, player.y), mineCharm: player.mineCharm, supplies: { potions: player.potions, bombs: player.bombs, wards: player.wards } };
 }
 
 function assertScriptLoadSmoke() {
