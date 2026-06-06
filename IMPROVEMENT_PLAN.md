@@ -2,10 +2,13 @@
 
 ## Current Priority
 
-Strengthen the survival-range expansion loop through actual gameplay improvements rather than new content volume.
+Expand the game from a roughly 20-minute clear route into a larger RPG while preserving survival-range expansion.
 
 Current focus:
 
+* Treat the current village -> Guardian -> Red Dragon route as the first chapter, not the final game size.
+* Add meaningful volume: larger maps, remote towns, dungeons, varied monsters, new equipment tiers, inventory decisions, and side routes.
+* Prefer content that gives the player a new place to reach, a new threat to learn, a new safe base to unlock, or a new equipment choice to make.
 * Dangerous areas must become more rewarding and more populated than safe areas.
 * The village must feel safe, readable, and useful.
 * Equipment upgrades must visibly expand survivable range.
@@ -14,9 +17,46 @@ Current focus:
 * Reward persistence and equipment safety.
 * The player must never become weaker because of treasure reopening or save/load behavior.
 * Startup flow must support both replay from level 1 and continuing an existing save.
-* Consider an item or equipment inventory only after one-time rewards are safe.
-* Prepare `src/game.js` for safe behavior-neutral refactoring before major new systems are added.
+* Build toward a real inventory where items, weapons, armor, and accessories can be inspected, equipped, and sold.
+* Accessories should eventually become equipment choices rather than only permanent flags.
 ---
+
+## Volume Expansion Roadmap
+
+The game should grow through playable content, not architecture work alone.
+
+### Map Scope
+
+* Long-term target: at least 10x the current playable map scope.
+* Short-term target: turn current unused or thin areas into named places with danger and reward.
+* Mid-term target: add additional map files such as `maps/cave1.js`, `maps/tower1.js`, `maps/castle1.js`, and later remote town maps.
+* Continue using human-editable fixed map data. Do not return to random terrain generation.
+
+### Towns And Safe Bases
+
+* Add multiple towns or frontier bases.
+* Each later town should provide recovery, supplies, stronger shops, hints, or a survival-route role.
+* Remote towns should make the player feel their safe range has moved outward.
+
+### Enemy Variety
+
+* Add enemies with behavior differences, not only new colors or stats.
+* Prioritize bubble/projectile enemies, magic enemies, poison/slow/status enemies, territorial enemies, summoners, and enemies with area-specific counterplay.
+* Each new region should introduce at least one enemy behavior that changes how the player approaches contact combat.
+
+### Inventory And Equipment
+
+* Add a real `もちもの` menu.
+* Let the player inspect consumables, weapons, armor, and accessories.
+* Let the player choose weapon/armor/accessory equipment when sidegrades exist.
+* Let unwanted gear be sold for gold.
+* Convert current permanent charm flags into equipable accessories in a later focused pass.
+
+### First Implementation Direction
+
+* Use the current southwest mine/outpost work as a pilot for bigger-volume content.
+* Make the mine a distinct dangerous region with its own monster behavior and reward.
+* Then add a second safe base or remote shop so the map expansion creates a new survival anchor.
 
 ## Replanning Snapshot - 2026-06-05
 
@@ -317,6 +357,27 @@ Verified:
 * Syntax checks pass for all JavaScript files under `src/` and `scripts/`.
 * VM smoke still verifies map reachability, one-time reward persistence, equipment anti-downgrade, start menu behavior, Warden, Guardian, Red Dragon defeat, and elder report clear state.
 * `git diff --check` passed with line-ending warnings only.
+
+### Volume Expansion Pass: Southwest Mine
+
+Problem:
+
+* The game is currently closer to a 20-minute first route than a full RPG.
+* Existing southwest mine terrain and cache work needed enemy identity so the area would not be only a distant treasure pickup.
+
+Implemented:
+
+* Added a `mine` region for the southwest mine area.
+* Added the `泡吐き` monster.
+* `泡吐き` fires bubble projectiles that slow the player and reduce stamina.
+* Contact with `泡吐き` also applies slow/stamina pressure.
+* Added distinct renderer support for the bubble enemy.
+
+Expected design value:
+
+* Starts the broader volume expansion direction with a named optional area.
+* Adds a new enemy behavior family for future caves/mines/towers.
+* Makes the southwest mine a different survival problem from forest fire pressure or dragon cave pressure.
 
 ### Playtest Improvement Pass Cycle 9
 

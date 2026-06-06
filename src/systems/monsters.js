@@ -45,6 +45,75 @@
     return context;
   }
 
+  function fallbackLeashRadius(monster) {
+    if (monster.boss) return worldPx(360);
+    if (monster.midboss || monster.type === "warden") return worldPx(260);
+    return worldPx(220);
+  }
+
+  function ensureMonsterHome(monster) {
+    if (monster.homeX == null) monster.homeX = monster.x;
+    if (monster.homeY == null) monster.homeY = monster.y;
+    if (monster.baseHp == null) monster.baseHp = monster.hpMax;
+    if (monster.baseAtk == null) monster.baseAtk = monster.atk;
+    if (monster.baseSpeed == null) monster.baseSpeed = monster.speed;
+    if (monster.leashRadius == null) monster.leashRadius = fallbackLeashRadius(monster);
+    if (monster.leashed == null) monster.leashed = false;
+  }
+
+  function isStrongMonster(monster) {
+    return Boolean(monster.boss || monster.midboss || monster.type === "warden");
+  }
+
+  function resetStrongMonsterToHome(context, monster) {
+    const { state, say } = requireMonsterContext(context);
+    monster.x = monster.homeX;
+    monster.y = monster.homeY;
+    monster.hpMax = monster.baseHp ?? monster.hpMax;
+    monster.hp = monster.hpMax;
+    monster.atk = monster.baseAtk ?? monster.atk;
+    monster.speed = monster.baseSpeed ?? monster.speed;
+    monster.hurt = 0;
+    monster.contactTimer = 0;
+    monster.fireCooldown = 700;
+    monster.windup = 0;
+    monster.chargeTime = 0;
+    monster.chargeCooldown = 0;
+    monster.chargeVector = { x: 0, y: 0 };
+    monster.wanderTimer = 500;
+    monster.vx = 0;
+    monster.vy = 0;
+    monster.enraged = false;
+    monster.summoned = false;
+    monster.leashed = false;
+
+    if (Array.isArray(state.projectiles)) {
+      state.projectiles = state.projectiles.filter((projectile) => (
+        projectile.owner !== monster
+        && projectile.source !== monster
+        && projectile.monster !== monster
+        && projectile.sourceMonster !== monster
+      ));
+    }
+
+    say(monster.boss ? "赤竜は洞窟の奥へ戻った" : "強敵は縄張りへ戻った", 2200);
+  }
+
+  function handleLeash(context, monster) {
+    ensureMonsterHome(monster);
+    const homeDist = Math.hypot(monster.x - monster.homeX, monster.y - monster.homeY);
+    if (homeDist <= monster.leashRadius) return false;
+
+    if (isStrongMonster(monster)) {
+      resetStrongMonsterToHome(context, monster);
+      return true;
+    }
+
+    monster.leashed = true;
+    monster.hp = 0;
+    return true;
+  }
+
   function updateMonsters(context, dt) {
     const {
       state,
@@ -71,6 +140,7 @@
 
       const c = centerOf(monster);
       const dist = Math.hypot(playerCenter.x - c.x, playerCenter.y - c.y);
+      if (handleLeash(context, monster)) continue;
       let vx = 0;
       let vy = 0;
 
@@ -98,7 +168,7 @@
         addRing(c.x, c.y, "#ff8a3d", worldPx(15));
       }
 
-      if ((monster.type === "wisp" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.boss ? 180 : monster.midboss ? 150 : 130)) {
+      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : 130)) {
         if (monster.boss && monster.enraged) {
           shootProjectile(monster, playerCenter, -0.28);
           shootProjectile(monster, playerCenter, 0);
@@ -106,7 +176,7 @@
         } else {
           shootProjectile(monster, playerCenter);
         }
-        monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : rand(1300, 2100);
+        monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : rand(1300, 2100);
       }
 
       if (monster.windup > 0) {
@@ -140,7 +210,9 @@
 
     state.monsters = state.monsters.filter((monster) => {
       if (monster.hp > 0) return true;
-      defeatMonster(context, monster);
+      if (!monster.leashed) {
+        defeatMonster(context, monster);
+      }
       return false;
     });
   }
@@ -217,6 +289,10 @@
     if (monster.type === "slime") {
       player.slow = Math.max(player.slow, 1200);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "SLOW", "#9df27f");
+    } else if (monster.type === "bubbler") {
+      player.slow = Math.max(player.slow, 1200);
+      player.stamina = Math.max(0, player.stamina - 8);
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
     } else if (monster.type === "bat") {
       player.stamina = Math.max(0, player.stamina - 12);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#d7b5ff");
@@ -261,7 +337,7 @@
       player.wards = Math.min(9, player.wards + 2);
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
-      say("蜊玲擲縺ｮ驕鍋分繧定ｶ翫∴縲∝ｮ医ｊ縺ｮ隴ｷ遏ｳ繧貞ｾ励◆!", 4200);
+      say("南東の道番を越え、守りの護石を得た!", 4200);
     } else if (monster.midboss) {
       state.guardianDefeated = true;
       player.sealCrest = true;

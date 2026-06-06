@@ -4,6 +4,17 @@
 
 This is the recommended order for the next development passes. Do not treat the older TODO sections as a strict top-to-bottom checklist.
 
+### New Direction: Volume Expansion
+
+The current game is roughly a 20-minute route. Future work must actively grow it into a larger RPG while preserving survival-range expansion.
+
+* Expand the editable world toward at least 10x the current playable scope over time.
+* Add named regions, caves, towers, castles, ruins, mines, roads, and remote settlements.
+* Add multiple towns/frontier bases with healing, restocking, stronger equipment, and hints.
+* Add diverse monster behaviors such as bubbles, magic, poison, slow, summons, territorial guarding, and ranged pressure.
+* Add a true `もちもの` inventory for consumables, weapons, armor, accessories, equipment choice, and selling unwanted gear.
+* Convert fixed charm flags into equipable accessories in a later focused pass.
+
 ### Critical
 
 * Run interactive desktop browser QA and confirm keyboard movement, action/context input, combat, save/load UI, and full route flow.
@@ -19,6 +30,8 @@ This is the recommended order for the next development passes. Do not treat the 
 * Balance gold/EXP/shop prices so the first armor purchase, level 4 timing, Guardian readiness, and dragon readiness feel natural in a normal playthrough.
 * Improve equipment/item review only where it helps decisions: current gear, next upgrade value, regeneration, boss requirements, and progression items.
 * Real-browser verify the elder ending panel and `N` replay behavior after final report.
+* Add first wave of volume content using the current southwest mine as a new named dangerous region.
+* Add at least one new enemy behavior tied to that region.
 
 ### Medium / Deferred
 
@@ -93,6 +106,9 @@ This is the recommended order for the next development passes. Do not treat the 
 * Added the southeast route midboss `Southeast Warden` at the far outpost.
 * Added the Aegis Charm reward from the southeast midboss, reducing fire and projectile damage for deeper exploration and dragon preparation.
 * Added save/load persistence and VM smoke verification for the southeast midboss and Aegis Charm.
+* Added volume-expansion planning: larger world, multiple towns, dungeons, varied monsters, and real `もちもの` inventory are now explicit priorities.
+* Added the southwest mine as a distinct spawn region.
+* Added the `泡吐き` mine monster with slowing bubble projectiles and stamina pressure.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -191,7 +207,7 @@ This is the recommended order for the next development passes. Do not treat the 
 ## Menu, Items, and Equipment UI
 
 * Current state: the strength command opens a temporary info panel with equipment, survival, and inventory/progression pages.
-* Future improvement: expand this into an interactive command screen if the game needs deeper item use or comparisons.
+* Future improvement: expand this into a real `もちもの` command screen.
 * Allow the player to view current items clearly:
 
   * Medicine.
@@ -209,6 +225,9 @@ This is the recommended order for the next development passes. Do not treat the 
   * Stamina or movement effects.
 * Consider allowing item use through the item menu rather than only through quick buttons.
 * Add equipment comparison if the command UI expands.
+* Add weapon/armor/accessory inventory when sidegrade equipment is introduced.
+* Add selling unwanted items/equipment for gold.
+* Convert regeneration, movement, resistance, and exploration charms into equipable accessories.
 
 ## Character Art Assets
 
@@ -233,6 +252,9 @@ This is the recommended order for the next development passes. Do not treat the 
 ## Exploration
 
 * Current map generation is now fixed and hand-editable through `src/data/maps/world.js`; future terrain edits should change `WORLD_MAP` rows there rather than adding random/noise terrain.
+* Long-term target: expand playable map scope to at least 10x the current route through larger world data and/or multiple map files.
+* Add separate dungeon/town files when one `world.js` becomes too large to edit comfortably.
+* Add caves, towers, castles, ruins, mines, roads, bridges, and remote towns as named survival-range destinations.
 * Keep map objects separated from terrain where practical; `WORLD_OBJECTS` in `src/data/maps/world.js` currently owns NPC placements.
 * Use the new 80x72 map space to add meaningful east/southeast exploration only after browser QA confirms the fixed expansion feels good.
 * Add two more meaningful exploration rewards outside the main path.

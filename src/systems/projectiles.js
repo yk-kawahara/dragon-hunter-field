@@ -36,6 +36,7 @@
     const { state, addSlash } = requireProjectileContext(context);
     const c = centerOf(monster);
     const midbossColor = monster.type === "warden" ? "#6de4ff" : "#55c7a0";
+    const projectileColor = monster.type === "bubbler" ? "#8dd7ff" : monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166";
     const baseAim = normalize(target.x - c.x, target.y - c.y);
     const cos = Math.cos(angleOffset);
     const sin = Math.sin(angleOffset);
@@ -43,19 +44,19 @@
       x: baseAim.x * cos - baseAim.y * sin,
       y: baseAim.x * sin + baseAim.y * cos,
     };
-    const speed = (monster.boss ? 78 : monster.midboss ? 68 : 62) * WORLD_SCALE;
+    const speed = (monster.boss ? 78 : monster.midboss ? 68 : monster.type === "bubbler" ? 52 : 62) * WORLD_SCALE;
     state.projectiles.push({
       x: c.x,
       y: c.y,
       vx: aim.x * speed,
       vy: aim.y * speed,
       r: worldPx(monster.boss ? 4 : monster.midboss ? 3 : 3),
-      damage: monster.boss ? 14 : monster.midboss ? 11 : 8,
-      color: monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166",
+      damage: monster.boss ? 14 : monster.midboss ? 11 : monster.type === "bubbler" ? 6 : 8,
+      color: projectileColor,
       source: monster.boss ? "dragon" : monster.midboss ? monster.type : monster.type,
       life: monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
     });
-    addSlash(c.x + aim.x * worldPx(8), c.y + aim.y * worldPx(8), monster.dir, monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166");
+    addSlash(c.x + aim.x * worldPx(8), c.y + aim.y * worldPx(8), monster.dir, projectileColor);
   }
 
   function updateProjectiles(context, dt) {
@@ -110,6 +111,10 @@
           }
           if (p.source === "wisp" || p.source === "dragon") {
             player.burn = Math.max(player.burn, p.source === "dragon" ? 2600 : 1500);
+          } else if (p.source === "bubbler") {
+            player.slow = Math.max(player.slow, 1400);
+            player.stamina = Math.max(0, player.stamina - 6);
+            addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
           } else if (p.source === "guardian") {
             player.slow = Math.max(player.slow, 1500);
           } else if (p.source === "warden") {

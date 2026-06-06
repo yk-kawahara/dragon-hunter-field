@@ -93,6 +93,41 @@ Keep the contact-combat system simple, readable, and fast.
 Do not turn the game into a complex action game based mainly on attack-button combos.
 
 
+\## Volume Expansion Principle
+
+
+
+The current game is roughly a 20-minute clear route. Future development must actively expand it into a larger RPG rather than only polishing the existing short route.
+
+
+
+Volume expansion must still serve survival range expansion. More content is valuable when it creates new places the player can eventually survive, new threats that change decisions, new towns that extend expeditions, and new equipment choices that alter how far the player can go.
+
+
+
+Long-term targets:
+
+
+
+\* Expand the hand-authored world substantially. The world should eventually be at least 10x the current playable scope through larger `world.js` data, additional map files, or both.
+
+\* Add distinct place types such as caves, towers, castles, ruins, mines, roads, bridges, and remote settlements.
+
+\* Add multiple towns or safe bases. Later towns should offer healing, restocking, stronger shops, hints, and a feeling that the player's survivable range has truly moved outward.
+
+\* Add varied monsters with different behaviors: bubbles, magic, poison, ranged pressure, summons, chase patterns, area denial, and enemies that require different preparation.
+
+\* Build a real inventory. Players should be able to inspect items, weapons, armor, and accessories, choose what to equip, and sell unwanted gear.
+
+\* Treat accessories as equipment slots rather than only permanent flags. Regeneration, movement, resistance, and exploration bonuses should become meaningful equipment choices.
+
+\* Increase total playtime through new areas, enemy families, equipment tiers, side routes, and boss routes rather than through slow travel or grind.
+
+
+
+When choosing between small polish and meaningful volume, prefer the change that makes the game feel larger, more explorable, and more replayable.
+
+
 
 \## Survival and Growth
 

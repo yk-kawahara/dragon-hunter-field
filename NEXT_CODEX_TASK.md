@@ -76,7 +76,18 @@ Important note:
 
 Goal:
 
-Move from "technically complete and VM-verified" to "real-browser playable route verified."
+Move from "technically complete and VM-verified" toward a larger RPG with more map volume, more towns, more enemy behaviors, and real inventory depth.
+
+The current game is roughly a 20-minute route. Treat it as chapter 1, not the target final size.
+
+New volume-expansion priorities:
+
+* Grow the playable map toward at least 10x the current route over time.
+* Add caves, towers, castles, mines, ruins, roads, bridges, and remote towns.
+* Add multiple towns/frontier bases with healing, restocking, stronger shops, hints, and new survival anchors.
+* Add varied monsters: bubbles, magic, poison, slow, summons, territorial enemies, and ranged pressure.
+* Build a real `もちもの` inventory for consumables, weapons, armor, accessories, equipment choice, and selling.
+* Convert current permanent charm flags into equipable accessories in a later pass.
 
 First checkpoint:
 
@@ -93,8 +104,8 @@ If browser QA is possible:
 If browser QA is still unavailable:
 
 * Do not guess visual quality.
-* Use automated checks, then make only a small high-confidence content/planning pass.
-* Best safe implementation target: improve the fixed east/southeast area with one reachable survival-range reward and regenerate map previews.
+* Use automated checks, then make a high-confidence volume content pass.
+* Best safe implementation target: improve the southwest mine / southeast expansion with a named region, one new enemy behavior, and a reachable survival-range reward.
 
 Design focus for the next gameplay pass:
 

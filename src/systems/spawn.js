@@ -34,6 +34,12 @@
     return worldPx(template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11);
   }
 
+  function leashRadiusFor(typeName, template) {
+    if (template.boss) return worldPx(360);
+    if (template.midboss || typeName === "warden") return worldPx(260);
+    return worldPx(220);
+  }
+
   function requireSpawnContext(context) {
     if (!context?.state || !context?.player || !context?.rand || !context?.irand || !context?.isPassableRect || !context?.inTown || !context?.say || !context?.addRing) {
       throw new Error("spawn helpers require { state, player, rand, irand, isPassableRect, inTown, say, addRing }");
@@ -50,6 +56,13 @@
       name: template.name,
       x,
       y,
+      homeX: x,
+      homeY: y,
+      baseHp: template.hp,
+      baseAtk: template.atk,
+      baseSpeed: template.speed,
+      leashRadius: leashRadiusFor(typeName, template),
+      leashed: false,
       w: size,
       h: size,
       dir: "down",
@@ -103,6 +116,7 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
+    if (tx >= 20 && tx <= 43 && ty >= 60) return "mine";
     if (tx > 40) return "east";
     if (ty < 25) return "north";
     if (distanceFromVillage(context) > worldPx(330)) return "wilds";
@@ -127,6 +141,7 @@
     }
     if (lv >= 3 && region === "grassland") pool.push("boar");
     if (lv >= 4 && region !== "grassland") pool.push("dragonling");
+    if (lv >= 3 && region === "mine") pool.push("dragonling");
     return pool;
   }
 
@@ -225,6 +240,7 @@
   function areaDangerText(region) {
     if (region === "north") return "北森: 強敵の気配";
     if (region === "east") return "東の森: 魔力が濃い";
+    if (region === "mine") return "廃坑: 泡と魔法の気配";
     if (region === "cave") return "竜洞: 危険";
     if (region === "wilds") return "荒野: 村から遠い";
     return "草原: 村の近く";
@@ -262,7 +278,7 @@
     if (wardenReady(context) && !state.spawnedWarden && playerNearWardenSite(context)) {
       state.spawnedWarden = true;
       spawnMonster(context, "warden", WARDEN_SITE.x * TILE, WARDEN_SITE.y * TILE);
-      say("蜊玲擲縺ｮ驕鍋分縺悟ｧ九∪縺｣縺・!", 2600);
+      say("南東の道番が立ちはだかった!", 2600);
     }
     if (guardianReady(context) && !state.spawnedGuardian && playerNearGuardianSite(context)) {
       state.spawnedGuardian = true;

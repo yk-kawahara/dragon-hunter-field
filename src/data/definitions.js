@@ -23,6 +23,7 @@
     { id: "east-grove", x: 56, y: 43, reward: "armor" },
     { id: "south-outpost", x: 72, y: 58, reward: "trail" },
     { id: "dragon-cache", x: 50, y: 16, reward: "scale" },
+    { id: "southwest-mine-cache", x: 39, y: 67, reward: "mineGold" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
@@ -37,6 +38,7 @@
     wilds: { danger: 2, maxBonus: 1, pool: ["bat", "boar", "slime", "wisp"] },
     north: { danger: 2, maxBonus: 2, pool: ["boar", "boar", "bat", "wisp"] },
     east: { danger: 3, maxBonus: 3, pool: ["wisp", "boar", "dragonling", "bat"] },
+    mine: { danger: 3, maxBonus: 3, pool: ["bubbler", "bubbler", "wisp", "boar"] },
     cave: { danger: 4, maxBonus: 4, pool: ["dragonling", "wisp", "dragonling"] },
   };
 
@@ -120,6 +122,18 @@
       color: "#ffdb52",
       shadow: "#c7431e",
       drop: 0.18,
+    },
+    bubbler: {
+      name: "泡吐き",
+      hp: 46,
+      atk: 18,
+      def: 2,
+      speed: 20 * WORLD_SCALE,
+      xp: 30,
+      gold: 20,
+      color: "#8dd7ff",
+      shadow: "#1d4f78",
+      drop: 0.16,
     },
     dragonling: {
       name: "小竜",

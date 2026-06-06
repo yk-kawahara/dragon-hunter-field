@@ -203,6 +203,41 @@ Old mobile-style contact-combat action RPG where the player leaves a safe villag
 The dragon quest is the current clear objective, but the deeper design goal is the feeling of becoming strong enough to survive farther from the village.
 
 
+\## Volume Expansion Replan
+
+The current game is a compact first-route prototype with an estimated clear time around 20 minutes.
+
+From this point forward, development should treat that route as the first chapter, not the final game size.
+
+The next design target is a larger RPG where survival range expansion happens repeatedly across multiple regions and safe bases:
+
+1\. Village outskirts teach retreat, equipment buying, and contact/facing combat.
+2\. The first remote routes lead to river, forest, mine, and outpost rewards.
+3\. A second safe town or frontier base lets the player recover farther from the starting village.
+4\. New dungeons such as caves, towers, castles, ruins, and mines create area-specific threats and rewards.
+5\. Later towns sell new equipment tiers and hint toward deeper regions.
+6\. The player gradually builds an inventory of weapons, armor, accessories, and consumables.
+7\. Equipment choice becomes strategic: regeneration, movement, defense, anti-magic, anti-ranged, and boss preparation.
+8\. The final dragon route should eventually become one endpoint of a larger world, not the only major destination.
+
+Long-term scale goals:
+
+\* The editable world should become at least 10x larger than the current route, either by expanding `src/data/maps/world.js`, adding separate map files, or both.
+\* The map should contain recognizable RPG landmarks: multiple towns, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
+\* Multiple towns should function as new survival anchors, not just decoration. Each should offer recovery, supplies, stronger equipment, hints, or a new progression role.
+\* Monster variety should increase dramatically. Add enemies that shoot bubbles, cast magic, poison, slow, summon allies, guard territory, flee, charge, and pressure the player from range.
+\* Inventory should become a real menu where players inspect items, weapons, armor, accessories, equip preferred gear, and sell unwanted gear.
+\* Accessories should move from fixed permanent flags toward equipable choices such as regeneration up, movement up, projectile resistance, fire resistance, poison resistance, and treasure/exploration support.
+
+Volume expansion must not mean empty walking space. Each new region should provide at least one of:
+
+\* A new survival threat.
+\* A new reward that changes survivable range.
+\* A new safe base or shortcut.
+\* A new enemy behavior.
+\* A new equipment or inventory decision.
+\* A route toward a boss, dungeon, town, or major treasure.
+
 \## Replanning Thesis: From Complete Loop To Memorable Route
 
 The current game has the necessary skeleton for a complete browser RPG: village, field combat, rewards, equipment, save/load, Guardian, Red Dragon, and clear reporting.
@@ -368,6 +403,21 @@ Treasure, ranged enemies, hidden discoveries, and optional rewards.
 This should support mid-game exploration and survival range expansion.
 
 
+\## Southwest Mine
+
+
+
+Optional dangerous route in the expanded fixed map.
+
+The mine should introduce different enemy pressure from the forest and dragon cave. It can use bubble, magic, slow, and confined-path pressure to make the player prepare differently.
+
+Current pilot content:
+
+\* Southwest mine terrain and hidden cache.
+\* Mine-specific spawn region.
+\* `泡吐き`, a bubble projectile enemy that slows and drains stamina.
+\* `southwest-mine-cache`, a one-time gold reward that supports later equipment purchases.
+
 
 \## Dragon Cave
 
@@ -421,6 +471,14 @@ Ranged fire enemy.
 
 Should introduce area-specific danger and make fire resistance meaningful.
 
+
+\## Bubbler / 泡吐き
+
+
+
+Mine enemy that fires slower bubble projectiles.
+
+Its purpose is to create a different kind of ranged pressure from fire wisps: it slows movement and drains stamina, making mine traversal and retreat timing feel different.
 
 
 \## Dragonling
@@ -727,6 +785,8 @@ The ending should reinforce that the player has grown from a fragile village-bou
 \* A Wilds region for far non-north/non-east areas, keeping distant map spaces populated without making village-adjacent grassland too dangerous.
 
 \* Southeast route content: the far outpost grants the traveler bell, then the level-3 Southeast Warden challenge grants the Aegis Charm for fire/projectile resistance.
+
+\* Southwest mine pilot content: the mine has its own region classification, hidden cache reward, and the `泡吐き` enemy with slow bubble projectiles.
 
 \* Village safety rules for projectiles and monsters: closed gates block danger, open gates allow danger through gate tiles only.
 

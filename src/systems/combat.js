@@ -75,8 +75,8 @@
 
   function regenRate(context) {
     const { player } = requireCombatContext(context);
-    if (!player.regenCharm) return 0;
-    return 0.28 + (player.armor >= 3 ? 0.12 : 0) + (player.armor >= 4 ? 0.18 : 0);
+    if (!player.regenCharm) return 0.2;
+    return 0.4 + (player.armor >= 3 ? 0.4 : 0.1) + (player.armor >= 4 ? 0.4 : 0.1);
   }
 
   globalThis.DRAGON_HUNTER_COMBAT = {

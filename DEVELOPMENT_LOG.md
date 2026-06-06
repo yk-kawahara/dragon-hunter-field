@@ -268,3 +268,34 @@
   - In-app Browser QA could not run in this environment; the browser connection failed with the same Windows browser-session startup issue seen previously.
   - Real browser/manual QA should visually confirm the new ending panel and `N` replay behavior after an actual clear.
   - The ending is intentionally compact; a richer epilogue should wait until the full route has been manually balanced.
+
+## 2026-06-06 Volume Expansion Replan / Southwest Mine Enemy Pass
+- User direction: the current clear time is around 20 minutes, and the game now needs active volume expansion rather than treating the short route as final.
+- Updated design direction:
+  - Treat the current village-to-dragon route as chapter 1.
+  - Long-term map target is at least 10x the current playable scope.
+  - Future maps should include caves, towers, castles, mines, ruins, roads, bridges, and multiple towns/frontier bases.
+  - Multiple towns should become new safe anchors with healing, restocking, stronger equipment, and hints.
+  - Monster variety must expand through behavior: bubbles, magic, poison, slow, summons, territorial behavior, and ranged pressure.
+  - `もちもの` should become a real inventory for consumables, weapons, armor, accessories, equipment choice, and selling unwanted gear.
+  - Current fixed charm flags should eventually become equipable accessories.
+- Recognized existing uncommitted user-side changes and preserved them:
+  - Southwest mine terrain in `src/data/maps/world.js`.
+  - `southwest-mine-cache` treasure and `mineGold` reward.
+  - Strong enemy leash/home behavior.
+  - Regeneration tuning changes.
+- Implemented first volume-content step on top of those changes:
+  - Added a `mine` spawn region for the southwest mine area.
+  - Added the new `泡吐き` monster.
+  - `泡吐き` fires slower bubble projectiles.
+  - Bubble projectile hits apply slow and stamina pressure.
+  - Contact with `泡吐き` also applies slow/stamina pressure.
+  - Added a distinct bubble-like monster sprite treatment in the canvas renderer.
+- Design impact:
+  - The southwest mine becomes a differentiated risky destination, not only a 500G cache.
+  - This starts the requested direction of larger maps plus more varied monster behavior.
+- Verification to run after this pass:
+  - Syntax checks for all JS files.
+  - `scripts/verify-game-smoke.js`.
+  - `git diff --check`.
+  - Optional real browser QA remains desirable for the new sprite and mine route.

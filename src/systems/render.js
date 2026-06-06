@@ -1009,6 +1009,21 @@ function drawMonster(monster, sx, sy) {
     ctx.fillRect(sx + 7, sy + 7, 2, 4);
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(sx + 5, sy + 4, 2, 2);
+  } else if (monster.type === "bubbler") {
+    const pulse = Math.floor(monster.age / 180) % 2;
+    ctx.fillStyle = "rgba(141, 215, 255, 0.35)";
+    ctx.fillRect(sx + 1, sy + 2 - pulse, 11, 10);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 6, 9, 6);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 3, 8, 8);
+    ctx.fillRect(sx + 5, sy + 1, 5, 5);
+    ctx.fillStyle = "#eaffff";
+    ctx.fillRect(sx + 5, sy + 4, 2, 2);
+    ctx.fillRect(sx + 9, sy + 3, 2, 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(sx + 11, sy + 1 - pulse, 3, 3);
+    ctx.fillRect(sx + 13, sy + 6, 2, 2);
   } else if (monster.type === "boar") {
     ctx.fillStyle = monster.shadow;
     ctx.fillRect(sx + 1, sy + 5, 11, 6);

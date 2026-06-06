@@ -93,6 +93,9 @@
       player.stamina = player.staminaMax;
       player.wards = Math.min(9, player.wards + 1);
       say("旅人の鈴を見つけた。遠征の足取りが軽くなった");
+    } else if (reward === "mineGold") {
+      player.gold += 500;
+      say("廃坑の隠し金庫から500Gを見つけた!");
     }
   }
 
