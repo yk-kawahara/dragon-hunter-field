@@ -19,6 +19,11 @@
     return context;
   }
 
+  function activeAccessory(player, id, legacyFlag) {
+    if (player.equippedAccessory) return player.equippedAccessory === id;
+    return Boolean(player[legacyFlag]);
+  }
+
   function playerAttack(context) {
     const { player } = requireCombatContext(context);
     const comboBonus = Math.min(8, Math.floor(player.combo / 2));
@@ -34,7 +39,7 @@
   function playerMoveSpeed(context) {
     const { player } = requireCombatContext(context);
     const armorMoveBonus = player.armor >= 1 ? 4 * WORLD_SCALE : 0;
-    const trailMoveBonus = player.trailCharm ? 5 * WORLD_SCALE : 0;
+    const trailMoveBonus = activeAccessory(player, "trail", "trailCharm") ? 5 * WORLD_SCALE : 0;
     const slowPenalty = player.slow > 0 ? 0.72 : 1;
     return (player.speed + armorMoveBonus + trailMoveBonus) * slowPenalty;
   }
@@ -42,7 +47,7 @@
   function dashCost(context) {
     const { player } = requireCombatContext(context);
     const armorDiscount = player.armor >= 1 ? 6 : 0;
-    const trailDiscount = player.trailCharm ? 8 : 0;
+    const trailDiscount = activeAccessory(player, "trail", "trailCharm") ? 8 : 0;
     return Math.max(18, DASH_COST - armorDiscount - trailDiscount);
   }
 
@@ -63,20 +68,22 @@
     let mult = 1;
     if (player.armor >= 2 && source === "contact" && pDot > 0.58) mult *= 0.8;
     if (player.armor >= 4 && (monster?.boss || monster?.type === "dragonling" || source === "fire")) mult *= 0.78;
-    if (player.aegisCharm && (source === "fire" || source === "projectile")) mult *= 0.82;
-    if (player.mineCharm && (monster?.type === "bubbler" || source === "bubble")) mult *= 0.72;
+    if (activeAccessory(player, "aegis", "aegisCharm") && (source === "fire" || source === "projectile")) mult *= 0.82;
+    if (activeAccessory(player, "mine", "mineCharm") && (monster?.type === "bubbler" || source === "bubble")) mult *= 0.72;
     return mult;
   }
 
   function refreshDerivedStats(context) {
     const { player } = requireCombatContext(context);
-    player.staminaMax = 100 + (player.hunterCharm ? 15 : 0) + (player.trailCharm ? 10 : 0);
+    player.staminaMax = 100
+      + (activeAccessory(player, "hunter", "hunterCharm") ? 15 : 0)
+      + (activeAccessory(player, "trail", "trailCharm") ? 10 : 0);
     player.stamina = Math.min(player.stamina, player.staminaMax);
   }
 
   function regenRate(context) {
     const { player } = requireCombatContext(context);
-    if (!player.regenCharm) return 0.2;
+    if (!activeAccessory(player, "regen", "regenCharm")) return 0.2;
     return 0.4 + (player.armor >= 3 ? 0.4 : 0.1) + (player.armor >= 4 ? 0.4 : 0.1);
   }
 

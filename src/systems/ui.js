@@ -16,7 +16,20 @@
     armorTraits,
     weaponCosts,
     armorCosts,
+    weaponSellValues,
+    armorSellValues,
+    itemNames,
+    itemSellValues,
+    accessoryOrder,
+    accessoryData,
   } = definitions;
+
+  const rewardHelpers = globalThis.DRAGON_HUNTER_REWARDS;
+  if (!rewardHelpers) {
+    throw new Error("DRAGON_HUNTER_REWARDS must be loaded before ui helpers");
+  }
+
+  const { normalizeInventory } = rewardHelpers;
 
   function requireUiContext(context) {
     if (!context?.ui || !context?.state || !context?.player || !context?.say) {
@@ -27,7 +40,7 @@
 
   function requireUiStatusContext(context) {
     const base = requireUiContext(context);
-    if (!base.playerAttack || !base.playerDefense || !base.dashCost || !base.regenRate) {
+    if (!base.playerAttack || !base.playerDefense || !base.dashCost || !base.regenRate || !base.refreshDerivedStats) {
       throw new Error("ui status helpers require combat stat helpers");
     }
     return base;
@@ -42,11 +55,188 @@
   }
 
   function showStats(context) {
+    toggleInventory(context);
+  }
+
+  function inventoryTabs() {
+    return ["items", "weapons", "armors", "accessories"];
+  }
+
+  function inventoryTabLabel(tab) {
+    return {
+      items: "道具",
+      weapons: "武器",
+      armors: "防具",
+      accessories: "装飾",
+    }[tab] || "道具";
+  }
+
+  function clampInventoryIndex(state, rows) {
+    if (rows.length <= 0) {
+      state.inventoryIndex = 0;
+      return;
+    }
+    state.inventoryIndex = Math.max(0, Math.min(state.inventoryIndex || 0, rows.length - 1));
+  }
+
+  function inventoryRows(context) {
+    const { state, player, playerAttack, playerDefense, dashCost, regenRate } = requireUiStatusContext(context);
+    normalizeInventory(player);
+    const tab = inventoryTabs().includes(state.inventoryTab) ? state.inventoryTab : "items";
+    if (tab === "items") {
+      return [
+        { type: "item", id: "potion", name: itemNames.potion, count: player.potions, detail: "HP回復", sell: itemSellValues.potion },
+        { type: "item", id: "bomb", name: itemNames.bomb, count: player.bombs, detail: "周囲攻撃", sell: itemSellValues.bomb },
+        { type: "item", id: "ward", name: itemNames.ward, count: player.wards, detail: "一定時間防御", sell: itemSellValues.ward },
+      ];
+    }
+    if (tab === "weapons") {
+      return player.ownedWeapons.map((rank) => ({
+        type: "weapon",
+        id: rank,
+        name: weaponNames[rank],
+        detail: `${weaponTraits[rank]} 攻${7 + player.level * 2 + rank * 5}`,
+        equipped: player.weapon === rank,
+        sell: weaponSellValues[rank],
+        currentValue: playerAttack(),
+      }));
+    }
+    if (tab === "armors") {
+      return player.ownedArmors.map((rank) => ({
+        type: "armor",
+        id: rank,
+        name: armorNames[rank],
+        detail: `${armorTraits[rank]} 防${1 + player.level + (definitions.armorDefense[rank] || 0)}`,
+        equipped: player.armor === rank,
+        sell: armorSellValues[rank],
+        currentValue: playerDefense(),
+      }));
+    }
+    return player.ownedAccessories.map((id) => ({
+      type: "accessory",
+      id,
+      name: accessoryData[id]?.name || id,
+      detail: accessoryData[id]?.trait || "",
+      equipped: player.equippedAccessory === id,
+      sell: 0,
+      currentValue: id === "regen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : "",
+    }));
+  }
+
+  function openInventory(context) {
+    const { state, player, say } = requireUiContext(context);
+    normalizeInventory(player);
+    state.inventoryOpen = true;
+    state.infoPanel = null;
+    if (!inventoryTabs().includes(state.inventoryTab)) state.inventoryTab = "items";
+    clampInventoryIndex(state, inventoryRows(context));
+    state.keys?.clear?.();
+    state.virtualKeys?.clear?.();
+    state.pointerMove = null;
+    say("もちものを開いた", 900);
+  }
+
+  function closeInventory(context) {
     const { state, say } = requireUiContext(context);
-    const page = statsPanelPages(context)[state.statsPage];
-    state.infoPanel = { ...page, until: performance.now() + 4200 };
-    say(`${page.title}を確認`, 1200);
-    state.statsPage = (state.statsPage + 1) % 3;
+    if (!state.inventoryOpen) return;
+    state.inventoryOpen = false;
+    say("もちものを閉じた", 700);
+  }
+
+  function toggleInventory(context) {
+    const { state } = requireUiContext(context);
+    if (state.inventoryOpen) closeInventory(context);
+    else openInventory(context);
+  }
+
+  function moveInventory(context, dx, dy) {
+    const { state } = requireUiContext(context);
+    if (!state.inventoryOpen) return;
+    const tabs = inventoryTabs();
+    if (dx !== 0) {
+      const index = tabs.indexOf(state.inventoryTab);
+      state.inventoryTab = tabs[(index + dx + tabs.length) % tabs.length];
+      state.inventoryIndex = 0;
+    }
+    const rows = inventoryRows(context);
+    state.inventoryIndex += dy;
+    clampInventoryIndex(state, rows);
+  }
+
+  function selectedInventoryRow(context) {
+    const { state } = requireUiContext(context);
+    const rows = inventoryRows(context);
+    clampInventoryIndex(state, rows);
+    return rows[state.inventoryIndex] || null;
+  }
+
+  function confirmInventory(context) {
+    const { player, say, refreshDerivedStats, useSelectedItem } = requireUiStatusContext(context);
+    const row = selectedInventoryRow(context);
+    if (!row) return;
+    normalizeInventory(player);
+    if (row.type === "item") {
+      player.selectedItem = row.id;
+      useSelectedItem?.();
+      return;
+    }
+    if (row.type === "weapon") {
+      player.weapon = row.id;
+      say(`${row.name}を装備した`);
+      return;
+    }
+    if (row.type === "armor") {
+      player.armor = row.id;
+      say(`${row.name}を装備した`);
+      return;
+    }
+    if (row.type === "accessory") {
+      player.equippedAccessory = row.id;
+      refreshDerivedStats();
+      player.stamina = Math.min(player.stamina, player.staminaMax);
+      say(`${row.name}を装備した`);
+    }
+  }
+
+  function sellInventorySelection(context) {
+    const { state, player, say, refreshDerivedStats } = requireUiStatusContext(context);
+    const row = selectedInventoryRow(context);
+    if (!row) return;
+    normalizeInventory(player);
+    if (row.sell <= 0) {
+      say("これは売れない");
+      return;
+    }
+    if (row.type === "item") {
+      const field = row.id === "potion" ? "potions" : row.id === "bomb" ? "bombs" : "wards";
+      if (player[field] <= 0) {
+        say("売る分がない");
+        return;
+      }
+      player[field] -= 1;
+      player.gold += row.sell;
+      say(`${row.name}を${row.sell}Gで売った`);
+    } else if (row.type === "weapon") {
+      if (player.weapon === row.id || row.id === 0 || player.ownedWeapons.length <= 1) {
+        say("装備中または最後の武器は売れない");
+        return;
+      }
+      player.ownedWeapons = player.ownedWeapons.filter((rank) => rank !== row.id);
+      player.gold += row.sell;
+      say(`${row.name}を${row.sell}Gで売った`);
+    } else if (row.type === "armor") {
+      if (player.armor === row.id || row.id === 0 || player.ownedArmors.length <= 1) {
+        say("装備中または最後の防具は売れない");
+        return;
+      }
+      player.ownedArmors = player.ownedArmors.filter((rank) => rank !== row.id);
+      player.gold += row.sell;
+      say(`${row.name}を${row.sell}Gで売った`);
+    } else if (row.type === "accessory") {
+      refreshDerivedStats();
+      say("一品物のアクセサリーは売れない");
+    }
+    clampInventoryIndex(state, inventoryRows(context));
   }
 
   function statsPanelPages(context) {
@@ -133,6 +323,15 @@
 
   globalThis.DRAGON_HUNTER_UI = {
     showStats,
+    inventoryTabs,
+    inventoryTabLabel,
+    inventoryRows,
+    openInventory,
+    closeInventory,
+    toggleInventory,
+    moveInventory,
+    confirmInventory,
+    sellInventorySelection,
     statsPanelPages,
     nextUpgradeText,
     updateZone,

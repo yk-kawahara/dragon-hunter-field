@@ -79,7 +79,52 @@
   const weaponCosts = [0, 38, 90, 180, 340];
   const armorCosts = [0, 34, 86, 175, 330];
   const armorDefense = [0, 5, 10, 17, 26];
+  const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
+  const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
   const itemOrder = ["potion", "bomb", "ward"];
+  const itemNames = {
+    potion: "薬草",
+    bomb: "火薬壺",
+    ward: "護符",
+  };
+  const itemSellValues = {
+    potion: 8,
+    bomb: 14,
+    ward: 18,
+  };
+  const accessoryOrder = ["hunter", "regen", "trail", "aegis", "mine"];
+  const accessoryData = {
+    hunter: {
+      name: "狩人の印",
+      trait: "スタミナ最大値",
+      sell: 110,
+      flag: "hunterCharm",
+    },
+    regen: {
+      name: "再生の指輪",
+      trait: "HP自動回復",
+      sell: 90,
+      flag: "regenCharm",
+    },
+    trail: {
+      name: "旅人の鈴",
+      trait: "移動とダッシュ",
+      sell: 120,
+      flag: "trailCharm",
+    },
+    aegis: {
+      name: "守りの護石",
+      trait: "火と弾を軽減",
+      sell: 150,
+      flag: "aegisCharm",
+    },
+    mine: {
+      name: "泡除けの護符",
+      trait: "泡と鈍足を軽減",
+      sell: 120,
+      flag: "mineCharm",
+    },
+  };
 
   const monsterTypes = {
     slime: {
@@ -238,7 +283,13 @@
     weaponCosts,
     armorCosts,
     armorDefense,
+    weaponSellValues,
+    armorSellValues,
     itemOrder,
+    itemNames,
+    itemSellValues,
+    accessoryOrder,
+    accessoryData,
     monsterTypes,
   };
 })();

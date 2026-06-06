@@ -4,6 +4,24 @@
 
 This repository is a browser-based contact-combat action RPG inspired by old Japanese feature-phone action RPGs such as "DRAGON HUNTER."
 
+## Important Implementation Attitude: Do Not Hide Behind Conservatism
+
+When the user explicitly asks for a major gameplay system that improves the game, do not avoid it by saying it is risky, broad, or would touch save data and UI.
+
+Risk must be handled by staged implementation, migration, and verification, not by shrinking the task into a safer but less valuable substitute.
+
+Especially while the game is still far from completion, prioritize bold player-facing progress:
+
+* Real inventory and equipment decisions.
+* New regions and towns.
+* New enemy behaviors.
+* New rewards that change survival range.
+* Meaningful systems that make the game feel closer to a complete RPG.
+
+Architecture caution is useful only when it protects an ambitious gameplay implementation. It must not become an excuse for avoiding that implementation.
+
+If a requested feature is large, implement a playable first version and verify it. Do not replace it with a smaller unrelated feature merely because that is safer.
+
 
 
 \## Most Important Design Principle

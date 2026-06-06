@@ -16,7 +16,11 @@
     WORLD_SCALE,
     weaponNames,
     armorNames,
+    weaponSellValues,
+    armorSellValues,
     itemOrder,
+    accessoryOrder,
+    accessoryData,
   } = definitions;
 
   const {
@@ -41,9 +45,86 @@
     return context;
   }
 
+  function normalizedRank(value, max) {
+    const rank = Number(value);
+    if (!Number.isFinite(rank)) return 0;
+    return clamp(Math.floor(rank), 0, max - 1);
+  }
+
+  function normalizeRankInventory(list, equipped, max) {
+    const owned = new Set([0, normalizedRank(equipped, max)]);
+    if (Array.isArray(list)) {
+      for (const value of list) owned.add(normalizedRank(value, max));
+    }
+    return Array.from(owned).sort((a, b) => a - b);
+  }
+
+  function normalizeAccessoryInventory(player) {
+    const owned = new Set();
+    if (Array.isArray(player.ownedAccessories)) {
+      for (const id of player.ownedAccessories) {
+        if (accessoryOrder.includes(id)) owned.add(id);
+      }
+    }
+    for (const id of accessoryOrder) {
+      const flag = accessoryData[id]?.flag;
+      if (flag && player[flag]) owned.add(id);
+    }
+    player.ownedAccessories = accessoryOrder.filter((id) => owned.has(id));
+    for (const id of accessoryOrder) {
+      const flag = accessoryData[id]?.flag;
+      if (flag) player[flag] = owned.has(id);
+    }
+    if (!player.ownedAccessories.includes(player.equippedAccessory)) {
+      player.equippedAccessory = ["trail", "regen", "aegis", "mine", "hunter"].find((id) => owned.has(id)) || "";
+    }
+  }
+
+  function normalizeInventory(player) {
+    player.weapon = normalizedRank(player.weapon, weaponNames.length);
+    player.armor = normalizedRank(player.armor, armorNames.length);
+    player.ownedWeapons = normalizeRankInventory(player.ownedWeapons, player.weapon, weaponNames.length);
+    player.ownedArmors = normalizeRankInventory(player.ownedArmors, player.armor, armorNames.length);
+    normalizeAccessoryInventory(player);
+    return player;
+  }
+
+  function addOwnedWeapon(player, rank) {
+    normalizeInventory(player);
+    const target = normalizedRank(rank, weaponNames.length);
+    if (!player.ownedWeapons.includes(target)) player.ownedWeapons.push(target);
+    player.ownedWeapons.sort((a, b) => a - b);
+    return target;
+  }
+
+  function addOwnedArmor(player, rank) {
+    normalizeInventory(player);
+    const target = normalizedRank(rank, armorNames.length);
+    if (!player.ownedArmors.includes(target)) player.ownedArmors.push(target);
+    player.ownedArmors.sort((a, b) => a - b);
+    return target;
+  }
+
+  function grantAccessory(context, id, message) {
+    const { player, say, refreshDerivedStats } = requireRewardContext(context);
+    if (!accessoryOrder.includes(id)) return false;
+    normalizeInventory(player);
+    if (player.ownedAccessories.includes(id)) {
+      say("既に同じアクセサリーを持っている");
+      return false;
+    }
+    player.ownedAccessories.push(id);
+    player[accessoryData[id].flag] = true;
+    if (!player.equippedAccessory) player.equippedAccessory = id;
+    refreshDerivedStats?.();
+    say(message || `${accessoryData[id].name}を手に入れた`);
+    return true;
+  }
+
   function grantWeaponAtLeast(context, rank, upgradedMessage, keptMessage = "既により良い剣を持っている") {
     const { player, say } = requireRewardContext(context);
     const target = clamp(rank, 0, weaponNames.length - 1);
+    addOwnedWeapon(player, target);
     if (player.weapon >= target) {
       say(keptMessage);
       return false;
@@ -56,6 +137,7 @@
   function grantArmorAtLeast(context, rank, upgradedMessage, keptMessage = "既により良い鎧を持っている") {
     const { player, say } = requireRewardContext(context);
     const target = clamp(rank, 0, armorNames.length - 1);
+    addOwnedArmor(player, target);
     if (player.armor >= target) {
       say(keptMessage);
       return false;
@@ -82,13 +164,13 @@
     } else if (reward === "ward") {
       player.bombs = Math.min(9, player.bombs + 2);
       player.wards = Math.min(9, player.wards + 2);
-      player.regenCharm = true;
+      grantAccessory(context, "regen", "再生の指輪を見つけた");
       say("再生の指輪を見つけた");
     } else if (reward === "scale") {
       player.scales = Math.min(3, player.scales + 1);
       say("古い竜の鱗を見つけた");
     } else if (reward === "trail") {
-      player.trailCharm = true;
+      grantAccessory(context, "trail", "旅人の鈴を見つけた。足取りが軽くなった");
       refreshDerivedStats?.();
       player.stamina = player.staminaMax;
       player.wards = Math.min(9, player.wards + 1);
@@ -141,7 +223,7 @@
       burst(x, y, "#d7e2ea", 16);
       grantWeaponAtLeast(context, 2, "古鉄鉱を見つけ、鉄剣を得た", "古鉄鉱を見つけた。既により良い剣を持っている");
     } else if (discovery.kind === "cache") {
-      player.hunterCharm = true;
+      grantAccessory(context, "hunter", "狩人の印を手に入れた");
       refreshDerivedStats();
       player.stamina = player.staminaMax;
       player.bombs = Math.min(9, player.bombs + 1);
@@ -267,6 +349,10 @@
   globalThis.DRAGON_HUNTER_REWARDS = {
     rewardIds,
     savedIdSet,
+    normalizeInventory,
+    addOwnedWeapon,
+    addOwnedArmor,
+    grantAccessory,
     grantWeaponAtLeast,
     grantArmorAtLeast,
     grantChestReward,

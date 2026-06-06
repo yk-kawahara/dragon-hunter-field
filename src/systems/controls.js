@@ -27,6 +27,11 @@
       "interact",
       "searchGround",
       "showStats",
+      "toggleInventory",
+      "closeInventory",
+      "moveInventory",
+      "confirmInventory",
+      "sellInventorySelection",
       "saveGame",
       "selectItem",
     ];
@@ -57,16 +62,35 @@
       cycleItem,
       resetGame,
       selectItem,
+      toggleInventory,
+      closeInventory,
+      moveInventory,
+      confirmInventory,
+      sellInventorySelection,
     } = requireControlsContext(context);
 
     window.addEventListener("keydown", (event) => {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "ShiftLeft", "ShiftRight"].includes(event.code)) {
         event.preventDefault();
       }
+      if (state.inventoryOpen) {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Space", "Escape", "KeyI", "KeyM", "KeyS"].includes(event.code)) {
+          event.preventDefault();
+        }
+        if (event.code === "ArrowUp") moveInventory(0, -1);
+        if (event.code === "ArrowDown") moveInventory(0, 1);
+        if (event.code === "ArrowLeft") moveInventory(-1, 0);
+        if (event.code === "ArrowRight") moveInventory(1, 0);
+        if (event.code === "Enter" || event.code === "Space") confirmInventory();
+        if (event.code === "KeyS") sellInventorySelection();
+        if (event.code === "Escape" || event.code === "KeyI" || event.code === "KeyM") closeInventory();
+        return;
+      }
       state.keys.add(event.code);
       if (event.code === "Enter" || event.code === "Space") contextAction();
       if (event.code === "ShiftLeft" || event.code === "ShiftRight") dash();
       if (event.code === "KeyH") useSelectedItem();
+      if (event.code === "KeyI" || event.code === "KeyM") toggleInventory();
       if (event.code === "KeyQ") cycleItem(-1);
       if (event.code === "KeyE") cycleItem(1);
       if (event.code === "KeyR" && state.gameOver) resetGame();

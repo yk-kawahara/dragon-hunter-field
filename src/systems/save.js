@@ -23,6 +23,7 @@
   const {
     rewardIds,
     savedIdSet,
+    normalizeInventory,
   } = rewardHelpers;
 
   function requireSaveContext(context) {
@@ -34,6 +35,7 @@
 
   function saveGame(context) {
     const { state, player, say, gameStage, stageName } = requireSaveContext(context);
+    normalizeInventory(player);
     const data = {
       player: {
         x: player.x,
@@ -47,6 +49,10 @@
         gold: player.gold,
         weapon: player.weapon,
         armor: player.armor,
+        ownedWeapons: player.ownedWeapons,
+        ownedArmors: player.ownedArmors,
+        ownedAccessories: player.ownedAccessories,
+        equippedAccessory: player.equippedAccessory,
         potions: player.potions,
         bombs: player.bombs,
         wards: player.wards,
@@ -87,6 +93,7 @@
       player.trailCharm = Boolean(player.trailCharm);
       player.aegisCharm = Boolean(player.aegisCharm);
       player.mineCharm = Boolean(player.mineCharm);
+      normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
       player.attackCooldown = 0;
@@ -130,6 +137,10 @@
       gold: 18,
       weapon: 0,
       armor: 0,
+      ownedWeapons: [0],
+      ownedArmors: [0],
+      ownedAccessories: [],
+      equippedAccessory: "",
       potions: 2,
       bombs: 1,
       wards: 0,
@@ -177,6 +188,9 @@
     state.townGateHold = 0;
     state.pointerMove = null;
     state.infoPanel = null;
+    state.inventoryOpen = false;
+    state.inventoryTab = "items";
+    state.inventoryIndex = 0;
     refreshDerivedStats();
     localStorage.removeItem(SAVE_KEY);
     say("新しい旅が始まった");

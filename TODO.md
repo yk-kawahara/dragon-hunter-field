@@ -12,8 +12,9 @@ The current game is roughly a 20-minute route. Future work must actively grow it
 * Add named regions, caves, towers, castles, ruins, mines, roads, and remote settlements.
 * Add multiple towns/frontier bases with healing, restocking, stronger equipment, and hints.
 * Add diverse monster behaviors such as bubbles, magic, poison, slow, summons, territorial guarding, and ranged pressure.
-* Add a true `もちもの` inventory for consumables, weapons, armor, accessories, equipment choice, and selling unwanted gear.
-* Convert fixed charm flags into equipable accessories in a later focused pass.
+* Expand the true `もちもの` inventory that now exists for consumables, weapons, armor, accessories, equipment choice, and selling.
+* Add more sidegrade weapons, armor, and accessories so equipment choice becomes a major survival-range decision.
+* Do not avoid bold player-facing systems because they are broad; implement playable first versions and verify them.
 
 ### Critical
 
@@ -28,14 +29,14 @@ The current game is roughly a 20-minute route. Future work must actively grow it
 * Tune the new southeast Warden and Aegis Charm through manual playtesting: it should feel like an optional route challenge, not a mandatory checklist.
 * Add one more meaningful route reason in the east/southeast area only if the traveler bell plus Warden route still does not make the expansion feel like a destination.
 * Balance gold/EXP/shop prices so the first armor purchase, level 4 timing, Guardian readiness, and dragon readiness feel natural in a normal playthrough.
-* Improve equipment/item review only where it helps decisions: current gear, next upgrade value, regeneration, boss requirements, and progression items.
+* Improve the new inventory comparison text where it helps decisions: current gear, next upgrade value, regeneration, boss requirements, and progression items.
 * Real-browser verify the elder ending panel and `N` replay behavior after final report.
 * Add first wave of volume content using the current southwest mine as a new named dangerous region.
 * Add at least one new enemy behavior tied to that region.
 
 ### Medium / Deferred
 
-* Add equipment inventory only if future rewards introduce sidegrade choices rather than simple rank upgrades.
+* Add more equipment inventory content now that the base inventory exists: sidegrades, remote-shop gear, and meaningful accessory choices.
 * Add more enemies, quests, or bosses only after browser QA and the core survival route feel good.
 * Continue player art polish one frame at a time under `assets/player/`, but do not let sprite polish outrank route/balance fixes.
 * Move more map objects into `WORLD_OBJECTS` only when it directly improves hand editing or reduces placement bugs.
@@ -114,6 +115,12 @@ The current game is roughly a 20-minute route. Future work must actively grow it
 * Verified the frontier camp safe zone, recovery circle, supply purchase, and monster-entry blocking in the VM smoke script.
 * Added the purchasable mine charm / bubble ward at the frontier camp.
 * Mine charm now persists through save/load and reduces `泡吐き` contact, bubble projectile damage, slow duration, and stamina loss.
+* Added the real `もちもの` inventory screen.
+* Former `強さ` command is now `もちもの`.
+* Added owned weapon, owned armor, owned accessory, and equipped accessory state.
+* Added inventory use/equip/sell controls.
+* Converted major charm effects into equipped accessory choices.
+* Added save/load migration and persistence for the new inventory fields.
 
 ## Critical Playtest Issues - Addressed This Pass
 
@@ -165,7 +172,7 @@ The current game is roughly a 20-minute route. Future work must actively grow it
 * Continue balance testing for whether gold, EXP, medicines, and shop prices make the first armor purchase and level 4 timing feel natural.
 * Manually verify whether the new local monster pruning feels natural during long-distance travel.
 * Manually verify that the new objective guidance and context prompts do not clutter the small mobile-style screen.
-* Consider a simple equipment inventory only if future rewards introduce multiple sidegrade items instead of rank upgrades.
+* Expand the implemented inventory instead of deferring it: add sidegrade drops, shop stock, buyback/sell rules, and clearer comparison.
 
 ## Next Priority: Survival Range Expansion
 
@@ -211,8 +218,8 @@ The current game is roughly a 20-minute route. Future work must actively grow it
 
 ## Menu, Items, and Equipment UI
 
-* Current state: the strength command opens a temporary info panel with equipment, survival, and inventory/progression pages.
-* Future improvement: expand this into a real `もちもの` command screen.
+* Current state: the former strength command is now `もちもの` and opens a real inventory screen.
+* The player can use consumables, equip owned weapons/armor/accessories, and sell consumables or unequipped weapons/armor.
 * Allow the player to view current items clearly:
 
   * Medicine.
@@ -228,11 +235,10 @@ The current game is roughly a 20-minute route. Future work must actively grow it
   * Contact/facing traits.
   * HP regeneration rate.
   * Stamina or movement effects.
-* Consider allowing item use through the item menu rather than only through quick buttons.
-* Add equipment comparison if the command UI expands.
-* Add weapon/armor/accessory inventory when sidegrade equipment is introduced.
-* Add selling unwanted items/equipment for gold.
-* Convert regeneration, movement, resistance, and exploration charms into equipable accessories.
+* Add richer item use and equipment comparison inside the inventory.
+* Add sidegrade weapons/armor/accessories through shops, treasure, and enemy drops.
+* Add shop buyback or a clear rule for unique accessory selling.
+* Continue converting regeneration, movement, resistance, and exploration charms into meaningful accessory choices.
 
 ## Character Art Assets
 

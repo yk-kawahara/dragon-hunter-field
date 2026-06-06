@@ -218,6 +218,23 @@ The next design target is a larger RPG where survival range expansion happens re
 5\. Later towns sell new equipment tiers and hint toward deeper regions.
 6\. The player gradually builds an inventory of weapons, armor, accessories, and consumables.
 7\. Equipment choice becomes strategic: regeneration, movement, defense, anti-magic, anti-ranged, and boss preparation.
+
+## Inventory Direction Implemented
+
+The game now treats inventory as a core RPG system rather than a deferred future idea.
+
+Current inventory direction:
+
+* Weapons and armor are owned as lists, not only as one current rank.
+* The player can choose which owned weapon and armor to equip.
+* Consumables can be inspected and used from `もちもの`.
+* Unequipped weapons, unequipped armor, and consumables can be sold for gold.
+* Former fixed charm rewards are being treated as owned accessories.
+* Only the equipped accessory provides its active survival effect, making regeneration, movement, projectile defense, and mine resistance real equipment choices.
+
+Design rule:
+
+Do not avoid major player-facing systems only because they touch save data, UI, or balance. The correct response is to implement the system with migration and verification, then continue improving it.
 8\. The final dragon route should eventually become one endpoint of a larger world, not the only major destination.
 
 Long-term scale goals:

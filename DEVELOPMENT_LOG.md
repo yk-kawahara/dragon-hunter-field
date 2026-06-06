@@ -341,3 +341,40 @@
   - Manual tuning is needed to decide whether 180G is the right price and whether the reduction is too strong or too subtle.
   - This is still a flag-based accessory. A future `もちもの` / accessory menu should expose it as an equipable item once equipment sidegrades exist.
   - The next high-value content pass should either expand this camp into a stronger shop/town step, add the next dungeon route, or begin the real `もちもの` inventory.
+
+## 2026-06-06 Full Inventory / Anti-Conservative Direction Pass
+- User direction: do not avoid high-value gameplay systems by citing implementation risk. The correct posture is to implement major player-facing systems aggressively, then manage risk through save migration and verification.
+- Documentation updated:
+  - `AGENTS.md` now explicitly says not to hide behind conservatism when the user asks for a major gameplay system.
+  - `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, and `TODO.md` now treat real inventory as an implemented core RPG direction, not a distant deferred idea.
+- Implemented a real `もちもの` inventory:
+  - Former `強さ` command is now `もちもの`.
+  - `I` / `M` or the command button opens the inventory overlay.
+  - Left/right changes category: items, weapons, armor, accessories.
+  - Up/down selects entries.
+  - Enter/Space uses consumables or equips selected gear.
+  - `S` sells consumables or unequipped weapons/armor.
+  - Esc closes the menu.
+- Added persistent inventory state:
+  - `ownedWeapons`
+  - `ownedArmors`
+  - `ownedAccessories`
+  - `equippedAccessory`
+- Save/load now migrates old charm flags into owned accessories and persists the equipped accessory.
+- Existing rank-based weapon/armor values remain as the equipped item for compatibility, but treasure/shop/discovery rewards now also populate owned gear lists.
+- Converted major charm effects into equipment choices:
+  - `hunter`: stamina max accessory
+  - `regen`: HP regeneration accessory
+  - `trail`: movement/dash accessory
+  - `aegis`: fire/projectile defense accessory
+  - `mine`: bubble/mine resistance accessory
+- Only the equipped accessory provides its active effect, while owned flags still support story/progression compatibility.
+- Verification:
+  - Bundled Node syntax checks passed for `src/data/definitions.js`, `src/systems/rewards.js`, `src/systems/ui.js`, `src/systems/render.js`, and `src/game.js`.
+  - `scripts/verify-game-smoke.js` passed.
+  - VM smoke now verifies inventory open/close, weapon equip, equipped-weapon sale prevention, unequipped-weapon selling, accessory equip switching, accessory effect switching, inventory save/load fields, and the existing story clear flow.
+- Remaining risk:
+  - Real browser/manual QA should confirm the overlay fits the compact canvas and feels usable on keyboard/touch.
+  - In-app Browser failed with the known Windows sandbox startup error, and the escalated Edge headless screenshot attempt was rejected by the approval system. No browser workaround was attempted after that rejection.
+  - Accessory selling needs a richer design. Unique accessories are now equipment choices, but the next pass should decide buyback, lock rules, or duplicate sidegrade sources before allowing all unique rewards to be sold freely.
+  - The inventory needs more sidegrade content. It is structurally playable now, but the next value comes from new weapons, armor, accessories, and shops that make choosing equipment interesting.

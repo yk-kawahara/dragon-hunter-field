@@ -290,8 +290,9 @@
       player.slow = Math.max(player.slow, 1200);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "SLOW", "#9df27f");
     } else if (monster.type === "bubbler") {
-      player.slow = Math.max(player.slow, player.mineCharm ? 520 : 1200);
-      player.stamina = Math.max(0, player.stamina - (player.mineCharm ? 3 : 8));
+      const mineGuard = player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
+      player.slow = Math.max(player.slow, mineGuard ? 520 : 1200);
+      player.stamina = Math.max(0, player.stamina - (mineGuard ? 3 : 8));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
     } else if (monster.type === "bat") {
       player.stamina = Math.max(0, player.stamina - 12);
@@ -334,6 +335,9 @@
     if (monster.type === "warden") {
       state.wardenDefeated = true;
       player.aegisCharm = true;
+      if (!Array.isArray(player.ownedAccessories)) player.ownedAccessories = [];
+      if (!player.ownedAccessories.includes("aegis")) player.ownedAccessories.push("aegis");
+      if (!player.equippedAccessory) player.equippedAccessory = "aegis";
       player.wards = Math.min(9, player.wards + 2);
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);

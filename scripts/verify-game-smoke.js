@@ -153,6 +153,7 @@ function createRuntime() {
   const projectiles = globalThis.DRAGON_HUNTER_PROJECTILES;
   const monsters = globalThis.DRAGON_HUNTER_MONSTERS;
   const text = globalThis.DRAGON_HUNTER_TEXT;
+  const ui = globalThis.DRAGON_HUNTER_UI;
   const playerHelpers = globalThis.DRAGON_HUNTER_PLAYER;
 
   const state = stateHelpers.createInitialState();
@@ -223,11 +224,17 @@ function createRuntime() {
     stageName: (stage) => text.stageName(stage),
     saveGame: () => save.saveGame(contexts.save()),
     loadGame: () => save.loadGame(contexts.save()),
+    useSelectedItem: () => rewards.useSelectedItem(contexts.reward()),
+    openInventory: () => ui.openInventory(contexts.ui()),
+    closeInventory: () => ui.closeInventory(contexts.ui()),
+    moveInventory: (dx, dy) => ui.moveInventory(contexts.ui(), dx, dy),
+    confirmInventory: () => ui.confirmInventory(contexts.ui()),
+    sellInventorySelection: () => ui.sellInventorySelection(contexts.ui()),
     updateMonsters: (dt) => monsters.updateMonsters(contexts.monster(), dt),
   });
 
   map.createMap(contexts.map());
-  return { definitions, state, player, runtime };
+  return { definitions, state, player, runtime, contexts };
 }
 
 function assertMapReachability() {
@@ -269,6 +276,8 @@ function assertSaveLoadAndEquipment() {
   const { definitions: d, state, player, runtime } = createRuntime();
   player.weapon = 3;
   player.armor = 3;
+  player.ownedWeapons = [0, 1, 2, 3];
+  player.ownedArmors = [0, 1, 2, 3];
   player.gold = 123;
   player.scales = 2;
   player.sealCrest = true;
@@ -277,6 +286,8 @@ function assertSaveLoadAndEquipment() {
   player.trailCharm = true;
   player.aegisCharm = true;
   player.mineCharm = true;
+  player.ownedAccessories = ["hunter", "regen", "trail", "aegis", "mine"];
+  player.equippedAccessory = "trail";
   state.chests.add("town-cache");
   state.chests.add("north-ruin");
   state.chests.add("south-outpost");
@@ -299,6 +310,10 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.trailCharm, "trail charm should persist");
   assert(restored.player.aegisCharm, "aegis charm should persist");
   assert(restored.player.mineCharm, "mine charm should persist");
+  assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
+  assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("mine"), "owned accessories should persist");
+  assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   const baseline = createRuntime();
   baseline.player.armor = restored.player.armor;
   baseline.player.weapon = restored.player.weapon;
@@ -314,7 +329,69 @@ function assertSaveLoadAndEquipment() {
   const weakerWeapon = rewardHelpers.grantWeaponAtLeast({ player: restored.player, say: () => {} }, 1, "upgrade");
   const weakerArmor = rewardHelpers.grantArmorAtLeast({ player: restored.player, say: () => {} }, 1, "upgrade");
   assert(!weakerWeapon && !weakerArmor, "weaker equipment should not downgrade current gear");
+
+  globalThis.localStorage.setItem(d.SAVE_KEY, JSON.stringify({
+    player: {
+      hp: 12,
+      hpMax: 46,
+      level: 2,
+      xp: 0,
+      xpNext: 34,
+      gold: 0,
+      weapon: 1,
+      armor: 1,
+      regenCharm: true,
+      trailCharm: true,
+    },
+  }));
+  const migrated = createRuntime();
+  assert(migrated.runtime.loadGame(), "old charm-flag save should migrate");
+  assert(migrated.player.ownedAccessories.includes("regen"), "old regen flag should become owned accessory");
+  assert(migrated.player.ownedAccessories.includes("trail"), "old trail flag should become owned accessory");
+  assert(migrated.player.equippedAccessory === "trail", "old saves should equip trail by migration priority");
   return { saveKey: d.SAVE_KEY, weapon: restored.player.weapon, armor: restored.player.armor };
+}
+
+function assertInventoryManagement() {
+  const { state, player, runtime } = createRuntime();
+  player.ownedWeapons = [0, 1, 3];
+  player.ownedArmors = [0, 2];
+  player.ownedAccessories = ["regen", "trail", "mine"];
+  player.regenCharm = true;
+  player.trailCharm = true;
+  player.mineCharm = true;
+  player.equippedAccessory = "regen";
+  player.weapon = 1;
+  player.armor = 0;
+  player.gold = 10;
+  runtime.refreshDerivedStats();
+
+  runtime.openInventory();
+  assert(state.inventoryOpen, "inventory should open");
+  state.inventoryTab = "weapons";
+  state.inventoryIndex = 2;
+  runtime.confirmInventory();
+  assert(player.weapon === 3, "inventory should equip selected weapon");
+  const goldBeforeSellEquipped = player.gold;
+  runtime.sellInventorySelection();
+  assert(player.ownedWeapons.includes(3) && player.gold === goldBeforeSellEquipped, "equipped weapon should not be sold");
+  state.inventoryIndex = 1;
+  runtime.sellInventorySelection();
+  assert(!player.ownedWeapons.includes(1) && player.gold > goldBeforeSellEquipped, "unequipped weapon should sell for gold");
+
+  state.inventoryTab = "accessories";
+  state.inventoryIndex = player.ownedAccessories.indexOf("trail");
+  runtime.confirmInventory();
+  assert(player.equippedAccessory === "trail", "inventory should equip selected accessory");
+  assert(runtime.dashCost() < 34, "equipped trail accessory should affect dash cost");
+  state.inventoryIndex = player.ownedAccessories.indexOf("mine");
+  runtime.confirmInventory();
+  assert(player.equippedAccessory === "mine", "accessory slot should switch to mine charm");
+  assert(runtime.dashCost() === 34, "unequipped trail accessory should stop affecting dash cost");
+
+  runtime.closeInventory();
+  assert(!state.inventoryOpen, "inventory should close");
+  return { weapon: player.weapon, equippedAccessory: player.equippedAccessory, gold: player.gold };
 }
 
 function assertStoryClearFlow() {
@@ -421,9 +498,11 @@ function assertFrontierCamp() {
   assert(player.gold === 40, "mine charm should cost 180G");
   const withCharm = runtime.armorDamageMultiplier({ type: "bubbler" }, 0.2, "contact");
   player.mineCharm = false;
+  player.equippedAccessory = "";
   const withoutCharm = runtime.armorDamageMultiplier({ type: "bubbler" }, 0.2, "contact");
   assert(withCharm < withoutCharm, "mine charm should reduce bubbler contact damage");
   player.mineCharm = true;
+  player.equippedAccessory = "mine";
   player.gold = 120;
   player.potions = 0;
   player.bombs = 0;
@@ -451,6 +530,7 @@ function main() {
   loadScripts(MODULES_FOR_LOGIC);
   const map = assertMapReachability();
   const save = assertSaveLoadAndEquipment();
+  const inventory = assertInventoryManagement();
   const story = assertStoryClearFlow();
   const mine = assertMineContent();
   const camp = assertFrontierCamp();
@@ -473,7 +553,7 @@ function main() {
   assert(child.status === 0, child.stderr || child.stdout || "script load smoke failed");
   const scriptLoad = JSON.parse(child.stdout.trim());
 
-  console.log(JSON.stringify({ ok: true, map, save, story, mine, camp, scriptLoad }, null, 2));
+  console.log(JSON.stringify({ ok: true, map, save, inventory, story, mine, camp, scriptLoad }, null, 2));
 }
 
 main();
