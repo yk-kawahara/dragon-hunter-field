@@ -19,7 +19,7 @@
     TILE: WORLD_TILE,
     BASE_TILE,
     WORLD_SCALE,
-    HEAL_CIRCLE,
+    HEAL_POINTS,
     TOWN_GATES,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
@@ -179,6 +179,7 @@ function draw(context) {
   drawWorldAtmosphere(cam);
   drawFieldDetails(cam);
   drawTownDetails(cam);
+  drawFrontierCampDetails(cam);
   drawVillageRoleMarkers(cam);
   drawHealCircle(cam);
   drawTownFence(cam);
@@ -276,11 +277,46 @@ function drawTownDetails(cam) {
   drawSign(12 * TILE - cam.x, 48 * TILE - cam.y);
 }
 
+function drawFrontierCampDetails(cam) {
+  drawCampBoundary(cam);
+  drawTent(26 * TILE - cam.x, 57 * TILE - cam.y, "#6de4ff");
+  drawTent(33 * TILE - cam.x, 57 * TILE - cam.y, "#c98945");
+  drawCrates(25 * TILE - cam.x, 60 * TILE - cam.y);
+  drawCampfire(29 * TILE - cam.x, 59 * TILE - cam.y);
+  drawLamp(34 * TILE - cam.x, 59 * TILE - cam.y);
+  drawRoleMarker(31 * TILE - cam.x, 58 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(33 * TILE - cam.x, 58 * TILE - cam.y, "補", "#fff2a6");
+}
+
+function drawCampBoundary(cam) {
+  for (let tx = 25; tx <= 35; tx += 1) {
+    if (tx < 30 || tx > 32) drawCampStake(tx * TILE - cam.x, 56 * TILE - cam.y);
+    drawCampStake(tx * TILE - cam.x, 61 * TILE - cam.y + 7);
+  }
+  for (let ty = 57; ty <= 60; ty += 1) {
+    drawCampStake(25 * TILE - cam.x, ty * TILE - cam.y);
+    drawCampStake(35 * TILE - cam.x + 8, ty * TILE - cam.y);
+  }
+}
+
+function drawCampStake(sx, sy) {
+  if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(0,0,0,0.18)";
+  ctx.fillRect(sx + 2, sy + 7, 10, 2);
+  ctx.fillStyle = "#5f371b";
+  ctx.fillRect(sx + 4, sy + 2, 3, 8);
+  ctx.fillRect(sx + 10, sy + 3, 3, 7);
+  ctx.fillStyle = "#c98945";
+  ctx.fillRect(sx + 4, sy + 2, 3, 2);
+  ctx.fillRect(sx + 10, sy + 3, 3, 2);
+}
+
 function drawVillageRoleMarkers(cam) {
   drawRoleMarker(9 * TILE - cam.x, 46 * TILE - cam.y, "長", "#fff2a6");
   drawRoleMarker(15 * TILE - cam.x, 47 * TILE - cam.y, "鍛", "#ffd166");
   drawRoleMarker(13 * TILE - cam.x, 42 * TILE - cam.y, "薬", "#74ff8f");
-  drawRoleMarker(HEAL_CIRCLE.x * TILE - cam.x, (HEAL_CIRCLE.y - 1) * TILE - cam.y, "回", "#6de4ff");
+  const villageHeal = HEAL_POINTS.find((point) => point.id === "village-circle") || HEAL_POINTS[0];
+  drawRoleMarker(villageHeal.x * TILE - cam.x, (villageHeal.y - 1) * TILE - cam.y, "回", "#6de4ff");
   for (const gate of TOWN_GATES) {
     drawRoleMarker(gate.x * TILE - cam.x, (gate.y - 1) * TILE - cam.y, state.townGateOpen ? "開" : "門", state.townGateOpen ? "#ffd166" : "#d7e2ea");
   }
@@ -457,6 +493,33 @@ function drawLamp(sx, sy) {
   ctx.fillRect(sx + 6, sy + 2, 4, 3);
 }
 
+function drawTent(sx, sy, color) {
+  if (sx < -24 || sy < -24 || sx > W || sy > VIEW_H) return;
+  ctx.fillStyle = "rgba(0,0,0,0.24)";
+  ctx.fillRect(sx + 1, sy + 12, 18, 3);
+  ctx.fillStyle = "#4f2e17";
+  ctx.fillRect(sx + 2, sy + 11, 15, 3);
+  ctx.fillStyle = color;
+  ctx.fillRect(sx + 4, sy + 5, 11, 8);
+  ctx.fillStyle = "#d7e2ea";
+  ctx.fillRect(sx + 6, sy + 3, 7, 3);
+  ctx.fillStyle = "#1b2230";
+  ctx.fillRect(sx + 9, sy + 8, 2, 5);
+}
+
+function drawCampfire(sx, sy) {
+  if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
+  const pulse = Math.floor(performance.now() / 150) % 2;
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
+  ctx.fillRect(sx + 2, sy + 11, 12, 3);
+  ctx.fillStyle = "#5f371b";
+  ctx.fillRect(sx + 3, sy + 9, 10, 2);
+  ctx.fillStyle = pulse ? "#ffd166" : "#ff7a3d";
+  ctx.fillRect(sx + 6, sy + 4, 4, 6);
+  ctx.fillStyle = "#fff2a6";
+  ctx.fillRect(sx + 7, sy + 6, 2, 4);
+}
+
 function drawSign(sx, sy) {
   if (sx < -20 || sy < -20 || sx > W || sy > VIEW_H) return;
   ctx.fillStyle = "#4f2e17";
@@ -573,20 +636,22 @@ function drawGlint(sx, sy, color) {
 }
 
 function drawHealCircle(cam) {
-  const sx = HEAL_CIRCLE.x * TILE - cam.x;
-  const sy = HEAL_CIRCLE.y * TILE - cam.y;
-  if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) return;
-  const pulse = Math.floor(performance.now() / 180) % 3;
-  ctx.fillStyle = "rgba(26, 75, 88, 0.45)";
-  ctx.fillRect(sx + 1, sy + 2, 14, 12);
-  ctx.strokeStyle = "#6de4ff";
-  ctx.strokeRect(sx + 2 - pulse, sy + 3 - pulse, 12 + pulse * 2, 10 + pulse * 2);
-  ctx.fillStyle = "#eaffff";
-  ctx.fillRect(sx + 7, sy + 4, 2, 8);
-  ctx.fillRect(sx + 4, sy + 7, 8, 2);
-  ctx.fillStyle = "#74ff8f";
-  ctx.fillRect(sx + 3, sy + 3, 2, 2);
-  ctx.fillRect(sx + 11, sy + 11, 2, 2);
+  for (const healPoint of HEAL_POINTS) {
+    const sx = healPoint.x * TILE - cam.x;
+    const sy = healPoint.y * TILE - cam.y;
+    if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) continue;
+    const pulse = Math.floor(performance.now() / 180) % 3;
+    ctx.fillStyle = "rgba(26, 75, 88, 0.45)";
+    ctx.fillRect(sx + 1, sy + 2, 14, 12);
+    ctx.strokeStyle = "#6de4ff";
+    ctx.strokeRect(sx + 2 - pulse, sy + 3 - pulse, 12 + pulse * 2, 10 + pulse * 2);
+    ctx.fillStyle = "#eaffff";
+    ctx.fillRect(sx + 7, sy + 4, 2, 8);
+    ctx.fillRect(sx + 4, sy + 7, 8, 2);
+    ctx.fillStyle = "#74ff8f";
+    ctx.fillRect(sx + 3, sy + 3, 2, 2);
+    ctx.fillRect(sx + 11, sy + 11, 2, 2);
+  }
 }
 
 function drawTownFence(cam) {
@@ -827,8 +892,15 @@ function drawNpcs(cam) {
     const sx = Math.round(screenX(npc.x, cam));
     const sy = Math.round(screenY(npc.y, cam));
     if (sy > VIEW_H || sx < -16 || sx > W) continue;
-    drawHumanSprite(sx, sy, npc.type === "smith" ? "#d14f2b" : npc.type === "healer" ? "#40c6ff" : "#efe35a", npc.dir, npc.type);
+    drawHumanSprite(sx, sy, npcColor(npc.type), npc.dir, npc.type);
   }
+}
+
+function npcColor(type) {
+  if (type === "smith") return "#d14f2b";
+  if (type === "healer") return "#40c6ff";
+  if (type === "frontier") return "#9ad16f";
+  return "#efe35a";
 }
 
 function drawEntities(cam) {

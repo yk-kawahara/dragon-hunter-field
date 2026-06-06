@@ -93,6 +93,7 @@
     { type: "npc", npcType: "elder", x: 9, y: 47, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
     { type: "npc", npcType: "smith", x: 15, y: 48, offsetX: 4, offsetY: 1, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "healer", x: 13, y: 43, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "frontier", x: 33, y: 59, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
   ];
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {

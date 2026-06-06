@@ -298,4 +298,23 @@
   - Syntax checks passed for all JavaScript files under `src/` and `scripts/`.
   - `scripts/verify-game-smoke.js` passed and now reports `mine.region === "mine"` plus `泡吐き` in the mine spawn pool.
   - `git diff --check` passed with line-ending warnings only.
-  - Optional real browser QA remains desirable for the new sprite and mine route.
+- Optional real browser QA remains desirable for the new sprite and mine route.
+
+## 2026-06-06 Volume Expansion Pass / Southwest Frontier Camp
+- Goal: continue gameplay-volume expansion, not refactoring. The southwest mine had a distinct enemy and reward, but the world still relied almost entirely on the starting village as the only true safe anchor.
+- Design decision: add the first remote safe base near the mine route so survival range expansion can repeat outside the original village radius.
+- Implemented `SAFE_ZONES` and `HEAL_POINTS` definitions so safe bases and recovery circles are data-driven beyond the original village.
+- Added the southwest frontier camp safe zone near the mine route.
+- Added a second recovery circle at the frontier camp.
+- Added a `frontier` supply NPC through `WORLD_OBJECTS`.
+- Added camp visuals in the renderer: low stakes, tents, campfire, supply marker, and recovery marker.
+- Updated UI/feedback: the zone display can now show `前線キャンプ` and `廃坑`, low-HP guidance now points to the nearest base rather than only the village, and context prompts show the supply NPC as `補給隊`.
+- Verification:
+  - Syntax checks passed for all 24 JavaScript files under `src/` and `scripts/`.
+  - `scripts/verify-game-smoke.js` passed. It now verifies the frontier NPC loads, the camp is a safe zone, the mine remains outside that safe zone, monsters cannot enter the closed camp, the camp recovery circle fully heals, and the supply NPC sells expedition items.
+  - `git diff --check` passed with CRLF warnings only.
+  - Edge headless real-browser rendering updated `docs/browser-qa-desktop.png`; visual inspection confirmed the game still boots and draws the main screen, player, map, HUD, and controls.
+- Remaining risk:
+  - In-app Browser interaction still failed with the known Windows browser-session startup issue, so live keyboard/touch play at the new camp was not verified.
+  - The camp's exact visual placement near the southwest mine should be checked interactively in a browser once browser control is available.
+  - The next high-value content pass should either expand this camp into a stronger shop/town step, add the next dungeon route, or begin the real `もちもの` inventory.

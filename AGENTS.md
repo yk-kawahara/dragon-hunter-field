@@ -114,6 +114,7 @@ Long-term targets:
 \* Add distinct place types such as caves, towers, castles, ruins, mines, roads, bridges, and remote settlements.
 
 \* Add multiple towns or safe bases. Later towns should offer healing, restocking, stronger shops, hints, and a feeling that the player's survivable range has truly moved outward.
+\* Remote camps and frontier bases should be true survival anchors: safe-zone boundaries, recovery, supplies, and readable landmarks. They should make the player feel that the safe radius has moved outward, not merely decorate the map.
 
 \* Add varied monsters with different behaviors: bubbles, magic, poison, ranged pressure, summons, chase patterns, area denial, and enemies that require different preparation.
 

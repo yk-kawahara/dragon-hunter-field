@@ -12,6 +12,14 @@
   const MAP_H = 72;
   const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
+  const SAFE_ZONES = [
+    { id: "village", name: "村", x1: 5, y1: 39, x2: 18, y2: 55, outerX1: 4, outerY1: 38, outerX2: 19, outerY2: 57 },
+    { id: "southwest-camp", name: "前線キャンプ", x1: 25, y1: 56, x2: 35, y2: 61, outerX1: 24, outerY1: 55, outerX2: 36, outerY2: 62 },
+  ];
+  const HEAL_POINTS = [
+    { ...HEAL_CIRCLE, id: "village-circle", name: "村の回復陣" },
+    { x: 31, y: 59, id: "southwest-camp-circle", name: "前線キャンプの回復陣" },
+  ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
     { name: "東門", x: 18, y: 48, w: 1, h: 3, axis: "y" },
@@ -200,6 +208,8 @@
     MAP_H,
     SAVE_KEY,
     HEAL_CIRCLE,
+    SAFE_ZONES,
+    HEAL_POINTS,
     TOWN_GATES,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,

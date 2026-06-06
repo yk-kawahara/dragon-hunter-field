@@ -109,6 +109,24 @@
         say(`薬師「${cost}Gで癒やせるよ」`);
       }
     }
+
+    if (npc.type === "frontier") {
+      const kitCost = 28 + player.level * 6;
+      if (player.hp < player.hpMax || player.stamina < player.staminaMax) {
+        player.hp = player.hpMax;
+        player.stamina = player.staminaMax;
+        player.guard = Math.max(player.guard, 700);
+        say("補給隊「ここで立て直せ。廃坑は泡に足を取られる」");
+      } else if (player.gold >= kitCost && (player.potions < 7 || player.bombs < 4 || player.wards < 3)) {
+        player.gold -= kitCost;
+        player.potions = Math.min(9, player.potions + 2);
+        if (player.level >= 2) player.bombs = Math.min(9, player.bombs + 1);
+        if (player.level >= 3) player.wards = Math.min(9, player.wards + 1);
+        say("補給隊は遠征道具を渡した");
+      } else {
+        say("補給隊「南の廃坑で稼ぎ、危なくなったらこの陣へ戻れ」");
+      }
+    }
   }
 
   function handleCave(context) {

@@ -188,6 +188,7 @@ function createRuntime() {
     isPassableRect: (actor, x, y) => map.isPassableRect(contexts.map(), actor, x, y),
     moveActor: (actor, dx, dy) => playerHelpers.moveActor(contexts.player(), actor, dx, dy),
     facingVector: () => playerHelpers.facingVector(contexts.player()),
+    updateHealCircle: () => playerHelpers.updateHealCircle(contexts.player()),
     playerAttack: () => combat.playerAttack(contexts.combat()),
     playerDefense: () => combat.playerDefense(contexts.combat()),
     playerMoveSpeed: () => combat.playerMoveSpeed(contexts.combat()),
@@ -259,7 +260,8 @@ function assertMapReachability() {
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
-  assert(state.npcs.length === 3, "expected 3 NPCs from WORLD_OBJECTS");
+  assert(state.npcs.length === 4, "expected 4 NPCs from WORLD_OBJECTS");
+  assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   return { reachableTiles: seen.size, npcs: state.npcs.map((entry) => entry.type) };
 }
 
@@ -381,6 +383,41 @@ function assertMineContent() {
   return { region: runtime.currentRegion(), minePool, bubbler: bubbler.name };
 }
 
+function assertFrontierCamp() {
+  const { definitions: d, state, player, runtime } = createRuntime();
+  const centerPlayerOnTile = (tx, ty) => {
+    player.x = (tx + 0.5) * d.TILE - player.w / 2;
+    player.y = (ty + 0.5) * d.TILE - player.h / 2;
+  };
+
+  assert(runtime.inTownTile(31, 59), "frontier camp should be a safe-zone tile");
+  assert(runtime.inTown(31 * d.TILE, 59 * d.TILE), "frontier camp should count as a safe base");
+  assert(!runtime.inTownTile(39, 67), "southwest mine cache should remain outside the safe camp");
+
+  const intruder = { x: 24 * d.TILE, y: 59 * d.TILE, w: 12 * d.WORLD_SCALE, h: 12 * d.WORLD_SCALE, isMonster: true };
+  state.townGateOpen = false;
+  assert(!runtime.isPassableRect(intruder, 25 * d.TILE, 59 * d.TILE), "closed safe camp should block monster entry");
+
+  centerPlayerOnTile(31, 59);
+  player.hp = 3;
+  runtime.updateHealCircle();
+  assert(player.hp === player.hpMax, "frontier camp heal circle should fully heal");
+
+  const frontier = state.npcs.find((entry) => entry.type === "frontier");
+  assert(frontier, "frontier supply NPC should exist");
+  player.hp = player.hpMax;
+  player.stamina = player.staminaMax;
+  player.gold = 120;
+  player.potions = 0;
+  player.bombs = 0;
+  player.wards = 0;
+  player.level = 3;
+  runtime.handleNpc(frontier);
+  assert(player.potions >= 2 && player.bombs >= 1 && player.wards >= 1, "frontier supply NPC should sell expedition supplies");
+  assert(player.gold < 120, "frontier supply NPC should charge gold for supplies");
+  return { safe: runtime.inTown(player.x, player.y), supplies: { potions: player.potions, bombs: player.bombs, wards: player.wards } };
+}
+
 function assertScriptLoadSmoke() {
   installBrowserStubs();
   loadScripts(SCRIPT_ORDER);
@@ -400,6 +437,7 @@ function main() {
   const save = assertSaveLoadAndEquipment();
   const story = assertStoryClearFlow();
   const mine = assertMineContent();
+  const camp = assertFrontierCamp();
 
   // Run full script-load smoke last in a fresh Node process context is not possible here,
   // but it is useful after the logic-only tests because it also loads src/game.js.
@@ -419,7 +457,7 @@ function main() {
   assert(child.status === 0, child.stderr || child.stdout || "script load smoke failed");
   const scriptLoad = JSON.parse(child.stdout.trim());
 
-  console.log(JSON.stringify({ ok: true, map, save, story, mine, scriptLoad }, null, 2));
+  console.log(JSON.stringify({ ok: true, map, save, story, mine, camp, scriptLoad }, null, 2));
 }
 
 main();

@@ -22,6 +22,7 @@
     MAP_W,
     MAP_H,
     TOWN_GATES,
+    SAFE_ZONES,
     TILE_GRASS,
     TILE_PATH,
     TILE_WATER,
@@ -74,14 +75,23 @@
     return tile === TILE_TREE || tile === TILE_WALL || tile === TILE_ROOF;
   }
 
+  function inRect(tx, ty, rect) {
+    return tx >= rect.x1 && tx <= rect.x2 && ty >= rect.y1 && ty <= rect.y2;
+  }
+
   function inTownTile(_context, tx, ty) {
-    return tx >= 5 && tx <= 18 && ty >= 39 && ty <= 55;
+    return SAFE_ZONES.some((zone) => inRect(tx, ty, zone));
   }
 
   function inTown(_context, x, y) {
     const tx = Math.floor(x / TILE);
     const ty = Math.floor(y / TILE);
-    return tx >= 4 && tx <= 19 && ty >= 38 && ty <= 57;
+    return SAFE_ZONES.some((zone) => (
+      tx >= (zone.outerX1 ?? zone.x1)
+      && tx <= (zone.outerX2 ?? zone.x2)
+      && ty >= (zone.outerY1 ?? zone.y1)
+      && ty <= (zone.outerY2 ?? zone.y2)
+    ));
   }
 
   function tileInGate(_context, tx, ty) {

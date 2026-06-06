@@ -16,7 +16,7 @@
     WORLD_SCALE,
     MAP_W,
     MAP_H,
-    HEAL_CIRCLE,
+    HEAL_POINTS,
     TOWN_GATES,
     DISCOVERY_POINTS,
     DIRS,
@@ -162,16 +162,20 @@
   function updateHealCircle(context) {
     const { state, player, addRing, burst, say } = requirePlayerContext(context);
     const pc = centerOf(player);
-    const hx = (HEAL_CIRCLE.x + 0.5) * TILE;
-    const hy = (HEAL_CIRCLE.y + 0.5) * TILE;
-    if (Math.hypot(pc.x - hx, pc.y - hy) > worldPx(11) || state.healCooldown > 0 || player.hp <= 0) return;
-    state.healCooldown = 1400;
-    if (player.hp < player.hpMax) {
-      player.hp = player.hpMax;
-      player.guard = Math.max(player.guard, 900);
-      addRing(hx, hy, "#6de4ff", worldPx(30));
-      burst(hx, hy, "#74ff8f", 18);
-      say("魔法陣が傷を癒やした");
+    if (state.healCooldown > 0 || player.hp <= 0) return;
+    for (const healPoint of HEAL_POINTS) {
+      const hx = (healPoint.x + 0.5) * TILE;
+      const hy = (healPoint.y + 0.5) * TILE;
+      if (Math.hypot(pc.x - hx, pc.y - hy) > worldPx(11)) continue;
+      state.healCooldown = 1400;
+      if (player.hp < player.hpMax) {
+        player.hp = player.hpMax;
+        player.guard = Math.max(player.guard, 900);
+        addRing(hx, hy, "#6de4ff", worldPx(30));
+        burst(hx, hy, "#74ff8f", 18);
+        say(`${healPoint.name}で全回復した`);
+      }
+      return;
     }
   }
 

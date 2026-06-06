@@ -417,6 +417,7 @@ Current pilot content:
 \* Mine-specific spawn region.
 \* `泡吐き`, a bubble projectile enemy that slows and drains stamina.
 \* `southwest-mine-cache`, a one-time gold reward that supports later equipment purchases.
+\* Southwest frontier camp near the mine route. It is a safe base with a recovery circle, visible camp props, and a supply NPC so the player can push beyond the original village survival radius.
 
 
 \## Dragon Cave
@@ -787,6 +788,8 @@ The ending should reinforce that the player has grown from a fragile village-bou
 \* Southeast route content: the far outpost grants the traveler bell, then the level-3 Southeast Warden challenge grants the Aegis Charm for fire/projectile resistance.
 
 \* Southwest mine pilot content: the mine has its own region classification, hidden cache reward, and the `泡吐き` enemy with slow bubble projectiles.
+
+\* First remote safe-base content: the southwest frontier camp is recognized as a safe zone, blocks ordinary monster entry, provides a second recovery circle, and includes a supply NPC for mine expeditions.
 
 \* Village safety rules for projectiles and monsters: closed gates block danger, open gates allow danger through gate tiles only.
 

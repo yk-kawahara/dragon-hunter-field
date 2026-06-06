@@ -37,6 +37,7 @@ The game should grow through playable content, not architecture work alone.
 * Add multiple towns or frontier bases.
 * Each later town should provide recovery, supplies, stronger shops, hints, or a survival-route role.
 * Remote towns should make the player feel their safe range has moved outward.
+* Current first step: the southwest frontier camp now acts as a second safe base near the mine route, with recovery and expedition supplies.
 
 ### Enemy Variety
 
@@ -378,6 +379,33 @@ Expected design value:
 * Starts the broader volume expansion direction with a named optional area.
 * Adds a new enemy behavior family for future caves/mines/towers.
 * Makes the southwest mine a different survival problem from forest fire pressure or dragon cave pressure.
+
+### Volume Expansion Pass: Southwest Frontier Camp
+
+Problem:
+
+* The southwest mine added a new danger type, but the world still had only one true safe anchor: the starting village.
+* Larger RPG volume needs remote recovery/restock points so survival range expansion can repeat in later regions instead of only stretching one long commute.
+
+Implemented:
+
+* Added `SAFE_ZONES` and `HEAL_POINTS` definitions so safe bases and recovery circles can exist outside the village.
+* Added a southwest frontier camp safe zone near the mine route.
+* Added a second recovery circle at the frontier camp.
+* Added a `frontier` supply NPC through `WORLD_OBJECTS`.
+* Added visible camp props: tents, stakes, campfire, supply marker, and recovery marker.
+* Updated zone/UI text so the player sees `前線キャンプ` and `廃坑`.
+
+Verified:
+
+* VM smoke verifies the frontier camp is loaded, reachable, blocks monster entry, heals the player, and sells expedition supplies.
+* Edge headless real-browser rendering still boots and draws the game screen after the camp pass.
+
+Expected design value:
+
+* Creates the first concrete step toward multiple towns/frontier bases.
+* Makes the southwest mine a more viable repeat expedition route.
+* Supports survival range expansion by letting the player's safe radius move outward from the starting village.
 
 ### Playtest Improvement Pass Cycle 9
 

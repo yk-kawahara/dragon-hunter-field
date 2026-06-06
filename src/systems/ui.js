@@ -102,8 +102,9 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
-    if (inTown(player.x, player.y)) name = "村";
+    if (inTown(player.x, player.y)) name = (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
     else if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) name = "竜洞";
+    else if (tx >= 20 && tx <= 43 && ty >= 60) name = "廃坑";
     else if (tileAt(tx, ty) === TILE_WATER) name = "水辺";
     else if (tx > 40) name = "東の森";
     else if (ty < 25) name = "北森";

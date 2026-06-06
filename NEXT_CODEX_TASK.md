@@ -176,6 +176,7 @@ Recent gameplay completion result:
 * Volume expansion direction is now explicit: larger maps, multiple towns, varied monsters, real inventory, and equipable accessories.
 * Southwest mine is now treated as a distinct `mine` region.
 * New mine monster `泡吐き` fires slowing bubble projectiles and pressures stamina.
+* Southwest frontier camp is now the first remote safe base: it has a safe-zone boundary, recovery circle, visible camp props, and a `frontier` supply NPC.
 
 ## First Task For Next Codex
 
@@ -192,7 +193,7 @@ Start with real browser/manual verification, then continue gameplay content only
 9. Verify the ending panel after elder report and confirm `N` starts from level 1 with unopened chests and no clear flags.
 10. Manually tune the southeast Warden route if it feels too hard, too easy, or too disconnected from the survival-range loop.
 11. Verify the southwest mine route, `泡吐き` spawn/projectiles, and the `southwest-mine-cache` reward.
-12. If the route feels good, the next content pass should add a second town/frontier base or start the real `もちもの` inventory, not more refactoring.
+12. If the route feels good, the next content pass should either expand the southwest camp into a stronger shop/town step, add the next dungeon route, or start the real `もちもの` inventory, not more refactoring.
 13. Update documentation with exact verification results and commit with a clear message if changes are made.
 
 ## Recommended Prompt
@@ -232,6 +233,7 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEV
 * Southwest mine region spawn.
 * `泡吐き` bubble projectile, slow, and stamina pressure.
 * `southwest-mine-cache` reachability and one-time reward persistence.
+* Southwest frontier camp safe-zone boundary, recovery circle, `frontier` supply NPC, and monster-entry blocking.
 * Slime SLOW, bat stamina reduction, fire BURN.
 * Monster defeat EXP/gold/drop behavior.
 * Level-up behavior.

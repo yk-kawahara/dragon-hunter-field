@@ -51,7 +51,7 @@
       return "安全: 外へ出てより遠くを目指す";
     }
     const hpRate = player.hp / player.hpMax;
-    if (hpRate < 0.35) return "危険: 村へ戻って立て直す";
+    if (hpRate < 0.35) return "危険: 近い拠点へ戻って立て直す";
     const stage = gameStage(context);
     if (player.trailCharm && player.level >= 3 && !state.wardenDefeated) return "南東の道番が守りの護石を持つ";
     if (stage === "scales") return player.armor === 0 ? "近場で稼ぎ 革鎧を買う" : "遠方ほど鱗と報酬が良い";
@@ -125,6 +125,7 @@
     if (type === "elder") return "長老";
     if (type === "smith") return "鍛冶屋";
     if (type === "healer") return "薬師";
+    if (type === "frontier") return "補給隊";
     return "人";
   }
 

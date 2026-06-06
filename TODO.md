@@ -109,6 +109,9 @@ The current game is roughly a 20-minute route. Future work must actively grow it
 * Added volume-expansion planning: larger world, multiple towns, dungeons, varied monsters, and real `もちもの` inventory are now explicit priorities.
 * Added the southwest mine as a distinct spawn region.
 * Added the `泡吐き` mine monster with slowing bubble projectiles and stamina pressure.
+* Added the southwest frontier camp as the first remote safe base outside the starting village.
+* Added a second recovery circle and `frontier` supply NPC near the southwest mine route.
+* Verified the frontier camp safe zone, recovery circle, supply purchase, and monster-entry blocking in the VM smoke script.
 
 ## Critical Playtest Issues - Addressed This Pass
 
