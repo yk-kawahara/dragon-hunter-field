@@ -364,6 +364,23 @@ function assertStoryClearFlow() {
   return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported };
 }
 
+function assertMineContent() {
+  const { definitions: d, state, player, runtime } = createRuntime();
+  assert(Boolean(d.monsterTypes.bubbler), "bubbler monster definition should exist");
+  player.x = 39 * d.TILE;
+  player.y = 67 * d.TILE;
+  assert(runtime.currentRegion() === "mine", "southwest mine area should use mine region");
+  const minePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(
+    globalThis.DRAGON_HUNTER_CONTEXT.createContextFactory(runtime).spawn(),
+    "mine",
+  );
+  assert(minePool.includes("bubbler"), "mine spawn pool should include bubbler");
+  runtime.spawnMonster("bubbler", player.x + d.TILE * 2, player.y);
+  const bubbler = state.monsters.find((monster) => monster.type === "bubbler");
+  assert(bubbler && bubbler.name === "泡吐き", "bubbler should spawn with readable name");
+  return { region: runtime.currentRegion(), minePool, bubbler: bubbler.name };
+}
+
 function assertScriptLoadSmoke() {
   installBrowserStubs();
   loadScripts(SCRIPT_ORDER);
@@ -382,6 +399,7 @@ function main() {
   const map = assertMapReachability();
   const save = assertSaveLoadAndEquipment();
   const story = assertStoryClearFlow();
+  const mine = assertMineContent();
 
   // Run full script-load smoke last in a fresh Node process context is not possible here,
   // but it is useful after the logic-only tests because it also loads src/game.js.
@@ -401,7 +419,7 @@ function main() {
   assert(child.status === 0, child.stderr || child.stdout || "script load smoke failed");
   const scriptLoad = JSON.parse(child.stdout.trim());
 
-  console.log(JSON.stringify({ ok: true, map, save, story, scriptLoad }, null, 2));
+  console.log(JSON.stringify({ ok: true, map, save, story, mine, scriptLoad }, null, 2));
 }
 
 main();

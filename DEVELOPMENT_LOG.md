@@ -294,8 +294,8 @@
 - Design impact:
   - The southwest mine becomes a differentiated risky destination, not only a 500G cache.
   - This starts the requested direction of larger maps plus more varied monster behavior.
-- Verification to run after this pass:
-  - Syntax checks for all JS files.
-  - `scripts/verify-game-smoke.js`.
-  - `git diff --check`.
+- Verification:
+  - Syntax checks passed for all JavaScript files under `src/` and `scripts/`.
+  - `scripts/verify-game-smoke.js` passed and now reports `mine.region === "mine"` plus `泡吐き` in the mine spawn pool.
+  - `git diff --check` passed with line-ending warnings only.
   - Optional real browser QA remains desirable for the new sprite and mine route.

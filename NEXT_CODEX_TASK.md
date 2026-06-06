@@ -173,6 +173,9 @@ Recent gameplay completion result:
 * Startup now shows a New Game / Continue menu instead of automatically loading the latest save.
 * Elder report now shows a final clear panel and `N: はじめから` guidance.
 * Pressing `N` on the final clear screen starts a fresh New Game through the existing reset flow.
+* Volume expansion direction is now explicit: larger maps, multiple towns, varied monsters, real inventory, and equipable accessories.
+* Southwest mine is now treated as a distinct `mine` region.
+* New mine monster `泡吐き` fires slowing bubble projectiles and pressures stamina.
 
 ## First Task For Next Codex
 
@@ -188,8 +191,9 @@ Start with real browser/manual verification, then continue gameplay content only
 8. Perform a full manual playthrough if possible.
 9. Verify the ending panel after elder report and confirm `N` starts from level 1 with unopened chests and no clear flags.
 10. Manually tune the southeast Warden route if it feels too hard, too easy, or too disconnected from the survival-range loop.
-11. If the route feels good, the next content pass should add another survival-range reward or route event, not more refactoring.
-12. Update documentation with exact verification results and commit with a clear message if changes are made.
+11. Verify the southwest mine route, `泡吐き` spawn/projectiles, and the `southwest-mine-cache` reward.
+12. If the route feels good, the next content pass should add a second town/frontier base or start the real `もちもの` inventory, not more refactoring.
+13. Update documentation with exact verification results and commit with a clear message if changes are made.
 
 ## Recommended Prompt
 
@@ -225,6 +229,9 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEV
 * Wisp / Guardian / Dragon projectiles.
 * Southeast Warden projectile and stamina-drain contact behavior.
 * Aegis Charm fire/projectile damage reduction.
+* Southwest mine region spawn.
+* `泡吐き` bubble projectile, slow, and stamina pressure.
+* `southwest-mine-cache` reachability and one-time reward persistence.
 * Slime SLOW, bat stamina reduction, fire BURN.
 * Monster defeat EXP/gold/drop behavior.
 * Level-up behavior.
