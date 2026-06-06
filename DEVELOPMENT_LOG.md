@@ -230,3 +230,21 @@
   - Real visual confirmation of the Warden marker/sprite remains pending.
 - Remaining risk:
   - Manual playtesting is needed to tune Warden difficulty, whether level 3 is the right timing, and whether the Aegis Charm reward feels strong enough without trivializing the Red Dragon.
+
+## 2026-06-06 Start Screen / Replay Flow Pass
+- Goal: fix a play-flow issue where the game always continued from the current save, making it awkward or impossible to replay from level 1 after clearing without manually deleting browser storage.
+- Implemented a start screen overlay with:
+  - `はじめから`
+  - `つづきから`
+- Continue is disabled when no save exists.
+- The game now creates the map and draws the initial screen, then waits for the player to choose New Game or Continue before starting the main loop.
+- New Game calls the reset flow, removes the saved data, and starts from the initial level 1 state.
+- Fixed reset behavior so opened chest state is cleared along with discoveries, boss flags, clear flags, charms, equipment, and inventory.
+- Adjusted the VM canvas stub to support initial rendering during script-load smoke checks.
+- Verification:
+  - Bundled Node syntax checks passed for `src/game.js` and `src/systems/save.js`.
+  - `scripts/verify-game-smoke.js` passed after the start-screen change.
+  - `git diff --check` passed with line-ending warnings only.
+- Remaining risk:
+  - Real browser QA should verify the actual start screen visuals and clicking/tapping `はじめから` / `つづきから`.
+  - Manual replay-after-clear should be tested by clearing the game, reloading, choosing `はじめから`, and confirming level 1 / unopened chests / no clear state.

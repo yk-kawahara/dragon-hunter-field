@@ -13,6 +13,7 @@ Current focus:
 * Exploration should naturally lead players farther from the village.
 * Reward persistence and equipment safety.
 * The player must never become weaker because of treasure reopening or save/load behavior.
+* Startup flow must support both replay from level 1 and continuing an existing save.
 * Consider an item or equipment inventory only after one-time rewards are safe.
 * Prepare `src/game.js` for safe behavior-neutral refactoring before major new systems are added.
 ---
@@ -279,6 +280,24 @@ Implemented:
 Verified:
 
 * VM smoke now covers Warden reachability, Warden spawn/defeat, Aegis Charm persistence, and confirms Warden defeat does not accidentally count as Guardian defeat.
+
+### Start Flow Pass
+
+Problem:
+
+* The game always loaded the existing save on startup. After clearing the game, the player could not easily replay from level 1 without manually clearing browser storage.
+
+Implemented:
+
+* Added a start screen with `はじめから` and `つづきから`.
+* Continue is disabled when no save data exists.
+* Startup no longer begins the main loop until the player chooses a start option.
+* New Game clears the save and resets opened chests, discoveries, boss flags, clear flags, equipment, charms, and inventory.
+
+Verified:
+
+* VM smoke passes after the new startup flow.
+* `resetGame` now clears opened chest state as well as discovered hidden rewards.
 
 ### Playtest Improvement Pass Cycle 9
 
@@ -569,6 +588,7 @@ Current automated verification:
 * Balance spot-check supports the intended power reversal: leather sharply reduces early slime damage and chain armor can make weak enemies nearly harmless.
 * Script-order VM smoke passes for all 22 `index.html` scripts, including `src/data/maps/world.js` and `src/data/audio.js`.
 * Save/load VM smoke passes for opened chests, discoveries, equipment, charms, boss flags, elder report state, and weak-equipment anti-downgrade guards.
+* Start-screen VM script-load smoke passes; game initialization renders the initial screen and waits for New Game / Continue selection.
 * Fixed map preview exists at `docs/world-map-preview.png` / `docs/world-map-preview.svg` and was visually inspected for the village, North Forest, river, dragon cave, and east/southeast expansion.
 * `scripts/verify-game-smoke.js` now provides repeatable VM verification for script order, map reachability, save/load, equipment anti-downgrade, Guardian, Red Dragon, and elder report flow.
 * `scripts/generate-map-preview.ps1` regenerates both PNG and SVG fixed-map previews.

@@ -22,6 +22,13 @@ const ui = {
   items: Array.from(document.querySelectorAll("[data-item]")),
 };
 
+const startUi = {
+  screen: document.getElementById("startScreen"),
+  newGame: document.getElementById("newGameButton"),
+  continueGame: document.getElementById("continueButton"),
+  info: document.getElementById("continueInfo"),
+};
+
 // Loaded globals -----------------------------------------------------------
 const gameDefinitions = globalThis.DRAGON_HUNTER_DEFINITIONS;
 if (!gameDefinitions) {
@@ -36,6 +43,7 @@ const {
   WORLD_SCALE,
   MAP_W,
   MAP_H,
+  SAVE_KEY,
 } = gameDefinitions;
 
 canvas.width = W;
@@ -198,6 +206,7 @@ if (!stateHelpers) {
 
 const state = stateHelpers.createInitialState();
 const player = stateHelpers.createInitialPlayer();
+let gameStarted = false;
 
 // Context factory ----------------------------------------------------------
 const contexts = contextHelpers.createContextFactory({
@@ -812,6 +821,65 @@ function syncBgmToState() {
   audio.playBgm(key, { fadeMs: 700 });
 }
 
+// Start menu ---------------------------------------------------------------
+function hasSaveData() {
+  try {
+    return Boolean(localStorage.getItem(SAVE_KEY));
+  } catch {
+    return false;
+  }
+}
+
+function setupStartMenu() {
+  const hasSave = hasSaveData();
+  startUi.continueGame.disabled = !hasSave;
+  startUi.info.textContent = hasSave ? "Enter: つづき / N: はじめから" : "保存データなし / N または はじめから";
+  startUi.newGame.addEventListener("click", () => startGame("new"));
+  startUi.continueGame.addEventListener("click", () => startGame("continue"));
+  window.addEventListener("keydown", handleStartMenuKey);
+  startUi.screen.classList.remove("is-hidden");
+}
+
+function handleStartMenuKey(event) {
+  if (gameStarted) return;
+  if (event.code === "KeyN") {
+    event.preventDefault();
+    startGame("new");
+  } else if (event.code === "Enter" || event.code === "Space") {
+    event.preventDefault();
+    startGame(hasSaveData() ? "continue" : "new");
+  } else if (event.code === "KeyC" && hasSaveData()) {
+    event.preventDefault();
+    startGame("continue");
+  }
+}
+
+function startGame(mode) {
+  if (gameStarted) return;
+  gameStarted = true;
+  window.removeEventListener("keydown", handleStartMenuKey);
+  startUi.screen.classList.add("is-hidden");
+  bindControls();
+
+  if (mode === "continue" && loadGame()) {
+    say("つづきから再開", 1200);
+  } else {
+    resetGame();
+    say("はじめから開始", 1600);
+  }
+
+  seedOpeningMonsters();
+  state.last = performance.now();
+  canvas.focus();
+  requestAnimationFrame(loop);
+}
+
+function seedOpeningMonsters() {
+  for (let i = 0; i < 4; i += 1) {
+    spawnMonster(i % 2 ? "bat" : "slime", (22 + i * 5) * TILE, (43 + (i % 2) * 6) * TILE);
+  }
+}
+
 // Main loop ----------------------------------------------------------------
 function loop(now) {
   const dt = Math.min(40, now - state.last);
@@ -835,15 +903,10 @@ function loop(now) {
 // Boot ---------------------------------------------------------------------
 function init() {
   createMap();
-  bindControls();
   bindAudio();
-  if (!loadGame()) {
-    say("長老が竜の鱗を求めている", 2600);
-  }
-  for (let i = 0; i < 4; i += 1) {
-    spawnMonster(i % 2 ? "bat" : "slime", (22 + i * 5) * TILE, (43 + (i % 2) * 6) * TILE);
-  }
-  requestAnimationFrame(loop);
+  updateUi();
+  draw();
+  setupStartMenu();
 }
 
 init();

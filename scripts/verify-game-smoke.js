@@ -48,8 +48,10 @@ function assertScriptOrder() {
 
 function installBrowserStubs() {
   const noop = () => {};
-  const ctx = new Proxy({}, { get: () => noop, set: () => true });
+  const ctxTarget = {};
+  const ctx = new Proxy(ctxTarget, { get: (target, property) => target[property] || noop, set: (target, property, value) => { target[property] = value; return true; } });
   ctx.measureText = (text) => ({ width: String(text).length * 6 });
+  ctx.createLinearGradient = () => ({ addColorStop: noop });
   const canvas = {
     width: 0,
     height: 0,
@@ -76,9 +78,14 @@ function installBrowserStubs() {
     removeEventListener: noop,
     setAttribute: noop,
   });
+  const elements = new Map();
 
   globalThis.document = {
-    getElementById: (id) => (id === "game" ? canvas : { ...makeElement("div"), id }),
+    getElementById: (id) => {
+      if (id === "game") return canvas;
+      if (!elements.has(id)) elements.set(id, { ...makeElement("div"), id });
+      return elements.get(id);
+    },
     querySelectorAll: () => [],
     createElement: makeElement,
     addEventListener: noop,
@@ -383,7 +390,12 @@ function main() {
     const vm = require("vm");
     (${installBrowserStubs.toString()})();
     for (const file of ${JSON.stringify(SCRIPT_ORDER)}) vm.runInThisContext(fs.readFileSync(file, "utf8"), { filename: file });
-    console.log(JSON.stringify({ scripts: ${SCRIPT_ORDER.length}, saveKey: globalThis.DRAGON_HUNTER_DEFINITIONS.SAVE_KEY, mapSize: [globalThis.DRAGON_HUNTER_WORLD_MAP.width, globalThis.DRAGON_HUNTER_WORLD_MAP.height], loaded: Boolean(globalThis.DRAGON_HUNTER_MAP) }));
+    const key = globalThis.DRAGON_HUNTER_DEFINITIONS.SAVE_KEY;
+    if (document.getElementById("continueButton").disabled !== true) throw new Error("Continue should be disabled without save data");
+    localStorage.setItem(key, JSON.stringify({ player: { hp: 1 } }));
+    startGame("new");
+    if (localStorage.getItem(key) !== null) throw new Error("New Game should clear save data");
+    console.log(JSON.stringify({ scripts: ${SCRIPT_ORDER.length}, saveKey: key, mapSize: [globalThis.DRAGON_HUNTER_WORLD_MAP.width, globalThis.DRAGON_HUNTER_WORLD_MAP.height], loaded: Boolean(globalThis.DRAGON_HUNTER_MAP), startMenu: true }));
   `;
   const child = require("child_process").spawnSync(process.execPath, ["-e", smokeScript], { encoding: "utf8" });
   assert(child.status === 0, child.stderr || child.stdout || "script load smoke failed");

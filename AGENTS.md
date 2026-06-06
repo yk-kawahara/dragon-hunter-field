@@ -751,6 +751,31 @@ Players should be able to easily understand:
 If a system exists but the player cannot easily see or understand it, improving visibility is often more valuable than adding new mechanics.
 
 
+\### Start and Save Flow Rule
+
+
+
+The game must not automatically force the latest save on startup.
+
+
+
+Startup should allow:
+
+
+
+\* New Game / はじめから.
+
+\* Continue / つづきから when save data exists.
+
+
+
+After the player clears the game, they must still be able to start again from level 1 without manually clearing browser storage.
+
+
+
+New Game must reset persistent progression, including opened chests, discovered rewards, boss flags, clear flags, equipment, charms, and inventory.
+
+
 
 \### Playtest Before Expansion Rule
 

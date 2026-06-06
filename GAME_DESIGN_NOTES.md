@@ -281,21 +281,25 @@ Current implemented progression:
 
 
 
-1\. Start in the village and learn the objective.
+1\. Choose `はじめから` or `つづきから` from the start screen.
 
-2\. Leave town, defeat roaming monsters, and gain EXP, gold, and items.
+2\. Start in the village and learn the objective.
 
-3\. Explore fields and open treasure chests for supplies and upgrades.
+3\. Leave town, defeat roaming monsters, and gain EXP, gold, and items.
 
-4\. Collect 3 dragon scales.
+4\. Explore fields and open treasure chests for supplies and upgrades.
 
-5\. Reach level 4 and defeat the North Forest Guardian to obtain the seal crest.
+5\. Collect 3 dragon scales.
 
-6\. Enter the northeast dragon cave.
+6\. Reach level 4 and defeat the North Forest Guardian to obtain the seal crest.
 
-7\. Defeat the red dragon.
+7\. Enter the northeast dragon cave.
 
-8\. Return to the village and report victory for the final clear state.
+8\. Defeat the red dragon.
+
+9\. Return to the village and report victory for the final clear state.
+
+10\. After clearing, the player can return to the start screen on reload and choose `はじめから` to replay from level 1.
 
 
 
@@ -743,6 +747,8 @@ The ending should reinforce that the player has grown from a fragile village-bou
 \* One-time treasure and hidden discovery rewards persist across save/load and cannot be reacquired after reload.
 
 \* Equipment rewards are protected against downgrade: weaker or equal rewards leave the current weapon or armor equipped.
+
+\* Start screen supports `はじめから` and `つづきから`, so a cleared save no longer traps the player in the completed state.
 
 
 

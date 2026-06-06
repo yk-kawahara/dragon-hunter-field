@@ -126,6 +126,8 @@ Design focus for the next gameplay pass:
 * Improved small-screen CSS after Edge rendering QA: portrait uses a stronger single-column layout, and small landscape keeps touch controls fixed near the bottom.
 * Added the southeast `Southeast Warden` optional midboss after traveler bell + level 3.
 * Added `aegisCharm` persistence and effects: fire/projectile damage reduction as a deeper-route survival reward.
+* Added a start screen with `はじめから` and `つづきから`.
+* New Game now clears opened chest state as well as other progression/save fields, so a cleared save no longer prevents replaying from level 1.
 
 ## Remaining Critical / High Priority
 
@@ -135,6 +137,7 @@ Design focus for the next gameplay pass:
 * Perform a full manual playthrough from new save to red dragon defeat and elder report.
 * Verify that enemy AI, contact combat, projectiles, monster defeat, level-up, Guardian defeat, red dragon defeat, and elder report still work after the `monsters.js` split.
 * Verify save/load after opened chests, discovered hidden rewards, equipment upgrades, seal crest, boss defeat, and elder report.
+* Verify start screen behavior in a real browser: no save disables Continue, Continue loads saved progress, New Game clears a cleared save and starts from level 1.
 * Verify objective guidance and context prompts fit the small mobile-style screen.
 * Verify save/load, objective guidance, context prompts, and script loading in a real browser. VM smoke tests already pass, but browser QA is still required.
 * Verify `docs/world-map-preview.png` reflects the current `WORLD_MAP` after any terrain edits.
@@ -156,6 +159,7 @@ Recent gameplay completion result:
 * The southeast route now has a follow-up midboss: `Southeast Warden`.
 * Defeating the Warden grants the Aegis Charm, which reduces fire/projectile damage and helps dragon-route preparation.
 * VM smoke verifies reachability, persistence, stat effects, Warden spawn/defeat, and that Warden defeat does not count as Guardian defeat.
+* Startup now shows a New Game / Continue menu instead of automatically loading the latest save.
 
 ## First Task For Next Codex
 
@@ -166,15 +170,16 @@ Start with verification, then continue gameplay content only if the route still 
 3. Run syntax checks on every JavaScript file under `src/`.
 4. Run `scripts/verify-game-smoke.js`.
 5. Run `git diff --check`.
-6. Launch the game in a real browser if available and perform smoke QA.
-7. Perform a full manual playthrough if possible.
-8. Manually tune the southeast Warden route if it feels too hard, too easy, or too disconnected from the survival-range loop.
-9. If the route feels good, the next content pass should add a small elder/ending report sequence or another survival-range reward, not more refactoring.
-10. Update documentation with exact verification results and commit with a clear message if changes are made.
+6. Launch the game in a real browser if available and verify the start screen first.
+7. Check New Game, Continue, and replay-after-clear behavior before tuning content.
+8. Perform a full manual playthrough if possible.
+9. Manually tune the southeast Warden route if it feels too hard, too easy, or too disconnected from the survival-range loop.
+10. If the route feels good, the next content pass should add a small elder/ending report sequence or another survival-range reward, not more refactoring.
+11. Update documentation with exact verification results and commit with a clear message if changes are made.
 
 ## Recommended Prompt
 
-Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEVELOPMENT_LOG.md`, and `NEXT_CODEX_TASK.md` first. The project now has a split `src/data` / `src/core` / `src/systems` architecture and a fixed hand-editable world map in `src/data/maps/world.js`. This is a gameplay-completion project, not a refactor project. Start with syntax checks, `scripts/verify-game-smoke.js`, `git diff --check`, and real browser QA if available. Then play or simulate the route: village -> southeast outpost traveler bell -> level 3 -> Southeast Warden -> Aegis Charm -> Guardian -> Red Dragon -> elder report. If it feels thin, tune the Warden/reward balance or add a small ending/report sequence. Do not do architecture-only work.
+Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEVELOPMENT_LOG.md`, and `NEXT_CODEX_TASK.md` first. This is a gameplay-completion project, not a refactor project. Start with syntax checks, `scripts/verify-game-smoke.js`, `git diff --check`, and real browser QA if available. First verify the start screen: no-save Continue disabled, Continue loads progress, New Game clears a cleared save and starts from level 1. Then play or simulate the route: village -> southeast outpost traveler bell -> level 3 -> Southeast Warden -> Aegis Charm -> Guardian -> Red Dragon -> elder report. If it feels thin, tune the Warden/reward balance or add a small ending/report sequence. Do not do architecture-only work.
 
 ## Verification Items
 
@@ -196,6 +201,8 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEV
 * Gathering.
 * Item use: medicine, fire bottle, ward.
 * Save/load from localStorage key `dragon-hunter-field-save-v2-32px`.
+* Start screen New Game / Continue behavior.
+* Replay after clear via New Game.
 * Enemy spawn in grassland, Wilds, North Forest, East Forest/River, and Dragon Cave.
 * Enemy movement and contact combat.
 * Boar charge.

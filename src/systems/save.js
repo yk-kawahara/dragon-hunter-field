@@ -158,6 +158,7 @@
     state.floaters = [];
     state.particles = [];
     state.projectiles = [];
+    state.chests = new Set();
     state.discoveries = new Set();
     state.spawnedBoss = false;
     state.bossDefeated = false;
