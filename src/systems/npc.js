@@ -61,6 +61,7 @@
     if (npc.type === "elder") {
       if (state.bossDefeated) {
         state.elderReported = true;
+        state.clearPanelOpen = true;
         say("長老「竜は封じられた。村は救われた」", 4200);
       } else if (canChallengeDragon(context)) {
         say("長老「封印は解けた。北東の竜洞へ向かえ」");
@@ -156,10 +157,12 @@
       say(`封印が拒む: ${missing.join(" / ")}`, 2600);
       return;
     }
-    if (!state.spawnedBoss) {
+
+    const dragonAlive = state.monsters.some((monster) => monster.type === "dragon" && monster.hp > 0);
+    if (!state.spawnedBoss || !dragonAlive) {
       state.spawnedBoss = true;
       spawnMonster("dragon", 51 * TILE - worldPx(4), 14 * TILE);
-      say("赤竜が目覚めた!");
+      say(dragonAlive ? "赤竜が目覚めた!" : "赤竜が再び姿を現した!");
     } else {
       say("洞穴の奥から熱風が来る");
     }

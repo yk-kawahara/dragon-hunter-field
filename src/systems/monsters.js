@@ -365,11 +365,15 @@
 
   function levelUp(context) {
     const { player, burst, say } = requireMonsterContext(context);
+    player.strength = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+    player.resilience = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
     while (player.xp >= player.xpNext) {
       player.xp -= player.xpNext;
       player.level += 1;
-      player.xpNext = Math.floor(player.xpNext * 1.45 + 18);
-      player.hpMax += 12;
+      player.xpNext = Math.floor(player.xpNext * 1.15 + 18);
+      player.hpMax += 9;
+      player.strength += 3;
+      player.resilience += 2;
       player.hp = player.hpMax;
       burst(player.x + 5, player.y + 4, "#fff36b", 18);
       say(`LEVEL UP! LV ${player.level}`);

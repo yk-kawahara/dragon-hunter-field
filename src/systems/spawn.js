@@ -105,6 +105,11 @@
     if (isPassableRect(actor)) spawnMonster(context, typeName, x, y);
   }
 
+  function hasLiveMonster(context, typeName) {
+    const { state } = requireSpawnContext(context);
+    return state.monsters.some((monster) => monster.type === typeName && monster.hp > 0);
+  }
+
   function monsterChoice(context) {
     const { irand } = requireSpawnContext(context);
     const pool = monsterPoolForRegion(context, currentRegion(context));
@@ -275,6 +280,14 @@
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver || state.victory) return;
+
+    if (state.spawnedWarden && !state.wardenDefeated && !hasLiveMonster(context, "warden")) {
+      state.spawnedWarden = false;
+    }
+    if (state.spawnedGuardian && !state.guardianDefeated && !hasLiveMonster(context, "guardian")) {
+      state.spawnedGuardian = false;
+    }
+
     if (wardenReady(context) && !state.spawnedWarden && playerNearWardenSite(context)) {
       state.spawnedWarden = true;
       spawnMonster(context, "warden", WARDEN_SITE.x * TILE, WARDEN_SITE.y * TILE);
@@ -302,6 +315,7 @@
     areaDangerText,
     guardianReady,
     wardenReady,
+    hasLiveMonster,
     playerNearGuardianSite,
     playerNearWardenSite,
     updateStoryEvents,

@@ -209,7 +209,7 @@ function draw(context) {
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
   if (state.victory && !state.elderReported) drawVictoryBanner();
-  if (state.elderReported) drawEndingOverlay();
+  if (state.clearPanelOpen) drawEndingOverlay();
 
   ctx.restore();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1528,7 +1528,7 @@ function drawEndingOverlay() {
   ctx.fillStyle = "#d7e2ea";
   ctx.fillText("村に朝が戻り 旅は語り継がれる", W / 2, 84);
   ctx.fillStyle = "#74ff8f";
-  ctx.fillText("N: はじめから", W / 2, 103);
+  ctx.fillText("N: 旅を続ける", W / 2, 103);
 }
 
 function drawVictoryBanner() {

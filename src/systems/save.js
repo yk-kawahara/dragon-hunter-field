@@ -44,6 +44,8 @@
         hp: player.hp,
         hpMax: player.hpMax,
         level: player.level,
+        strength: player.strength,
+        resilience: player.resilience,
         xp: player.xp,
         xpNext: player.xpNext,
         gold: player.gold,
@@ -85,6 +87,8 @@
       const data = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
       if (!data?.player) return false;
       Object.assign(player, data.player);
+      player.strength = Number.isFinite(data.player.strength) ? data.player.strength : 7 + player.level * 2;
+      player.resilience = Number.isFinite(data.player.resilience) ? data.player.resilience : 1 + player.level;
       player.bombs ??= 1;
       player.wards ??= 0;
       player.sealCrest = Boolean(player.sealCrest);
@@ -112,6 +116,11 @@
       state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
       state.spawnedWarden = state.wardenDefeated ? Boolean(data.spawnedWarden) : false;
       state.elderReported = Boolean(data.elderReported);
+      state.clearPanelOpen = false;
+      state.gameOver = false;
+      state.inventoryOpen = false;
+      state.pointerMove = null;
+      state.victory = Boolean(data.bossDefeated) && !state.elderReported;
       state.chests = savedIdSet(data.chests, rewardIds(TREASURE_CHESTS));
       state.discoveries = savedIdSet(data.discoveries, rewardIds(DISCOVERY_POINTS));
       say("旅を再開しました");
@@ -129,9 +138,11 @@
       w: 10 * WORLD_SCALE,
       h: 12 * WORLD_SCALE,
       dir: "down",
-      hp: 46,
-      hpMax: 46,
+      hp: 26,
+      hpMax: 26,
       level: 1,
+      strength: 9,
+      resilience: 2,
       xp: 0,
       xpNext: 34,
       gold: 18,
@@ -181,6 +192,7 @@
     state.spawnedWarden = false;
     state.wardenDefeated = false;
     state.elderReported = false;
+    state.clearPanelOpen = false;
     state.gameOver = false;
     state.victory = false;
     state.healCooldown = 0;

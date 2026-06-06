@@ -94,7 +94,7 @@
       if (event.code === "KeyQ") cycleItem(-1);
       if (event.code === "KeyE") cycleItem(1);
       if (event.code === "KeyR" && state.gameOver) resetGame();
-      if (event.code === "KeyN" && state.elderReported) resetGame();
+      if (event.code === "KeyN" && state.clearPanelOpen) resetGame();
     });
 
     window.addEventListener("keyup", (event) => {

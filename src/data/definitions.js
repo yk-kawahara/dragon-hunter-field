@@ -76,9 +76,9 @@
   const armorNames = ["布服", "革鎧", "鎖鎧", "鋼鎧", "竜鎧"];
   const weaponTraits = ["基本", "正面", "側撃", "背撃", "竜特効"];
   const armorTraits = ["軽装", "疾走", "受け", "護符", "竜耐性"];
-  const weaponCosts = [0, 38, 90, 180, 340];
-  const armorCosts = [0, 34, 86, 175, 330];
-  const armorDefense = [0, 5, 10, 17, 26];
+  const weaponCosts = [0, 90, 320, 880, 1120];
+  const armorCosts = [0, 60, 290, 660, 900];
+  const armorDefense = [0, 5, 12, 26, 38];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
   const itemOrder = ["potion", "bomb", "ward"];
@@ -141,7 +141,7 @@
     },
     bat: {
       name: "コウモリ",
-      hp: 14,
+      hp: 24,
       atk: 11,
       def: 0,
       speed: 34 * WORLD_SCALE,
@@ -154,9 +154,9 @@
     },
     boar: {
       name: "突進獣",
-      hp: 34,
+      hp: 54,
       atk: 25,
-      def: 2,
+      def: 6,
       speed: 25 * WORLD_SCALE,
       xp: 24,
       gold: 14,
@@ -166,9 +166,9 @@
     },
     wisp: {
       name: "火霊",
-      hp: 28,
+      hp: 38,
       atk: 27,
-      def: 1,
+      def: 4,
       speed: 22 * WORLD_SCALE,
       xp: 32,
       gold: 18,
@@ -178,9 +178,9 @@
     },
     bubbler: {
       name: "泡吐き",
-      hp: 46,
-      atk: 18,
-      def: 2,
+      hp: 66,
+      atk: 38,
+      def: 12,
       speed: 20 * WORLD_SCALE,
       xp: 30,
       gold: 20,
@@ -190,9 +190,9 @@
     },
     dragonling: {
       name: "小竜",
-      hp: 58,
-      atk: 42,
-      def: 5,
+      hp: 158,
+      atk: 62,
+      def: 25,
       speed: 21 * WORLD_SCALE,
       xp: 62,
       gold: 42,
@@ -202,24 +202,24 @@
     },
     guardian: {
       name: "森の守護者",
-      hp: 150,
+      hp: 450,
       atk: 52,
-      def: 6,
+      def: 26,
       speed: 24 * WORLD_SCALE,
-      xp: 180,
-      gold: 140,
+      xp: 118,
+      gold: 340,
       color: "#55c7a0",
       shadow: "#1d5c4b",
       midboss: true,
       drop: 1,
     },
     warden: {
-      name: "Southeast Warden",
-      hp: 118,
+      name: "番人",
+      hp: 1450,
       atk: 46,
-      def: 5,
+      def: 60,
       speed: 28 * WORLD_SCALE,
-      xp: 150,
+      xp: 1550,
       gold: 125,
       color: "#6de4ff",
       shadow: "#1d4f78",
@@ -228,11 +228,11 @@
     },
     dragon: {
       name: "赤竜",
-      hp: 280,
+      hp: 2000,
       atk: 107,
-      def: 7,
+      def: 35,
       speed: 18 * WORLD_SCALE,
-      xp: 500,
+      xp: 1500,
       gold: 500,
       color: "#ec342d",
       shadow: "#7d0808",

@@ -27,13 +27,15 @@
   function playerAttack(context) {
     const { player } = requireCombatContext(context);
     const comboBonus = Math.min(8, Math.floor(player.combo / 2));
-    return 7 + player.level * 2 + player.weapon * 5 + comboBonus;
+    const strength = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+    return strength + player.weapon * 5 + comboBonus;
   }
 
   function playerDefense(context) {
     const { player } = requireCombatContext(context);
     const guardBonus = player.guard > 0 ? 9 + player.armor * 3 : 0;
-    return 1 + player.level + (armorDefense[player.armor] || 0) + guardBonus;
+    const resilience = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
+    return resilience + (armorDefense[player.armor] || 0) + guardBonus;
   }
 
   function playerMoveSpeed(context) {
