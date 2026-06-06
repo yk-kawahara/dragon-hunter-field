@@ -11,6 +11,11 @@
     throw new Error("DRAGON_HUNTER_MATH must be loaded before npc helpers");
   }
 
+  const rewardHelpers = globalThis.DRAGON_HUNTER_REWARDS;
+  if (!rewardHelpers) {
+    throw new Error("DRAGON_HUNTER_REWARDS must be loaded before npc helpers");
+  }
+
   const {
     TILE,
     WORLD_SCALE,
@@ -24,6 +29,7 @@
   } = definitions;
 
   const { centerOf } = mathHelpers;
+  const { addOwnedWeapon, addOwnedArmor, grantAccessory } = rewardHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
 
@@ -80,6 +86,8 @@
       if (player.gold >= cost) {
         player.gold -= cost;
         player[target] += 1;
+        if (target === "weapon") addOwnedWeapon(player, player.weapon);
+        else addOwnedArmor(player, player.armor);
         say(target === "weapon" ? `${weaponNames[player.weapon]}: ${weaponTraits[player.weapon]}` : `${armorNames[player.armor]}: ${armorTraits[player.armor]}`);
       } else {
         const name = target === "weapon" ? weaponNames[rank] : armorNames[rank];
@@ -120,7 +128,7 @@
         say("補給隊「ここで立て直せ。廃坑は泡に足を取られる」");
       } else if (!player.mineCharm && player.gold >= charmCost) {
         player.gold -= charmCost;
-        player.mineCharm = true;
+        grantAccessory(context, "mine", "泡除けの護符を買った。装備すると鉱山の泡に強くなる");
         player.wards = Math.min(9, player.wards + 1);
         say("補給隊から泡除けの護符を買った。廃坑で足を取られにくい");
       } else if (!player.mineCharm) {

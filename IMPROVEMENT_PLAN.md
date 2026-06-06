@@ -17,8 +17,9 @@ Current focus:
 * Reward persistence and equipment safety.
 * The player must never become weaker because of treasure reopening or save/load behavior.
 * Startup flow must support both replay from level 1 and continuing an existing save.
-* Build toward a real inventory where items, weapons, armor, and accessories can be inspected, equipped, and sold.
-* Accessories should eventually become equipment choices rather than only permanent flags.
+* Expand the now-implemented real `もちもの` inventory: items, weapons, armor, and accessories can be inspected, equipped, and sold where appropriate.
+* Accessories are now equipment choices. Continue adding more meaningful accessories and sidegrade gear.
+* Do not use implementation risk as a reason to avoid major gameplay systems explicitly requested by the user; handle risk through migration and verification.
 ---
 
 ## Volume Expansion Roadmap
@@ -47,11 +48,12 @@ The game should grow through playable content, not architecture work alone.
 
 ### Inventory And Equipment
 
-* Add a real `もちもの` menu.
-* Let the player inspect consumables, weapons, armor, and accessories.
-* Let the player choose weapon/armor/accessory equipment when sidegrades exist.
-* Let unwanted gear be sold for gold.
-* Convert current permanent charm flags into equipable accessories in a later focused pass.
+* Current state: a real `もちもの` menu exists.
+* The player can inspect consumables, weapons, armor, and accessories.
+* The player can equip owned weapons, armor, and one accessory.
+* Consumables and unequipped weapons/armor can be sold for gold.
+* Former permanent charm flags have started moving into equipable accessories.
+* Next inventory expansion should add more sidegrade gear, multiple accessory identities, buyback or shop stock integration, and clearer comparison text.
 
 ### First Implementation Direction
 
@@ -138,6 +140,29 @@ Current refactor guidance:
 * The next priority is verification and regression repair, not new architecture.
 * Gameplay content changes should wait until the refactored structure has passed browser QA and a full manual playthrough.
 * Player art now supports one-file-per-frame replacement through `assets/player/<direction>_<pose>.png`, so future character design iteration can focus on one 32x32 frame at a time.
+
+## Inventory Implementation Snapshot - 2026-06-06
+
+The first real inventory pass is implemented.
+
+Completed:
+
+* `もちもの` overlay with item / weapon / armor / accessory tabs.
+* Owned weapon and armor lists.
+* Owned accessories and one equipped accessory slot.
+* Consumable use from inventory.
+* Weapon, armor, and accessory equip from inventory.
+* Selling consumables and unequipped weapons/armor.
+* Save/load migration and persistence for inventory fields.
+* VM smoke tests for inventory behavior and accessory effect switching.
+
+Next:
+
+* Add more equipment content so inventory choices matter.
+* Add sidegrade weapons/armor instead of only rank progression.
+* Add a shop stock model and remote-town equipment.
+* Decide buyback or lock rules for unique accessories.
+* Real-browser QA the overlay in desktop and mobile-like viewports.
 
 Expected `index.html` script order:
 

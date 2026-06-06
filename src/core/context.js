@@ -202,6 +202,8 @@
           playerDefense: r.playerDefense,
           dashCost: r.dashCost,
           regenRate: r.regenRate,
+          refreshDerivedStats: r.refreshDerivedStats,
+          useSelectedItem: r.useSelectedItem,
         };
       },
 
@@ -217,6 +219,11 @@
           interact: r.interact,
           searchGround: r.searchGround,
           showStats: r.showStats,
+          toggleInventory: r.toggleInventory,
+          closeInventory: r.closeInventory,
+          moveInventory: r.moveInventory,
+          confirmInventory: r.confirmInventory,
+          sellInventorySelection: r.sellInventorySelection,
           saveGame: r.saveGame,
           selectItem: r.selectItem,
         };

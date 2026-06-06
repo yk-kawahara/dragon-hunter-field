@@ -266,6 +266,11 @@ const contexts = contextHelpers.createContextFactory({
   interact,
   searchGround,
   showStats,
+  toggleInventory,
+  closeInventory,
+  moveInventory,
+  confirmInventory,
+  sellInventorySelection,
   saveGame,
   selectItem,
   gameStage,
@@ -734,6 +739,26 @@ function cycleItem(step) {
 // UI facade ----------------------------------------------------------------
 function showStats() {
   return uiHelpers.showStats(contexts.ui());
+}
+
+function toggleInventory() {
+  return uiHelpers.toggleInventory(contexts.ui());
+}
+
+function closeInventory() {
+  return uiHelpers.closeInventory(contexts.ui());
+}
+
+function moveInventory(dx, dy) {
+  return uiHelpers.moveInventory(contexts.ui(), dx, dy);
+}
+
+function confirmInventory() {
+  return uiHelpers.confirmInventory(contexts.ui());
+}
+
+function sellInventorySelection() {
+  return uiHelpers.sellInventorySelection(contexts.ui());
 }
 
 function statsPanelPages() {

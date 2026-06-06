@@ -86,8 +86,9 @@ New volume-expansion priorities:
 * Add caves, towers, castles, mines, ruins, roads, bridges, and remote towns.
 * Add multiple towns/frontier bases with healing, restocking, stronger shops, hints, and new survival anchors.
 * Add varied monsters: bubbles, magic, poison, slow, summons, territorial enemies, and ranged pressure.
-* Build a real `もちもの` inventory for consumables, weapons, armor, accessories, equipment choice, and selling.
-* Convert current permanent charm flags into equipable accessories in a later pass.
+* Expand the implemented real `もちもの` inventory with more equipment choices, shop stock, sidegrade rewards, and clearer comparison.
+* Continue turning former permanent charm effects into meaningful accessory equipment choices.
+* Do not avoid major player-facing systems by citing implementation risk; implement playable first versions and verify them.
 
 First checkpoint:
 
@@ -178,6 +179,19 @@ Recent gameplay completion result:
 * New mine monster `泡吐き` fires slowing bubble projectiles and pressures stamina.
 * Southwest frontier camp is now the first remote safe base: it has a safe-zone boundary, recovery circle, visible camp props, and a `frontier` supply NPC.
 * Frontier supply now sells a mine charm / bubble ward. It persists through save/load and reduces `泡吐き` contact, bubble projectile damage, slow duration, and stamina loss.
+* A real `もちもの` inventory now exists.
+* The former `強さ` command is now `もちもの`.
+* Inventory controls:
+  * `I` / `M` / command button opens the inventory.
+  * Left/right changes category.
+  * Up/down selects an entry.
+  * Enter/Space uses consumables or equips gear.
+  * `S` sells consumables or unequipped weapons/armor.
+  * Esc closes the inventory.
+* Save/load now persists owned weapons, owned armor, owned accessories, and the equipped accessory.
+* Former charm flags are migrated into owned accessories.
+* Active effects now come from the equipped accessory slot: hunter stamina, regeneration, traveler movement, Aegis defense, or mine/bubble resistance.
+* VM smoke verifies inventory equip/sell behavior, accessory effect switching, and save/load persistence.
 
 ## First Task For Next Codex
 
@@ -194,12 +208,14 @@ Start with real browser/manual verification, then continue gameplay content only
 9. Verify the ending panel after elder report and confirm `N` starts from level 1 with unopened chests and no clear flags.
 10. Manually tune the southeast Warden route if it feels too hard, too easy, or too disconnected from the survival-range loop.
 11. Verify the southwest mine route, `泡吐き` spawn/projectiles, and the `southwest-mine-cache` reward.
-12. If the route feels good, the next content pass should either expand the southwest camp into a stronger shop/town step, add the next dungeon route, or start the real `もちもの` inventory/accessory screen, not more refactoring.
-13. Update documentation with exact verification results and commit with a clear message if changes are made.
+12. If the route feels good, the next content pass should expand the inventory with actual sidegrade content: remote shop stock, treasure-only gear, accessories with clear tradeoffs, and sell/buyback rules.
+13. Verify the `もちもの` overlay in a real browser: canvas fit, keyboard operation, item use, gear equip, accessory equip, selling, save/load, and touch usability.
+14. Then add content that makes inventory choices matter: at least one new weapon, one new armor, one new accessory, and a place to buy or find them.
+15. Update documentation with exact verification results and commit with a clear message if changes are made.
 
 ## Recommended Prompt
 
-Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEVELOPMENT_LOG.md`, and `NEXT_CODEX_TASK.md` first. This is a gameplay-completion project, not a refactor project. Start with syntax checks, `scripts/verify-game-smoke.js`, `git diff --check`, and real browser QA if available. First verify the start screen: no-save Continue disabled, Continue loads progress, New Game clears a cleared save and starts from level 1. Then play or simulate the route: village -> southeast outpost traveler bell -> level 3 -> Southeast Warden -> Aegis Charm -> Guardian -> Red Dragon -> elder report -> final clear panel -> `N` replay. If it feels thin, tune the Warden/reward balance or add another survival-range reward/event. Do not do architecture-only work.
+Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEVELOPMENT_LOG.md`, and `NEXT_CODEX_TASK.md` first. This is a gameplay-completion project, not a refactor project. Do not avoid bold player-facing systems by citing risk. Start with syntax checks, `scripts/verify-game-smoke.js`, `git diff --check`, and real browser QA if available. Verify the new `もちもの` inventory first: open/close, category switching, item use, weapon/armor equip, accessory equip, selling unequipped gear, save/load persistence, and compact-canvas fit. Then add sidegrade inventory content: at least one new weapon, one new armor, one new accessory, and a shop/treasure route that makes choosing equipment matter for survival-range expansion. Do not do architecture-only work.
 
 ## Verification Items
 
@@ -236,6 +252,13 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEV
 * `southwest-mine-cache` reachability and one-time reward persistence.
 * Southwest frontier camp safe-zone boundary, recovery circle, `frontier` supply NPC, and monster-entry blocking.
 * Mine charm purchase at the frontier camp, save/load persistence, and damage/status reduction against `泡吐き`.
+* `もちもの` inventory open/close with keyboard.
+* Inventory category switching.
+* Consumable use from inventory.
+* Weapon and armor equip from owned lists.
+* Accessory equip and active-effect switching.
+* Selling consumables and unequipped weapons/armor.
+* Save/load for owned weapons, owned armor, owned accessories, and equipped accessory.
 * Slime SLOW, bat stamina reduction, fire BURN.
 * Monster defeat EXP/gold/drop behavior.
 * Level-up behavior.

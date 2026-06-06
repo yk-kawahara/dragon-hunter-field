@@ -112,8 +112,9 @@
           if (p.source === "wisp" || p.source === "dragon") {
             player.burn = Math.max(player.burn, p.source === "dragon" ? 2600 : 1500);
           } else if (p.source === "bubbler") {
-            player.slow = Math.max(player.slow, player.mineCharm ? 560 : 1400);
-            player.stamina = Math.max(0, player.stamina - (player.mineCharm ? 2 : 6));
+            const mineGuard = player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
+            player.slow = Math.max(player.slow, mineGuard ? 560 : 1400);
+            player.stamina = Math.max(0, player.stamina - (mineGuard ? 2 : 6));
             addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
           } else if (p.source === "guardian") {
             player.slow = Math.max(player.slow, 1500);

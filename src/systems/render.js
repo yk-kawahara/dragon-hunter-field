@@ -25,6 +25,15 @@
     DISCOVERY_POINTS,
     GUARDIAN_SITE,
     WARDEN_SITE,
+    weaponNames,
+    armorNames,
+    weaponTraits,
+    armorTraits,
+    itemNames,
+    itemSellValues,
+    weaponSellValues,
+    armorSellValues,
+    accessoryData,
     TILE_GRASS,
     TILE_PATH,
     TILE_WATER,
@@ -196,6 +205,7 @@ function draw(context) {
   drawContextPrompt();
   drawHud();
   drawInfoPanel();
+  drawInventoryOverlay();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
   if (state.victory && !state.elderReported) drawVictoryBanner();
@@ -225,6 +235,96 @@ function drawInfoPanel() {
   for (let i = 0; i < panel.lines.length; i += 1) {
     ctx.fillText(panel.lines[i], x + 7, y + 25 + i * 11);
   }
+}
+
+function drawInventoryOverlay() {
+  if (!state.inventoryOpen) return;
+  const x = 12;
+  const y = 15;
+  const w = W - 24;
+  const h = VIEW_H - 25;
+  const tabs = ["items", "weapons", "armors", "accessories"];
+  const labels = { items: "道具", weapons: "武器", armors: "防具", accessories: "装飾" };
+  if (!tabs.includes(state.inventoryTab)) state.inventoryTab = "items";
+  const rows = inventoryRenderRows(state.inventoryTab);
+  const selected = Math.max(0, Math.min(state.inventoryIndex || 0, Math.max(0, rows.length - 1)));
+  const first = Math.max(0, Math.min(Math.max(0, selected - 3), Math.max(0, rows.length - 6)));
+
+  ctx.fillStyle = "rgba(3, 8, 18, 0.94)";
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = "#6de4ff";
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = "#fff2a6";
+  ctx.font = "9px monospace";
+  ctx.textAlign = "left";
+  ctx.fillText("もちもの", x + 7, y + 12);
+
+  for (let i = 0; i < tabs.length; i += 1) {
+    const tabX = x + 7 + i * 45;
+    const active = tabs[i] === state.inventoryTab;
+    ctx.fillStyle = active ? "#ffd166" : "#1a3045";
+    ctx.fillRect(tabX, y + 18, 38, 12);
+    ctx.fillStyle = active ? "#08111c" : "#d7e2ea";
+    ctx.fillText(labels[tabs[i]], tabX + 4, y + 27);
+  }
+
+  ctx.font = "8px monospace";
+  for (let i = 0; i < 6; i += 1) {
+    const row = rows[first + i];
+    const rowY = y + 41 + i * 13;
+    if (!row) continue;
+    if (first + i === selected) {
+      ctx.fillStyle = "rgba(255, 209, 102, 0.25)";
+      ctx.fillRect(x + 5, rowY - 9, w - 10, 12);
+      ctx.strokeStyle = "#ffd166";
+      ctx.strokeRect(x + 5, rowY - 9, w - 10, 12);
+    }
+    ctx.fillStyle = row.equipped ? "#74ff8f" : "#ffffff";
+    ctx.fillText(`${row.equipped ? "E " : "  "}${row.name}`, x + 9, rowY);
+    ctx.fillStyle = "#d7e2ea";
+    ctx.fillText(row.detail, x + 82, rowY);
+    ctx.fillStyle = row.sell > 0 ? "#fff2a6" : "#687383";
+    ctx.fillText(row.sell > 0 ? `${row.sell}G` : "-", x + w - 35, rowY);
+  }
+
+  ctx.fillStyle = "#8dd7ff";
+  ctx.font = "7px monospace";
+  ctx.fillText("←→カテゴリ  ↑↓選択  Enter:使う/装備  S:売る  Esc:閉じる", x + 7, y + h - 7);
+}
+
+function inventoryRenderRows(tab) {
+  if (tab === "items") {
+    return [
+      { name: itemNames.potion, detail: `HP回復 x${player.potions}`, sell: itemSellValues.potion },
+      { name: itemNames.bomb, detail: `周囲攻撃 x${player.bombs}`, sell: itemSellValues.bomb },
+      { name: itemNames.ward, detail: `防御 x${player.wards}`, sell: itemSellValues.ward },
+    ];
+  }
+  if (tab === "weapons") {
+    const owned = Array.isArray(player.ownedWeapons) ? player.ownedWeapons : [player.weapon || 0];
+    return owned.map((rank) => ({
+      name: weaponNames[rank] || `武器${rank}`,
+      detail: weaponTraits[rank] || "",
+      sell: weaponSellValues[rank] || 0,
+      equipped: player.weapon === rank,
+    }));
+  }
+  if (tab === "armors") {
+    const owned = Array.isArray(player.ownedArmors) ? player.ownedArmors : [player.armor || 0];
+    return owned.map((rank) => ({
+      name: armorNames[rank] || `防具${rank}`,
+      detail: armorTraits[rank] || "",
+      sell: armorSellValues[rank] || 0,
+      equipped: player.armor === rank,
+    }));
+  }
+  const owned = Array.isArray(player.ownedAccessories) ? player.ownedAccessories : [];
+  return owned.map((id) => ({
+    name: accessoryData[id]?.name || id,
+    detail: accessoryData[id]?.trait || "",
+    sell: 0,
+    equipped: player.equippedAccessory === id,
+  }));
 }
 
 function drawWorld(cam) {

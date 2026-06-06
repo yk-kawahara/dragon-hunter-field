@@ -123,7 +123,7 @@
     }
     player.attackCooldown = Math.max(0, player.attackCooldown - dt);
     player.dashCooldown = Math.max(0, player.dashCooldown - dt);
-    const staminaRegen = player.trailCharm ? 0.043 : 0.032;
+    const staminaRegen = player.equippedAccessory === "trail" || (!player.equippedAccessory && player.trailCharm) ? 0.043 : 0.032;
     player.stamina = Math.min(player.staminaMax, player.stamina + dt * staminaRegen);
     player.comboTimer = Math.max(0, player.comboTimer - dt);
     if (player.comboTimer <= 0) player.combo = 0;
