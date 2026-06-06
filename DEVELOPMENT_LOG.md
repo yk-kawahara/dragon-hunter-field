@@ -184,3 +184,29 @@
 - Mobile landscape result: the main screen renders, but vertical scrolling is still needed to reach touch controls.
 - Edge startup log check did not find fatal game script errors such as `Uncaught`, `ReferenceError`, `TypeError`, `SyntaxError`, or missing local files. The only captured warning was an Edge registry observation warning unrelated to the game.
 - Remaining risk: this pass verified real browser rendering through screenshots, not live manual input. Keyboard/touch movement, combat interaction, save/load UI, and full fresh-save playthrough should still be tested interactively.
+
+## 2026-06-06 Southeast Survival Reward Pass
+- Goal: improve actual game completion value, not refactoring. Chosen task was to make the fixed east/southeast expansion more meaningful for survival-range expansion.
+- Added a new one-time treasure chest at the southeast outpost: `south-outpost`.
+- The southeast outpost chest grants the new `trailCharm` / traveler bell reward.
+- Traveler bell effects:
+  - Slightly increases movement speed.
+  - Reduces dash stamina cost.
+  - Increases maximum stamina slightly.
+  - Improves stamina regeneration slightly.
+  - Fully restores stamina when obtained.
+  - Adds one ward as a small safety reward for the long return trip.
+- Added `trailCharm` to initial player state, save data, load data, reset data, derived stat refresh, and the strength/info panel.
+- Updated `scripts/verify-game-smoke.js` to verify the new chest is reachable, persists through save/load, and that the traveler bell improves movement/dash stats after load.
+- Improved mobile browser usability:
+  - 560px and narrower now use a stronger single-column layout.
+  - Small portrait layouts constrain the game screen, command panel, status panel, and touch controls to the viewport width.
+  - Small landscape layouts pin touch controls near the bottom so they are usable without scrolling down to the controls.
+- Verification:
+  - Bundled Node syntax checks passed for all JavaScript files under `src/` and `scripts/`.
+  - `scripts/verify-game-smoke.js` passed.
+  - `git diff --check` passed with line-ending warnings only.
+  - Microsoft Edge headless screenshots were regenerated for desktop, mobile portrait, and mobile landscape.
+- Remaining risk:
+  - Interactive manual play from a new save is still needed to tune whether the southeast reward timing feels fair.
+  - Mobile portrait still feels dense; it is more usable than before, but further UI scaling may be useful after hands-on testing.

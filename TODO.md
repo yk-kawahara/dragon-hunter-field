@@ -13,8 +13,8 @@ This is the recommended order for the next development passes. Do not treat the 
 
 ### High
 
-* Turn the east/southeast expansion into a deliberate survival-range destination rather than unused space.
-* Add or tune one exploration reward that extends survivable range, such as local recovery, sustain, damage reduction, shortcut access, or area-specific protection.
+* Tune the new southeast outpost traveler bell through manual playtesting: it should make long-distance exploration feel better without making dangerous areas safe too early.
+* Add one more meaningful route reason in the east/southeast area only if the traveler bell alone does not make the expansion feel like a destination.
 * Balance gold/EXP/shop prices so the first armor purchase, level 4 timing, Guardian readiness, and dragon readiness feel natural in a normal playthrough.
 * Improve equipment/item review only where it helps decisions: current gear, next upgrade value, regeneration, boss requirements, and progression items.
 * Add a short elder ending/report sequence after the survival route is verified.
@@ -85,6 +85,10 @@ This is the recommended order for the next development passes. Do not treat the 
 * Verified save/load persistence for chests, discoveries, equipment, charms, boss flags, and elder report state with a VM smoke test.
 * Added `scripts/verify-game-smoke.js` for repeatable VM checks covering script order, map reachability, save/load, equipment anti-downgrade, Guardian, Red Dragon, and elder report flow.
 * Added `scripts/generate-map-preview.js` and `scripts/generate-map-preview.ps1` for regenerating fixed-map previews after terrain edits.
+* Added the southeast outpost `south-outpost` chest.
+* Added the traveler bell survival reward, which improves movement speed, stamina capacity, stamina regeneration, and dash cost.
+* Added save/load persistence and VM smoke verification for the traveler bell.
+* Improved mobile browser layout so small portrait uses a stronger single-column layout and small landscape keeps touch controls available near the bottom.
 
 ## Critical Playtest Issues - Addressed This Pass
 

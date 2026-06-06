@@ -71,6 +71,7 @@
       sealCrest: false,
       hunterCharm: false,
       regenCharm: false,
+      trailCharm: false,
       stamina: 100,
       staminaMax: 100,
       attackCooldown: 0,

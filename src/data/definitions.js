@@ -21,6 +21,7 @@
     { id: "north-ruin", x: 18, y: 17, reward: "weapon" },
     { id: "river-shrine", x: 42, y: 33, reward: "ward" },
     { id: "east-grove", x: 56, y: 43, reward: "armor" },
+    { id: "south-outpost", x: 72, y: 58, reward: "trail" },
     { id: "dragon-cache", x: 50, y: 16, reward: "scale" },
   ];
   const DISCOVERY_POINTS = [

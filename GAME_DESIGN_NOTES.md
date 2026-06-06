@@ -866,6 +866,8 @@ Current fixed-map direction:
 
 \* The fixed east/southeast expansion should become a deliberate survival-range destination, not empty filler.
 
+\* Current southeast reward: the southeast outpost chest grants the traveler bell, a permanent exploration upgrade that slightly improves movement speed, stamina capacity, stamina regeneration, and dash cost.
+
 \* Random/noise terrain should not be reintroduced unless there is a very clear gameplay reason.
 
 

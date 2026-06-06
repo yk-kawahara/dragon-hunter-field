@@ -35,7 +35,7 @@ Next development order:
    Use the fixed map to create a clearer 20-30 minute route: village outskirts -> grassland gear farming -> north/river pressure -> east/southeast optional reward -> Guardian -> cave -> dragon -> elder report.
 
 3. **Survival-Range Reward Pass**
-   Add or tune one high-value exploration reward that changes where the player can safely go. Prefer sustain, damage reduction, shortcut access, local healing, or enemy-specific protection over plain gold.
+   Current status: first pass implemented with the southeast outpost traveler bell. Continue tuning whether this reward makes distant travel feel better without trivializing danger.
 
 4. **Readable Command/UI Pass**
    Improve how the player checks equipment, items, regeneration, boss requirements, and current objective. Keep the old mobile RPG feel; prioritize readable decisions over decoration.
@@ -480,6 +480,7 @@ Current status:
 * `docs/MAP_EDITING.md` documents the map editing workflow.
 * `docs/world-map-preview.png` and `docs/world-map-preview.svg` provide whole-map previews for quick visual checks after edits.
 * Prefer improving the fixed east/southeast expansion with deliberate rewards, shortcuts, or danger gradients instead of reintroducing random terrain generation.
+* Current implementation: `south-outpost` chest in the southeast expansion grants the traveler bell, improving movement, stamina, stamina recovery, and dash cost.
 * Add additional exploration rewards that increase survivability.
 * Add more events to East Forest and River areas.
 * Improve hidden discovery placement.

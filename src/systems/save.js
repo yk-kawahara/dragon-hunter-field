@@ -55,6 +55,7 @@
         sealCrest: player.sealCrest,
         hunterCharm: player.hunterCharm,
         regenCharm: player.regenCharm,
+        trailCharm: player.trailCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -79,6 +80,7 @@
       player.sealCrest = Boolean(player.sealCrest);
       player.hunterCharm = Boolean(player.hunterCharm);
       player.regenCharm = Boolean(player.regenCharm);
+      player.trailCharm = Boolean(player.trailCharm);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
       player.attackCooldown = 0;
@@ -127,6 +129,7 @@
       sealCrest: false,
       hunterCharm: false,
       regenCharm: false,
+      trailCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,

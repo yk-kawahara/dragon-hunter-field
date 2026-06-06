@@ -381,8 +381,10 @@ canvas:focus {
   }
 }
 
-@media (max-width: 460px) {
+@media (max-width: 560px) {
   .playdeck {
+    width: 100%;
+    min-width: 0;
     grid-template-columns: 1fr;
     grid-template-areas:
       "screen"
@@ -390,14 +392,40 @@ canvas:focus {
       "status";
   }
 
+  .game-app {
+    place-items: stretch;
+    gap: 12px;
+  }
+
+  .screen-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  canvas {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .status-panel {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .zone,
+  .item-dock {
+    grid-column: span 3;
+  }
+
   .command-panel {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: auto;
     align-items: stretch;
   }
 
   .panel-title,
   .gold-box {
+    grid-column: span 3;
     font-size: 11px;
   }
 
@@ -419,6 +447,14 @@ canvas:focus {
     height: 118px;
   }
 
+  .touch-controls {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 12px;
+  }
+
   .action-pad {
     grid-template-columns: repeat(2, 64px);
   }
@@ -426,5 +462,45 @@ canvas:focus {
   .action-pad button {
     width: 64px;
     height: 64px;
+  }
+}
+
+@media (max-height: 520px) and (min-width: 561px) and (max-width: 960px) {
+  .game-app {
+    place-items: start center;
+    gap: 8px;
+    padding: 8px 8px 148px;
+  }
+
+  .playdeck {
+    width: min(100%, 880px);
+    grid-template-columns: 86px minmax(320px, 1fr) 118px;
+  }
+
+  .screen-wrap {
+    padding: 6px;
+  }
+
+  .command-panel {
+    grid-template-rows: auto repeat(5, 34px) auto;
+    padding: 6px;
+  }
+
+  .status-panel {
+    padding: 6px;
+    gap: 3px;
+  }
+
+  .touch-controls {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    width: auto;
+    max-width: 680px;
+    margin: 0 auto;
+    grid-template-columns: auto auto;
+    z-index: 10;
+    backdrop-filter: blur(4px);
   }
 }

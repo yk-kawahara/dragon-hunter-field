@@ -34,14 +34,16 @@
   function playerMoveSpeed(context) {
     const { player } = requireCombatContext(context);
     const armorMoveBonus = player.armor >= 1 ? 4 * WORLD_SCALE : 0;
+    const trailMoveBonus = player.trailCharm ? 5 * WORLD_SCALE : 0;
     const slowPenalty = player.slow > 0 ? 0.72 : 1;
-    return (player.speed + armorMoveBonus) * slowPenalty;
+    return (player.speed + armorMoveBonus + trailMoveBonus) * slowPenalty;
   }
 
   function dashCost(context) {
     const { player } = requireCombatContext(context);
     const armorDiscount = player.armor >= 1 ? 6 : 0;
-    return Math.max(20, DASH_COST - armorDiscount);
+    const trailDiscount = player.trailCharm ? 8 : 0;
+    return Math.max(18, DASH_COST - armorDiscount - trailDiscount);
   }
 
   function weaponDamageMultiplier(context, monster, pDot, mDot) {
@@ -66,7 +68,7 @@
 
   function refreshDerivedStats(context) {
     const { player } = requireCombatContext(context);
-    player.staminaMax = 100 + (player.hunterCharm ? 15 : 0);
+    player.staminaMax = 100 + (player.hunterCharm ? 15 : 0) + (player.trailCharm ? 10 : 0);
     player.stamina = Math.min(player.stamina, player.staminaMax);
   }
 

@@ -98,7 +98,7 @@ If browser QA is still unavailable:
 
 Design focus for the next gameplay pass:
 
-* The east/southeast expansion should become a real reason to leave the safe village longer.
+* The east/southeast expansion now has a first real reason to leave the safe village longer: the southeast outpost traveler bell.
 * Prefer rewards that extend survivable range over plain gold.
 * Keep the village safe and readable.
 * Keep terrain edits in `src/data/maps/world.js`.
@@ -121,12 +121,15 @@ Design focus for the next gameplay pass:
 * Added `docs/MAP_EDITING.md` and whole-map previews at `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
 * Added `scripts/verify-game-smoke.js` for repeatable VM verification.
 * Added `scripts/generate-map-preview.js` and `scripts/generate-map-preview.ps1` for fixed-map preview regeneration.
+* Added `south-outpost`, a southeast chest that grants the traveler bell.
+* Added `trailCharm` persistence and effects: movement speed, max stamina, stamina regeneration, and dash cost.
+* Improved small-screen CSS after Edge rendering QA: portrait uses a stronger single-column layout, and small landscape keeps touch controls fixed near the bottom.
 
 ## Remaining Critical / High Priority
 
 * Run interactive desktop browser QA.
 * Run interactive mobile-like viewport QA.
-* Fix mobile layout overflow observed in Edge screenshots: portrait clips the right side of the game/action controls, and landscape still requires vertical scrolling for touch controls.
+* Continue interactive mobile QA. CSS was improved, but portrait remains dense and should be judged by hands-on play.
 * Perform a full manual playthrough from new save to red dragon defeat and elder report.
 * Verify that enemy AI, contact combat, projectiles, monster defeat, level-up, Guardian defeat, red dragon defeat, and elder report still work after the `monsters.js` split.
 * Verify save/load after opened chests, discovered hidden rewards, equipment upgrades, seal crest, boss defeat, and elder report.
@@ -143,6 +146,12 @@ Recent browser rendering result:
 * Desktop renders correctly enough to continue QA: canvas, player, village, HUD, command buttons, and touch controls are visible.
 * Mobile portrait and landscape render, but layout overflow remains a real usability issue.
 * This was rendering QA, not interactive play QA.
+
+Recent gameplay completion result:
+
+* The southeast expansion now contains `south-outpost`, a one-time chest that gives the traveler bell.
+* The traveler bell makes long-distance exploration easier by improving movement, stamina capacity, stamina recovery, and dash cost.
+* VM smoke verifies reachability, persistence, and stat effects.
 
 ## First Task For Next Codex
 

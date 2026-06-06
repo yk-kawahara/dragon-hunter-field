@@ -66,7 +66,7 @@
   }
 
   function grantChestReward(context, reward) {
-    const { player, say } = requireRewardContext(context);
+    const { player, say, refreshDerivedStats } = requireRewardContext(context);
     if (reward === "starter") {
       player.gold += 45;
       player.potions = Math.min(9, player.potions + 2);
@@ -87,6 +87,12 @@
     } else if (reward === "scale") {
       player.scales = Math.min(3, player.scales + 1);
       say("古い竜の鱗を見つけた");
+    } else if (reward === "trail") {
+      player.trailCharm = true;
+      refreshDerivedStats?.();
+      player.stamina = player.staminaMax;
+      player.wards = Math.min(9, player.wards + 1);
+      say("旅人の鈴を見つけた。遠征の足取りが軽くなった");
     }
   }
 

@@ -263,8 +263,10 @@ function assertSaveLoadAndEquipment() {
   player.sealCrest = true;
   player.hunterCharm = true;
   player.regenCharm = true;
+  player.trailCharm = true;
   state.chests.add("town-cache");
   state.chests.add("north-ruin");
+  state.chests.add("south-outpost");
   state.discoveries.add("river-spring");
   state.discoveries.add("hunter-cache");
   state.guardianDefeated = true;
@@ -279,7 +281,14 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.weapon === 3, "weapon rank should persist");
   assert(restored.player.armor === 3, "armor rank should persist");
   assert(restored.player.regenCharm, "regen charm should persist");
-  assert(restored.state.chests.size === 2, "opened chests should persist");
+  assert(restored.player.trailCharm, "trail charm should persist");
+  const baseline = createRuntime();
+  baseline.player.armor = restored.player.armor;
+  baseline.player.weapon = restored.player.weapon;
+  baseline.runtime.refreshDerivedStats();
+  assert(restored.runtime.dashCost() < baseline.runtime.dashCost(), "trail charm should reduce dash cost after load");
+  assert(restored.runtime.playerMoveSpeed() > baseline.runtime.playerMoveSpeed(), "trail charm should improve movement speed after load");
+  assert(restored.state.chests.size === 3, "opened chests should persist");
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
   assert(restored.state.guardianDefeated && restored.state.bossDefeated && restored.state.elderReported, "boss/clear flags should persist");
 
