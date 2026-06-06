@@ -30,6 +30,7 @@
     { id: "hunter-cache", x: 57, y: 28, kind: "cache" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
+  const WARDEN_SITE = { x: 70, y: 58 };
   const BOSS_REQUIREMENTS = { level: 4, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -145,6 +146,19 @@
       midboss: true,
       drop: 1,
     },
+    warden: {
+      name: "Southeast Warden",
+      hp: 118,
+      atk: 46,
+      def: 5,
+      speed: 28 * WORLD_SCALE,
+      xp: 150,
+      gold: 125,
+      color: "#6de4ff",
+      shadow: "#1d4f78",
+      midboss: true,
+      drop: 0,
+    },
     dragon: {
       name: "赤竜",
       hp: 280,
@@ -176,6 +190,7 @@
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     GUARDIAN_SITE,
+    WARDEN_SITE,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,

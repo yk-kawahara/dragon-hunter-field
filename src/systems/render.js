@@ -24,6 +24,7 @@
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     GUARDIAN_SITE,
+    WARDEN_SITE,
     TILE_GRASS,
     TILE_PATH,
     TILE_WATER,
@@ -185,6 +186,7 @@ function draw(context) {
   drawChests(cam);
   drawDiscoveries(cam);
   drawGuardianSite(cam);
+  drawWardenSite(cam);
   drawNpcs(cam);
   drawEntities(cam);
   drawEffects(cam);
@@ -508,6 +510,28 @@ function drawGuardianSite(cam) {
   if (guardianReady()) {
     ctx.strokeStyle = pulse ? "#55c7a0" : "#d8fff1";
     ctx.strokeRect(sx + 2, sy, 16, 18);
+  }
+}
+
+function drawWardenSite(cam) {
+  if (state.wardenDefeated) return;
+  const sx = WARDEN_SITE.x * TILE - cam.x;
+  const sy = WARDEN_SITE.y * TILE - cam.y;
+  if (sx < -24 || sy < -24 || sx > W || sy > VIEW_H) return;
+  const ready = player.trailCharm && player.level >= 3;
+  const pulse = Math.floor(performance.now() / 220) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+  ctx.fillRect(sx - 1, sy + 14, 22, 3);
+  ctx.fillStyle = "#26384a";
+  ctx.fillRect(sx + 4, sy + 3, 12, 12);
+  ctx.fillStyle = "#6de4ff";
+  ctx.fillRect(sx + 7, sy + 5, 6, 7);
+  ctx.fillStyle = ready ? "#eaffff" : "#53606f";
+  ctx.fillRect(sx + 5, sy + 1, 10, 3);
+  ctx.fillRect(sx + 8, sy + 12, 4, 3);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#6de4ff" : "#fff2a6";
+    ctx.strokeRect(sx + 1, sy, 18, 17);
   }
 }
 
@@ -1017,6 +1041,25 @@ function drawMonster(monster, sx, sy) {
     ctx.fillRect(sx + 4, sy + 15, 4, 3);
     ctx.fillRect(sx + 11, sy + 15, 4, 3);
     ctx.fillStyle = "#ffd166";
+    ctx.fillRect(sx + 8, sy, 3, 4);
+  } else if (monster.type === "warden") {
+    const pulse = Math.floor(monster.age / 150) % 2;
+    ctx.fillStyle = "rgba(109, 228, 255, 0.26)";
+    ctx.fillRect(sx - 2, sy + 1 - pulse, 22, 18);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 3, sy + 5, 13, 12);
+    ctx.fillRect(sx - 1, sy + 8, 5, 6);
+    ctx.fillRect(sx + 14, sy + 8, 5, 6);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 11, 13);
+    ctx.fillRect(sx + 2, sy + 7, 15, 7);
+    ctx.fillStyle = "#eaffff";
+    ctx.fillRect(sx + 6, sy + 5, 2, 2);
+    ctx.fillRect(sx + 11, sy + 5, 2, 2);
+    ctx.fillStyle = "#1d4f78";
+    ctx.fillRect(sx + 4, sy + 15, 4, 3);
+    ctx.fillRect(sx + 11, sy + 15, 4, 3);
+    ctx.fillStyle = "#fff2a6";
     ctx.fillRect(sx + 8, sy, 3, 4);
   } else if (monster.type === "dragonling") {
     ctx.fillStyle = monster.shadow;

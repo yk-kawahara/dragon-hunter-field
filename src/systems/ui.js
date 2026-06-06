@@ -73,7 +73,7 @@
         lines: [
           `HP ${Math.ceil(player.hp)}/${player.hpMax} ST ${Math.floor(player.stamina)}/${player.staminaMax}`,
           `回避 ${dashCost()}ST 再生 ${regenRate().toFixed(1)}/秒`,
-          `状態 ${player.burn > 0 ? "燃焼" : player.slow > 0 ? "鈍足" : player.trailCharm ? "旅鈴" : "通常"}`,
+          `状態 ${player.burn > 0 ? "燃焼" : player.slow > 0 ? "鈍足" : player.aegisCharm ? "護石" : player.trailCharm ? "旅鈴" : "通常"}`,
         ],
       },
       {
@@ -81,7 +81,7 @@
         lines: [
           `薬${player.potions} 爆${player.bombs} 護${player.wards}`,
           `鱗 ${player.scales}/3 紋 ${player.sealCrest ? "有" : "無"}`,
-          `宝箱 ${state.chests.size}/${TREASURE_CHESTS.length} 鈴${player.trailCharm ? "有" : "無"}`,
+          `宝箱 ${state.chests.size}/${TREASURE_CHESTS.length} 鈴${player.trailCharm ? "有" : "無"} 石${player.aegisCharm ? "有" : "無"}`,
         ],
       },
     ];

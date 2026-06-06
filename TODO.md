@@ -14,7 +14,8 @@ This is the recommended order for the next development passes. Do not treat the 
 ### High
 
 * Tune the new southeast outpost traveler bell through manual playtesting: it should make long-distance exploration feel better without making dangerous areas safe too early.
-* Add one more meaningful route reason in the east/southeast area only if the traveler bell alone does not make the expansion feel like a destination.
+* Tune the new southeast Warden and Aegis Charm through manual playtesting: it should feel like an optional route challenge, not a mandatory checklist.
+* Add one more meaningful route reason in the east/southeast area only if the traveler bell plus Warden route still does not make the expansion feel like a destination.
 * Balance gold/EXP/shop prices so the first armor purchase, level 4 timing, Guardian readiness, and dragon readiness feel natural in a normal playthrough.
 * Improve equipment/item review only where it helps decisions: current gear, next upgrade value, regeneration, boss requirements, and progression items.
 * Add a short elder ending/report sequence after the survival route is verified.
@@ -89,6 +90,9 @@ This is the recommended order for the next development passes. Do not treat the 
 * Added the traveler bell survival reward, which improves movement speed, stamina capacity, stamina regeneration, and dash cost.
 * Added save/load persistence and VM smoke verification for the traveler bell.
 * Improved mobile browser layout so small portrait uses a stronger single-column layout and small landscape keeps touch controls available near the bottom.
+* Added the southeast route midboss `Southeast Warden` at the far outpost.
+* Added the Aegis Charm reward from the southeast midboss, reducing fire and projectile damage for deeper exploration and dragon preparation.
+* Added save/load persistence and VM smoke verification for the southeast midboss and Aegis Charm.
 
 ## Critical Playtest Issues - Addressed This Pass
 

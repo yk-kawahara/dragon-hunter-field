@@ -56,11 +56,14 @@
         hunterCharm: player.hunterCharm,
         regenCharm: player.regenCharm,
         trailCharm: player.trailCharm,
+        aegisCharm: player.aegisCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
       spawnedGuardian: state.spawnedGuardian,
       guardianDefeated: state.guardianDefeated,
+      spawnedWarden: state.spawnedWarden,
+      wardenDefeated: state.wardenDefeated,
       elderReported: state.elderReported,
       chests: Array.from(state.chests),
       discoveries: Array.from(state.discoveries),
@@ -81,6 +84,7 @@
       player.hunterCharm = Boolean(player.hunterCharm);
       player.regenCharm = Boolean(player.regenCharm);
       player.trailCharm = Boolean(player.trailCharm);
+      player.aegisCharm = Boolean(player.aegisCharm);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
       player.attackCooldown = 0;
@@ -94,8 +98,10 @@
       player.burnTick = 0;
       state.bossDefeated = Boolean(data.bossDefeated);
       state.guardianDefeated = Boolean(data.guardianDefeated);
+      state.wardenDefeated = Boolean(data.wardenDefeated);
       state.spawnedBoss = state.bossDefeated ? Boolean(data.spawnedBoss) : false;
       state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
+      state.spawnedWarden = state.wardenDefeated ? Boolean(data.spawnedWarden) : false;
       state.elderReported = Boolean(data.elderReported);
       state.chests = savedIdSet(data.chests, rewardIds(TREASURE_CHESTS));
       state.discoveries = savedIdSet(data.discoveries, rewardIds(DISCOVERY_POINTS));
@@ -130,6 +136,7 @@
       hunterCharm: false,
       regenCharm: false,
       trailCharm: false,
+      aegisCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,
@@ -156,6 +163,8 @@
     state.bossDefeated = false;
     state.spawnedGuardian = false;
     state.guardianDefeated = false;
+    state.spawnedWarden = false;
+    state.wardenDefeated = false;
     state.elderReported = false;
     state.gameOver = false;
     state.victory = false;

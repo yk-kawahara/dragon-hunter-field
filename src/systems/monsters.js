@@ -220,6 +220,10 @@
     } else if (monster.type === "bat") {
       player.stamina = Math.max(0, player.stamina - 12);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#d7b5ff");
+    } else if (monster.type === "warden") {
+      player.stamina = Math.max(0, player.stamina - 18);
+      player.slow = Math.max(player.slow, 700);
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#8dd7ff");
     } else if (monster.type === "wisp" || monster.type === "dragonling" || monster.boss) {
       player.burn = Math.max(player.burn, monster.boss ? 2600 : 1500);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "BURN", "#ff8a3d");
@@ -251,7 +255,14 @@
 
     grantMonsterDefeatDrops(monster);
 
-    if (monster.midboss) {
+    if (monster.type === "warden") {
+      state.wardenDefeated = true;
+      player.aegisCharm = true;
+      player.wards = Math.min(9, player.wards + 2);
+      player.potions = Math.min(9, player.potions + 1);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
+      say("蜊玲擲縺ｮ驕鍋分繧定ｶ翫∴縲∝ｮ医ｊ縺ｮ隴ｷ遏ｳ繧貞ｾ励◆!", 4200);
+    } else if (monster.midboss) {
       state.guardianDefeated = true;
       player.sealCrest = true;
       player.scales = Math.min(3, player.scales + 1);

@@ -210,3 +210,23 @@
 - Remaining risk:
   - Interactive manual play from a new save is still needed to tune whether the southeast reward timing feels fair.
   - Mobile portrait still feels dense; it is more usable than before, but further UI scaling may be useful after hands-on testing.
+
+## 2026-06-06 Southeast Warden Content Pass
+- Goal: continue moving the game toward completion through playable content, not refactoring or documentation-only work.
+- Analysis: the southeast outpost traveler bell made long-distance movement better, but the southeast expansion still risked feeling like a one-chest side path. The highest-value content addition was a follow-up challenge and survivability reward in the same route.
+- Implemented the `Southeast Warden` midboss at the southeast outpost site.
+- Warden unlock rule: requires the traveler bell and level 3, so the player first expands travel range, then returns for a stronger optional route challenge.
+- Warden combat identity: midboss HP/attack, projectile pressure, contact stamina drain, and short slow effect. This differentiates it from ordinary enemies without turning combat into button-mashing.
+- Implemented the Aegis Charm reward from Warden defeat. It reduces fire and projectile damage, helping with deeper east/cave survival and Red Dragon preparation.
+- Added Warden/Aegis state to initial state, save, load, reset, and UI info panel display.
+- Updated objective guidance so the player is directed toward the southeast Warden after the traveler bell and level 3.
+- Updated render support for the Warden site marker and Warden sprite.
+- Verification:
+  - Bundled Node syntax checks passed for `src/game.js`, `src/data/definitions.js`, `src/systems/spawn.js`, `src/systems/monsters.js`, `src/systems/projectiles.js`, and `scripts/verify-game-smoke.js`.
+  - `scripts/verify-game-smoke.js` passed. It now verifies Warden site reachability, Warden spawn/defeat, Aegis Charm persistence, and that Warden defeat does not set Guardian defeat.
+  - `git diff --check` passed with line-ending warnings only.
+- Browser QA:
+  - In-app Browser connection failed in this environment with `windows sandbox failed: spawn setup refresh`.
+  - Real visual confirmation of the Warden marker/sprite remains pending.
+- Remaining risk:
+  - Manual playtesting is needed to tune Warden difficulty, whether level 3 is the right timing, and whether the Aegis Charm reward feels strong enough without trivializing the Red Dragon.

@@ -124,6 +124,8 @@ Design focus for the next gameplay pass:
 * Added `south-outpost`, a southeast chest that grants the traveler bell.
 * Added `trailCharm` persistence and effects: movement speed, max stamina, stamina regeneration, and dash cost.
 * Improved small-screen CSS after Edge rendering QA: portrait uses a stronger single-column layout, and small landscape keeps touch controls fixed near the bottom.
+* Added the southeast `Southeast Warden` optional midboss after traveler bell + level 3.
+* Added `aegisCharm` persistence and effects: fire/projectile damage reduction as a deeper-route survival reward.
 
 ## Remaining Critical / High Priority
 
@@ -151,11 +153,13 @@ Recent gameplay completion result:
 
 * The southeast expansion now contains `south-outpost`, a one-time chest that gives the traveler bell.
 * The traveler bell makes long-distance exploration easier by improving movement, stamina capacity, stamina recovery, and dash cost.
-* VM smoke verifies reachability, persistence, and stat effects.
+* The southeast route now has a follow-up midboss: `Southeast Warden`.
+* Defeating the Warden grants the Aegis Charm, which reduces fire/projectile damage and helps dragon-route preparation.
+* VM smoke verifies reachability, persistence, stat effects, Warden spawn/defeat, and that Warden defeat does not count as Guardian defeat.
 
 ## First Task For Next Codex
 
-Start with verification, not new gameplay content.
+Start with verification, then continue gameplay content only if the route still feels thin.
 
 1. Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `DEVELOPMENT_LOG.md`, and this file.
 2. Inspect the actual repository tree and confirm that all files in the expected architecture exist.
@@ -164,13 +168,13 @@ Start with verification, not new gameplay content.
 5. Run `git diff --check`.
 6. Launch the game in a real browser if available and perform smoke QA.
 7. Perform a full manual playthrough if possible.
-8. Fix only regressions caused by the refactor, using minimal behavior-neutral changes.
-9. Update documentation with exact verification results.
-10. Commit with a clear message if changes are made.
+8. Manually tune the southeast Warden route if it feels too hard, too easy, or too disconnected from the survival-range loop.
+9. If the route feels good, the next content pass should add a small elder/ending report sequence or another survival-range reward, not more refactoring.
+10. Update documentation with exact verification results and commit with a clear message if changes are made.
 
 ## Recommended Prompt
 
-Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEVELOPMENT_LOG.md`, and `NEXT_CODEX_TASK.md` first. The project now has a split `src/data` / `src/core` / `src/systems` architecture and a fixed hand-editable world map in `src/data/maps/world.js`. Start with verification: syntax checks, `scripts/verify-game-smoke.js`, `git diff --check`, and real browser QA if available. If browser QA finds regressions, fix those first. If browser QA is unavailable or passes, improve the survival-range route by making the east/southeast fixed-map expansion a meaningful dangerous destination with one reachable reward that extends survivable range. Regenerate map previews after terrain edits and update the management docs with exact results.
+Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEVELOPMENT_LOG.md`, and `NEXT_CODEX_TASK.md` first. The project now has a split `src/data` / `src/core` / `src/systems` architecture and a fixed hand-editable world map in `src/data/maps/world.js`. This is a gameplay-completion project, not a refactor project. Start with syntax checks, `scripts/verify-game-smoke.js`, `git diff --check`, and real browser QA if available. Then play or simulate the route: village -> southeast outpost traveler bell -> level 3 -> Southeast Warden -> Aegis Charm -> Guardian -> Red Dragon -> elder report. If it feels thin, tune the Warden/reward balance or add a small ending/report sequence. Do not do architecture-only work.
 
 ## Verification Items
 
@@ -196,6 +200,8 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEV
 * Enemy movement and contact combat.
 * Boar charge.
 * Wisp / Guardian / Dragon projectiles.
+* Southeast Warden projectile and stamina-drain contact behavior.
+* Aegis Charm fire/projectile damage reduction.
 * Slime SLOW, bat stamina reduction, fire BURN.
 * Monster defeat EXP/gold/drop behavior.
 * Level-up behavior.

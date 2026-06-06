@@ -18,6 +18,7 @@
     MAP_H,
     REGION_SPAWNS,
     GUARDIAN_SITE,
+    WARDEN_SITE,
     monsterTypes,
   } = definitions;
 
@@ -234,6 +235,11 @@
     return !state.guardianDefeated && player.level >= 3 && player.scales >= 2;
   }
 
+  function wardenReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.wardenDefeated && player.trailCharm && player.level >= 3;
+  }
+
   function playerNearGuardianSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -242,9 +248,22 @@
     return Math.hypot(pc.x - gx, pc.y - gy) < worldPx(86);
   }
 
+  function playerNearWardenSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const wx = (WARDEN_SITE.x + 0.5) * TILE;
+    const wy = (WARDEN_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - wx, pc.y - wy) < worldPx(86);
+  }
+
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver || state.victory) return;
+    if (wardenReady(context) && !state.spawnedWarden && playerNearWardenSite(context)) {
+      state.spawnedWarden = true;
+      spawnMonster(context, "warden", WARDEN_SITE.x * TILE, WARDEN_SITE.y * TILE);
+      say("蜊玲擲縺ｮ驕鍋分縺悟ｧ九∪縺｣縺・!", 2600);
+    }
     if (guardianReady(context) && !state.spawnedGuardian && playerNearGuardianSite(context)) {
       state.spawnedGuardian = true;
       spawnMonster(context, "guardian", GUARDIAN_SITE.x * TILE, GUARDIAN_SITE.y * TILE);
@@ -266,7 +285,9 @@
     spawnNearPlayer,
     areaDangerText,
     guardianReady,
+    wardenReady,
     playerNearGuardianSite,
+    playerNearWardenSite,
     updateStoryEvents,
   };
 })();

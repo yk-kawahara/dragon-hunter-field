@@ -436,6 +436,17 @@ Should make the player feel that they are approaching dragon-level danger.
 Midboss gatekeeper with ranged pressure and seal crest reward.
 
 
+\## Southeast Warden
+
+
+
+Optional southeast-route midboss unlocked after the traveler bell and level 3.
+
+
+
+Its purpose is to turn the southeast expansion into a real destination: the player first earns travel range, then returns to challenge a stamina-draining projectile enemy for a defensive reward.
+
+
 
 \## Red Dragon
 
@@ -709,6 +720,8 @@ The ending should reinforce that the player has grown from a fragile village-bou
 
 \* A Wilds region for far non-north/non-east areas, keeping distant map spaces populated without making village-adjacent grassland too dangerous.
 
+\* Southeast route content: the far outpost grants the traveler bell, then the level-3 Southeast Warden challenge grants the Aegis Charm for fire/projectile resistance.
+
 \* Village safety rules for projectiles and monsters: closed gates block danger, open gates allow danger through gate tiles only.
 
 \* Safer retreat behavior: gates close while the player is inside town, and the open-gate danger exception mainly applies when the player is outside near a gate.
@@ -867,6 +880,8 @@ Current fixed-map direction:
 \* The fixed east/southeast expansion should become a deliberate survival-range destination, not empty filler.
 
 \* Current southeast reward: the southeast outpost chest grants the traveler bell, a permanent exploration upgrade that slightly improves movement speed, stamina capacity, stamina regeneration, and dash cost.
+
+\* Current southeast follow-up: after obtaining the traveler bell and reaching level 3, the Southeast Warden appears near the outpost. Defeating it grants the Aegis Charm, reducing fire and projectile damage for deeper exploration and dragon preparation.
 
 \* Random/noise terrain should not be reintroduced unless there is a very clear gameplay reason.
 

@@ -263,6 +263,23 @@ Verified:
 * Whole-map sampled spawn pass with old village enemies pre-filled: 134 passable non-town points, 0 spawn holes.
 * Region pools now preserve the intended curve: grassland remains slime/bat/boar, while Wilds/North/East/Cave can carry stronger enemies.
 
+### Southeast Route Content Pass
+
+Problem:
+
+* The southeast expansion had a valuable movement reward, but it still needed a concrete challenge and follow-up reward so the area felt like a destination rather than a lone chest.
+
+Implemented:
+
+* Added the `Southeast Warden` midboss at the southeast outpost route.
+* The Warden appears only after the player has the traveler bell and reaches level 3, keeping it as a mid-game optional challenge rather than an early trap.
+* Added the Aegis Charm reward, which reduces fire and projectile damage and helps later survival against wisps, the Guardian-style projectile pressure, and the Red Dragon.
+* Added guidance text and info-panel visibility for the new route reward.
+
+Verified:
+
+* VM smoke now covers Warden reachability, Warden spawn/defeat, Aegis Charm persistence, and confirms Warden defeat does not accidentally count as Guardian defeat.
+
 ### Playtest Improvement Pass Cycle 9
 
 Problem:
@@ -481,6 +498,7 @@ Current status:
 * `docs/world-map-preview.png` and `docs/world-map-preview.svg` provide whole-map previews for quick visual checks after edits.
 * Prefer improving the fixed east/southeast expansion with deliberate rewards, shortcuts, or danger gradients instead of reintroducing random terrain generation.
 * Current implementation: `south-outpost` chest in the southeast expansion grants the traveler bell, improving movement, stamina, stamina recovery, and dash cost.
+* Current implementation: the southeast Warden adds an optional mid-game fight after obtaining the traveler bell, and grants the Aegis Charm for fire/projectile resistance.
 * Add additional exploration rewards that increase survivability.
 * Add more events to East Forest and River areas.
 * Improve hidden discovery placement.

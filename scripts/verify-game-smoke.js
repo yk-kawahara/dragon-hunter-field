@@ -198,6 +198,7 @@ function createRuntime() {
     currentRegion: () => spawn.currentRegion(contexts.spawn()),
     areaDangerText: (region) => spawn.areaDangerText(contexts.spawn(), region),
     guardianReady: () => spawn.guardianReady(contexts.spawn()),
+    wardenReady: () => spawn.wardenReady(contexts.spawn()),
     updateStoryEvents: () => spawn.updateStoryEvents(contexts.spawn()),
     shootProjectile: (monster, target, angleOffset) => projectiles.shootProjectile(contexts.projectile(), monster, target, angleOffset),
     nearestNpc: () => npc.nearestNpc(contexts.npc()),
@@ -243,6 +244,7 @@ function assertMapReachability() {
     ...d.TREASURE_CHESTS.map((chest) => [`chest:${chest.id}`, chest.x, chest.y]),
     ...d.DISCOVERY_POINTS.map((discovery) => [`discovery:${discovery.id}`, discovery.x, discovery.y]),
     ["guardian", d.GUARDIAN_SITE.x, d.GUARDIAN_SITE.y],
+    ["warden", d.WARDEN_SITE.x, d.WARDEN_SITE.y],
     ["dragon-cave", 51, 18],
     ["east-expansion", 72, 57],
     ["north", 11, 13],
@@ -264,6 +266,7 @@ function assertSaveLoadAndEquipment() {
   player.hunterCharm = true;
   player.regenCharm = true;
   player.trailCharm = true;
+  player.aegisCharm = true;
   state.chests.add("town-cache");
   state.chests.add("north-ruin");
   state.chests.add("south-outpost");
@@ -271,6 +274,8 @@ function assertSaveLoadAndEquipment() {
   state.discoveries.add("hunter-cache");
   state.guardianDefeated = true;
   state.spawnedGuardian = true;
+  state.wardenDefeated = true;
+  state.spawnedWarden = true;
   state.bossDefeated = true;
   state.spawnedBoss = true;
   state.elderReported = true;
@@ -282,6 +287,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.armor === 3, "armor rank should persist");
   assert(restored.player.regenCharm, "regen charm should persist");
   assert(restored.player.trailCharm, "trail charm should persist");
+  assert(restored.player.aegisCharm, "aegis charm should persist");
   const baseline = createRuntime();
   baseline.player.armor = restored.player.armor;
   baseline.player.weapon = restored.player.weapon;
@@ -290,6 +296,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.runtime.playerMoveSpeed() > baseline.runtime.playerMoveSpeed(), "trail charm should improve movement speed after load");
   assert(restored.state.chests.size === 3, "opened chests should persist");
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
+  assert(restored.state.wardenDefeated, "warden defeat flag should persist");
   assert(restored.state.guardianDefeated && restored.state.bossDefeated && restored.state.elderReported, "boss/clear flags should persist");
 
   const rewardHelpers = globalThis.DRAGON_HUNTER_REWARDS;
@@ -301,6 +308,21 @@ function assertSaveLoadAndEquipment() {
 
 function assertStoryClearFlow() {
   const { definitions: d, state, player, runtime } = createRuntime();
+
+  player.level = 3;
+  player.trailCharm = true;
+  player.hp = player.hpMax;
+  player.x = d.WARDEN_SITE.x * d.TILE;
+  player.y = d.WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedWarden, "Warden should spawn near southeast site after trail charm and level 3");
+  const warden = state.monsters.find((monster) => monster.type === "warden");
+  assert(warden, "Warden monster should exist");
+  warden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.wardenDefeated, "Warden defeat should set wardenDefeated");
+  assert(player.aegisCharm, "Warden defeat should grant aegis charm");
+  assert(!state.guardianDefeated, "Warden defeat should not count as Guardian defeat");
 
   player.level = 3;
   player.scales = 2;

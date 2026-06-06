@@ -35,6 +35,7 @@
   function shootProjectile(context, monster, target, angleOffset = 0) {
     const { state, addSlash } = requireProjectileContext(context);
     const c = centerOf(monster);
+    const midbossColor = monster.type === "warden" ? "#6de4ff" : "#55c7a0";
     const baseAim = normalize(target.x - c.x, target.y - c.y);
     const cos = Math.cos(angleOffset);
     const sin = Math.sin(angleOffset);
@@ -50,11 +51,11 @@
       vy: aim.y * speed,
       r: worldPx(monster.boss ? 4 : monster.midboss ? 3 : 3),
       damage: monster.boss ? 14 : monster.midboss ? 11 : 8,
-      color: monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166",
-      source: monster.boss ? "dragon" : monster.midboss ? "guardian" : monster.type,
+      color: monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166",
+      source: monster.boss ? "dragon" : monster.midboss ? monster.type : monster.type,
       life: monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
     });
-    addSlash(c.x + aim.x * worldPx(8), c.y + aim.y * worldPx(8), monster.dir, monster.boss ? "#ff543d" : monster.midboss ? "#55c7a0" : "#ffd166");
+    addSlash(c.x + aim.x * worldPx(8), c.y + aim.y * worldPx(8), monster.dir, monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166");
   }
 
   function updateProjectiles(context, dt) {
@@ -96,6 +97,7 @@
           let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon" }, 0, source)));
           if (p.source === "dragon" && hurt < 3) hurt = 3;
           if (p.source === "guardian" && hurt < 2) hurt = 2;
+          if (p.source === "warden" && hurt < 2) hurt = 2;
           if (player.guard > 0) hurt = Math.floor(hurt * 0.3);
           player.hp = Math.max(0, player.hp - hurt);
           player.invuln = 320;
@@ -110,6 +112,9 @@
             player.burn = Math.max(player.burn, p.source === "dragon" ? 2600 : 1500);
           } else if (p.source === "guardian") {
             player.slow = Math.max(player.slow, 1500);
+          } else if (p.source === "warden") {
+            player.slow = Math.max(player.slow, 900);
+            player.stamina = Math.max(0, player.stamina - 10);
           }
         }
         return false;

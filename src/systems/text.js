@@ -41,17 +41,19 @@
   }
 
   function guidanceText(context) {
-    const { player, inTown, currentRegion, areaDangerText } = requireTextContext(context);
+    const { state, player, inTown, currentRegion, areaDangerText } = requireTextContext(context);
     if (inTown(player.x, player.y)) {
       if (player.hp < player.hpMax) return "安全: 回復陣で全快できる";
       const cost = nextUpgradeCost(context);
       if (cost > 0 && player.gold < cost) return `準備: ${cost}Gで次の装備`;
+      if (player.trailCharm && player.level >= 3 && !state.wardenDefeated) return "南東の前線で道番に挑む";
       if (cost > 0) return "準備: 鍛冶屋で生存圏を広げる";
       return "安全: 外へ出てより遠くを目指す";
     }
     const hpRate = player.hp / player.hpMax;
     if (hpRate < 0.35) return "危険: 村へ戻って立て直す";
     const stage = gameStage(context);
+    if (player.trailCharm && player.level >= 3 && !state.wardenDefeated) return "南東の道番が守りの護石を持つ";
     if (stage === "scales") return player.armor === 0 ? "近場で稼ぎ 革鎧を買う" : "遠方ほど鱗と報酬が良い";
     if (stage === "ruin") return "北森の遺跡で守護者の手掛かり";
     if (stage === "level") return "強敵で鍛え 装備も更新";

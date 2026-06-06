@@ -63,6 +63,7 @@
     let mult = 1;
     if (player.armor >= 2 && source === "contact" && pDot > 0.58) mult *= 0.8;
     if (player.armor >= 4 && (monster?.boss || monster?.type === "dragonling" || source === "fire")) mult *= 0.78;
+    if (player.aegisCharm && (source === "fire" || source === "projectile")) mult *= 0.82;
     return mult;
   }
 
