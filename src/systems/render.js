@@ -198,7 +198,7 @@ function draw(context) {
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
   if (state.victory && !state.elderReported) drawVictoryBanner();
-  if (state.elderReported) drawOverlay("QUEST CLEAR", "CLEAR");
+  if (state.elderReported) drawEndingOverlay();
 
   ctx.restore();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1326,6 +1326,22 @@ function drawOverlay(title, small) {
   ctx.fillText(title, W / 2, 65);
   ctx.font = "8px monospace";
   ctx.fillText(small === "R" ? "R" : "CLEAR", W / 2, 80);
+}
+
+function drawEndingOverlay() {
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.fillRect(0, 0, W, VIEW_H);
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.font = "16px monospace";
+  ctx.fillText("QUEST CLEAR", W / 2, 52);
+  ctx.font = "8px monospace";
+  ctx.fillStyle = "#fff2a6";
+  ctx.fillText("赤竜は封じられた", W / 2, 70);
+  ctx.fillStyle = "#d7e2ea";
+  ctx.fillText("村に朝が戻り 旅は語り継がれる", W / 2, 84);
+  ctx.fillStyle = "#74ff8f";
+  ctx.fillText("N: はじめから", W / 2, 103);
 }
 
 function drawVictoryBanner() {

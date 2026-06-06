@@ -18,7 +18,7 @@ This is the recommended order for the next development passes. Do not treat the 
 * Add one more meaningful route reason in the east/southeast area only if the traveler bell plus Warden route still does not make the expansion feel like a destination.
 * Balance gold/EXP/shop prices so the first armor purchase, level 4 timing, Guardian readiness, and dragon readiness feel natural in a normal playthrough.
 * Improve equipment/item review only where it helps decisions: current gear, next upgrade value, regeneration, boss requirements, and progression items.
-* Add a short elder ending/report sequence after the survival route is verified.
+* Real-browser verify the elder ending panel and `N` replay behavior after final report.
 
 ### Medium / Deferred
 
@@ -262,10 +262,10 @@ This is the recommended order for the next development passes. Do not treat the 
 
 ## Ending and Clear State
 
-* Add ending dialogue after victory report.
-* Add a small ending message sequence after returning to the elder.
-* Add a clear summary or post-clear note after the final report.
-* Add ending or post-clear note only after the survival-range loop feels good.
+* Current state: elder report now shows a compact final clear panel with `QUEST CLEAR`, village-saved text, and `N: はじめから`.
+* Current state: pressing `N` on the final clear screen starts a fresh New Game through the existing reset flow.
+* Real-browser verify the ending panel after an actual Red Dragon clear and elder report.
+* Add a richer optional epilogue only after the survival-range loop and full route balance feel good in manual play.
 
 ## Save and Settings
 

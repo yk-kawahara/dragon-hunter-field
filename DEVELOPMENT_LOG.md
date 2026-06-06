@@ -248,3 +248,23 @@
 - Remaining risk:
   - Real browser QA should verify the actual start screen visuals and clicking/tapping `はじめから` / `つづきから`.
   - Manual replay-after-clear should be tested by clearing the game, reloading, choosing `はじめから`, and confirming level 1 / unopened chests / no clear state.
+
+## 2026-06-06 Ending Report / Clear Replay Pass
+- Goal: consume a remaining high-value gameplay-completion task, not refactoring. The end of the route needed more payoff after the player defeats the Red Dragon and returns to the elder.
+- Implemented a richer final clear overlay after elder report:
+  - Shows `QUEST CLEAR`.
+  - States that the Red Dragon has been sealed.
+  - Reinforces that the village is safe again.
+  - Shows `N: はじめから` as the immediate replay route.
+- Added keyboard support so pressing `N` after the final elder report calls the New Game reset flow. This clears the saved data, opened chests, discoveries, boss/clear flags, equipment, charms, and inventory through the existing `resetGame` path.
+- Design impact:
+  - The completion route now ends with a clearer payoff instead of a bare `CLEAR` label.
+  - Replay after completion is visible on the clear screen, not only after page reload.
+- Verification:
+  - Bundled Node syntax checks passed for all JavaScript files under `src/` and `scripts/`.
+  - `scripts/verify-game-smoke.js` passed. It still verifies map reachability, save/load, opened chest persistence, equipment anti-downgrade, start-menu New Game behavior, Warden, Guardian, Red Dragon defeat, and elder report clear state.
+  - `git diff --check` passed with line-ending warnings only.
+- Remaining risk:
+  - In-app Browser QA could not run in this environment; the browser connection failed with the same Windows browser-session startup issue seen previously.
+  - Real browser/manual QA should visually confirm the new ending panel and `N` replay behavior after an actual clear.
+  - The ending is intentionally compact; a richer epilogue should wait until the full route has been manually balanced.

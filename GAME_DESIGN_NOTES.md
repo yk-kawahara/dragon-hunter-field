@@ -299,7 +299,7 @@ Current implemented progression:
 
 9\. Return to the village and report victory for the final clear state.
 
-10\. After clearing, the player can return to the start screen on reload and choose `はじめから` to replay from level 1.
+10\. After clearing, the player sees a final clear panel and can press `N` to replay from level 1, or return to the start screen on reload and choose `はじめから`.
 
 
 
@@ -690,6 +690,8 @@ Defeat the red dragon.
 
 The game enters a victory state, then the player returns to the village and reports victory for the final clear state.
 
+After the elder report, the ending panel confirms that the dragon was sealed and the village is safe. The clear screen also shows `N: はじめから` so replay from level 1 is visible without manual storage cleanup.
+
 
 
 The ending should reinforce that the player has grown from a fragile village-bound hunter into someone capable of surviving the dragon's domain.
@@ -750,6 +752,8 @@ The ending should reinforce that the player has grown from a fragile village-bou
 
 \* Start screen supports `はじめから` and `つづきから`, so a cleared save no longer traps the player in the completed state.
 
+\* Elder report now leads to a final clear panel with replay guidance.
+
 
 
 \# Future Design Priorities
@@ -768,7 +772,7 @@ The ending should reinforce that the player has grown from a fragile village-bou
 
 6\. Add exploration rewards that extend travel range.
 
-7\. Add ending dialogue after the victory report.
+7\. Verify the ending panel and clear-screen replay input in a real browser/manual playthrough.
 
 8\. Run browser visual QA on desktop and mobile viewport.
 

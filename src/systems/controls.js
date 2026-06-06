@@ -70,6 +70,7 @@
       if (event.code === "KeyQ") cycleItem(-1);
       if (event.code === "KeyE") cycleItem(1);
       if (event.code === "KeyR" && state.gameOver) resetGame();
+      if (event.code === "KeyN" && state.elderReported) resetGame();
     });
 
     window.addEventListener("keyup", (event) => {

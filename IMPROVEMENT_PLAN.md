@@ -299,6 +299,25 @@ Verified:
 * VM smoke passes after the new startup flow.
 * `resetGame` now clears opened chest state as well as discovered hidden rewards.
 
+### Ending Report Pass
+
+Problem:
+
+* After defeating the Red Dragon and reporting to the elder, the final clear state existed but felt too abrupt.
+* Replay was available from the start screen after reload, but the clear screen itself did not clearly tell the player how to begin again.
+
+Implemented:
+
+* Replaced the final elder-reported overlay with a small ending panel that states the dragon was sealed and the village is safe.
+* Added `N: はじめから` guidance on the clear screen.
+* Added `N` key support after elder report to reset to a fresh New Game state, including save removal and one-time reward reset.
+
+Verified:
+
+* Syntax checks pass for all JavaScript files under `src/` and `scripts/`.
+* VM smoke still verifies map reachability, one-time reward persistence, equipment anti-downgrade, start menu behavior, Warden, Guardian, Red Dragon defeat, and elder report clear state.
+* `git diff --check` passed with line-ending warnings only.
+
 ### Playtest Improvement Pass Cycle 9
 
 Problem:
@@ -561,9 +580,15 @@ Current status:
 
 ### Ending
 
-* Add elder report sequence.
-* Add ending dialogue.
-* Add clear summary after completion.
+Current status:
+
+* Implemented a final clear overlay after elder report.
+* Implemented clear-screen `N` replay guidance and input.
+
+Remaining:
+
+* Real browser/manual QA should verify the ending overlay and direct clear-screen New Game behavior.
+* A future content pass may add a richer optional epilogue only after the full route balance feels good.
 
 ---
 
@@ -589,6 +614,7 @@ Current automated verification:
 * Script-order VM smoke passes for all 22 `index.html` scripts, including `src/data/maps/world.js` and `src/data/audio.js`.
 * Save/load VM smoke passes for opened chests, discoveries, equipment, charms, boss flags, elder report state, and weak-equipment anti-downgrade guards.
 * Start-screen VM script-load smoke passes; game initialization renders the initial screen and waits for New Game / Continue selection.
+* Ending VM flow reaches `elderReported`; the clear overlay and direct `N` replay path still need real browser/manual visual confirmation.
 * Fixed map preview exists at `docs/world-map-preview.png` / `docs/world-map-preview.svg` and was visually inspected for the village, North Forest, river, dragon cave, and east/southeast expansion.
 * `scripts/verify-game-smoke.js` now provides repeatable VM verification for script order, map reachability, save/load, equipment anti-downgrade, Guardian, Red Dragon, and elder report flow.
 * `scripts/generate-map-preview.ps1` regenerates both PNG and SVG fixed-map previews.

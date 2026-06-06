@@ -160,10 +160,12 @@ Recent gameplay completion result:
 * Defeating the Warden grants the Aegis Charm, which reduces fire/projectile damage and helps dragon-route preparation.
 * VM smoke verifies reachability, persistence, stat effects, Warden spawn/defeat, and that Warden defeat does not count as Guardian defeat.
 * Startup now shows a New Game / Continue menu instead of automatically loading the latest save.
+* Elder report now shows a final clear panel and `N: はじめから` guidance.
+* Pressing `N` on the final clear screen starts a fresh New Game through the existing reset flow.
 
 ## First Task For Next Codex
 
-Start with verification, then continue gameplay content only if the route still feels thin.
+Start with real browser/manual verification, then continue gameplay content only if the route still feels thin.
 
 1. Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `DEVELOPMENT_LOG.md`, and this file.
 2. Inspect the actual repository tree and confirm that all files in the expected architecture exist.
@@ -173,13 +175,14 @@ Start with verification, then continue gameplay content only if the route still 
 6. Launch the game in a real browser if available and verify the start screen first.
 7. Check New Game, Continue, and replay-after-clear behavior before tuning content.
 8. Perform a full manual playthrough if possible.
-9. Manually tune the southeast Warden route if it feels too hard, too easy, or too disconnected from the survival-range loop.
-10. If the route feels good, the next content pass should add a small elder/ending report sequence or another survival-range reward, not more refactoring.
-11. Update documentation with exact verification results and commit with a clear message if changes are made.
+9. Verify the ending panel after elder report and confirm `N` starts from level 1 with unopened chests and no clear flags.
+10. Manually tune the southeast Warden route if it feels too hard, too easy, or too disconnected from the survival-range loop.
+11. If the route feels good, the next content pass should add another survival-range reward or route event, not more refactoring.
+12. Update documentation with exact verification results and commit with a clear message if changes are made.
 
 ## Recommended Prompt
 
-Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEVELOPMENT_LOG.md`, and `NEXT_CODEX_TASK.md` first. This is a gameplay-completion project, not a refactor project. Start with syntax checks, `scripts/verify-game-smoke.js`, `git diff --check`, and real browser QA if available. First verify the start screen: no-save Continue disabled, Continue loads progress, New Game clears a cleared save and starts from level 1. Then play or simulate the route: village -> southeast outpost traveler bell -> level 3 -> Southeast Warden -> Aegis Charm -> Guardian -> Red Dragon -> elder report. If it feels thin, tune the Warden/reward balance or add a small ending/report sequence. Do not do architecture-only work.
+Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEVELOPMENT_LOG.md`, and `NEXT_CODEX_TASK.md` first. This is a gameplay-completion project, not a refactor project. Start with syntax checks, `scripts/verify-game-smoke.js`, `git diff --check`, and real browser QA if available. First verify the start screen: no-save Continue disabled, Continue loads progress, New Game clears a cleared save and starts from level 1. Then play or simulate the route: village -> southeast outpost traveler bell -> level 3 -> Southeast Warden -> Aegis Charm -> Guardian -> Red Dragon -> elder report -> final clear panel -> `N` replay. If it feels thin, tune the Warden/reward balance or add another survival-range reward/event. Do not do architecture-only work.
 
 ## Verification Items
 
@@ -203,6 +206,8 @@ Read `AGENTS.md`, `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, `TODO.md`, `DEV
 * Save/load from localStorage key `dragon-hunter-field-save-v2-32px`.
 * Start screen New Game / Continue behavior.
 * Replay after clear via New Game.
+* Final clear panel after elder report.
+* `N` replay from the final clear panel.
 * Enemy spawn in grassland, Wilds, North Forest, East Forest/River, and Dragon Cave.
 * Enemy movement and contact combat.
 * Boar charge.

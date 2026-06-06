@@ -776,6 +776,13 @@ After the player clears the game, they must still be able to start again from le
 New Game must reset persistent progression, including opened chests, discovered rewards, boss flags, clear flags, equipment, charms, and inventory.
 
 
+The final elder report should clearly communicate that the dragon was defeated and the village is safe.
+
+
+
+The clear screen should provide an obvious replay route, currently `N: はじめから`, so a completed save never traps the player in an end state.
+
+
 
 \### Playtest Before Expansion Rule
 
