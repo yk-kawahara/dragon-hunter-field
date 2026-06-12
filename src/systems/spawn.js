@@ -123,6 +123,7 @@
     const { player } = requireSpawnContext(context);
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
+    if (ty >= 96) return "moon";
     if ((tx >= 90 && tx <= 115 && ty >= 84) || (tx >= 105 && tx <= 116 && ty >= 36 && ty <= 47)) return "tower";
     if (tx >= 80 || ty >= 72) return "ash";
     if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
@@ -152,13 +153,14 @@
     if (lv >= 3 && region === "grassland") pool.push("boar");
     if (lv >= 4 && region !== "grassland") pool.push("dragonling");
     if (lv >= 3 && region === "mine") pool.push("dragonling");
-    if (lv >= 8 && (region === "ash" || region === "tower")) pool.push("sorcerer");
+    if (lv >= 8 && (region === "ash" || region === "tower" || region === "moon")) pool.push("sorcerer");
+    if (lv >= 12 && region === "moon") pool.push("moonShade");
     return pool;
   }
 
   function trySpawnMonster(context, dt) {
     const { state, player, rand, isPassableRect, inTown } = requireSpawnContext(context);
-    if (state.gameOver || state.victory) return;
+    if (state.gameOver) return;
     pruneDistantMonsters(context);
     state.spawnTimer -= dt;
     const region = currentRegion(context);
@@ -183,13 +185,13 @@
 
   function updateRegionSpawns(context, dt) {
     const { state, player, say, inTown } = requireSpawnContext(context);
-    if (state.gameOver || state.victory || inTown(player.x, player.y)) return;
+    if (state.gameOver || inTown(player.x, player.y)) return;
     pruneDistantMonsters(context);
     state.regionSpawnTimer = Math.max(0, state.regionSpawnTimer - dt);
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : region === "ash" ? 6 : region === "tower" ? 7 : 5;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : region === "ash" ? 6 : region === "tower" ? 7 : region === "moon" ? 8 : 5;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -249,6 +251,7 @@
   }
 
   function areaDangerText(region) {
+    if (region === "moon") return "月影廃墟: 古塔の先の危険地帯";
     if (region === "north") return "北森: 強敵の気配";
     if (region === "east") return "東の森: 魔力が濃い";
     if (region === "mine") return "廃坑: 泡と魔法の気配";
@@ -298,7 +301,7 @@
 
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
-    if (state.gameOver || state.victory) return;
+    if (state.gameOver) return;
 
     if (state.spawnedWarden && !state.wardenDefeated && !hasLiveMonster(context, "warden")) {
       state.spawnedWarden = false;
@@ -315,6 +318,8 @@
       spawnMonster(context, "ashKnight", ASH_KNIGHT_SITE.x * TILE, ASH_KNIGHT_SITE.y * TILE);
       say("古塔の灰騎士が道を塞いだ!", 2600);
     }
+
+    if (state.victory) return;
 
     if (wardenReady(context) && !state.spawnedWarden && playerNearWardenSite(context)) {
       state.spawnedWarden = true;

@@ -8,7 +8,7 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 
 Current focus:
 
-* Continue expanding the map beyond the new `120x96` overworld without creating empty space.
+* Continue expanding the map beyond the new `120x112` overworld without creating empty space.
 * Preserve content density, regional purpose, and survival-range expansion.
 * Treat village -> Guardian -> Red Dragon as Chapter 1, not final scope.
 * Add meaningful volume: larger maps, remote towns, dungeons, varied monsters, equipment tiers, inventory decisions, and side routes.
@@ -56,7 +56,7 @@ If browser QA is unavailable, record the limitation in `DEVELOPMENT_LOG.md` and 
 
 ### 2. Map size expansion follow-up
 
-Goal: build on the current `120x96` overworld without creating empty terrain.
+Goal: build on the current `120x112` overworld without creating empty terrain.
 
 Implementation direction:
 
@@ -81,7 +81,7 @@ Use expanded space to create named routes, not more grass.
 
 Preferred first targets:
 
-* Deepen Ash Road / Ash Hamlet / Old Tower with more treasures, NPC guidance, and a clearer route to the Ash Knight.
+* Deepen Ash Road / Ash Hamlet / Old Tower / Moon Ruins with more treasures, NPC guidance, and a clearer route through the expanded late route.
 * Continue southwest mine expansion using Bubbler pressure and mine charm counterplay.
 * Add another remote road/frontier base, dungeon entrance, or town that moves the safe radius outward.
 
@@ -129,7 +129,7 @@ Check:
 
 ### Map scope
 
-* Short-term: deepen the current `120x96` world with dense landmarks, rewards, and route goals.
+* Short-term: deepen the current `120x112` world with dense landmarks, rewards, and route goals.
 * Mid-term: add map files for dungeons/interiors such as caves, towers, castles, mines, and towns.
 * Long-term: make playable scope at least 10x Chapter 1 through larger `world.js`, additional map files, or both.
 * Continue hand-authored fixed map data; do not return to random terrain.

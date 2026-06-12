@@ -267,10 +267,12 @@ function assertMapReachability() {
     ["far-east-road", 69, 18],
     ["ash-hamlet", 102, 58],
     ["old-tower", 104, 90],
+    ["moon-ruin", 97, 99],
+    ["moon-road", 102, 106],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
-  assert(d.MAP_W === 120 && d.MAP_H === 96, "expanded map should be 120x96");
+  assert(d.MAP_W === 120 && d.MAP_H === 112, "expanded map should be 120x112");
   assert(state.npcs.length === 5, "expected 5 NPCs from WORLD_OBJECTS after ash hamlet expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   return { reachableTiles: seen.size, npcs: state.npcs.map((entry) => entry.type) };
@@ -463,6 +465,22 @@ function assertStoryClearFlow() {
   dragon.hp = 0;
   runtime.updateMonsters(16);
   assert(state.bossDefeated && state.victory, "Dragon defeat should set victory state");
+
+  state.ashKnightDefeated = false;
+  state.spawnedAshKnight = false;
+  state.monsters = state.monsters.filter((monster) => monster.type !== "ashKnight");
+  player.level = d.ASH_KNIGHT_REQUIREMENTS.level;
+  player.x = d.ASH_KNIGHT_SITE.x * d.TILE;
+  player.y = d.ASH_KNIGHT_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedAshKnight, "Ash Knight should still spawn after dragon victory when requirements are met");
+
+  const postVictoryAshKnight = state.monsters.find((monster) => monster.type === "ashKnight");
+  assert(postVictoryAshKnight, "Ash Knight monster should exist after post-victory spawn");
+  postVictoryAshKnight.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.ashKnightDefeated, "Post-victory Ash Knight defeat should persist in state");
+
   const elder = state.npcs.find((entry) => entry.type === "elder");
   runtime.handleNpc(elder);
   assert(state.elderReported, "Elder report should complete clear state");
@@ -574,8 +592,13 @@ function assertExpandedWorldContent() {
   player.x = d.ASH_KNIGHT_SITE.x * d.TILE;
   player.y = d.ASH_KNIGHT_SITE.y * d.TILE;
   assert(runtime.currentRegion() === "tower", "old tower should use tower region");
+  player.x = 104 * d.TILE;
+  player.y = 102 * d.TILE;
+  assert(runtime.currentRegion() === "moon", "moon ruins should use moon region");
   const towerPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "tower");
   assert(towerPool.includes("sorcerer"), "tower spawn pool should include sorcerer");
+  const moonPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
+  assert(moonPool.includes("moonShade") && moonPool.includes("sorcerer"), "moon spawn pool should include moonShade and sorcerer");
 
   assert(runtime.inTownTile(102, 58), "ash hamlet should be a safe-zone tile");
   player.hp = 5;
@@ -603,7 +626,13 @@ function assertExpandedWorldContent() {
   const reward = createRuntime();
   reward.runtime.grantChestReward("ashGear");
   assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8), "ashGear chest should grant star gear inventory");
-  return { ashRegion: "ash", towerRegion: "tower", starGear: true };
+  reward.runtime.grantChestReward("moonRelic");
+  assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8) && reward.player.wards >= 4, "moonRelic chest should reinforce star gear and wards");
+  reward.runtime.grantChestReward("moonSupply");
+  assert(reward.player.bombs >= 3 && reward.player.wards >= 7, "moonSupply chest should add late expedition supplies");
+  reward.runtime.grantDiscoveryReward({ id: "test-waystone", kind: "waystone" }, 0, 0);
+  assert(reward.player.wards >= 8 && reward.player.stamina === reward.player.staminaMax, "waystone discovery should restore stamina and add a ward");
+  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", starGear: true };
 }
 
 function assertScriptLoadSmoke() {

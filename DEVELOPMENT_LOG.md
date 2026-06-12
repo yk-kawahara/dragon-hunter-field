@@ -25,13 +25,14 @@ Current project status:
 * Core design: survival-range expansion.
 * Code structure is split across `src/data`, `src/core`, and `src/systems`.
 * Fixed hand-editable world map lives in `src/data/maps/world.js`.
-* Current map size is `120x96`; future work should deepen the expanded world while preserving density, purpose, and reachability.
+* Current map size is `120x112`; future work should deepen the expanded world while preserving density, purpose, and reachability.
 * Real `もちもの` inventory exists with item, weapon, armor, and accessory handling.
 * Accessories are moving from permanent passive flags into equipment choices.
 * Southwest mine + southwest frontier camp are the first concrete volume-expansion pilot.
 * Southeast outpost + traveler bell + Southeast Warden + Aegis Charm make the southeast route a meaningful optional direction.
 * Ash Road + Ash Hamlet + Old Tower are the first larger map-size expansion beyond the old `80x72` footprint.
 * Ash Sorcerer and Old Tower Ash Knight add magic-pressure content beyond the Southeast Warden route.
+* Moon Ruins extend the Old Tower route southward with Moon Shade pressure, late supplies, and moon relic rewards.
 * Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
 
 Current high-priority risks:
@@ -39,7 +40,7 @@ Current high-priority risks:
 * Full real-browser desktop/mobile play QA is still needed.
 * Full fresh-save manual playthrough to elder report is still needed.
 * Mobile UI and inventory overlay need real-browser confirmation.
-* Future map expansion must avoid empty terrain and preserve reachability; the new 120x96 space needs more hand-authored content density.
+* Future map expansion must avoid empty terrain and preserve reachability; the new 120x112 space needs more hand-authored content density.
 * Gold/EXP/shop price balance should be checked after route expansion.
 
 Next verification target:
@@ -70,6 +71,46 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ## New entries
 
 _Add new entries here._
+
+### 2026-06-12: Post-Dragon Ash Knight Fix and Moon Ruins Expansion
+
+Goal: apply playtest findings, fix the Ash Knight post-victory spawn blocker, improve Old Tower route guidance, and add more playable map content beyond the current expanded route.
+
+Key work:
+
+* Fixed `updateStoryEvents()` so game over still stops story events, but Red Dragon victory no longer prevents the Old Tower Ash Knight from spawning when its requirements are met.
+* Kept normal Guardian/Warden story spawning gated after `victory`, so the fix is targeted to the late optional Ash Knight route.
+* Expanded the fixed overworld from `120x96` to `120x112`.
+* Added the Moon Ruins / `月影廃墟` as a southern continuation past the Old Tower.
+* Added Moon Shade / `月影の亡霊` as a late magic enemy with faster magic projectiles and stamina/slow pressure.
+* Added Moon Ruins treasure and discovery content:
+  * `moon-ruin-cache`
+  * `moon-road-supply`
+  * `moon-waystone`
+  * `moon-field-cache`
+* Added `moonRelic`, `moonSupply`, and `waystone` rewards for late-route supplies, wards, stamina recovery, and star-gear reinforcement.
+* Added guidance text that points the player from Ash Hamlet south to the Old Tower and from the Old Tower south to the Moon Ruins.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` at `120x112`.
+* Updated `scripts/generate-map-preview.ps1` so map previews include `SOUTH_GATE_ROW` and `DEEP_SOUTH_EXPANSION`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * `120x112` map size,
+  * reachability for Moon Ruins treasure/discovery goals,
+  * Moon Ruins region detection,
+  * Moon Shade spawn pool membership,
+  * Moon rewards and waystone reward behavior,
+  * Ash Knight spawning after Red Dragon victory when requirements are met.
+* `git diff --check` passed with CRLF warnings only.
+* Map previews regenerated successfully at `120x112`.
+
+Known risks:
+
+* In-app Browser QA could not be run because the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Manual balance for Moon Shade, Moon Ruins reward value, and the Red Dragon -> Ash Knight -> Moon Ruins optional route still needs real playtesting.
 
 ### 2026-06-12: 120x96 World Expansion and Equipment Visibility
 

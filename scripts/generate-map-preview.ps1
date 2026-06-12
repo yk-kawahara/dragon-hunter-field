@@ -28,11 +28,22 @@ function Get-MapRows($name) {
   return $list
 }
 
+function Get-MapRow($name) {
+  foreach ($line in $content) {
+    if ($line -match "const $name = `"([.\+~T#\^_C\*=]+)`";") {
+      return $Matches[1]
+    }
+  }
+  return ""
+}
+
 $rows = Get-MapRows "WORLD_MAP"
 if ($rows.Count -eq 0) {
   $baseRows = Get-MapRows "BASE_MAP"
   $eastRows = Get-MapRows "EAST_EXPANSION"
   $southRows = Get-MapRows "SOUTH_EXPANSION"
+  $southGateRow = Get-MapRow "SOUTH_GATE_ROW"
+  $deepSouthRows = Get-MapRows "DEEP_SOUTH_EXPANSION"
   if ($baseRows.Count -gt 0 -and $baseRows.Count -eq $eastRows.Count) {
     $rows = New-Object System.Collections.Generic.List[string]
     for ($i = 0; $i -lt $baseRows.Count; $i += 1) {
@@ -43,8 +54,18 @@ if ($rows.Count -eq 0) {
       }
       $rows.Add($baseRow + $eastRows[$i])
     }
-    foreach ($row in $southRows) {
-      $rows.Add($row)
+    if ($southGateRow.Length -gt 0 -and $deepSouthRows.Count -gt 0) {
+      for ($i = 0; $i -lt $southRows.Count - 1; $i += 1) {
+        $rows.Add($southRows[$i])
+      }
+      $rows.Add($southGateRow)
+      foreach ($row in $deepSouthRows) {
+        $rows.Add($row)
+      }
+    } else {
+      foreach ($row in $southRows) {
+        $rows.Add($row)
+      }
     }
   }
 }

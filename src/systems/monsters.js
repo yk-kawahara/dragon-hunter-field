@@ -168,7 +168,7 @@
         addRing(c.x, c.y, "#ff8a3d", worldPx(15));
       }
 
-      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "sorcerer" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : monster.type === "sorcerer" ? 165 : 130)) {
+      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "sorcerer" || monster.type === "moonShade" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
         if (monster.boss && monster.enraged) {
           shootProjectile(monster, playerCenter, -0.28);
           shootProjectile(monster, playerCenter, 0);
@@ -176,7 +176,7 @@
         } else {
           shootProjectile(monster, playerCenter);
         }
-        monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "sorcerer" ? rand(900, 1450) : rand(1300, 2100);
+        monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "sorcerer" || monster.type === "moonShade" ? rand(900, 1450) : rand(1300, 2100);
       }
 
       if (monster.windup > 0) {
@@ -301,7 +301,7 @@
       player.stamina = Math.max(0, player.stamina - 18);
       player.slow = Math.max(player.slow, 700);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#8dd7ff");
-    } else if (monster.type === "sorcerer") {
+    } else if (monster.type === "sorcerer" || monster.type === "moonShade") {
       player.slow = Math.max(player.slow, 800);
       player.stamina = Math.max(0, player.stamina - 10);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "MAG", "#b990ff");

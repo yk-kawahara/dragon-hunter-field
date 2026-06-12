@@ -165,6 +165,10 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
+    if (reward === "moonRelic" || reward === "moonSupply") {
+      grantMoonChestReward(context, reward);
+      return;
+    }
     if (reward === "starter") {
       player.gold += 45;
       player.potions = Math.min(9, player.potions + 2);
@@ -213,6 +217,27 @@
     }
   }
 
+  function grantMoonChestReward(context, reward) {
+    const { player, say } = requireRewardContext(context);
+    if (reward === "moonRelic") {
+      player.gold += 980;
+      player.wards = Math.min(9, player.wards + 4);
+      addOwnedWeapon(player, 8);
+      addOwnedArmor(player, 8);
+      say("月影廃墟の星遺物を得た。星装備と護符でさらに遠征できる");
+      return true;
+    }
+    if (reward === "moonSupply") {
+      player.gold += 520;
+      player.potions = Math.min(9, player.potions + 2);
+      player.bombs = Math.min(9, player.bombs + 3);
+      player.wards = Math.min(9, player.wards + 3);
+      say("月影街道の補給箱を回収した");
+      return true;
+    }
+    return false;
+  }
+
   function grantMonsterDefeatDrops(context, monster) {
     const { player, say } = requireRewardContext(context);
     if (Math.random() < monster.drop && !monster.boss) {
@@ -245,6 +270,14 @@
 
   function grantDiscoveryReward(context, discovery, x, y) {
     const { player, say, burst, refreshDerivedStats } = requireDiscoveryContext(context);
+    if (discovery.kind === "waystone") {
+      player.gold += 180;
+      player.stamina = player.staminaMax;
+      player.wards = Math.min(9, player.wards + 1);
+      burst(x, y, "#9fb3ff", 20);
+      say("古い道標を調べた。月影廃墟への道筋が見えた");
+      return;
+    }
     if (discovery.kind === "spring") {
       player.hp = player.hpMax;
       player.stamina = player.staminaMax;

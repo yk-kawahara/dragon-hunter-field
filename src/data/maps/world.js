@@ -191,6 +191,27 @@
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
   ];
 
+  const SOUTH_GATE_ROW = "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.............+++++++++++++++.......T";
+
+  const DEEP_SOUTH_EXPANSION = [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTT...............................~~~~~~~~~~~~~...........TTTTTTT.......+++++++++++++++++++++..T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTT.............................~~~~~~~~~~~~~.......TTTTTTT..........+++++++.###########.....T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTT.................................~~~~~~~~~~~~~.....................++++++++...#.........#.....T",
+    "TTTTTTTTTTTTTTTTTTTTT.....................................~~~~~~~~~~~~~.................+++++++++......#..=====..#.....T",
+    "TTTTTTTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~~...............++++***++........#..=====..#.....T",
+    "TTTTTTTTTTTTTTTTTTT.......................................~~~~~~~~~~~~~.............++++****+..........#..=====..#.....T",
+    "TTTTTTTTTTTTTTTTTTTTT.....................................~~~~~~~~~~~~~...........+++++++++............###########.....T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTT.................................~~~~~~~~~~~~~.........+++++++++++.TTTTT...+++++++++++++++++..T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTT.............................~~~~~~~~~~~~~.......+++++++++++...TTTTT...+++++++++++++++++..T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...........................~~~~~~~~~~~~~.....+++++++++++.TTTTTTTTT...+++++++++++++++++..T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTT.................................~~~~~~~~~~~~~...+++++++++++...TTTTTTTTT.+++++++++++++........T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTT.................................~~~~~~~~~~~~~.+++++++++++.....TTTTTTTTT...+++++++++..........T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...........................~~~~~~~~~~~~+++++++++++.......TTTTTTTTTTTTTTT++++++++........T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.......................~~~~~~~~~~~~+++++++++++++++++++++++++++++++++++++++++........T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.......................~~~~~~~~~~~~.............++++++++++++++......................T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ];
+
   function connectEastEdge(row, y) {
     const open = (y >= 15 && y <= 21) || (y >= 28 && y <= 35) || (y >= 49 && y <= 51) || (y >= 58 && y <= 66);
     return open ? `${row.slice(0, -1)}+` : row;
@@ -198,7 +219,9 @@
 
   const WORLD_MAP = [
     ...BASE_MAP.map((row, y) => connectEastEdge(row, y) + EAST_EXPANSION[y]),
-    ...SOUTH_EXPANSION,
+    ...SOUTH_EXPANSION.slice(0, -1),
+    SOUTH_GATE_ROW,
+    ...DEEP_SOUTH_EXPANSION,
   ];
 
   const WORLD_OBJECTS = [
@@ -211,7 +234,7 @@
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {
     width: 120,
-    height: 96,
+    height: 112,
     rows: WORLD_MAP,
     objects: WORLD_OBJECTS,
   };

@@ -14,6 +14,7 @@
     DISCOVERY_POINTS,
     BOSS_REQUIREMENTS,
     WARDEN_REQUIREMENTS,
+    ASH_KNIGHT_REQUIREMENTS,
     weaponNames,
     weaponCosts,
     armorCosts,
@@ -29,40 +30,47 @@
   function objectiveText(context) {
     const { state, player } = requireTextContext(context);
     const stage = gameStage(context);
-    if (stage === "cleared") return "CLEAR: 村に朝が戻った";
-    if (stage === "report") return "目的: 村へ戻って長老に報告";
-    if (stage === "dragon") return "目的: 洞穴の赤竜を倒す";
-    if (stage === "cave") return "目的: 北東の竜洞へ向かう";
-    if (stage === "guardian") return "目的: 北森の守護者を倒す";
-    if (stage === "level") return `目的: LV${BOSS_REQUIREMENTS.level}まで鍛える`;
-    if (stage === "ruin") return "目的: 北森の遺跡を探す";
+    if (stage === "cleared") return "CLEAR: ???????";
+    if (stage === "report") return "??: ??????????";
+    if (stage === "dragon") return "??: ????????";
+    if (stage === "cave") return "??: ?????????";
+    if (stage === "guardian") return "??: ?????????";
+    if (stage === "level") return `??: LV${BOSS_REQUIREMENTS.level}?????`;
+    if (stage === "ruin") return "??: ????????";
     const unopened = TREASURE_CHESTS.length - state.chests.size;
     const hidden = DISCOVERY_POINTS.length - state.discoveries.size;
-    return `目的: 竜の鱗 ${player.scales}/${BOSS_REQUIREMENTS.scales} 宝${unopened} 隠${hidden}`;
+    return `??: ???${player.scales}/${BOSS_REQUIREMENTS.scales} ?${unopened} ?${hidden}`;
   }
 
   function guidanceText(context) {
     const { state, player, inTown, currentRegion, areaDangerText } = requireTextContext(context);
     if (inTown(player.x, player.y)) {
-      if (player.hp < player.hpMax) return "安全: 回復陣で全快できる";
+      if (player.hp < player.hpMax) return "??: ?????????";
       const cost = nextUpgradeCost(context);
-      if (cost > 0 && player.gold < cost) return `準備: ${cost}Gで次の装備`;
-      if (player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level && !state.wardenDefeated) return "南東の前線で道番に挑む";
-      if (cost > 0) return "準備: 鍛冶屋で生存圏を広げる";
-      return "安全: 外へ出てより遠くを目指す";
+      if (state.wardenDefeated && !state.ashKnightDefeated && player.level >= ASH_KNIGHT_REQUIREMENTS.level) return "??????????????????????";
+      if (state.wardenDefeated && !state.ashKnightDefeated) return `???????????????LV${ASH_KNIGHT_REQUIREMENTS.level}??????`;
+      if (cost > 0 && player.gold < cost) return `??: ${cost}G?????`;
+      if (player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level && !state.wardenDefeated) return "???????????";
+      if (cost > 0) return "??: ???????????";
+      return "??: ????????????";
     }
     const hpRate = player.hp / player.hpMax;
-    if (hpRate < 0.35) return "危険: 近い拠点へ戻って立て直す";
+    if (hpRate < 0.35) return "??: ????????????";
     const stage = gameStage(context);
-    if (player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level && !state.wardenDefeated) return "南東の道番が守りの護石を持つ";
-    if (stage === "scales") return player.armor === 0 ? "近場で稼ぎ 革鎧を買う" : "遠方ほど鱗と報酬が良い";
-    if (stage === "ruin") return "北森の遺跡で守護者の手掛かり";
-    if (stage === "level") return "強敵で鍛え 装備も更新";
-    if (stage === "guardian") return "北森は準備して挑む";
-    if (stage === "cave") return "北東の竜洞へ";
-    if (stage === "dragon") return "炎と接触に注意";
-    if (stage === "report") return "村は安全 長老へ";
-    return areaDangerText(currentRegion());
+    const region = currentRegion();
+    if (state.wardenDefeated && !state.ashKnightDefeated && region === "ash") return "???????????LV14???????????";
+    if (state.wardenDefeated && !state.ashKnightDefeated && region === "tower") return "?????????????????";
+    if (state.ashKnightDefeated && region === "tower") return "????????????????????????";
+    if (region === "moon") return "??????????????????????";
+    if (player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level && !state.wardenDefeated) return "??????????????";
+    if (stage === "scales") return player.armor === 0 ? "???????????" : "???????????";
+    if (stage === "ruin") return "??????????????";
+    if (stage === "level") return "???????????";
+    if (stage === "guardian") return "?????????";
+    if (stage === "cave") return "??????";
+    if (stage === "dragon") return "???????";
+    if (stage === "report") return "???? ???";
+    return areaDangerText(region);
   }
 
   function nextUpgradeCost(context) {

@@ -766,6 +766,12 @@ function drawDiscoveries(cam) {
       ctx.fillStyle = found ? "#4f2e17" : "#7b4b25";
       ctx.fillRect(sx + 4, sy + 7, 8, 6);
       if (!found) drawGlint(sx + 11, sy + 6, "#ffd166");
+    } else if (discovery.kind === "waystone") {
+      ctx.fillStyle = found ? "#4a5268" : "#65739a";
+      ctx.fillRect(sx + 5, sy + 4, 6, 10);
+      ctx.fillStyle = found ? "#9fb3ff" : "#dce6ff";
+      ctx.fillRect(sx + 7, sy + 6, 2, 5);
+      if (!found) drawGlint(sx + 9, sy + 4, "#9fb3ff");
     }
   }
 }

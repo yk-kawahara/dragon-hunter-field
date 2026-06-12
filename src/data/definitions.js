@@ -9,7 +9,7 @@
   const HUD_H = H - VIEW_H;
   const TILE = BASE_TILE * WORLD_SCALE;
   const MAP_W = 120;
-  const MAP_H = 96;
+  const MAP_H = 112;
   const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const SAFE_ZONES = [
@@ -38,6 +38,8 @@
     { id: "ash-road-cache", x: 111, y: 41, reward: "ashGear" },
     { id: "south-quarry-cache", x: 58, y: 78, reward: "mineGold" },
     { id: "old-tower-cache", x: 104, y: 90, reward: "towerSupply" },
+    { id: "moon-ruin-cache", x: 97, y: 99, reward: "moonRelic" },
+    { id: "moon-road-supply", x: 102, y: 106, reward: "moonSupply" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
@@ -45,6 +47,8 @@
     { id: "hunter-cache", x: 57, y: 28, kind: "cache" },
     { id: "ash-spring", x: 101, y: 55, kind: "spring" },
     { id: "tower-cache", x: 99, y: 88, kind: "cache" },
+    { id: "moon-waystone", x: 86, y: 101, kind: "waystone" },
+    { id: "moon-field-cache", x: 108, y: 104, kind: "cache" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
@@ -61,6 +65,7 @@
     cave: { danger: 4, maxBonus: 4, pool: ["dragonling", "wisp", "dragonling"] },
     ash: { danger: 4, maxBonus: 5, pool: ["sorcerer", "wisp", "dragonling", "boar"] },
     tower: { danger: 5, maxBonus: 6, pool: ["sorcerer", "sorcerer", "dragonling", "wisp"] },
+    moon: { danger: 6, maxBonus: 7, pool: ["moonShade", "sorcerer", "dragonling", "wisp"] },
   };
 
   const TILE_GRASS = 0;
@@ -201,6 +206,18 @@
       color: "#b990ff",
       shadow: "#4b2b75",
       drop: 0.22,
+    },
+    moonShade: {
+      name: "月影の亡霊",
+      hp: 122,
+      atk: 74,
+      def: 22,
+      speed: 27 * WORLD_SCALE,
+      xp: 118,
+      gold: 42,
+      color: "#7f8cff",
+      shadow: "#263064",
+      drop: 0.24,
     },
     bubbler: {
       name: "泡吐き",

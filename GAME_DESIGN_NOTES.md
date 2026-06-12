@@ -67,7 +67,7 @@ Future work should grow the game into a larger RPG.
 
 Long-term direction:
 
-* Keep expanding the editable world beyond the current `120x96` overworld definition.
+* Keep expanding the editable world beyond the current `120x112` overworld definition.
 * Use hand-authored map data or additional hand-authored map files.
 * Add multiple regional arcs, not just one long walk from the starting village.
 * Add towns, frontier bases, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
@@ -122,6 +122,7 @@ Most important growth feeling: **reversal of power**.
 | Ash Road / 灰の街道 | First larger eastward volume-expansion route beyond the Chapter 1 footprint; stronger magic pressure, farther rewards, and a route toward the old tower. |
 | Ash Hamlet / 灰道の宿場 | Second remote survival anchor: full recovery, supplies, and post-Ash-Knight star gear. |
 | Old Tower / 古塔 | Late optional danger pocket with dense magic pressure, Ash Knight midboss, and star-gear preparation. |
+| Moon Ruins / 月影廃墟 | Post-Old-Tower southern danger pocket with dense late enemies, moon relic rewards, and another reason to push beyond the Red Dragon route. |
 | Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
 
 ## Enemy roles
@@ -134,6 +135,7 @@ Most important growth feeling: **reversal of power**.
 | Wisp | Ranged fire enemy; makes fire/projectile resistance meaningful. |
 | Bubbler / 泡吐き | Mine enemy; bubble projectiles slow and drain stamina. |
 | Ash Sorcerer / 灰術師 | Farther-road magic enemy; fires faster magic shots and applies slow/stamina pressure. |
+| Moon Shade / 月影の亡霊 | Far-south magic enemy; faster magic shots and stamina pressure make star gear and wards matter. |
 | Dragonling | Late stronger enemy; signals dragon-route danger. |
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
