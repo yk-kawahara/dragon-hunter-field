@@ -25,6 +25,7 @@
     DISCOVERY_POINTS,
     GUARDIAN_SITE,
     WARDEN_SITE,
+    WARDEN_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -681,7 +682,7 @@ function drawWardenSite(cam) {
   const sx = WARDEN_SITE.x * TILE - cam.x;
   const sy = WARDEN_SITE.y * TILE - cam.y;
   if (sx < -24 || sy < -24 || sx > W || sy > VIEW_H) return;
-  const ready = player.trailCharm && player.level >= 3;
+  const ready = player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level;
   const pulse = Math.floor(performance.now() / 220) % 2;
   ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
   ctx.fillRect(sx - 1, sy + 14, 22, 3);
@@ -1130,7 +1131,7 @@ function drawActorShadow(sx, sy, w) {
 }
 
 function drawWeapon(sx, sy) {
-  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166"];
+  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166", "#8dd7ff", "#ff9a3d", "#f8fbff"];
   ctx.fillStyle = colors[player.weapon] || "#ffd166";
   if (player.dir === "up") ctx.fillRect(sx + 5, sy - 4, 2, 7);
   if (player.dir === "down") ctx.fillRect(sx + 5, sy + 10, 2, 7);

@@ -19,6 +19,7 @@
     REGION_SPAWNS,
     GUARDIAN_SITE,
     WARDEN_SITE,
+    WARDEN_REQUIREMENTS,
     monsterTypes,
   } = definitions;
 
@@ -258,7 +259,7 @@
 
   function wardenReady(context) {
     const { state, player } = requireSpawnContext(context);
-    return !state.wardenDefeated && player.trailCharm && player.level >= 3;
+    return !state.wardenDefeated && player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level;
   }
 
   function playerNearGuardianSite(context) {

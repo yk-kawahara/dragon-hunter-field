@@ -290,7 +290,7 @@
       player.slow = Math.max(player.slow, 1200);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "SLOW", "#9df27f");
     } else if (monster.type === "bubbler") {
-      const mineGuard = player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
+      const mineGuard = player.armor === 5 || player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
       player.slow = Math.max(player.slow, mineGuard ? 520 : 1200);
       player.stamina = Math.max(0, player.stamina - (mineGuard ? 3 : 8));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
@@ -302,7 +302,8 @@
       player.slow = Math.max(player.slow, 700);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#8dd7ff");
     } else if (monster.type === "wisp" || monster.type === "dragonling" || monster.boss) {
-      player.burn = Math.max(player.burn, monster.boss ? 2600 : 1500);
+      const fireGuard = player.armor === 6;
+      player.burn = Math.max(player.burn, Math.round((monster.boss ? 2600 : 1500) * (fireGuard ? 0.55 : 1)));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "BURN", "#ff8a3d");
     }
   }

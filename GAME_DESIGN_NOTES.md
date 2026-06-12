@@ -167,12 +167,17 @@ Current direction:
 * Consumables can be inspected, used, and sold.
 * Accessories are owned, and one accessory can be equipped.
 * Only the equipped accessory provides its active survival effect.
+* Sidegrade equipment now exists for route preparation:
+  * `泡割り槍` and `鉱夫服` help against Bubbler pressure in the southwest mine.
+  * `火返しの剣` and `耐火マント` prepare for fire enemies and eastern/dragon-route pressure.
+  * `竜狩りの刃` and `巡礼鎧` are late route preparation gear for dragon cave pressure.
+* The southwest frontier camp is becoming the first remote equipment hub, not only a healing point.
 
 Future direction:
 
-* Add sidegrade weapons/armor.
+* Add more sidegrade weapons/armor.
 * Add meaningful accessory identities.
-* Add remote shop stock.
+* Add additional remote shop stock and later-town stock.
 * Add clearer comparison text.
 * Decide buyback or lock rules for unique accessories.
 

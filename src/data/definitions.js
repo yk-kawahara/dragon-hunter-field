@@ -31,6 +31,7 @@
     { id: "east-grove", x: 56, y: 43, reward: "armor" },
     { id: "south-outpost", x: 72, y: 58, reward: "trail" },
     { id: "dragon-cache", x: 50, y: 16, reward: "scale" },
+    { id: "mine-armory", x: 32, y: 64, reward: "mineGear" },
     { id: "southwest-mine-cache", x: 39, y: 67, reward: "mineGold" },
   ];
   const DISCOVERY_POINTS = [
@@ -40,7 +41,8 @@
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
-  const BOSS_REQUIREMENTS = { level: 4, scales: 3 };
+  const WARDEN_REQUIREMENTS = { level: 10 };
+  const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
     wilds: { danger: 2, maxBonus: 1, pool: ["bat", "boar", "slime", "wisp"] },
@@ -72,13 +74,14 @@
   const ATTACK_WIDTH = 20 * WORLD_SCALE;
   const DASH_COST = 34;
 
-  const weaponNames = ["木剣", "銅剣", "鉄剣", "銀剣", "竜剣"];
-  const armorNames = ["布服", "革鎧", "鎖鎧", "鋼鎧", "竜鎧"];
-  const weaponTraits = ["基本", "正面", "側撃", "背撃", "竜特効"];
-  const armorTraits = ["軽装", "疾走", "受け", "護符", "竜耐性"];
-  const weaponCosts = [0, 90, 320, 880, 1120];
-  const armorCosts = [0, 60, 290, 660, 900];
-  const armorDefense = [0, 5, 12, 26, 38];
+  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃"];
+  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧"];
+  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効"];
+  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御"];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450];
+  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 24];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320];
+  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
   const itemOrder = ["potion", "bomb", "ward"];
@@ -133,8 +136,8 @@
       atk: 8,
       def: 0,
       speed: 18 * WORLD_SCALE,
-      xp: 10,
-      gold: 5,
+      xp: 3,
+      gold: 1,
       color: "#4dd455",
       shadow: "#197a25",
       drop: 0.04,
@@ -142,11 +145,11 @@
     bat: {
       name: "コウモリ",
       hp: 24,
-      atk: 11,
+      atk: 17,
       def: 0,
       speed: 34 * WORLD_SCALE,
-      xp: 14,
-      gold: 7,
+      xp: 7,
+      gold: 2,
       color: "#8a52d6",
       shadow: "#3b196c",
       drop: 0.06,
@@ -155,23 +158,23 @@
     boar: {
       name: "突進獣",
       hp: 54,
-      atk: 25,
+      atk: 42,
       def: 6,
       speed: 25 * WORLD_SCALE,
-      xp: 24,
-      gold: 14,
+      xp: 22,
+      gold: 9,
       color: "#b0652d",
       shadow: "#5a2a16",
       drop: 0.12,
     },
     wisp: {
       name: "火霊",
-      hp: 38,
-      atk: 27,
+      hp: 29,
+      atk: 51,
       def: 4,
       speed: 22 * WORLD_SCALE,
-      xp: 32,
-      gold: 18,
+      xp: 44,
+      gold: 15,
       color: "#ffdb52",
       shadow: "#c7431e",
       drop: 0.18,
@@ -179,11 +182,11 @@
     bubbler: {
       name: "泡吐き",
       hp: 66,
-      atk: 38,
-      def: 12,
+      atk: 45,
+      def: 20,
       speed: 20 * WORLD_SCALE,
-      xp: 30,
-      gold: 20,
+      xp: 56,
+      gold: 7,
       color: "#8dd7ff",
       shadow: "#1d4f78",
       drop: 0.16,
@@ -194,20 +197,20 @@
       atk: 62,
       def: 25,
       speed: 21 * WORLD_SCALE,
-      xp: 62,
-      gold: 42,
+      xp: 70,
+      gold: 22,
       color: "#d63d31",
       shadow: "#6b0d0b",
       drop: 0.5,
     },
     guardian: {
       name: "森の守護者",
-      hp: 450,
+      hp: 650,
       atk: 52,
-      def: 26,
+      def: 50,
       speed: 24 * WORLD_SCALE,
       xp: 118,
-      gold: 340,
+      gold: 140,
       color: "#55c7a0",
       shadow: "#1d5c4b",
       midboss: true,
@@ -216,11 +219,11 @@
     warden: {
       name: "番人",
       hp: 1450,
-      atk: 46,
-      def: 60,
+      atk: 76,
+      def: 42,
       speed: 28 * WORLD_SCALE,
-      xp: 1550,
-      gold: 125,
+      xp: 550,
+      gold: 225,
       color: "#6de4ff",
       shadow: "#1d4f78",
       midboss: true,
@@ -230,7 +233,7 @@
       name: "赤竜",
       hp: 2000,
       atk: 107,
-      def: 35,
+      def: 55,
       speed: 18 * WORLD_SCALE,
       xp: 1500,
       gold: 500,
@@ -260,6 +263,7 @@
     DISCOVERY_POINTS,
     GUARDIAN_SITE,
     WARDEN_SITE,
+    WARDEN_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,
@@ -281,6 +285,7 @@
     weaponTraits,
     armorTraits,
     weaponCosts,
+    weaponAttack,
     armorCosts,
     armorDefense,
     weaponSellValues,

@@ -16,6 +16,8 @@
     WORLD_SCALE,
     weaponNames,
     armorNames,
+    weaponAttack = [0, 5, 10, 15, 20],
+    armorDefense,
     weaponSellValues,
     armorSellValues,
     itemOrder,
@@ -124,8 +126,15 @@
   function grantWeaponAtLeast(context, rank, upgradedMessage, keptMessage = "既により良い剣を持っている") {
     const { player, say } = requireRewardContext(context);
     const target = clamp(rank, 0, weaponNames.length - 1);
+    const ownedBefore = Array.isArray(player.ownedWeapons) && player.ownedWeapons.includes(target);
     addOwnedWeapon(player, target);
-    if (player.weapon >= target) {
+    const currentPower = weaponAttack[player.weapon] || 0;
+    const targetPower = weaponAttack[target] || 0;
+    if (player.weapon === target || currentPower >= targetPower) {
+      if (!ownedBefore && player.weapon !== target) {
+        say(`${weaponNames[target]}を手に入れた。もちもので装備できる`);
+        return true;
+      }
       say(keptMessage);
       return false;
     }
@@ -137,8 +146,15 @@
   function grantArmorAtLeast(context, rank, upgradedMessage, keptMessage = "既により良い鎧を持っている") {
     const { player, say } = requireRewardContext(context);
     const target = clamp(rank, 0, armorNames.length - 1);
+    const ownedBefore = Array.isArray(player.ownedArmors) && player.ownedArmors.includes(target);
     addOwnedArmor(player, target);
-    if (player.armor >= target) {
+    const currentPower = armorDefense[player.armor] || 0;
+    const targetPower = armorDefense[target] || 0;
+    if (player.armor === target || currentPower >= targetPower) {
+      if (!ownedBefore && player.armor !== target) {
+        say(`${armorNames[target]}を手に入れた。もちもので装備できる`);
+        return true;
+      }
       say(keptMessage);
       return false;
     }
@@ -175,6 +191,11 @@
       player.stamina = player.staminaMax;
       player.wards = Math.min(9, player.wards + 1);
       say("旅人の鈴を見つけた。遠征の足取りが軽くなった");
+    } else if (reward === "mineGear") {
+      addOwnedWeapon(player, 5);
+      addOwnedArmor(player, 5);
+      player.wards = Math.min(9, player.wards + 1);
+      say("鉱山装備を見つけた。もちもので泡割り槍と鉱夫服を選べる");
     } else if (reward === "mineGold") {
       player.gold += 500;
       say("廃坑の隠し金庫から500Gを見つけた!");
@@ -290,7 +311,7 @@
     player.bombs -= 1;
     const pc = centerOf(player);
     const radius = worldPx(46);
-    const damage = 30 + player.level * 8 + player.weapon * 5;
+    const damage = 30 + player.level * 8 + (weaponAttack[player.weapon] || 0);
     let hitCount = 0;
     for (const monster of state.monsters) {
       const mc = centerOf(monster);

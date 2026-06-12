@@ -9,6 +9,7 @@
   const {
     DASH_COST,
     WORLD_SCALE,
+    weaponAttack = [0, 5, 10, 15, 20],
     armorDefense,
   } = definitions;
 
@@ -28,7 +29,7 @@
     const { player } = requireCombatContext(context);
     const comboBonus = Math.min(8, Math.floor(player.combo / 2));
     const strength = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
-    return strength + player.weapon * 5 + comboBonus;
+    return strength + (weaponAttack[player.weapon] || 0) + comboBonus;
   }
 
   function playerDefense(context) {
@@ -62,6 +63,9 @@
     if (player.weapon >= 2 && flanking) mult += 0.18;
     if (player.weapon >= 3 && behind) mult += 0.34;
     if (player.weapon >= 4 && (monster.boss || monster.midboss || monster.type === "dragonling")) mult += 0.25;
+    if (player.weapon === 5 && (monster.type === "bubbler" || monster.type === "slime")) mult += 0.85;
+    if (player.weapon === 6 && (monster.type === "wisp" || monster.type === "dragonling")) mult += 0.55;
+    if (player.weapon === 7 && (monster.boss || monster.type === "dragonling")) mult += 0.6;
     return mult;
   }
 
@@ -70,6 +74,9 @@
     let mult = 1;
     if (player.armor >= 2 && source === "contact" && pDot > 0.58) mult *= 0.8;
     if (player.armor >= 4 && (monster?.boss || monster?.type === "dragonling" || source === "fire")) mult *= 0.78;
+    if (player.armor === 5 && (monster?.type === "bubbler" || source === "bubble")) mult *= 0.62;
+    if (player.armor === 6 && (monster?.type === "wisp" || source === "fire")) mult *= 0.64;
+    if (player.armor === 7 && (monster?.boss || monster?.midboss || monster?.type === "dragonling" || source === "projectile")) mult *= 0.72;
     if (activeAccessory(player, "aegis", "aegisCharm") && (source === "fire" || source === "projectile")) mult *= 0.82;
     if (activeAccessory(player, "mine", "mineCharm") && (monster?.type === "bubbler" || source === "bubble")) mult *= 0.72;
     return mult;

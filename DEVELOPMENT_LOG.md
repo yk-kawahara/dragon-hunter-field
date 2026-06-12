@@ -68,6 +68,48 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 _Add new entries here._
 
+### 2026-06-12: Route Preparation Equipment Expansion
+
+Goal: continue aggressive game expansion by making the real `もちもの` inventory matter through actual equipment choices, not only UI structure.
+
+Key work:
+
+* Added new sidegrade weapons:
+  * `泡割り槍`: strong against Bubbler / slime-style mine pressure.
+  * `火返しの剣`: strong against Wisp and Dragonling fire-route enemies.
+  * `竜狩りの刃`: late preparation weapon for Dragonling and Red Dragon pressure.
+* Added new sidegrade armor:
+  * `鉱夫服`: reduces bubble damage, slow duration, and stamina loss pressure.
+  * `耐火マント`: reduces fire damage and burn duration.
+  * `巡礼鎧`: late-route defense against bosses, midbosses, dragonlings, and projectiles.
+* Southwest frontier camp now sells route-preparation gear after the player obtains the mine charm:
+  * mine gear first,
+  * fire-route gear from level 8,
+  * dragon-route gear from level 12.
+* Added a new reachable mine treasure chest, `mine-armory`, that grants `泡割り槍` and `鉱夫服` as an exploration reward.
+* Updated reward handling so sidegrade gear is added to inventory without auto-equipping over a higher raw-power current item.
+* Unified Southeast Warden readiness through `WARDEN_REQUIREMENTS.level` so spawn logic, guidance, and marker rendering use the same level gate.
+
+Verification:
+
+* Syntax checks passed for all JavaScript files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * sidegrade weapon inventory pickup without auto-downgrade,
+  * frontier camp sale of mine, fire-route, and dragon-route gear,
+  * mine sidegrade weapon damage against Bubbler,
+  * mine sidegrade armor bubble damage reduction,
+  * Warden gate using the new requirement,
+  * the new `mine-armory` chest is reachable.
+* `git diff --check` passed with CRLF warnings only.
+* Edge headless loaded `index.html` and wrote `docs/browser-qa-equipment-expansion.png`; the captured start screen rendered correctly.
+
+Known risks:
+
+* Interactive browser QA for actually opening `もちもの`, buying camp gear, and switching equipment remains pending.
+* New gear prices/effects need manual playtesting against the longer LV15 route.
+* The map size is still `80x72`; this pass expanded equipment/content depth, not world dimensions.
+
 ---
 
 ## Historical milestones

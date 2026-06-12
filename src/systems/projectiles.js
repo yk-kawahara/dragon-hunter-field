@@ -110,9 +110,10 @@
             say("倒れた... Rで再挑戦", 5000);
           }
           if (p.source === "wisp" || p.source === "dragon") {
-            player.burn = Math.max(player.burn, p.source === "dragon" ? 2600 : 1500);
+            const fireGuard = player.armor === 6;
+            player.burn = Math.max(player.burn, Math.round((p.source === "dragon" ? 2600 : 1500) * (fireGuard ? 0.55 : 1)));
           } else if (p.source === "bubbler") {
-            const mineGuard = player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
+            const mineGuard = player.armor === 5 || player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
             player.slow = Math.max(player.slow, mineGuard ? 560 : 1400);
             player.stamina = Math.max(0, player.stamina - (mineGuard ? 2 : 6));
             addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");

@@ -122,6 +122,8 @@
     if (npc.type === "frontier") {
       const charmCost = 180;
       const kitCost = 28 + player.level * 6;
+      const ownsWeapon = (rank) => Array.isArray(player.ownedWeapons) && player.ownedWeapons.includes(rank);
+      const ownsArmor = (rank) => Array.isArray(player.ownedArmors) && player.ownedArmors.includes(rank);
       if (player.hp < player.hpMax || player.stamina < player.staminaMax) {
         player.hp = player.hpMax;
         player.stamina = player.staminaMax;
@@ -134,6 +136,42 @@
         say("補給隊から泡除けの護符を買った。廃坑で足を取られにくい");
       } else if (!player.mineCharm) {
         say(`補給隊「泡除けの護符は${charmCost}Gだ。廃坑で稼いで戻れ」`);
+      } else if (!ownsWeapon(5) && player.gold >= weaponCosts[5]) {
+        player.gold -= weaponCosts[5];
+        addOwnedWeapon(player, 5);
+        say(`補給隊から${weaponNames[5]}を買った。もちもので装備できる`);
+      } else if (!ownsWeapon(5)) {
+        say(`補給隊「${weaponNames[5]}は${weaponCosts[5]}Gだ。泡吐きに強い」`);
+      } else if (!ownsArmor(5) && player.gold >= armorCosts[5]) {
+        player.gold -= armorCosts[5];
+        addOwnedArmor(player, 5);
+        say(`補給隊から${armorNames[5]}を買った。泡と鈍足に強い`);
+      } else if (!ownsArmor(5)) {
+        say(`補給隊「${armorNames[5]}は${armorCosts[5]}Gだ。廃坑を歩きやすい」`);
+      } else if (player.level >= 8 && !ownsWeapon(6) && player.gold >= weaponCosts[6]) {
+        player.gold -= weaponCosts[6];
+        addOwnedWeapon(player, 6);
+        say(`補給隊から${weaponNames[6]}を買った。火霊と小竜に強い`);
+      } else if (player.level >= 8 && !ownsWeapon(6)) {
+        say(`補給隊「${weaponNames[6]}は${weaponCosts[6]}Gだ。東の火霊に備えろ」`);
+      } else if (player.level >= 8 && !ownsArmor(6) && player.gold >= armorCosts[6]) {
+        player.gold -= armorCosts[6];
+        addOwnedArmor(player, 6);
+        say(`補給隊から${armorNames[6]}を買った。炎の遠征に備えられる`);
+      } else if (player.level >= 8 && !ownsArmor(6)) {
+        say(`補給隊「${armorNames[6]}は${armorCosts[6]}Gだ。火傷を軽くする」`);
+      } else if (player.level >= 12 && !ownsWeapon(7) && player.gold >= weaponCosts[7]) {
+        player.gold -= weaponCosts[7];
+        addOwnedWeapon(player, 7);
+        say(`補給隊から${weaponNames[7]}を買った。竜洞のための刃だ`);
+      } else if (player.level >= 12 && !ownsWeapon(7)) {
+        say(`補給隊「${weaponNames[7]}は${weaponCosts[7]}G。赤竜を狩る覚悟が要る」`);
+      } else if (player.level >= 12 && !ownsArmor(7) && player.gold >= armorCosts[7]) {
+        player.gold -= armorCosts[7];
+        addOwnedArmor(player, 7);
+        say(`補給隊から${armorNames[7]}を買った。竜洞遠征の守りだ`);
+      } else if (player.level >= 12 && !ownsArmor(7)) {
+        say(`補給隊「${armorNames[7]}は${armorCosts[7]}G。竜洞前の最後の備えだ」`);
       } else if (player.gold >= kitCost && (player.potions < 7 || player.bombs < 4 || player.wards < 3)) {
         player.gold -= kitCost;
         player.potions = Math.min(9, player.potions + 2);

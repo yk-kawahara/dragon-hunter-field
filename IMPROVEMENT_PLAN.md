@@ -156,12 +156,18 @@ Current:
 * Player can equip owned weapons, armor, and one accessory.
 * Consumables and unequipped weapons/armor can be sold.
 * Former charm flags are moving into equipable accessories.
+* First sidegrade equipment pass exists:
+  * Mine gear: `泡割り槍`, `鉱夫服`.
+  * Fire route gear: `火返しの剣`, `耐火マント`.
+  * Dragon route gear: `竜狩りの刃`, `巡礼鎧`.
+* Southwest frontier camp now sells route-preparation gear after the mine charm.
+* The southwest mine has an armory chest that grants mine gear as an exploration reward.
 
 Next:
 
-* Sidegrade gear.
+* More sidegrade gear in new routes.
 * More accessories.
-* Shop stock and remote-town equipment.
+* Additional shop stock and remote-town equipment.
 * Comparison text.
 * Unique accessory sell protection or buyback.
 

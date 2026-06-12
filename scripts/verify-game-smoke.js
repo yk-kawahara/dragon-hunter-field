@@ -329,6 +329,10 @@ function assertSaveLoadAndEquipment() {
   const weakerWeapon = rewardHelpers.grantWeaponAtLeast({ player: restored.player, say: () => {} }, 1, "upgrade");
   const weakerArmor = rewardHelpers.grantArmorAtLeast({ player: restored.player, say: () => {} }, 1, "upgrade");
   assert(!weakerWeapon && !weakerArmor, "weaker equipment should not downgrade current gear");
+  restored.player.weapon = 4;
+  const sidegradeWeapon = rewardHelpers.grantWeaponAtLeast({ player: restored.player, say: () => {} }, 5, "upgrade");
+  assert(sidegradeWeapon && restored.player.ownedWeapons.includes(5), "sidegrade weapon should be added to inventory");
+  assert(restored.player.weapon === 4, "lower-power sidegrade weapon should not auto-equip over stronger current weapon");
 
   globalThis.localStorage.setItem(d.SAVE_KEY, JSON.stringify({
     player: {
@@ -397,13 +401,13 @@ function assertInventoryManagement() {
 function assertStoryClearFlow() {
   const { definitions: d, state, player, runtime } = createRuntime();
 
-  player.level = 3;
+  player.level = d.WARDEN_REQUIREMENTS.level;
   player.trailCharm = true;
   player.hp = player.hpMax;
   player.x = d.WARDEN_SITE.x * d.TILE;
   player.y = d.WARDEN_SITE.y * d.TILE;
   runtime.updateStoryEvents();
-  assert(state.spawnedWarden, "Warden should spawn near southeast site after trail charm and level 3");
+  assert(state.spawnedWarden, `Warden should spawn near southeast site after trail charm and level ${d.WARDEN_REQUIREMENTS.level}`);
   const warden = state.monsters.find((monster) => monster.type === "warden");
   assert(warden, "Warden monster should exist");
   warden.hp = 0;
@@ -427,7 +431,7 @@ function assertStoryClearFlow() {
   assert(player.sealCrest, "Guardian defeat should grant seal crest");
   assert(player.scales >= 3, "Guardian defeat should help complete scale requirement");
 
-  player.level = 4;
+  player.level = d.BOSS_REQUIREMENTS.level;
   player.scales = 3;
   player.x = 51 * d.TILE;
   player.y = 18 * d.TILE;
@@ -503,6 +507,32 @@ function assertFrontierCamp() {
   assert(withCharm < withoutCharm, "mine charm should reduce bubbler contact damage");
   player.mineCharm = true;
   player.equippedAccessory = "mine";
+  player.gold = d.weaponCosts[5];
+  runtime.handleNpc(frontier);
+  assert(player.ownedWeapons.includes(5), "frontier supply NPC should sell mine sidegrade weapon");
+  assert(player.gold === 0, "mine sidegrade weapon should charge its listed cost");
+  const basicDamage = runtime.weaponDamageMultiplier({ type: "bubbler" }, 0.1, 0.1);
+  player.weapon = 5;
+  const mineWeaponDamage = runtime.weaponDamageMultiplier({ type: "bubbler" }, 0.1, 0.1);
+  assert(mineWeaponDamage > basicDamage, "mine sidegrade weapon should improve damage against bubblers");
+  player.gold = d.armorCosts[5];
+  runtime.handleNpc(frontier);
+  assert(player.ownedArmors.includes(5), "frontier supply NPC should sell mine sidegrade armor");
+  player.armor = 5;
+  const mineArmorDamage = runtime.armorDamageMultiplier({ type: "bubbler" }, 0.2, "bubble");
+  player.armor = 0;
+  const noMineArmorDamage = runtime.armorDamageMultiplier({ type: "bubbler" }, 0.2, "bubble");
+  assert(mineArmorDamage < noMineArmorDamage, "mine sidegrade armor should reduce bubble damage");
+  player.level = 8;
+  player.gold = d.weaponCosts[6] + d.armorCosts[6];
+  runtime.handleNpc(frontier);
+  runtime.handleNpc(frontier);
+  assert(player.ownedWeapons.includes(6) && player.ownedArmors.includes(6), "frontier should sell fire-route sidegrades from level 8");
+  player.level = 12;
+  player.gold = d.weaponCosts[7] + d.armorCosts[7];
+  runtime.handleNpc(frontier);
+  runtime.handleNpc(frontier);
+  assert(player.ownedWeapons.includes(7) && player.ownedArmors.includes(7), "frontier should sell dragon-route sidegrades from level 12");
   player.gold = 120;
   player.potions = 0;
   player.bombs = 0;
