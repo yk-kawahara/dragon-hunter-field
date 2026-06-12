@@ -117,6 +117,8 @@ Verification:
 Known risks:
 
 * Real-browser interactive QA for walking the full new Ash Road / Old Tower route is still pending.
+* In-app Browser connection failed with a Windows `CreateProcessAsUserW failed: 5` error in this environment.
+* Edge headless browser QA could not be run because the escalation request was rejected by the approval/usage system; do not work around this without user approval.
 * Balance for Ash Sorcerer, Ash Knight, and star gear needs manual playtesting.
 * The expanded map is much larger, but some new terrain should still be thickened with more NPC hints, rewards, and route landmarks.
 
