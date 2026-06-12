@@ -260,14 +260,18 @@ function assertMapReachability() {
     ...d.DISCOVERY_POINTS.map((discovery) => [`discovery:${discovery.id}`, discovery.x, discovery.y]),
     ["guardian", d.GUARDIAN_SITE.x, d.GUARDIAN_SITE.y],
     ["warden", d.WARDEN_SITE.x, d.WARDEN_SITE.y],
+    ["ashKnight", d.ASH_KNIGHT_SITE.x, d.ASH_KNIGHT_SITE.y],
     ["dragon-cave", 51, 18],
     ["east-expansion", 72, 57],
     ["north", 11, 13],
     ["far-east-road", 69, 18],
+    ["ash-hamlet", 102, 58],
+    ["old-tower", 104, 90],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
-  assert(state.npcs.length === 4, "expected 4 NPCs from WORLD_OBJECTS");
+  assert(d.MAP_W === 120 && d.MAP_H === 96, "expanded map should be 120x96");
+  assert(state.npcs.length === 5, "expected 5 NPCs from WORLD_OBJECTS after ash hamlet expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   return { reachableTiles: seen.size, npcs: state.npcs.map((entry) => entry.type) };
 }
@@ -297,6 +301,8 @@ function assertSaveLoadAndEquipment() {
   state.spawnedGuardian = true;
   state.wardenDefeated = true;
   state.spawnedWarden = true;
+  state.ashKnightDefeated = true;
+  state.spawnedAshKnight = true;
   state.bossDefeated = true;
   state.spawnedBoss = true;
   state.elderReported = true;
@@ -323,6 +329,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.chests.size === 3, "opened chests should persist");
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
+  assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
   assert(restored.state.guardianDefeated && restored.state.bossDefeated && restored.state.elderReported, "boss/clear flags should persist");
 
   const rewardHelpers = globalThis.DRAGON_HUNTER_REWARDS;
@@ -415,6 +422,19 @@ function assertStoryClearFlow() {
   assert(state.wardenDefeated, "Warden defeat should set wardenDefeated");
   assert(player.aegisCharm, "Warden defeat should grant aegis charm");
   assert(!state.guardianDefeated, "Warden defeat should not count as Guardian defeat");
+
+  player.level = d.ASH_KNIGHT_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.ASH_KNIGHT_SITE.x * d.TILE;
+  player.y = d.ASH_KNIGHT_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedAshKnight, "Ash Knight should spawn near old tower after Warden and level gate");
+  const ashKnight = state.monsters.find((monster) => monster.type === "ashKnight");
+  assert(ashKnight, "Ash Knight monster should exist");
+  ashKnight.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.ashKnightDefeated, "Ash Knight defeat should set ashKnightDefeated");
+  assert(!state.guardianDefeated, "Ash Knight defeat should not count as Guardian defeat");
 
   player.level = 3;
   player.scales = 2;
@@ -543,6 +563,49 @@ function assertFrontierCamp() {
   return { safe: runtime.inTown(player.x, player.y), mineCharm: player.mineCharm, supplies: { potions: player.potions, bombs: player.bombs, wards: player.wards } };
 }
 
+function assertExpandedWorldContent() {
+  const { definitions: d, state, player, runtime, contexts } = createRuntime();
+  assert(Boolean(d.monsterTypes.sorcerer), "sorcerer monster definition should exist");
+  assert(Boolean(d.monsterTypes.ashKnight), "ash knight monster definition should exist");
+
+  player.x = 90 * d.TILE;
+  player.y = 60 * d.TILE;
+  assert(runtime.currentRegion() === "ash", "expanded east road should use ash region");
+  player.x = d.ASH_KNIGHT_SITE.x * d.TILE;
+  player.y = d.ASH_KNIGHT_SITE.y * d.TILE;
+  assert(runtime.currentRegion() === "tower", "old tower should use tower region");
+  const towerPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "tower");
+  assert(towerPool.includes("sorcerer"), "tower spawn pool should include sorcerer");
+
+  assert(runtime.inTownTile(102, 58), "ash hamlet should be a safe-zone tile");
+  player.hp = 5;
+  player.x = 102 * d.TILE;
+  player.y = 58 * d.TILE;
+  runtime.updateHealCircle();
+  assert(player.hp === player.hpMax, "ash hamlet heal circle should fully heal");
+
+  const ashFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.x > 90 * d.TILE);
+  assert(ashFrontier, "ash hamlet frontier NPC should exist");
+  state.ashKnightDefeated = true;
+  player.gold = d.weaponCosts[8] + d.armorCosts[8];
+  runtime.handleNpc(ashFrontier);
+  runtime.handleNpc(ashFrontier);
+  assert(player.ownedWeapons.includes(8) && player.ownedArmors.includes(8), "ash hamlet should sell star gear after ash knight defeat");
+
+  state.inventoryOpen = true;
+  state.inventoryTab = "weapons";
+  const weaponRows = globalThis.DRAGON_HUNTER_UI.inventoryRows(contexts.ui());
+  assert(weaponRows.some((row) => row.id === 8 && /ATK/.test(row.detail) && /\(/.test(row.detail)), "weapon inventory rows should show ATK comparison");
+  state.inventoryTab = "armors";
+  const armorRows = globalThis.DRAGON_HUNTER_UI.inventoryRows(contexts.ui());
+  assert(armorRows.some((row) => row.id === 8 && /DEF/.test(row.detail) && /\(/.test(row.detail)), "armor inventory rows should show DEF comparison");
+
+  const reward = createRuntime();
+  reward.runtime.grantChestReward("ashGear");
+  assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8), "ashGear chest should grant star gear inventory");
+  return { ashRegion: "ash", towerRegion: "tower", starGear: true };
+}
+
 function assertScriptLoadSmoke() {
   installBrowserStubs();
   loadScripts(SCRIPT_ORDER);
@@ -564,6 +627,7 @@ function main() {
   const story = assertStoryClearFlow();
   const mine = assertMineContent();
   const camp = assertFrontierCamp();
+  const expanded = assertExpandedWorldContent();
 
   // Run full script-load smoke last in a fresh Node process context is not possible here,
   // but it is useful after the logic-only tests because it also loads src/game.js.
@@ -583,7 +647,7 @@ function main() {
   assert(child.status === 0, child.stderr || child.stdout || "script load smoke failed");
   const scriptLoad = JSON.parse(child.stdout.trim());
 
-  console.log(JSON.stringify({ ok: true, map, save, inventory, story, mine, camp, scriptLoad }, null, 2));
+  console.log(JSON.stringify({ ok: true, map, save, inventory, story, mine, camp, expanded, scriptLoad }, null, 2));
 }
 
 main();

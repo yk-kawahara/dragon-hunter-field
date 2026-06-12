@@ -84,6 +84,11 @@
   function inventoryRows(context) {
     const { state, player, playerAttack, playerDefense, dashCost, regenRate } = requireUiStatusContext(context);
     normalizeInventory(player);
+    const baseAttack = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+    const baseDefense = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
+    const attackWithoutCombo = baseAttack + (weaponAttack[player.weapon] || 0);
+    const defenseWithoutGuard = baseDefense + (armorDefense[player.armor] || 0);
+    const diffText = (value) => value === 0 ? "+0" : value > 0 ? `+${value}` : String(value);
     const tab = inventoryTabs().includes(state.inventoryTab) ? state.inventoryTab : "items";
     if (tab === "items") {
       return [
@@ -97,7 +102,7 @@
         type: "weapon",
         id: rank,
         name: weaponNames[rank],
-        detail: `${weaponTraits[rank]} 攻${(Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2) + (weaponAttack[rank] || 0)}`,
+        detail: `${weaponTraits[rank]} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - attackWithoutCombo)})`,
         equipped: player.weapon === rank,
         sell: weaponSellValues[rank],
         currentValue: playerAttack(),
@@ -108,7 +113,7 @@
         type: "armor",
         id: rank,
         name: armorNames[rank],
-        detail: `${armorTraits[rank]} 防${(Number.isFinite(player.resilience) ? player.resilience : 1 + player.level) + (armorDefense[rank] || 0)}`,
+        detail: `${armorTraits[rank]} DEF ${baseDefense + (armorDefense[rank] || 0)} (${diffText(baseDefense + (armorDefense[rank] || 0) - defenseWithoutGuard)})`,
         equipped: player.armor === rank,
         sell: armorSellValues[rank],
         currentValue: playerDefense(),
@@ -250,13 +255,18 @@
       dashCost,
       regenRate,
     } = requireUiStatusContext(context);
+    const baseAttack = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+    const baseDefense = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
+    const weaponBonus = weaponAttack[player.weapon] || 0;
+    const armorBonus = armorDefense[player.armor] || 0;
 
     return [
       {
         title: "装備",
         lines: [
-          `${weaponNames[player.weapon]} ${weaponTraits[player.weapon]} 攻${playerAttack()}`,
-          `${armorNames[player.armor]} ${armorTraits[player.armor]} 防${playerDefense()}`,
+          `${weaponNames[player.weapon]} ${weaponTraits[player.weapon]} ATK ${baseAttack}+${weaponBonus}=${baseAttack + weaponBonus}`,
+          `${armorNames[player.armor]} ${armorTraits[player.armor]} DEF ${baseDefense}+${armorBonus}=${baseDefense + armorBonus}`,
+          `戦闘中: ATK ${playerAttack()} / DEF ${playerDefense()}`,
           nextUpgradeText(context),
         ],
       },
@@ -294,7 +304,9 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
-    if (inTown(player.x, player.y)) name = (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    if (inTown(player.x, player.y)) name = (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if ((tx >= 90 && tx <= 115 && ty >= 84) || (tx >= 105 && tx <= 116 && ty >= 36 && ty <= 47)) name = "古塔";
+    else if (tx >= 80 || ty >= 72) name = "灰の街道";
     else if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) name = "竜洞";
     else if (tx >= 20 && tx <= 43 && ty >= 60) name = "廃坑";
     else if (tileAt(tx, ty) === TILE_WATER) name = "水辺";
@@ -310,8 +322,8 @@
     ui.level.textContent = String(player.level);
     ui.hp.textContent = `${Math.ceil(player.hp)}/${player.hpMax}`;
     ui.exp.textContent = `${player.xp}/${player.xpNext}`;
-    ui.weapon.textContent = `${weaponNames[player.weapon] || "竜"} ${weaponTraits[player.weapon] || ""}`;
-    ui.armor.textContent = `${armorNames[player.armor] || "竜"} ${armorTraits[player.armor] || ""}`;
+    ui.weapon.textContent = `${weaponNames[player.weapon] || "竜"} +${weaponAttack[player.weapon] || 0}`;
+    ui.armor.textContent = `${armorNames[player.armor] || "竜"} +${armorDefense[player.armor] || 0}`;
     ui.potion.textContent = String(player.potions);
     ui.bomb.textContent = String(player.bombs);
     ui.ward.textContent = String(player.wards);

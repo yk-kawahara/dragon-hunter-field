@@ -25,18 +25,21 @@ Current project status:
 * Core design: survival-range expansion.
 * Code structure is split across `src/data`, `src/core`, and `src/systems`.
 * Fixed hand-editable world map lives in `src/data/maps/world.js`.
-* Current map size is `80x72`; future work should expand map size definition while preserving density, purpose, and reachability.
+* Current map size is `120x96`; future work should deepen the expanded world while preserving density, purpose, and reachability.
 * Real `もちもの` inventory exists with item, weapon, armor, and accessory handling.
 * Accessories are moving from permanent passive flags into equipment choices.
 * Southwest mine + southwest frontier camp are the first concrete volume-expansion pilot.
 * Southeast outpost + traveler bell + Southeast Warden + Aegis Charm make the southeast route a meaningful optional direction.
+* Ash Road + Ash Hamlet + Old Tower are the first larger map-size expansion beyond the old `80x72` footprint.
+* Ash Sorcerer and Old Tower Ash Knight add magic-pressure content beyond the Southeast Warden route.
+* Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
 
 Current high-priority risks:
 
 * Full real-browser desktop/mobile play QA is still needed.
 * Full fresh-save manual playthrough to elder report is still needed.
 * Mobile UI and inventory overlay need real-browser confirmation.
-* Future map expansion must avoid empty terrain and preserve reachability.
+* Future map expansion must avoid empty terrain and preserve reachability; the new 120x96 space needs more hand-authored content density.
 * Gold/EXP/shop price balance should be checked after route expansion.
 
 Next verification target:
@@ -67,6 +70,55 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ## New entries
 
 _Add new entries here._
+
+### 2026-06-12: 120x96 World Expansion and Equipment Visibility
+
+Goal: answer the player-facing request to make the world larger and make equipment strength/status understandable.
+
+Key work:
+
+* Expanded the fixed overworld definition from `80x72` to `120x96`.
+* Kept the original Chapter 1 route intact and added editable fixed-map expansion sections:
+  * `BASE_MAP`
+  * `EAST_EXPANSION`
+  * `SOUTH_EXPANSION`
+* Added Ash Road / `灰の街道`, Ash Hamlet / `灰道の宿場`, and Old Tower / `古塔`.
+* Added Ash Hamlet as a second remote safe base with a heal point and frontier-style supply NPC.
+* Added new one-time rewards:
+  * `ash-road-cache`
+  * `south-quarry-cache`
+  * `old-tower-cache`
+  * `ash-spring`
+  * `tower-cache`
+* Added `灰術師` as a magic/ranged enemy for the expanded road/tower regions.
+* Added `古塔の灰騎士` as an optional late midboss after Southeast Warden + level 14.
+* Added `星見の杖` and `星織りの衣` as magic-route sidegrade equipment.
+* Ash Hamlet sells star gear after the Ash Knight is defeated.
+* Inventory weapon/armor rows now show ATK/DEF totals and current-equipment deltas.
+* The side status panel now shows equipped weapon/armor bonus values.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+* Updated preview generation so the PowerShell preview script understands the split fixed-map sections.
+
+Verification:
+
+* Syntax checks passed for changed JavaScript files during the pass.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * `120x96` map size,
+  * reachability for the new chests, discoveries, Ash Hamlet, and Old Tower,
+  * Ash Hamlet safe-zone/heal behavior,
+  * Ash Sorcerer / Ash Knight definitions and region pools,
+  * Ash Knight defeat persistence and not counting as the Guardian,
+  * Ash Hamlet post-midboss star-gear sales,
+  * inventory ATK/DEF comparison text,
+  * `ashGear` chest reward.
+* Map previews regenerated successfully at `120x96`.
+
+Known risks:
+
+* Real-browser interactive QA for walking the full new Ash Road / Old Tower route is still pending.
+* Balance for Ash Sorcerer, Ash Knight, and star gear needs manual playtesting.
+* The expanded map is much larger, but some new terrain should still be thickened with more NPC hints, rewards, and route landmarks.
 
 ### 2026-06-12: Route Preparation Equipment Expansion
 

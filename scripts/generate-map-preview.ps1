@@ -10,18 +10,42 @@ $svgPath = Join-Path $docsDir "world-map-preview.svg"
 New-Item -ItemType Directory -Force -Path $docsDir | Out-Null
 
 $content = Get-Content -LiteralPath $worldPath
-$rows = New-Object System.Collections.Generic.List[string]
-$inMap = $false
-foreach ($line in $content) {
-  if ($line -match 'const WORLD_MAP = \[') {
-    $inMap = $true
-    continue
+function Get-MapRows($name) {
+  $list = New-Object System.Collections.Generic.List[string]
+  $inside = $false
+  foreach ($line in $content) {
+    if ($line -match "const $name = \[") {
+      $inside = $true
+      continue
+    }
+    if ($inside -and $line -match '^\s*\];') {
+      break
+    }
+    if ($inside -and $line -match '"([.\+~T#\^_C\*=]+)"') {
+      $list.Add($Matches[1])
+    }
   }
-  if ($inMap -and $line -match '^\s*\];') {
-    break
-  }
-  if ($inMap -and $line -match '"([.\+~T#\^_C\*=]+)"') {
-    $rows.Add($Matches[1])
+  return $list
+}
+
+$rows = Get-MapRows "WORLD_MAP"
+if ($rows.Count -eq 0) {
+  $baseRows = Get-MapRows "BASE_MAP"
+  $eastRows = Get-MapRows "EAST_EXPANSION"
+  $southRows = Get-MapRows "SOUTH_EXPANSION"
+  if ($baseRows.Count -gt 0 -and $baseRows.Count -eq $eastRows.Count) {
+    $rows = New-Object System.Collections.Generic.List[string]
+    for ($i = 0; $i -lt $baseRows.Count; $i += 1) {
+      $baseRow = $baseRows[$i]
+      $openEast = ($i -ge 15 -and $i -le 21) -or ($i -ge 28 -and $i -le 35) -or ($i -ge 49 -and $i -le 51) -or ($i -ge 58 -and $i -le 66)
+      if ($openEast) {
+        $baseRow = $baseRow.Substring(0, $baseRow.Length - 1) + "+"
+      }
+      $rows.Add($baseRow + $eastRows[$i])
+    }
+    foreach ($row in $southRows) {
+      $rows.Add($row)
+    }
   }
 }
 

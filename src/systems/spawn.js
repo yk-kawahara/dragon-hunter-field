@@ -20,6 +20,8 @@
     GUARDIAN_SITE,
     WARDEN_SITE,
     WARDEN_REQUIREMENTS,
+    ASH_KNIGHT_SITE,
+    ASH_KNIGHT_REQUIREMENTS,
     monsterTypes,
   } = definitions;
 
@@ -121,6 +123,8 @@
     const { player } = requireSpawnContext(context);
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
+    if ((tx >= 90 && tx <= 115 && ty >= 84) || (tx >= 105 && tx <= 116 && ty >= 36 && ty <= 47)) return "tower";
+    if (tx >= 80 || ty >= 72) return "ash";
     if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
     if (tx >= 20 && tx <= 43 && ty >= 60) return "mine";
     if (tx > 40) return "east";
@@ -148,6 +152,7 @@
     if (lv >= 3 && region === "grassland") pool.push("boar");
     if (lv >= 4 && region !== "grassland") pool.push("dragonling");
     if (lv >= 3 && region === "mine") pool.push("dragonling");
+    if (lv >= 8 && (region === "ash" || region === "tower")) pool.push("sorcerer");
     return pool;
   }
 
@@ -184,7 +189,7 @@
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : 5;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : region === "ash" ? 6 : region === "tower" ? 7 : 5;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -262,6 +267,11 @@
     return !state.wardenDefeated && player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level;
   }
 
+  function ashKnightReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.ashKnightDefeated && state.wardenDefeated && player.level >= ASH_KNIGHT_REQUIREMENTS.level;
+  }
+
   function playerNearGuardianSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -278,6 +288,14 @@
     return Math.hypot(pc.x - wx, pc.y - wy) < worldPx(86);
   }
 
+  function playerNearAshKnightSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const ax = (ASH_KNIGHT_SITE.x + 0.5) * TILE;
+    const ay = (ASH_KNIGHT_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - ax, pc.y - ay) < worldPx(92);
+  }
+
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver || state.victory) return;
@@ -287,6 +305,15 @@
     }
     if (state.spawnedGuardian && !state.guardianDefeated && !hasLiveMonster(context, "guardian")) {
       state.spawnedGuardian = false;
+    }
+    if (state.spawnedAshKnight && !state.ashKnightDefeated && !hasLiveMonster(context, "ashKnight")) {
+      state.spawnedAshKnight = false;
+    }
+
+    if (ashKnightReady(context) && !state.spawnedAshKnight && playerNearAshKnightSite(context)) {
+      state.spawnedAshKnight = true;
+      spawnMonster(context, "ashKnight", ASH_KNIGHT_SITE.x * TILE, ASH_KNIGHT_SITE.y * TILE);
+      say("古塔の灰騎士が道を塞いだ!", 2600);
     }
 
     if (wardenReady(context) && !state.spawnedWarden && playerNearWardenSite(context)) {
@@ -316,9 +343,11 @@
     areaDangerText,
     guardianReady,
     wardenReady,
+    ashKnightReady,
     hasLiveMonster,
     playerNearGuardianSite,
     playerNearWardenSite,
+    playerNearAshKnightSite,
     updateStoryEvents,
   };
 })();

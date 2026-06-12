@@ -180,6 +180,7 @@ function respawnAtVillage() {
 
   if (!state.guardianDefeated) state.spawnedGuardian = false;
   if (!state.wardenDefeated) state.spawnedWarden = false;
+  if (!state.ashKnightDefeated) state.spawnedAshKnight = false;
   if (!state.bossDefeated) {
     state.spawnedBoss = false;
     state.victory = false;

@@ -8,17 +8,19 @@
   const VIEW_H = 144 * WORLD_SCALE;
   const HUD_H = H - VIEW_H;
   const TILE = BASE_TILE * WORLD_SCALE;
-  const MAP_W = 80;
-  const MAP_H = 72;
+  const MAP_W = 120;
+  const MAP_H = 96;
   const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const SAFE_ZONES = [
     { id: "village", name: "村", x1: 5, y1: 39, x2: 18, y2: 55, outerX1: 4, outerY1: 38, outerX2: 19, outerY2: 57 },
     { id: "southwest-camp", name: "前線キャンプ", x1: 25, y1: 56, x2: 35, y2: 61, outerX1: 24, outerY1: 55, outerX2: 36, outerY2: 62 },
+    { id: "ash-hamlet", name: "灰道の宿場", x1: 94, y1: 52, x2: 110, y2: 60, outerX1: 93, outerY1: 51, outerX2: 111, outerY2: 61 },
   ];
   const HEAL_POINTS = [
     { ...HEAL_CIRCLE, id: "village-circle", name: "村の回復陣" },
     { x: 31, y: 59, id: "southwest-camp-circle", name: "前線キャンプの回復陣" },
+    { x: 102, y: 58, id: "ash-hamlet-circle", name: "灰道の宿場の回復陣" },
   ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
@@ -33,15 +35,22 @@
     { id: "dragon-cache", x: 50, y: 16, reward: "scale" },
     { id: "mine-armory", x: 32, y: 64, reward: "mineGear" },
     { id: "southwest-mine-cache", x: 39, y: 67, reward: "mineGold" },
+    { id: "ash-road-cache", x: 111, y: 41, reward: "ashGear" },
+    { id: "south-quarry-cache", x: 58, y: 78, reward: "mineGold" },
+    { id: "old-tower-cache", x: 104, y: 90, reward: "towerSupply" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
     { id: "north-ore", x: 23, y: 20, kind: "ore" },
     { id: "hunter-cache", x: 57, y: 28, kind: "cache" },
+    { id: "ash-spring", x: 101, y: 55, kind: "spring" },
+    { id: "tower-cache", x: 99, y: 88, kind: "cache" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
   const WARDEN_REQUIREMENTS = { level: 10 };
+  const ASH_KNIGHT_SITE = { x: 103, y: 89 };
+  const ASH_KNIGHT_REQUIREMENTS = { level: 14 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -50,6 +59,8 @@
     east: { danger: 3, maxBonus: 3, pool: ["wisp", "boar", "dragonling", "bat"] },
     mine: { danger: 3, maxBonus: 3, pool: ["bubbler", "bubbler", "wisp", "boar"] },
     cave: { danger: 4, maxBonus: 4, pool: ["dragonling", "wisp", "dragonling"] },
+    ash: { danger: 4, maxBonus: 5, pool: ["sorcerer", "wisp", "dragonling", "boar"] },
+    tower: { danger: 5, maxBonus: 6, pool: ["sorcerer", "sorcerer", "dragonling", "wisp"] },
   };
 
   const TILE_GRASS = 0;
@@ -74,14 +85,14 @@
   const ATTACK_WIDTH = 20 * WORLD_SCALE;
   const DASH_COST = 34;
 
-  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃"];
-  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧"];
-  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効"];
-  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御"];
-  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450];
-  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 24];
-  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320];
-  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23];
+  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖"];
+  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣"];
+  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効"];
+  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減"];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100];
+  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 24, 18];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900];
+  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 16];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
   const itemOrder = ["potion", "bomb", "ward"];
@@ -179,6 +190,18 @@
       shadow: "#c7431e",
       drop: 0.18,
     },
+    sorcerer: {
+      name: "灰術師",
+      hp: 96,
+      atk: 68,
+      def: 18,
+      speed: 19 * WORLD_SCALE,
+      xp: 92,
+      gold: 34,
+      color: "#b990ff",
+      shadow: "#4b2b75",
+      drop: 0.22,
+    },
     bubbler: {
       name: "泡吐き",
       hp: 66,
@@ -229,6 +252,19 @@
       midboss: true,
       drop: 0,
     },
+    ashKnight: {
+      name: "古塔の灰騎士",
+      hp: 1750,
+      atk: 90,
+      def: 58,
+      speed: 26 * WORLD_SCALE,
+      xp: 760,
+      gold: 360,
+      color: "#c2b7ff",
+      shadow: "#33265c",
+      midboss: true,
+      drop: 0,
+    },
     dragon: {
       name: "赤竜",
       hp: 2000,
@@ -264,6 +300,8 @@
     GUARDIAN_SITE,
     WARDEN_SITE,
     WARDEN_REQUIREMENTS,
+    ASH_KNIGHT_SITE,
+    ASH_KNIGHT_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,

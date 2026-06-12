@@ -20,6 +20,7 @@
     TILE,
     WORLD_SCALE,
     BOSS_REQUIREMENTS,
+    ASH_KNIGHT_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -120,6 +121,40 @@
     }
 
     if (npc.type === "frontier") {
+      if (npc.x > 90 * TILE) {
+        const kitCost = 48 + player.level * 8;
+        const ownsWeapon = (rank) => Array.isArray(player.ownedWeapons) && player.ownedWeapons.includes(rank);
+        const ownsArmor = (rank) => Array.isArray(player.ownedArmors) && player.ownedArmors.includes(rank);
+        if (player.hp < player.hpMax || player.stamina < player.staminaMax) {
+          player.hp = player.hpMax;
+          player.stamina = player.staminaMax;
+          player.guard = Math.max(player.guard, 900);
+          say("灰道の宿場で休んだ。古塔へ向かう準備が整った");
+        } else if (state.ashKnightDefeated && !ownsWeapon(8) && player.gold >= weaponCosts[8]) {
+          player.gold -= weaponCosts[8];
+          addOwnedWeapon(player, 8);
+          say(`${weaponNames[8]}を買った。魔術師と灰騎士に強い`);
+        } else if (state.ashKnightDefeated && !ownsWeapon(8)) {
+          say(`${weaponNames[8]}は${weaponCosts[8]}G。古塔の魔法に備えろ`);
+        } else if (state.ashKnightDefeated && !ownsArmor(8) && player.gold >= armorCosts[8]) {
+          player.gold -= armorCosts[8];
+          addOwnedArmor(player, 8);
+          say(`${armorNames[8]}を買った。魔法弾の被害を軽くする`);
+        } else if (state.ashKnightDefeated && !ownsArmor(8)) {
+          say(`${armorNames[8]}は${armorCosts[8]}G。魔法遠征の守りだ`);
+        } else if (!state.ashKnightDefeated) {
+          say(`宿場の隊商「古塔の灰騎士はLV${ASH_KNIGHT_REQUIREMENTS.level}以上で挑め。先に南東の番人を越えろ」`);
+        } else if (player.gold >= kitCost && (player.potions < 8 || player.bombs < 5 || player.wards < 4)) {
+          player.gold -= kitCost;
+          player.potions = Math.min(9, player.potions + 2);
+          player.bombs = Math.min(9, player.bombs + 2);
+          player.wards = Math.min(9, player.wards + 2);
+          say("宿場で古塔遠征の道具を補充した");
+        } else {
+          say("宿場の隊商「古塔と南の採石場は報酬も危険も大きい」");
+        }
+        return;
+      }
       const charmCost = 180;
       const kitCost = 28 + player.level * 6;
       const ownsWeapon = (rank) => Array.isArray(player.ownedWeapons) && player.ownedWeapons.includes(rank);

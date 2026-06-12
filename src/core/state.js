@@ -29,6 +29,8 @@
       guardianDefeated: false,
       spawnedWarden: false,
       wardenDefeated: false,
+      spawnedAshKnight: false,
+      ashKnightDefeated: false,
       elderReported: false,
       clearPanelOpen: false,
       spawnTimer: 600,

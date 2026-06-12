@@ -36,7 +36,7 @@
     const { state, addSlash } = requireProjectileContext(context);
     const c = centerOf(monster);
     const midbossColor = monster.type === "warden" ? "#6de4ff" : "#55c7a0";
-    const projectileColor = monster.type === "bubbler" ? "#8dd7ff" : monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166";
+    const projectileColor = monster.type === "bubbler" ? "#8dd7ff" : monster.type === "sorcerer" ? "#b990ff" : monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166";
     const baseAim = normalize(target.x - c.x, target.y - c.y);
     const cos = Math.cos(angleOffset);
     const sin = Math.sin(angleOffset);
@@ -44,14 +44,14 @@
       x: baseAim.x * cos - baseAim.y * sin,
       y: baseAim.x * sin + baseAim.y * cos,
     };
-    const speed = (monster.boss ? 78 : monster.midboss ? 68 : monster.type === "bubbler" ? 52 : 62) * WORLD_SCALE;
+    const speed = (monster.boss ? 78 : monster.midboss ? 68 : monster.type === "bubbler" ? 52 : monster.type === "sorcerer" ? 70 : 62) * WORLD_SCALE;
     state.projectiles.push({
       x: c.x,
       y: c.y,
       vx: aim.x * speed,
       vy: aim.y * speed,
       r: worldPx(monster.boss ? 4 : monster.midboss ? 3 : 3),
-      damage: monster.boss ? 14 : monster.midboss ? 11 : monster.type === "bubbler" ? 6 : 8,
+      damage: monster.boss ? 14 : monster.midboss ? 11 : monster.type === "bubbler" ? 6 : monster.type === "sorcerer" ? 10 : 8,
       color: projectileColor,
       source: monster.boss ? "dragon" : monster.midboss ? monster.type : monster.type,
       life: monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
@@ -94,8 +94,8 @@
       const hitbox = { x: p.x - p.r, y: p.y - p.r, w: p.r * 2, h: p.r * 2 };
       if (rectsOverlap(player, hitbox)) {
         if (player.invuln <= 0 && player.hp > 0) {
-          const source = p.source === "wisp" || p.source === "dragon" ? "fire" : p.source === "bubbler" ? "bubble" : "projectile";
-          let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon" }, 0, source)));
+          const source = p.source === "wisp" || p.source === "dragon" ? "fire" : p.source === "bubbler" ? "bubble" : p.source === "sorcerer" || p.source === "ashKnight" ? "magic" : "projectile";
+          let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon", midboss: p.source === "ashKnight", type: p.source }, 0, source)));
           if (p.source === "dragon" && hurt < 3) hurt = 3;
           if (p.source === "guardian" && hurt < 2) hurt = 2;
           if (p.source === "warden" && hurt < 2) hurt = 2;
@@ -122,6 +122,9 @@
           } else if (p.source === "warden") {
             player.slow = Math.max(player.slow, 900);
             player.stamina = Math.max(0, player.stamina - 10);
+          } else if (p.source === "sorcerer" || p.source === "ashKnight") {
+            player.slow = Math.max(player.slow, p.source === "ashKnight" ? 1200 : 760);
+            player.stamina = Math.max(0, player.stamina - (p.source === "ashKnight" ? 14 : 8));
           }
         }
         return false;

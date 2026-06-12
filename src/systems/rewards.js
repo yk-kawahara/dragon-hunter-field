@@ -199,6 +199,17 @@
     } else if (reward === "mineGold") {
       player.gold += 500;
       say("廃坑の隠し金庫から500Gを見つけた!");
+    } else if (reward === "ashGear") {
+      addOwnedWeapon(player, 8);
+      addOwnedArmor(player, 8);
+      player.wards = Math.min(9, player.wards + 2);
+      say("星見の装備を見つけた。魔法に備えてもちもので選べる");
+    } else if (reward === "towerSupply") {
+      player.gold += 680;
+      player.potions = Math.min(9, player.potions + 3);
+      player.bombs = Math.min(9, player.bombs + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      say("古塔の遠征物資を回収した");
     }
   }
 

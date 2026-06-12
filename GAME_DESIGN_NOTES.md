@@ -67,7 +67,7 @@ Future work should grow the game into a larger RPG.
 
 Long-term direction:
 
-* Expand the editable world beyond the current `80x72` overworld definition.
+* Keep expanding the editable world beyond the current `120x96` overworld definition.
 * Use hand-authored map data or additional hand-authored map files.
 * Add multiple regional arcs, not just one long walk from the starting village.
 * Add towns, frontier bases, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
@@ -119,6 +119,9 @@ Most important growth feeling: **reversal of power**.
 | East / Southeast | Risky expansion route: traveler bell, Southeast Warden, Aegis Charm; should grow into a larger named route. |
 | Southwest Mine | Optional route with Bubbler pressure, slow/stamina drain, mine charm counterplay. |
 | Southwest Frontier Camp | First remote survival anchor: recovery, supplies, readable camp, outward safe radius. |
+| Ash Road / 灰の街道 | First larger eastward volume-expansion route beyond the Chapter 1 footprint; stronger magic pressure, farther rewards, and a route toward the old tower. |
+| Ash Hamlet / 灰道の宿場 | Second remote survival anchor: full recovery, supplies, and post-Ash-Knight star gear. |
+| Old Tower / 古塔 | Late optional danger pocket with dense magic pressure, Ash Knight midboss, and star-gear preparation. |
 | Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
 
 ## Enemy roles
@@ -130,9 +133,11 @@ Most important growth feeling: **reversal of power**.
 | Boar | Charge enemy; rewards avoiding frontal contact. |
 | Wisp | Ranged fire enemy; makes fire/projectile resistance meaningful. |
 | Bubbler / 泡吐き | Mine enemy; bubble projectiles slow and drain stamina. |
+| Ash Sorcerer / 灰術師 | Farther-road magic enemy; fires faster magic shots and applies slow/stamina pressure. |
 | Dragonling | Late stronger enemy; signals dragon-route danger. |
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
+| Old Tower Ash Knight | Optional late midboss after Southeast Warden + level 14; unlocks stronger magic-route preparation and tests the expanded-world route. |
 | Red Dragon | Chapter 1 final boss: enrage, spread shots, summons, preparation check. |
 
 Enemies should differ by gameplay, not only appearance or stats.
@@ -171,14 +176,17 @@ Current direction:
   * `泡割り槍` and `鉱夫服` help against Bubbler pressure in the southwest mine.
   * `火返しの剣` and `耐火マント` prepare for fire enemies and eastern/dragon-route pressure.
   * `竜狩りの刃` and `巡礼鎧` are late route preparation gear for dragon cave pressure.
+  * `星見の杖` and `星織りの衣` prepare for Ash Sorcerer / Ash Knight magic pressure.
 * The southwest frontier camp is becoming the first remote equipment hub, not only a healing point.
+* The ash hamlet is the second remote equipment hub and sells star gear after the Ash Knight is defeated.
+* Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
 
 Future direction:
 
 * Add more sidegrade weapons/armor.
 * Add meaningful accessory identities.
 * Add additional remote shop stock and later-town stock.
-* Add clearer comparison text.
+* Expand comparison text into route recommendations and special-effect previews.
 * Decide buyback or lock rules for unique accessories.
 
 Equipment should alter survivability, exploration range, route preparation, or contact-combat incentives, not only numbers.

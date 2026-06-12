@@ -73,6 +73,8 @@
       guardianDefeated: state.guardianDefeated,
       spawnedWarden: state.spawnedWarden,
       wardenDefeated: state.wardenDefeated,
+      spawnedAshKnight: state.spawnedAshKnight,
+      ashKnightDefeated: state.ashKnightDefeated,
       elderReported: state.elderReported,
       chests: Array.from(state.chests),
       discoveries: Array.from(state.discoveries),
@@ -112,9 +114,11 @@
       state.bossDefeated = Boolean(data.bossDefeated);
       state.guardianDefeated = Boolean(data.guardianDefeated);
       state.wardenDefeated = Boolean(data.wardenDefeated);
+      state.ashKnightDefeated = Boolean(data.ashKnightDefeated);
       state.spawnedBoss = state.bossDefeated ? Boolean(data.spawnedBoss) : false;
       state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
       state.spawnedWarden = state.wardenDefeated ? Boolean(data.spawnedWarden) : false;
+      state.spawnedAshKnight = state.ashKnightDefeated ? Boolean(data.spawnedAshKnight) : false;
       state.elderReported = Boolean(data.elderReported);
       state.clearPanelOpen = false;
       state.gameOver = false;
@@ -191,6 +195,8 @@
     state.guardianDefeated = false;
     state.spawnedWarden = false;
     state.wardenDefeated = false;
+    state.spawnedAshKnight = false;
+    state.ashKnightDefeated = false;
     state.elderReported = false;
     state.clearPanelOpen = false;
     state.gameOver = false;

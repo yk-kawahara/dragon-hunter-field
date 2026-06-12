@@ -8,7 +8,7 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 
 Current focus:
 
-* Explicitly expand the map size definition beyond the current `80x72` overworld.
+* Continue expanding the map beyond the new `120x96` overworld without creating empty space.
 * Preserve content density, regional purpose, and survival-range expansion.
 * Treat village -> Guardian -> Red Dragon as Chapter 1, not final scope.
 * Add meaningful volume: larger maps, remote towns, dungeons, varied monsters, equipment tiers, inventory decisions, and side routes.
@@ -17,7 +17,7 @@ Current focus:
 * Equipment upgrades must visibly expand survivable range.
 * Movement/combat tempo should remain responsive.
 * Reward persistence and equipment safety are hard requirements.
-* Expand `もちもの` with sidegrade gear, accessory decisions, shop stock, and comparison text.
+* Expand `もちもの` with sidegrade gear, accessory decisions, shop stock, and clearer route-preparation text.
 * Do not use implementation risk to avoid major requested gameplay systems; manage risk through migration and verification.
 
 ## Active document set
@@ -54,23 +54,23 @@ Focus:
 
 If browser QA is unavailable, record the limitation in `DEVELOPMENT_LOG.md` and proceed only with high-confidence VM-verifiable work.
 
-### 2. Map size expansion pass
+### 2. Map size expansion follow-up
 
-Goal: move beyond the current `80x72` overworld without creating empty terrain.
+Goal: build on the current `120x96` overworld without creating empty terrain.
 
 Implementation direction:
 
-* Increase the map size definition intentionally.
+* Use the new BASE_MAP / EAST_EXPANSION / SOUTH_EXPANSION fixed-map structure intentionally.
 * Expand `src/data/maps/world.js` with hand-authored terrain.
 * Keep Chapter 1 route intact.
-* Add new space as named regions with routes, landmarks, danger, and rewards.
+* Add new space as named regions with routes, landmarks, danger, rewards, and remote bases.
 * Update dependent coordinates: objects, safe zones, heal points, treasure, discoveries, regions, spawns, bosses/routes.
 * Regenerate `docs/world-map-preview.png` and `.svg`.
 * Verify reachability.
 
 Acceptance:
 
-* Map is visibly larger by definition.
+* Map remains visibly larger by definition.
 * New terrain has purpose: region identity, route, danger, reward, safe base, dungeon, town, or shortcut.
 * Important objects are reachable.
 * Existing Chapter 1 flow remains playable.
@@ -81,9 +81,9 @@ Use expanded space to create named routes, not more grass.
 
 Preferred first targets:
 
-* East/southeast continuation after traveler bell and Southeast Warden.
-* Southwest mine continuation using Bubbler pressure and mine charm counterplay.
-* New remote road/frontier base that moves the safe radius outward.
+* Deepen Ash Road / Ash Hamlet / Old Tower with more treasures, NPC guidance, and a clearer route to the Ash Knight.
+* Continue southwest mine expansion using Bubbler pressure and mine charm counterplay.
+* Add another remote road/frontier base, dungeon entrance, or town that moves the safe radius outward.
 
 Each new region should include at least three:
 
@@ -129,7 +129,7 @@ Check:
 
 ### Map scope
 
-* Short-term: expand current map definition beyond `80x72` with density and purpose.
+* Short-term: deepen the current `120x96` world with dense landmarks, rewards, and route goals.
 * Mid-term: add map files for dungeons/interiors such as caves, towers, castles, mines, and towns.
 * Long-term: make playable scope at least 10x Chapter 1 through larger `world.js`, additional map files, or both.
 * Continue hand-authored fixed map data; do not return to random terrain.
@@ -162,13 +162,15 @@ Current:
   * Dragon route gear: `竜狩りの刃`, `巡礼鎧`.
 * Southwest frontier camp now sells route-preparation gear after the mine charm.
 * The southwest mine has an armory chest that grants mine gear as an exploration reward.
+* Ash hamlet now sells `星見の杖` / `星織りの衣` after the Ash Knight.
+* Inventory and HUD now show ATK/DEF values and comparison deltas.
 
 Next:
 
-* More sidegrade gear in new routes.
+* More sidegrade gear in new routes, with route recommendations.
 * More accessories.
 * Additional shop stock and remote-town equipment.
-* Comparison text.
+* Better comparison text for special effects, resistances, and recommended areas.
 * Unique accessory sell protection or buyback.
 
 ## Architecture status

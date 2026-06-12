@@ -26,10 +26,14 @@
     GUARDIAN_SITE,
     WARDEN_SITE,
     WARDEN_REQUIREMENTS,
+    ASH_KNIGHT_SITE,
+    ASH_KNIGHT_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
     armorTraits,
+    weaponAttack,
+    armorDefense,
     itemNames,
     itemSellValues,
     weaponSellValues,
@@ -190,6 +194,7 @@ function draw(context) {
   drawFieldDetails(cam);
   drawTownDetails(cam);
   drawFrontierCampDetails(cam);
+  drawAshHamletDetails(cam);
   drawVillageRoleMarkers(cam);
   drawHealCircle(cam);
   drawTownFence(cam);
@@ -198,6 +203,7 @@ function draw(context) {
   drawDiscoveries(cam);
   drawGuardianSite(cam);
   drawWardenSite(cam);
+  drawAshKnightSite(cam);
   drawNpcs(cam);
   drawEntities(cam);
   drawEffects(cam);
@@ -283,7 +289,7 @@ function drawInventoryOverlay() {
     ctx.fillStyle = row.equipped ? "#74ff8f" : "#ffffff";
     ctx.fillText(`${row.equipped ? "E " : "  "}${row.name}`, x + 9, rowY);
     ctx.fillStyle = "#d7e2ea";
-    ctx.fillText(row.detail, x + 82, rowY);
+    ctx.fillText(row.detail, x + 82, rowY, w - 123);
     ctx.fillStyle = row.sell > 0 ? "#fff2a6" : "#687383";
     ctx.fillText(row.sell > 0 ? `${row.sell}G` : "-", x + w - 35, rowY);
   }
@@ -294,6 +300,11 @@ function drawInventoryOverlay() {
 }
 
 function inventoryRenderRows(tab) {
+  const baseAttack = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+  const baseDefense = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
+  const currentAttack = baseAttack + (weaponAttack[player.weapon] || 0);
+  const currentDefense = baseDefense + (armorDefense[player.armor] || 0);
+  const diffText = (value) => value === 0 ? "+0" : value > 0 ? `+${value}` : String(value);
   if (tab === "items") {
     return [
       { name: itemNames.potion, detail: `HP回復 x${player.potions}`, sell: itemSellValues.potion },
@@ -305,7 +316,7 @@ function inventoryRenderRows(tab) {
     const owned = Array.isArray(player.ownedWeapons) ? player.ownedWeapons : [player.weapon || 0];
     return owned.map((rank) => ({
       name: weaponNames[rank] || `武器${rank}`,
-      detail: weaponTraits[rank] || "",
+      detail: `${weaponTraits[rank] || ""} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - currentAttack)})`,
       sell: weaponSellValues[rank] || 0,
       equipped: player.weapon === rank,
     }));
@@ -314,7 +325,7 @@ function inventoryRenderRows(tab) {
     const owned = Array.isArray(player.ownedArmors) ? player.ownedArmors : [player.armor || 0];
     return owned.map((rank) => ({
       name: armorNames[rank] || `防具${rank}`,
-      detail: armorTraits[rank] || "",
+      detail: `${armorTraits[rank] || ""} DEF ${baseDefense + (armorDefense[rank] || 0)} (${diffText(baseDefense + (armorDefense[rank] || 0) - currentDefense)})`,
       sell: armorSellValues[rank] || 0,
       equipped: player.armor === rank,
     }));
@@ -387,6 +398,17 @@ function drawFrontierCampDetails(cam) {
   drawLamp(34 * TILE - cam.x, 59 * TILE - cam.y);
   drawRoleMarker(31 * TILE - cam.x, 58 * TILE - cam.y, "回", "#6de4ff");
   drawRoleMarker(33 * TILE - cam.x, 58 * TILE - cam.y, "補", "#fff2a6");
+}
+
+function drawAshHamletDetails(cam) {
+  drawTent(96 * TILE - cam.x, 54 * TILE - cam.y, "#b990ff");
+  drawTent(105 * TILE - cam.x, 54 * TILE - cam.y, "#6de4ff");
+  drawCrates(108 * TILE - cam.x, 58 * TILE - cam.y);
+  drawCampfire(101 * TILE - cam.x, 57 * TILE - cam.y);
+  drawLamp(110 * TILE - cam.x, 57 * TILE - cam.y);
+  drawRoleMarker(102 * TILE - cam.x, 57 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(108 * TILE - cam.x, 57 * TILE - cam.y, "星", "#b990ff");
+  drawSign(99 * TILE - cam.x, 58 * TILE - cam.y);
 }
 
 function drawCampBoundary(cam) {
@@ -696,6 +718,26 @@ function drawWardenSite(cam) {
   if (ready) {
     ctx.strokeStyle = pulse ? "#6de4ff" : "#fff2a6";
     ctx.strokeRect(sx + 1, sy, 18, 17);
+  }
+}
+
+function drawAshKnightSite(cam) {
+  if (state.ashKnightDefeated) return;
+  const sx = ASH_KNIGHT_SITE.x * TILE - cam.x;
+  const sy = ASH_KNIGHT_SITE.y * TILE - cam.y;
+  if (sx < -24 || sy < -24 || sx > W || sy > VIEW_H) return;
+  const ready = state.wardenDefeated && player.level >= ASH_KNIGHT_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 200) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.32)";
+  ctx.fillRect(sx - 2, sy + 14, 24, 3);
+  ctx.fillStyle = "#3b2b5f";
+  ctx.fillRect(sx + 4, sy + 2, 12, 14);
+  ctx.fillStyle = ready ? "#b990ff" : "#53606f";
+  ctx.fillRect(sx + 7, sy, 6, 5);
+  ctx.fillRect(sx + 8, sy + 7, 4, 7);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#b990ff" : "#fff2a6";
+    ctx.strokeRect(sx + 1, sy, 18, 18);
   }
 }
 

@@ -168,7 +168,7 @@
         addRing(c.x, c.y, "#ff8a3d", worldPx(15));
       }
 
-      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : 130)) {
+      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "sorcerer" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : monster.type === "sorcerer" ? 165 : 130)) {
         if (monster.boss && monster.enraged) {
           shootProjectile(monster, playerCenter, -0.28);
           shootProjectile(monster, playerCenter, 0);
@@ -176,7 +176,7 @@
         } else {
           shootProjectile(monster, playerCenter);
         }
-        monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : rand(1300, 2100);
+        monster.fireCooldown = monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "sorcerer" ? rand(900, 1450) : rand(1300, 2100);
       }
 
       if (monster.windup > 0) {
@@ -301,6 +301,10 @@
       player.stamina = Math.max(0, player.stamina - 18);
       player.slow = Math.max(player.slow, 700);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#8dd7ff");
+    } else if (monster.type === "sorcerer") {
+      player.slow = Math.max(player.slow, 800);
+      player.stamina = Math.max(0, player.stamina - 10);
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "MAG", "#b990ff");
     } else if (monster.type === "wisp" || monster.type === "dragonling" || monster.boss) {
       const fireGuard = player.armor === 6;
       player.burn = Math.max(player.burn, Math.round((monster.boss ? 2600 : 1500) * (fireGuard ? 0.55 : 1)));
@@ -333,7 +337,15 @@
 
     grantMonsterDefeatDrops(monster);
 
-    if (monster.type === "warden") {
+    if (monster.type === "ashKnight") {
+      state.ashKnightDefeated = true;
+      player.gold += 420;
+      player.scales = Math.min(3, player.scales + 1);
+      player.potions = Math.min(9, player.potions + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#b990ff", 48);
+      say("古塔の灰騎士を倒した。星見の装備が宿場に並ぶ!", 4200);
+    } else if (monster.type === "warden") {
       state.wardenDefeated = true;
       player.aegisCharm = true;
       if (!Array.isArray(player.ownedAccessories)) player.ownedAccessories = [];
