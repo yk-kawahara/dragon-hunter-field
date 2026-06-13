@@ -208,6 +208,28 @@ Equipment should alter survivability, exploration range, route preparation, or c
 
 ## UI, feedback, and visual direction
 
+## Latest design truth: selectable shops and Chapter 3 long expedition
+
+The Chapter 3 route should now read as a longer expedition rather than a short final lane.
+
+Current added structure:
+
+* Black Fort remains the first Chapter 3 remote base.
+* Black Market is the Chapter 3 second town: safe zone, recovery, late shop, NPC guidance, and supplies.
+* Obsidian Cave is a Chapter 3 branch dungeon between Black Market and Black Sun Castle.
+* Obsidian Crawler adds ranged obsidian pressure.
+* Obsidian Golem is a Chapter 3 midboss after Chapter 2 report, Black Fort armory, and level 24.
+* Obsidian gear and Obsidian Bracelet are rewards that make the final Black Sun push safer.
+* Black Sun Dragon remains the Chapter 3 major boss, now after Obsidian Golem preparation.
+
+Shop and reward rules:
+
+* Shops are selectable menus. They must not force fixed weak-to-strong purchase order.
+* The player should choose weapons, armor, accessories, and consumables directly.
+* Weaker found equipment must be added to inventory when new.
+* Weaker found equipment must not auto-equip over stronger current gear.
+* Shop UI and inventory UI should make ATK/DEF and special equipment value visible.
+
 The player must understand why they became stronger.
 
 Prioritize clear feedback for:

@@ -31,7 +31,12 @@
     throw new Error("DRAGON_HUNTER_REWARDS must be loaded before ui helpers");
   }
 
-  const { normalizeInventory } = rewardHelpers;
+  const {
+    normalizeInventory,
+    addOwnedWeapon,
+    addOwnedArmor,
+    grantAccessory,
+  } = rewardHelpers;
 
   function requireUiContext(context) {
     if (!context?.ui || !context?.state || !context?.player || !context?.say) {
@@ -79,6 +84,118 @@
       return;
     }
     state.inventoryIndex = Math.max(0, Math.min(state.inventoryIndex || 0, rows.length - 1));
+  }
+
+  function clampShopIndex(state) {
+    const rows = Array.isArray(state.shopRows) ? state.shopRows : [];
+    if (rows.length <= 0) {
+      state.shopIndex = 0;
+      return;
+    }
+    state.shopIndex = Math.max(0, Math.min(state.shopIndex || 0, rows.length - 1));
+  }
+
+  function openShop(context, title, rows) {
+    const { state, say } = requireUiContext(context);
+    state.shopOpen = true;
+    state.inventoryOpen = false;
+    state.infoPanel = null;
+    state.shopTitle = title || "店";
+    state.shopRows = Array.isArray(rows) ? rows : [];
+    state.shopIndex = 0;
+    state.keys?.clear?.();
+    state.virtualKeys?.clear?.();
+    state.pointerMove = null;
+    clampShopIndex(state);
+    say(`${state.shopTitle}を開いた`, 900);
+  }
+
+  function closeShop(context) {
+    const { state, say } = requireUiContext(context);
+    if (!state.shopOpen) return;
+    state.shopOpen = false;
+    say("店を閉じた", 700);
+  }
+
+  function moveShop(context, dy) {
+    const { state } = requireUiContext(context);
+    if (!state.shopOpen) return;
+    state.shopIndex += dy;
+    clampShopIndex(state);
+  }
+
+  function selectedShopRow(context) {
+    const { state } = requireUiContext(context);
+    clampShopIndex(state);
+    return (Array.isArray(state.shopRows) ? state.shopRows : [])[state.shopIndex] || null;
+  }
+
+  function confirmShop(context) {
+    const { state, player, say, refreshDerivedStats } = requireUiStatusContext(context);
+    const row = selectedShopRow(context);
+    if (!row) return;
+    normalizeInventory(player);
+    if (row.available === false) {
+      say(row.lockedReason || "まだ買えない");
+      return;
+    }
+    if (row.type === "item") {
+      const field = row.id === "potion" ? "potions" : row.id === "bomb" ? "bombs" : "wards";
+      const amount = row.amount || 1;
+      if (player[field] >= 9) {
+        say(`${row.name}はこれ以上持てない`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      player[field] = Math.min(9, player[field] + amount);
+      say(`${row.name}を買った`);
+      return;
+    }
+    if (row.type === "weapon") {
+      if (player.ownedWeapons.includes(row.id)) {
+        say(`${row.name}は既に持っている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      addOwnedWeapon(player, row.id);
+      say(`${row.name}を買った。もちもので装備できる`);
+      return;
+    }
+    if (row.type === "armor") {
+      if (player.ownedArmors.includes(row.id)) {
+        say(`${row.name}は既に持っている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      addOwnedArmor(player, row.id);
+      say(`${row.name}を買った。もちもので装備できる`);
+      return;
+    }
+    if (row.type === "accessory") {
+      if (player.ownedAccessories.includes(row.id)) {
+        say(`${row.name}は既に持っている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      grantAccessory(context, row.id, `${row.name}を買った。もちもので装備できる`);
+      refreshDerivedStats();
+    }
   }
 
   function inventoryRows(context) {
@@ -304,7 +421,8 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
-    if (inTown(player.x, player.y)) name = (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    if (inTown(player.x, player.y)) name = (tx >= 20 && tx <= 48 && ty >= 129 && ty <= 136) ? "黒市" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if (ty >= 128 && tx <= 58) name = "黒曜洞";
     else if (ty >= 128) name = "黒陽城";
     else if (ty >= 112) name = "月蝕城";
     else if (ty >= 96) name = "月影廃墟";
@@ -349,6 +467,10 @@
     moveInventory,
     confirmInventory,
     sellInventorySelection,
+    openShop,
+    closeShop,
+    moveShop,
+    confirmShop,
     statsPanelPages,
     nextUpgradeText,
     updateZone,

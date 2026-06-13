@@ -178,7 +178,7 @@
         addRing(c.x, c.y, "#ff8a3d", worldPx(15));
       }
 
-      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "voidWraith" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "voidDragon" ? 225 : monster.type === "eclipseDragon" ? 205 : monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : monster.type === "voidWraith" ? 185 : monster.type === "eclipseMage" ? 180 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
+      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "voidWraith" || monster.type === "obsidianCrawler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "voidDragon" ? 225 : monster.type === "eclipseDragon" ? 205 : monster.type === "obsidianGolem" ? 185 : monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 185 : monster.type === "eclipseMage" ? 180 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
         if (monster.type === "voidDragon" && monster.enraged) {
           shootProjectile(monster, playerCenter, -0.52);
           shootProjectile(monster, playerCenter, -0.26);
@@ -197,7 +197,7 @@
         } else {
           shootProjectile(monster, playerCenter);
         }
-        monster.fireCooldown = monster.type === "voidDragon" ? rand(660, 1040) : monster.type === "eclipseDragon" ? rand(760, 1180) : monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "voidWraith" ? rand(760, 1280) : monster.type === "eclipseMage" ? rand(820, 1320) : monster.type === "sorcerer" || monster.type === "moonShade" ? rand(900, 1450) : rand(1300, 2100);
+        monster.fireCooldown = monster.type === "voidDragon" ? rand(660, 1040) : monster.type === "eclipseDragon" ? rand(760, 1180) : monster.type === "obsidianGolem" ? rand(920, 1450) : monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? rand(760, 1280) : monster.type === "eclipseMage" ? rand(820, 1320) : monster.type === "sorcerer" || monster.type === "moonShade" ? rand(900, 1450) : rand(1300, 2100);
       }
 
       if (monster.windup > 0) {
@@ -322,16 +322,18 @@
       player.stamina = Math.max(0, player.stamina - 18);
       player.slow = Math.max(player.slow, 700);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#8dd7ff");
-    } else if (monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "voidWraith" || monster.type === "voidDragon") {
+    } else if (monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "obsidianCrawler" || monster.type === "obsidianGolem") {
       const eclipseGuard = player.armor === 9 || player.equippedAccessory === "eclipse" || (!player.equippedAccessory && player.eclipseCharm);
       const voidGuard = player.armor === 10 || player.equippedAccessory === "void" || (!player.equippedAccessory && player.voidCharm);
+      const obsidianGuard = player.armor === 11 || player.equippedAccessory === "obsidian" || (!player.equippedAccessory && player.obsidianCharm);
       const isVoid = monster.type === "voidWraith" || monster.type === "voidDragon";
-      const baseSlow = monster.type === "voidDragon" ? 1850 : monster.type === "voidWraith" ? 1300 : monster.type === "eclipseDragon" ? 1400 : monster.type === "eclipseMage" ? 1050 : 800;
-      const baseStamina = monster.type === "voidDragon" ? 24 : monster.type === "voidWraith" ? 16 : monster.type === "eclipseDragon" ? 18 : monster.type === "eclipseMage" ? 13 : 10;
-      const guard = isVoid ? voidGuard : eclipseGuard;
+      const isObsidian = monster.type === "obsidianCrawler" || monster.type === "obsidianGolem";
+      const baseSlow = monster.type === "voidDragon" ? 1850 : monster.type === "obsidianGolem" ? 1650 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 1300 : monster.type === "eclipseDragon" ? 1400 : monster.type === "eclipseMage" ? 1050 : 800;
+      const baseStamina = monster.type === "voidDragon" ? 24 : monster.type === "obsidianGolem" ? 22 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 16 : monster.type === "eclipseDragon" ? 18 : monster.type === "eclipseMage" ? 13 : 10;
+      const guard = isObsidian ? obsidianGuard : isVoid ? voidGuard : eclipseGuard;
       player.slow = Math.max(player.slow, Math.round(baseSlow * (guard ? 0.5 : 1)));
       player.stamina = Math.max(0, player.stamina - (guard ? 5 : baseStamina));
-      addFloater(player.x + player.w / 2, player.y - worldPx(7), isVoid ? "黒" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "蝕" : "MAG", isVoid ? "#d8d8ff" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "#e36dff" : "#b990ff");
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), isObsidian ? "曜" : isVoid ? "黒" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "蝕" : "MAG", isObsidian ? "#aab0c8" : isVoid ? "#d8d8ff" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "#e36dff" : "#b990ff");
     } else if (monster.type === "wisp" || monster.type === "dragonling" || monster.boss) {
       const fireGuard = player.armor === 6;
       player.burn = Math.max(player.burn, Math.round((monster.boss ? 2600 : 1500) * (fireGuard ? 0.55 : 1)));
@@ -382,6 +384,14 @@
       player.potions = Math.min(9, player.potions + 3);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#e36dff", 58);
       say("月蝕竜を封じた! 月見砦か村の長老へ報告しよう", 5200);
+    } else if (monster.type === "obsidianGolem") {
+      state.obsidianGolemDefeated = true;
+      state.spawnedObsidianGolem = true;
+      player.gold += 760;
+      player.potions = Math.min(9, player.potions + 2);
+      player.wards = Math.min(9, player.wards + 3);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#aab0c8", 52);
+      say("黒曜巨人を倒した。黒市に黒曜装備が並ぶ!", 4600);
     } else if (monster.type === "ashKnight") {
       state.ashKnightDefeated = true;
       player.gold += 420;
@@ -400,7 +410,7 @@
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
       say("南東の道番を越え、守りの護石を得た!", 4200);
-    } else if (monster.midboss) {
+    } else if (monster.midboss && monster.type !== "obsidianGolem") {
       state.guardianDefeated = true;
       player.sealCrest = true;
       player.scales = Math.min(3, player.scales + 1);

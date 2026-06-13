@@ -17,6 +17,7 @@
     { id: "southwest-camp", name: "前線キャンプ", x1: 25, y1: 56, x2: 35, y2: 61, outerX1: 24, outerY1: 55, outerX2: 36, outerY2: 62 },
     { id: "ash-hamlet", name: "灰道の宿場", x1: 94, y1: 52, x2: 110, y2: 60, outerX1: 93, outerY1: 51, outerX2: 111, outerY2: 61 },
     { id: "moon-camp", name: "月見砦", x1: 94, y1: 113, x2: 110, y2: 118, outerX1: 93, outerY1: 112, outerX2: 111, outerY2: 119 },
+    { id: "black-market", name: "黒市", x1: 20, y1: 129, x2: 48, y2: 136, outerX1: 19, outerY1: 128, outerX2: 49, outerY2: 137 },
     { id: "black-fort", name: "黒門砦", x1: 88, y1: 129, x2: 106, y2: 134, outerX1: 87, outerY1: 128, outerX2: 107, outerY2: 135 },
   ];
   const HEAL_POINTS = [
@@ -24,6 +25,7 @@
     { x: 31, y: 59, id: "southwest-camp-circle", name: "前線キャンプの回復陣" },
     { x: 102, y: 58, id: "ash-hamlet-circle", name: "灰道の宿場の回復陣" },
     { x: 102, y: 116, id: "moon-camp-circle", name: "月見砦の回復陣" },
+    { x: 35, y: 135, id: "black-market-circle", name: "黒市の回復陣" },
     { x: 98, y: 132, id: "black-fort-circle", name: "黒門砦の回復陣" },
   ];
   const TOWN_GATES = [
@@ -47,6 +49,8 @@
     { id: "moon-camp-armory", x: 106, y: 116, reward: "eclipseGear" },
     { id: "eclipse-castle-cache", x: 86, y: 124, reward: "eclipseSupply" },
     { id: "black-fort-armory", x: 103, y: 132, reward: "voidGear" },
+    { id: "obsidian-vault-cache", x: 52, y: 133, reward: "obsidianGear" },
+    { id: "black-market-supply", x: 28, y: 136, reward: "blackMarketSupply" },
     { id: "black-sun-cache", x: 76, y: 140, reward: "voidSupply" },
   ];
   const DISCOVERY_POINTS = [
@@ -69,6 +73,8 @@
   const CHAPTER2_REQUIREMENTS = { level: 20 };
   const VOID_DRAGON_SITE = { x: 80, y: 140 };
   const CHAPTER3_REQUIREMENTS = { level: 26 };
+  const OBSIDIAN_GOLEM_SITE = { x: 52, y: 132 };
+  const OBSIDIAN_GOLEM_REQUIREMENTS = { level: 24 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -81,6 +87,7 @@
     tower: { danger: 5, maxBonus: 6, pool: ["sorcerer", "sorcerer", "dragonling", "wisp"] },
     moon: { danger: 6, maxBonus: 7, pool: ["moonShade", "sorcerer", "dragonling", "wisp"] },
     eclipse: { danger: 7, maxBonus: 8, pool: ["eclipseMage", "moonShade", "sorcerer", "dragonling"] },
+    obsidian: { danger: 8, maxBonus: 9, pool: ["obsidianCrawler", "voidWraith", "eclipseMage", "dragonling"] },
     void: { danger: 8, maxBonus: 10, pool: ["voidWraith", "eclipseMage", "moonShade", "dragonling"] },
   };
 
@@ -106,14 +113,14 @@
   const ATTACK_WIDTH = 20 * WORLD_SCALE;
   const DASH_COST = 34;
 
-  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣"];
-  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧"];
-  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効"];
-  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減"];
-  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 3400, 5600];
-  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 18, 21, 30];
-  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 3200, 5200];
-  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34];
+  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣", "黒曜の槌"];
+  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧"];
+  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し"];
+  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御"];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 3400, 5600, 6800];
+  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 18, 21, 30, 34];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 3200, 5200, 6600];
+  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
   const itemOrder = ["potion", "bomb", "ward"];
@@ -127,7 +134,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "trail", "aegis", "mine", "eclipse", "void"];
+  const accessoryOrder = ["hunter", "regen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -170,6 +177,12 @@
       trait: "黒陽圧と召喚魔法を軽減",
       sell: 0,
       flag: "voidCharm",
+    },
+    obsidian: {
+      name: "黒曜の腕輪",
+      trait: "正面接触と黒曜衝撃を軽減",
+      sell: 0,
+      flag: "obsidianCharm",
     },
   };
 
@@ -272,6 +285,18 @@
       drop: 0.32,
       flying: true,
     },
+    obsidianCrawler: {
+      name: "黒曜這い",
+      hp: 310,
+      atk: 132,
+      def: 72,
+      speed: 30 * WORLD_SCALE,
+      xp: 300,
+      gold: 98,
+      color: "#24242c",
+      shadow: "#08080c",
+      drop: 0.34,
+    },
     bubbler: {
       name: "泡吐き",
       hp: 66,
@@ -361,6 +386,19 @@
       boss: true,
       drop: 1,
     },
+    obsidianGolem: {
+      name: "黒曜巨人",
+      hp: 3200,
+      atk: 148,
+      def: 130,
+      speed: 18 * WORLD_SCALE,
+      xp: 2100,
+      gold: 980,
+      color: "#3c3f52",
+      shadow: "#090910",
+      midboss: true,
+      drop: 1,
+    },
     voidDragon: {
       name: "黒陽竜",
       hp: 5600,
@@ -402,6 +440,8 @@
     CHAPTER2_REQUIREMENTS,
     VOID_DRAGON_SITE,
     CHAPTER3_REQUIREMENTS,
+    OBSIDIAN_GOLEM_SITE,
+    OBSIDIAN_GOLEM_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,

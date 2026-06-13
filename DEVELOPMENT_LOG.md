@@ -37,6 +37,9 @@ Current project status:
 * Eclipse Mage, eclipse gear, Eclipse Ring, and Eclipse Dragon add the first post-Red-Dragon major boss arc.
 * Black Gate + Black Fort + Black Sun Castle are the first Chapter 3 route beyond Eclipse Castle.
 * Void Wraith, Black Sun gear, Void Charm, and Black Sun Dragon add a harder post-Chapter-2 major boss arc.
+* Black Market is now a Chapter 3 second town with recovery, selectable shop stock, guide/guards/villagers, and supplies.
+* Obsidian Cave + Obsidian Crawler + Obsidian Golem add a Chapter 3 branch dungeon and midboss before the Black Sun Dragon route.
+* Shops now use selectable buy menus instead of fixed-order auto-buying.
 * Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
 
 Current high-priority risks:
@@ -75,6 +78,43 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ## New entries
 
 _Add new entries here._
+
+### 2026-06-13: Selectable Shops and Obsidian Branch Expedition
+
+Goal: address playtest issues with equipment acquisition/shop flow and make the Chapter 3 route feel like a longer expedition toward Black Sun Castle.
+
+Key work:
+
+* Replaced fixed-order NPC auto-buy behavior with selectable shop menus for smith, healer, frontier bases, and Black Market.
+* Added shop controls for up/down selection, confirm purchase, and close.
+* Added shop overlay rendering with cost, owned state, lock reason, and player gold.
+* Preserved the rule that weaker found equipment is added to inventory if new but does not auto-equip over stronger current gear.
+* Added Black Market as a Chapter 3 second town with safe-zone handling, recovery point, merchant, guide, guards, villagers, supplies, and map/readability details.
+* Added Obsidian Cave as a Chapter 3 branch region with Obsidian Crawler spawns.
+* Added Obsidian Golem as a Chapter 3 midboss before the Black Sun Dragon route.
+* Added obsidian weapon/armor/accessory rewards and Black Market shop stock after the Obsidian Golem is defeated.
+* Updated Chapter 3 objective/guidance, region text, save/load fields, combat modifiers, projectile/status handling, render markers, and VM smoke coverage.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with line-ending warnings only.
+* Map preview generation passed at `120x144`.
+* VM smoke now verifies:
+  * reachability for Black Market, Obsidian Golem site, Black Sun route, chests, and discoveries,
+  * 15 NPCs loaded from `WORLD_OBJECTS`,
+  * selectable shop purchasing for route gear, accessories, and supplies,
+  * weaker found equipment is kept without auto-equipping,
+  * Obsidian Golem spawn/defeat before Black Sun Dragon,
+  * obsidian rewards and save/load persistence.
+
+Known risks:
+
+* Real-browser visual QA is still pending. Browser connection was attempted, but this environment failed with Windows `CreateProcessAsUserW failed: 5`.
+* Chapter 3 balance after adding selectable shops and Obsidian Golem needs manual playtesting.
+* Black Market is functional, but should gain more city content, unique conversations, and optional side rewards in a later content pass.
 
 ### 2026-06-13: Chapter 3 Black Sun Dragon Boss Route
 

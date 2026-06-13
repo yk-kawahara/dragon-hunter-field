@@ -165,7 +165,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "blackMarketSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -267,6 +267,23 @@
       player.wards = Math.min(9, player.wards + 5);
       grantAccessory(context, "void", "黒陽の護符を見つけた。装備すると黒陽圧を軽くする");
       say("黒陽城の秘庫から最終遠征物資を得た");
+      return true;
+    }
+    if (reward === "obsidianGear") {
+      player.gold += 1500;
+      addOwnedWeapon(player, 11);
+      addOwnedArmor(player, 11);
+      player.wards = Math.min(9, player.wards + 5);
+      grantAccessory(context, "obsidian", "黒曜の腕輪を見つけた。正面戦闘に強い");
+      say("黒曜洞の武具を得た。黒陽城を正面から押し返せる");
+      return true;
+    }
+    if (reward === "blackMarketSupply") {
+      player.gold += 900;
+      player.potions = Math.min(9, player.potions + 4);
+      player.bombs = Math.min(9, player.bombs + 3);
+      player.wards = Math.min(9, player.wards + 4);
+      say("黒市の隠し倉庫から遠征物資を得た");
       return true;
     }
     return false;

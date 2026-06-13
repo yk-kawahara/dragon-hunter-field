@@ -17,6 +17,7 @@
     ASH_KNIGHT_REQUIREMENTS,
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
+    OBSIDIAN_GOLEM_REQUIREMENTS,
     weaponNames,
     weaponCosts,
     armorCosts,
@@ -36,6 +37,8 @@
     if (stage === "chapter3report") return "目的: 長老へ黒陽竜討伐を報告";
     if (stage === "void") return "目的: 黒陽竜を倒す";
     if (stage === "voidReady") return "目的: 黒陽城の奥へ進む";
+    if (stage === "obsidian") return "目的: 黒曜洞の巨人を倒す";
+    if (stage === "obsidianReady") return "目的: 黒市の東、黒曜洞へ";
     if (stage === "voidSeal") return "目的: 黒陽城の封印碑を探す";
     if (stage === "voidRoute") return `目的: 黒門砦と黒陽城へ LV${CHAPTER3_REQUIREMENTS.level}`;
     if (stage === "chapter2cleared") return "第2章CLEAR: 月蝕竜を封じた";
@@ -66,6 +69,8 @@
       const cost = nextUpgradeCost(context);
       if (state.chapter2Reported && !state.discoveries.has("void-seal")) return "黒門砦の南西で黒陽碑を探す";
       if (state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門砦の武具箱で黒陽装備を得よう";
+      if (state.chapter2Reported && !state.obsidianGolemDefeated && player.level < OBSIDIAN_GOLEM_REQUIREMENTS.level) return `黒曜洞の巨人にはLV${OBSIDIAN_GOLEM_REQUIREMENTS.level}が要る`;
+      if (state.chapter2Reported && !state.obsidianGolemDefeated) return "黒市の東、黒曜洞の巨人を倒そう";
       if (state.chapter2Reported && player.level < CHAPTER3_REQUIREMENTS.level) return `第3章大ボスにはLV${CHAPTER3_REQUIREMENTS.level}が要る`;
       if (state.chapter2Reported) return "黒門砦で黒陽装備を整えよう";
       if (state.elderReported && state.ashKnightDefeated && !state.discoveries.has("eclipse-seal")) return "月見砦の南西で封印碑を探す";
@@ -82,6 +87,7 @@
     if (hpRate < 0.35) return "??: ????????????";
     const stage = gameStage(context);
     const region = currentRegion();
+    if (region === "obsidian") return "黒曜洞は中ボス級の圧。黒市へ戻る余力を残そう";
     if (region === "void") return "黒陽領は最高危険度。砦へ戻る余力を残そう";
     if (region === "eclipse") return "月蝕魔法が濃い。砦へ戻れるHPを残そう";
     if (state.wardenDefeated && !state.ashKnightDefeated && region === "ash") return "古塔は南。LV14で灰騎士に挑む";
@@ -114,7 +120,9 @@
     if (state.chapter3Reported) return "chapter3cleared";
     if (state.chapter3Victory || (state.voidDragonDefeated && !state.chapter3Reported)) return "chapter3report";
     if (state.spawnedVoidDragon) return "void";
-    if (state.chapter2Reported && state.discoveries.has("void-seal") && state.chests.has("black-fort-armory") && player.level >= CHAPTER3_REQUIREMENTS.level) return "voidReady";
+    if (state.spawnedObsidianGolem) return "obsidian";
+    if (state.chapter2Reported && state.discoveries.has("void-seal") && state.chests.has("black-fort-armory") && !state.obsidianGolemDefeated && player.level >= OBSIDIAN_GOLEM_REQUIREMENTS.level) return "obsidianReady";
+    if (state.chapter2Reported && state.discoveries.has("void-seal") && state.chests.has("black-fort-armory") && state.obsidianGolemDefeated && player.level >= CHAPTER3_REQUIREMENTS.level) return "voidReady";
     if (state.chapter2Reported && !state.discoveries.has("void-seal")) return "voidSeal";
     if (state.chapter2Reported) return "voidRoute";
     if (state.chapter2Victory || (state.eclipseDragonDefeated && !state.chapter2Reported)) return "chapter2report";
@@ -151,6 +159,8 @@
       chapter2cleared: "第2章クリア",
       voidRoute: "黒陽遠征",
       voidSeal: "黒陽封印",
+      obsidianReady: "黒曜洞",
+      obsidian: "黒曜巨人戦",
       voidReady: "黒陽城",
       void: "黒陽竜戦",
       chapter3report: "第3章報告",
@@ -187,6 +197,10 @@
     if (type === "smith") return "鍛冶屋";
     if (type === "healer") return "薬師";
     if (type === "frontier") return "補給隊";
+    if (type === "merchant") return "商人";
+    if (type === "guide") return "案内人";
+    if (type === "guard") return "衛兵";
+    if (type === "villager") return "住人";
     return "人";
   }
 

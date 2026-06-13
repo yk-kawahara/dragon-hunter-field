@@ -26,6 +26,8 @@
     CHAPTER2_REQUIREMENTS,
     VOID_DRAGON_SITE,
     CHAPTER3_REQUIREMENTS,
+    OBSIDIAN_GOLEM_SITE,
+    OBSIDIAN_GOLEM_REQUIREMENTS,
     monsterTypes,
   } = definitions;
 
@@ -127,6 +129,7 @@
     const { player } = requireSpawnContext(context);
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
+    if (ty >= 128 && tx <= 58) return "obsidian";
     if (ty >= 128) return "void";
     if (ty >= 112) return "eclipse";
     if (ty >= 96) return "moon";
@@ -165,6 +168,8 @@
     if (lv >= 20 && region === "eclipse") pool.push("eclipseMage");
     if (lv >= 22 && region === "void") pool.push("voidWraith", "eclipseMage");
     if (lv >= 26 && region === "void") pool.push("voidWraith", "voidWraith");
+    if (lv >= 22 && region === "obsidian") pool.push("obsidianCrawler", "voidWraith");
+    if (lv >= 24 && region === "obsidian") pool.push("obsidianCrawler", "obsidianCrawler");
     return pool;
   }
 
@@ -201,7 +206,7 @@
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : region === "ash" ? 6 : region === "tower" ? 7 : region === "moon" ? 8 : region === "eclipse" ? 9 : region === "void" ? 10 : 5;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : region === "ash" ? 6 : region === "tower" ? 7 : region === "moon" ? 8 : region === "eclipse" ? 9 : region === "obsidian" ? 9 : region === "void" ? 10 : 5;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -261,6 +266,7 @@
   }
 
   function areaDangerText(region) {
+    if (region === "obsidian") return "黒曜洞: 黒市の外は巨人の縄張り";
     if (region === "void") return "黒陽領: 第3章の高難度地帯";
     if (region === "eclipse") return "月蝕城: 第2章の最奥";
     if (region === "moon") return "月影廃墟: 古塔の先の危険地帯";
@@ -302,10 +308,19 @@
     return !state.voidDragonDefeated
       && state.chapter2Reported
       && state.eclipseDragonDefeated
+      && state.obsidianGolemDefeated
       && state.chests.has("black-fort-armory")
       && state.chests.has("eclipse-castle-cache")
       && state.discoveries.has("void-seal")
       && player.level >= CHAPTER3_REQUIREMENTS.level;
+  }
+
+  function obsidianGolemReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.obsidianGolemDefeated
+      && state.chapter2Reported
+      && state.chests.has("black-fort-armory")
+      && player.level >= OBSIDIAN_GOLEM_REQUIREMENTS.level;
   }
 
   function playerNearGuardianSite(context) {
@@ -348,6 +363,14 @@
     return Math.hypot(pc.x - vx, pc.y - vy) < worldPx(108);
   }
 
+  function playerNearObsidianGolemSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const ox = (OBSIDIAN_GOLEM_SITE.x + 0.5) * TILE;
+    const oy = (OBSIDIAN_GOLEM_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - ox, pc.y - oy) < worldPx(96);
+  }
+
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver) return;
@@ -367,6 +390,9 @@
     if (state.spawnedVoidDragon && !state.voidDragonDefeated && !hasLiveMonster(context, "voidDragon")) {
       state.spawnedVoidDragon = false;
     }
+    if (state.spawnedObsidianGolem && !state.obsidianGolemDefeated && !hasLiveMonster(context, "obsidianGolem")) {
+      state.spawnedObsidianGolem = false;
+    }
 
     if (ashKnightReady(context) && !state.spawnedAshKnight && playerNearAshKnightSite(context)) {
       state.spawnedAshKnight = true;
@@ -384,6 +410,12 @@
       state.spawnedVoidDragon = true;
       spawnMonster(context, "voidDragon", VOID_DRAGON_SITE.x * TILE, VOID_DRAGON_SITE.y * TILE);
       say("黒陽城の奥で黒陽竜が目覚めた!", 3400);
+    }
+
+    if (obsidianGolemReady(context) && !state.spawnedObsidianGolem && playerNearObsidianGolemSite(context)) {
+      state.spawnedObsidianGolem = true;
+      spawnMonster(context, "obsidianGolem", OBSIDIAN_GOLEM_SITE.x * TILE, OBSIDIAN_GOLEM_SITE.y * TILE);
+      say("黒曜洞で黒曜巨人が動き出した!", 3000);
     }
 
     if (state.victory) return;
@@ -418,12 +450,14 @@
     ashKnightReady,
     eclipseDragonReady,
     voidDragonReady,
+    obsidianGolemReady,
     hasLiveMonster,
     playerNearGuardianSite,
     playerNearWardenSite,
     playerNearAshKnightSite,
     playerNearEclipseDragonSite,
     playerNearVoidDragonSite,
+    playerNearObsidianGolemSite,
     updateStoryEvents,
   };
 })();

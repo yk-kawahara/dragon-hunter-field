@@ -29,12 +29,78 @@
     armorTraits,
     weaponCosts,
     armorCosts,
+    weaponAttack,
+    armorDefense,
+    itemNames,
+    itemSellValues,
+    accessoryData,
   } = definitions;
 
   const { centerOf } = mathHelpers;
   const { addOwnedWeapon, addOwnedArmor, grantAccessory } = rewardHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
+
+  function weaponRow(rank, available = true, lockedReason = "") {
+    return {
+      type: "weapon",
+      id: rank,
+      name: weaponNames[rank],
+      detail: `${weaponTraits[rank]} ATK+${weaponAttack[rank] || 0}`,
+      cost: weaponCosts[rank],
+      available,
+      lockedReason,
+    };
+  }
+
+  function armorRow(rank, available = true, lockedReason = "") {
+    return {
+      type: "armor",
+      id: rank,
+      name: armorNames[rank],
+      detail: `${armorTraits[rank]} DEF+${armorDefense[rank] || 0}`,
+      cost: armorCosts[rank],
+      available,
+      lockedReason,
+    };
+  }
+
+  function itemRow(id, amount, cost) {
+    return {
+      type: "item",
+      id,
+      name: `${itemNames[id]} x${amount}`,
+      detail: id === "potion" ? "HP回復" : id === "bomb" ? "周囲攻撃" : "防御札",
+      amount,
+      cost,
+    };
+  }
+
+  function accessoryRow(id, cost, available = true, lockedReason = "") {
+    return {
+      type: "accessory",
+      id,
+      name: accessoryData[id]?.name || id,
+      detail: accessoryData[id]?.trait || "",
+      cost,
+      available,
+      lockedReason,
+    };
+  }
+
+  function openShop(context, title, rows) {
+    const { state, say } = requireNpcContext(context);
+    state.shopOpen = true;
+    state.inventoryOpen = false;
+    state.infoPanel = null;
+    state.shopTitle = title;
+    state.shopRows = rows.filter(Boolean);
+    state.shopIndex = 0;
+    state.keys?.clear?.();
+    state.virtualKeys?.clear?.();
+    state.pointerMove = null;
+    say(`${title}を開いた`);
+  }
 
   function requireNpcContext(context) {
     if (!context?.state || !context?.player || !context?.say || !context?.spawnMonster || !context?.guardianReady) {
@@ -99,40 +165,29 @@
     }
 
     if (npc.type === "smith") {
-      const target = player.armor <= player.weapon ? "armor" : "weapon";
-      const rank = player[target] + 1;
-      if (rank >= weaponNames.length) {
-        say("鍛冶屋「これ以上は鍛えられん」");
-        return;
-      }
-      const cost = target === "weapon" ? weaponCosts[rank] : armorCosts[rank];
-      if (player.gold >= cost) {
-        player.gold -= cost;
-        player[target] += 1;
-        if (target === "weapon") addOwnedWeapon(player, player.weapon);
-        else addOwnedArmor(player, player.armor);
-        say(target === "weapon" ? `${weaponNames[player.weapon]}: ${weaponTraits[player.weapon]}` : `${armorNames[player.armor]}: ${armorTraits[player.armor]}`);
-      } else {
-        const name = target === "weapon" ? weaponNames[rank] : armorNames[rank];
-        const trait = target === "weapon" ? weaponTraits[rank] : armorTraits[rank];
-        say(`鍛冶屋「${name}(${trait})は${cost}G」`);
-      }
+      openShop(context, "村の鍛冶屋", [
+        weaponRow(1),
+        armorRow(1),
+        weaponRow(2),
+        armorRow(2),
+        weaponRow(3),
+        armorRow(3),
+        weaponRow(4),
+        armorRow(4),
+      ]);
+      return;
     }
 
     if (npc.type === "healer") {
       const cost = player.level * 8;
       if (player.hp === player.hpMax) {
-        const kitCost = 18 + player.level * 4;
-        if (player.gold >= kitCost && (player.potions < 5 || player.bombs < 2 || player.wards < 1)) {
-          player.gold -= kitCost;
-          player.potions = Math.min(9, player.potions + 1);
-          if (player.level >= 2) player.bombs = Math.min(9, player.bombs + 1);
-          if (player.level >= 3) player.wards = Math.min(9, player.wards + 1);
-          say("薬師は旅道具を包んだ");
-        } else {
-          say("薬師「無理は禁物だよ」");
-        }
+        openShop(context, "薬師の店", [
+          itemRow("potion", 1, 18 + player.level * 4),
+          itemRow("bomb", 1, 36 + player.level * 5),
+          itemRow("ward", 1, 42 + player.level * 6),
+        ]);
       } else if (player.gold >= cost) {
+        const cost = player.level * 8;
         player.gold -= cost;
         player.hp = player.hpMax;
         say("薬師は傷を癒やした");
@@ -141,7 +196,95 @@
       }
     }
 
+    if (npc.type === "merchant") {
+      openShop(context, "黒市の大商館", [
+        weaponRow(11, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
+        armorRow(11, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
+        accessoryRow("obsidian", 2600, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
+        itemRow("potion", 5, 150 + player.level * 12),
+        itemRow("bomb", 4, 165 + player.level * 12),
+        itemRow("ward", 5, 180 + player.level * 12),
+      ]);
+      return;
+    }
+
+    if (npc.type === "guide") {
+      if (!state.obsidianGolemDefeated) {
+        say(`案内人「黒市の東、黒曜洞に巨人がいる。LV24以上と黒門砦の装備が欲しい」`, 4200);
+      } else if (!state.voidDragonDefeated) {
+        say(`案内人「黒曜の備えがあれば、黒陽城の奥まで踏み込める」`, 3600);
+      } else {
+        say("案内人「黒陽の先へ行く道を、商人たちが探している」", 3600);
+      }
+      return;
+    }
+
+    if (npc.type === "villager" || npc.type === "guard") {
+      if (npc.y > 128 * TILE) {
+        say(npc.type === "guard" ? "衛兵「黒市の外は黒陽の影が濃い。門の外で油断するな」" : "住人「ここまで来た旅人は少ない。物資を整えていきな」", 3600);
+      } else if (npc.y > 110 * TILE) {
+        say("旅人「月見砦から先は戻る判断が命を分ける」", 3200);
+      } else if (npc.x > 90 * TILE) {
+        say("旅人「灰道の宿場から南へ行けば、古塔と月影の道だ」", 3200);
+      } else {
+        say("村人「遠くへ行くなら、帰れるだけのHPを残しておくんだ」", 3200);
+      }
+      return;
+    }
+
     if (npc.type === "frontier") {
+      if (player.hp < player.hpMax || player.stamina < player.staminaMax) {
+        player.hp = player.hpMax;
+        player.stamina = player.staminaMax;
+        player.guard = Math.max(player.guard, npc.y > 128 * TILE ? 1500 : npc.y > 110 * TILE ? 1200 : npc.x > 90 * TILE ? 900 : 700);
+        say("拠点で休んだ。遠征を続けられる");
+        return;
+      }
+      if (npc.y > 128 * TILE) {
+        openShop(context, "黒門砦の隊商", [
+          weaponRow(10, state.discoveries.has("void-seal"), "黒陽碑を読め"),
+          armorRow(10, state.discoveries.has("void-seal"), "黒陽碑を読め"),
+          accessoryRow("void", 1800, state.discoveries.has("void-seal"), "黒陽碑を読め"),
+          itemRow("potion", 4, 110 + player.level * 12),
+          itemRow("bomb", 3, 120 + player.level * 12),
+          itemRow("ward", 4, 130 + player.level * 12),
+        ]);
+        return;
+      }
+      if (npc.y > 110 * TILE) {
+        openShop(context, "月見砦の隊商", [
+          weaponRow(9, state.discoveries.has("eclipse-seal"), "月蝕碑を読め"),
+          armorRow(9, state.discoveries.has("eclipse-seal"), "月蝕碑を読め"),
+          accessoryRow("eclipse", 1200, state.discoveries.has("eclipse-seal"), "月蝕碑を読め"),
+          itemRow("potion", 3, 72 + player.level * 10),
+          itemRow("bomb", 2, 82 + player.level * 10),
+          itemRow("ward", 3, 92 + player.level * 10),
+        ]);
+        return;
+      }
+      if (npc.x > 90 * TILE) {
+        openShop(context, "灰道の宿場", [
+          weaponRow(8, state.ashKnightDefeated, "灰騎士を倒せ"),
+          armorRow(8, state.ashKnightDefeated, "灰騎士を倒せ"),
+          itemRow("potion", 2, 48 + player.level * 8),
+          itemRow("bomb", 2, 58 + player.level * 8),
+          itemRow("ward", 2, 68 + player.level * 8),
+        ]);
+        return;
+      }
+      openShop(context, "前線キャンプ補給隊", [
+        accessoryRow("mine", 180),
+        weaponRow(5),
+        armorRow(5),
+        weaponRow(6, player.level >= 8, "LV8から"),
+        armorRow(6, player.level >= 8, "LV8から"),
+        weaponRow(7, player.level >= 12, "LV12から"),
+        armorRow(7, player.level >= 12, "LV12から"),
+        itemRow("potion", 2, 28 + player.level * 6),
+        itemRow("bomb", 1, 38 + player.level * 6),
+        itemRow("ward", 1, 48 + player.level * 6),
+      ]);
+      return;
       if (npc.y > 128 * TILE) {
         const kitCost = 110 + player.level * 12;
         const ownsWeapon = (rank) => Array.isArray(player.ownedWeapons) && player.ownedWeapons.includes(rank);

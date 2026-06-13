@@ -176,6 +176,7 @@ function respawnAtVillage() {
   state.regionSpawnTimer = 0;
   state.pointerMove = null;
   state.inventoryOpen = false;
+  state.shopOpen = false;
   state.clearPanelOpen = false;
 
   if (!state.guardianDefeated) state.spawnedGuardian = false;
@@ -183,6 +184,7 @@ function respawnAtVillage() {
   if (!state.ashKnightDefeated) state.spawnedAshKnight = false;
   if (!state.eclipseDragonDefeated) state.spawnedEclipseDragon = false;
   if (!state.voidDragonDefeated) state.spawnedVoidDragon = false;
+  if (!state.obsidianGolemDefeated) state.spawnedObsidianGolem = false;
   if (!state.bossDefeated) {
     state.spawnedBoss = false;
     state.victory = false;
@@ -217,6 +219,7 @@ function closeClearPanelAfterClear() {
   state.virtualKeys?.clear?.();
   state.pointerMove = null;
   state.inventoryOpen = false;
+  state.shopOpen = false;
 
   canvas.focus();
   say("クリア状態を保存しました。旅を続けられます", 2200);
@@ -348,6 +351,9 @@ const contexts = contextHelpers.createContextFactory({
   moveInventory,
   confirmInventory,
   sellInventorySelection,
+  closeShop,
+  moveShop,
+  confirmShop,
   saveGame,
   selectItem,
   gameStage,
@@ -840,6 +846,18 @@ function confirmInventory() {
 
 function sellInventorySelection() {
   return uiHelpers.sellInventorySelection(contexts.ui());
+}
+
+function closeShop() {
+  return uiHelpers.closeShop(contexts.ui());
+}
+
+function moveShop(dy) {
+  return uiHelpers.moveShop(contexts.ui(), dy);
+}
+
+function confirmShop() {
+  return uiHelpers.confirmShop(contexts.ui());
 }
 
 function statsPanelPages() {

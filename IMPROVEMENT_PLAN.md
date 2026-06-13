@@ -31,6 +31,25 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 ## Next development order
 
+### 0. Latest completed player-facing pass
+
+Completed in the latest pass:
+
+* Shops now open selectable buy menus instead of auto-buying in fixed order.
+* Weapon, armor, accessory, and consumable purchases can be chosen directly.
+* Weak found equipment is kept in inventory when new and does not auto-equip over stronger current gear.
+* Chapter 3 route gained Black Market as a second town / safe base.
+* Chapter 3 route gained Obsidian Cave as a branch dungeon with Obsidian Crawler pressure.
+* Chapter 3 route gained Obsidian Golem as a required midboss before the final Black Sun Dragon push.
+* Black Market offers obsidian gear/accessory after Obsidian Golem defeat.
+
+Next high-value content direction:
+
+* Make Black Market feel more like a city with more NPC conversations, landmarks, and optional errands.
+* Add at least one more interior-style dungeon or castle segment beyond the overworld-only route.
+* Add more behaviorally distinct Chapter 3 enemies so the long expedition does not rely only on stats.
+* Rebalance Chapter 3 gold/EXP after manual playtesting the new shop and Obsidian Golem route.
+
 ### 1. Baseline verification checkpoint
 
 Before major new content, verify the current game still behaves correctly.
