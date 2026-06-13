@@ -8,7 +8,7 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 
 Current focus:
 
-* Continue expanding the map beyond the new `120x112` overworld without creating empty space.
+* Continue expanding the map beyond the new `120x144` overworld without creating empty space.
 * Preserve content density, regional purpose, and survival-range expansion.
 * Treat village -> Guardian -> Red Dragon as Chapter 1, not final scope.
 * Add meaningful volume: larger maps, remote towns, dungeons, varied monsters, equipment tiers, inventory decisions, and side routes.
@@ -56,7 +56,7 @@ If browser QA is unavailable, record the limitation in `DEVELOPMENT_LOG.md` and 
 
 ### 2. Map size expansion follow-up
 
-Goal: build on the current `120x112` overworld without creating empty terrain.
+Goal: build on the current `120x144` overworld without creating empty terrain.
 
 Implementation direction:
 
@@ -82,6 +82,8 @@ Use expanded space to create named routes, not more grass.
 Preferred first targets:
 
 * Deepen Ash Road / Ash Hamlet / Old Tower / Moon Ruins with more treasures, NPC guidance, and a clearer route through the expanded late route.
+* Deepen the new Chapter 2 route beyond Moon Ruins: Moon Camp, Eclipse Castle, Eclipse Mage, eclipse gear, and Eclipse Dragon should become a larger arc, not a one-room finale.
+* Deepen the new Chapter 3 route beyond Eclipse Castle: Black Gate, Black Fort, Black Sun Castle, Void Wraith, Black Sun gear, and Black Sun Dragon need more landmarks and preparation side rewards.
 * Continue southwest mine expansion using Bubbler pressure and mine charm counterplay.
 * Add another remote road/frontier base, dungeon entrance, or town that moves the safe radius outward.
 
@@ -129,7 +131,7 @@ Check:
 
 ### Map scope
 
-* Short-term: deepen the current `120x112` world with dense landmarks, rewards, and route goals.
+* Short-term: deepen the current `120x144` world with dense landmarks, rewards, and route goals.
 * Mid-term: add map files for dungeons/interiors such as caves, towers, castles, mines, and towns.
 * Long-term: make playable scope at least 10x Chapter 1 through larger `world.js`, additional map files, or both.
 * Continue hand-authored fixed map data; do not return to random terrain.
@@ -163,6 +165,8 @@ Current:
 * Southwest frontier camp now sells route-preparation gear after the mine charm.
 * The southwest mine has an armory chest that grants mine gear as an exploration reward.
 * Ash hamlet now sells `星見の杖` / `星織りの衣` after the Ash Knight.
+* Moon Camp now sells/grants `月蝕の刃`, `月蝕の外套`, and `月蝕の指輪` for the Chapter 2 boss route.
+* Black Fort now sells/grants `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` for the Chapter 3 boss route.
 * Inventory and HUD now show ATK/DEF values and comparison deltas.
 
 Next:

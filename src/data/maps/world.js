@@ -212,6 +212,48 @@
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
   ];
 
+  const ECLIPSE_GATE_ROW = "TTTTTTTTTTTTTTTTTTTTTTTTTTTT.........................TTTTTTTTTTTTT.................++++++++++++++++++++++..............T";
+
+  const CHAPTER2_EXPANSION = [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTT...........................~~~~~~~~~~~~~............................+++++++++................T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTT............................~~~~~~~~~~~~~..........................._+++++++++++++++++_.......T",
+    "TTTTTTTTTTTTTTTTTTTTTTTT.............................~~~~~~~~~~~~~..........................._+++++++++++++++++_.......T",
+    "TTTTTTTTTTTTTTTTTTTTTTT..............................~~~~~~~~~~~~~....*..*..*..*..*..........________++++_______.......T",
+    "TTTTTTTTTTTTTTTTTTTTTT...............................~~~~~~~~~~~~~....*..*..*..*..*..........________++++_______.......T",
+    "TTTTTTTTTTTTTTTTTTTTT.................=========......~~~~~~~~~~~~~....*..*..*..*..*..........________++++_______.......T",
+    "TTTTTTTTTTTTTTTTTTTT..................=========......~~~~~~~~~~~~~...........................________++++_______.......T",
+    "TTTTTTTTTTTTTTTTTTT...................=========......~~~~~~~~~~~~~............................+++++++++++..............T",
+    "TTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~~............................+++++++++++....++++++....T",
+    "TTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~~............................+++++++++++....++++++....T",
+    "TTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~~......############################+++++...####+####..T",
+    "TTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~~......#.......+++++++++++++..++++++++++...####+####..T",
+    "TTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~~......#.......+++++++++++++...+++++++++...####+####..T",
+    "TTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~~......#.......+++++++++++++++++++++++++...####+####..T",
+    "TTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~~......#.....++++++++++++++++++++++++..#..............T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+  ];
+
+  const VOID_GATE_ROW = "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.............................TTTTTTT................+++++++++++++++++++++++..............T";
+
+  const CHAPTER3_EXPANSION = [
+    "TTTTTTTTTTTTTTTTTTTTTT................................~~~~~~~~~~~~................+++++++++++++++++++++++..............T",
+    "TTTTTTTTTTTTTTTTTTTTT.................................~~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTTTTTT..................................~~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTTTTT...................................~~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTTTT.................===========........~~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTTT..................===========........~~~~~~~~~~~~....*..*..*..*..*+++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTT...................===========........~~~~~~~~~~~~....*..*..*..*..*.....__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTT...................===========........~~~~~~~~~~~~....*..*..*..*..*.............+++++..................T",
+    "TTTTTTTTTTTTTTTT...................===========........~~~~~~~~~~~~....*..*..*..*..*.............+++++..................T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..############################+++++####..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....++++++++++++++++++..++++++++++#..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....+++++++++++++++++++++++++++...#..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....+++++++++++++++++++++++++++...#..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....+++++++++++++++++++++++++++...#..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....+++++++++++++++++++++++++++...#..............T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+  ];
+
   function connectEastEdge(row, y) {
     const open = (y >= 15 && y <= 21) || (y >= 28 && y <= 35) || (y >= 49 && y <= 51) || (y >= 58 && y <= 66);
     return open ? `${row.slice(0, -1)}+` : row;
@@ -221,7 +263,11 @@
     ...BASE_MAP.map((row, y) => connectEastEdge(row, y) + EAST_EXPANSION[y]),
     ...SOUTH_EXPANSION.slice(0, -1),
     SOUTH_GATE_ROW,
-    ...DEEP_SOUTH_EXPANSION,
+    ...DEEP_SOUTH_EXPANSION.slice(0, -1),
+    ECLIPSE_GATE_ROW,
+    ...CHAPTER2_EXPANSION.slice(0, -1),
+    VOID_GATE_ROW,
+    ...CHAPTER3_EXPANSION,
   ];
 
   const WORLD_OBJECTS = [
@@ -230,11 +276,13 @@
     { type: "npc", npcType: "healer", x: 13, y: 43, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
     { type: "npc", npcType: "frontier", x: 33, y: 59, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "frontier", x: 108, y: 58, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 108, y: 116, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 104, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
   ];
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {
     width: 120,
-    height: 112,
+    height: 144,
     rows: WORLD_MAP,
     objects: WORLD_OBJECTS,
   };

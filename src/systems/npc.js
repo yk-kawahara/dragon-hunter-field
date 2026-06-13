@@ -21,6 +21,8 @@
     WORLD_SCALE,
     BOSS_REQUIREMENTS,
     ASH_KNIGHT_REQUIREMENTS,
+    CHAPTER2_REQUIREMENTS,
+    CHAPTER3_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -60,10 +62,29 @@
   function handleNpc(context, npc) {
     const { state, player, say, guardianReady } = requireNpcContext(context);
     if (npc.type === "elder") {
-      if (state.bossDefeated) {
+      if (state.voidDragonDefeated && !state.chapter3Reported) {
+        state.chapter3Reported = true;
+        state.chapter3Victory = false;
+        state.clearPanelOpen = true;
+        say("長老「黒陽竜まで封じたか。第3章の遠征は伝説になる」", 5600);
+      } else if (state.chapter3Reported) {
+        say("長老「黒陽の先にあるものは、まだ誰も知らぬ」", 4200);
+      } else if (state.eclipseDragonDefeated && !state.chapter2Reported) {
+        state.chapter2Reported = true;
+        state.chapter2Victory = false;
+        state.clearPanelOpen = true;
+        say("長老「月蝕竜まで封じたか。第2章の遠征は成った」", 5200);
+      } else if (state.chapter2Reported) {
+        say(`長老「月蝕城のさらに南、黒陽領へ。黒陽の封印碑とLV${CHAPTER3_REQUIREMENTS.level}が鍵だ」`, 4600);
+      } else if (state.bossDefeated && !state.elderReported) {
         state.elderReported = true;
+        state.victory = false;
         state.clearPanelOpen = true;
         say("長老「竜は封じられた。村は救われた」", 4200);
+      } else if (state.elderReported && state.ashKnightDefeated) {
+        say(`長老「月影廃墟のさらに南、月蝕城へ。封印碑とLV${CHAPTER2_REQUIREMENTS.level}が鍵だ」`, 4600);
+      } else if (state.elderReported) {
+        say(`長老「灰道の宿場から古塔へ進め。灰騎士を越えれば第2章の道が開く」`, 4600);
       } else if (canChallengeDragon(context)) {
         say("長老「封印は解けた。北東の竜洞へ向かえ」");
       } else if (!state.guardianDefeated && guardianReady()) {
@@ -121,6 +142,80 @@
     }
 
     if (npc.type === "frontier") {
+      if (npc.y > 128 * TILE) {
+        const kitCost = 110 + player.level * 12;
+        const ownsWeapon = (rank) => Array.isArray(player.ownedWeapons) && player.ownedWeapons.includes(rank);
+        const ownsArmor = (rank) => Array.isArray(player.ownedArmors) && player.ownedArmors.includes(rank);
+        if (player.hp < player.hpMax || player.stamina < player.staminaMax) {
+          player.hp = player.hpMax;
+          player.stamina = player.staminaMax;
+          player.guard = Math.max(player.guard, 1500);
+          say("黒門砦で休んだ。黒陽城への最後の足場だ");
+        } else if (!state.discoveries.has("void-seal")) {
+          say("黒門砦の隊商「南西の黒陽城で封印碑を読め。黒陽竜はさらに奥だ」");
+        } else if (!ownsWeapon(10) && player.gold >= weaponCosts[10]) {
+          player.gold -= weaponCosts[10];
+          addOwnedWeapon(player, 10);
+          say(`${weaponNames[10]}を買った。黒陽竜と影に強い`);
+        } else if (!ownsWeapon(10)) {
+          say(`${weaponNames[10]}は${weaponCosts[10]}G。黒陽領で稼いで戻れ`);
+        } else if (!ownsArmor(10) && player.gold >= armorCosts[10]) {
+          player.gold -= armorCosts[10];
+          addOwnedArmor(player, 10);
+          say(`${armorNames[10]}を買った。黒陽圧を軽くする`);
+        } else if (!ownsArmor(10)) {
+          say(`${armorNames[10]}は${armorCosts[10]}G。黒陽竜の弾幕に備えろ`);
+        } else if (!player.voidCharm) {
+          grantAccessory(context, "void", "黒陽の護符を授かった。装備すると黒陽圧に強くなる");
+          player.wards = Math.min(9, player.wards + 3);
+        } else if (player.gold >= kitCost && (player.potions < 9 || player.bombs < 8 || player.wards < 7)) {
+          player.gold -= kitCost;
+          player.potions = Math.min(9, player.potions + 4);
+          player.bombs = Math.min(9, player.bombs + 3);
+          player.wards = Math.min(9, player.wards + 4);
+          say("黒門砦で第3章遠征の物資を補充した");
+        } else {
+          say(`黒門砦の隊商「黒陽竜はLV${CHAPTER3_REQUIREMENTS.level}以上、黒陽碑、月蝕城秘庫が条件だ」`);
+        }
+        return;
+      }
+      if (npc.y > 110 * TILE) {
+        const kitCost = 72 + player.level * 10;
+        const ownsWeapon = (rank) => Array.isArray(player.ownedWeapons) && player.ownedWeapons.includes(rank);
+        const ownsArmor = (rank) => Array.isArray(player.ownedArmors) && player.ownedArmors.includes(rank);
+        if (player.hp < player.hpMax || player.stamina < player.staminaMax) {
+          player.hp = player.hpMax;
+          player.stamina = player.staminaMax;
+          player.guard = Math.max(player.guard, 1200);
+          say("月見砦で休んだ。月蝕城への足場ができた");
+        } else if (!state.discoveries.has("eclipse-seal")) {
+          say("月見砦の隊商「南西の月蝕城で封印碑を読め。竜はその奥に眠る」");
+        } else if (!ownsWeapon(9) && player.gold >= weaponCosts[9]) {
+          player.gold -= weaponCosts[9];
+          addOwnedWeapon(player, 9);
+          say(`${weaponNames[9]}を買った。月蝕竜と術師に強い`);
+        } else if (!ownsWeapon(9)) {
+          say(`${weaponNames[9]}は${weaponCosts[9]}G。月蝕城で稼いで戻れ`);
+        } else if (!ownsArmor(9) && player.gold >= armorCosts[9]) {
+          player.gold -= armorCosts[9];
+          addOwnedArmor(player, 9);
+          say(`${armorNames[9]}を買った。月蝕魔法を軽くする`);
+        } else if (!ownsArmor(9)) {
+          say(`${armorNames[9]}は${armorCosts[9]}G。月蝕竜の弾に備えろ`);
+        } else if (!player.eclipseCharm) {
+          grantAccessory(context, "eclipse", "月蝕の指輪を授かった。装備すると月蝕魔法に強くなる");
+          player.wards = Math.min(9, player.wards + 2);
+        } else if (player.gold >= kitCost && (player.potions < 9 || player.bombs < 7 || player.wards < 6)) {
+          player.gold -= kitCost;
+          player.potions = Math.min(9, player.potions + 3);
+          player.bombs = Math.min(9, player.bombs + 2);
+          player.wards = Math.min(9, player.wards + 3);
+          say("月見砦で第2章遠征の物資を補充した");
+        } else {
+          say(`月見砦の隊商「月蝕竜はLV${CHAPTER2_REQUIREMENTS.level}以上、封印碑、月影遺物、灰騎士越えが条件だ」`);
+        }
+        return;
+      }
       if (npc.x > 90 * TILE) {
         const kitCost = 48 + player.level * 8;
         const ownsWeapon = (rank) => Array.isArray(player.ownedWeapons) && player.ownedWeapons.includes(rank);

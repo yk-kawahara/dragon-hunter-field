@@ -67,6 +67,8 @@
     if (player.weapon === 6 && (monster.type === "wisp" || monster.type === "dragonling" || monster.type === "sorcerer" || monster.type === "moonShade")) mult += 0.55;
     if (player.weapon === 7 && (monster.boss || monster.type === "dragonling" || monster.type === "ashKnight")) mult += 0.6;
     if (player.weapon === 8 && (monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "ashKnight" || monster.midboss)) mult += 0.75;
+    if (player.weapon === 9 && (monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "moonShade")) mult += 0.95;
+    if (player.weapon === 10 && (monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "eclipseMage")) mult += 1.25;
     return mult;
   }
 
@@ -79,8 +81,12 @@
     if (player.armor === 6 && (monster?.type === "wisp" || monster?.type === "sorcerer" || monster?.type === "moonShade" || source === "fire")) mult *= 0.64;
     if (player.armor === 7 && (monster?.boss || monster?.midboss || monster?.type === "dragonling" || source === "projectile")) mult *= 0.72;
     if (player.armor === 8 && (monster?.type === "sorcerer" || monster?.type === "moonShade" || monster?.type === "ashKnight" || source === "magic" || source === "projectile")) mult *= 0.58;
+    if (player.armor === 9 && (monster?.type === "eclipseMage" || monster?.type === "eclipseDragon" || source === "eclipse" || source === "magic" || source === "projectile")) mult *= 0.48;
+    if (player.armor === 10 && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void" || source === "eclipse" || source === "projectile")) mult *= 0.42;
     if (activeAccessory(player, "aegis", "aegisCharm") && (source === "fire" || source === "projectile")) mult *= 0.82;
     if (activeAccessory(player, "mine", "mineCharm") && (monster?.type === "bubbler" || source === "bubble")) mult *= 0.72;
+    if (activeAccessory(player, "eclipse", "eclipseCharm") && (monster?.type === "eclipseMage" || monster?.type === "eclipseDragon" || source === "eclipse" || source === "magic")) mult *= 0.76;
+    if (activeAccessory(player, "void", "voidCharm") && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void")) mult *= 0.7;
     return mult;
   }
 
@@ -88,7 +94,9 @@
     const { player } = requireCombatContext(context);
     player.staminaMax = 100
       + (activeAccessory(player, "hunter", "hunterCharm") ? 15 : 0)
-      + (activeAccessory(player, "trail", "trailCharm") ? 10 : 0);
+      + (activeAccessory(player, "trail", "trailCharm") ? 10 : 0)
+      + (activeAccessory(player, "eclipse", "eclipseCharm") ? 8 : 0)
+      + (activeAccessory(player, "void", "voidCharm") ? 12 : 0);
     player.stamina = Math.min(player.stamina, player.staminaMax);
   }
 

@@ -126,7 +126,7 @@
       detail: accessoryData[id]?.trait || "",
       equipped: player.equippedAccessory === id,
       sell: 0,
-      currentValue: id === "regen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : "",
+      currentValue: id === "regen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
     }));
   }
 
@@ -304,7 +304,10 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
-    if (inTown(player.x, player.y)) name = (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    if (inTown(player.x, player.y)) name = (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if (ty >= 128) name = "黒陽城";
+    else if (ty >= 112) name = "月蝕城";
+    else if (ty >= 96) name = "月影廃墟";
     else if ((tx >= 90 && tx <= 115 && ty >= 84) || (tx >= 105 && tx <= 116 && ty >= 36 && ty <= 47)) name = "古塔";
     else if (tx >= 80 || ty >= 72) name = "灰の街道";
     else if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) name = "竜洞";

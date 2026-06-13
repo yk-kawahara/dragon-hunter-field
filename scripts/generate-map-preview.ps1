@@ -44,6 +44,10 @@ if ($rows.Count -eq 0) {
   $southRows = Get-MapRows "SOUTH_EXPANSION"
   $southGateRow = Get-MapRow "SOUTH_GATE_ROW"
   $deepSouthRows = Get-MapRows "DEEP_SOUTH_EXPANSION"
+  $eclipseGateRow = Get-MapRow "ECLIPSE_GATE_ROW"
+  $chapter2Rows = Get-MapRows "CHAPTER2_EXPANSION"
+  $voidGateRow = Get-MapRow "VOID_GATE_ROW"
+  $chapter3Rows = Get-MapRows "CHAPTER3_EXPANSION"
   if ($baseRows.Count -gt 0 -and $baseRows.Count -eq $eastRows.Count) {
     $rows = New-Object System.Collections.Generic.List[string]
     for ($i = 0; $i -lt $baseRows.Count; $i += 1) {
@@ -59,8 +63,28 @@ if ($rows.Count -eq 0) {
         $rows.Add($southRows[$i])
       }
       $rows.Add($southGateRow)
-      foreach ($row in $deepSouthRows) {
-        $rows.Add($row)
+      if ($eclipseGateRow.Length -gt 0 -and $chapter2Rows.Count -gt 0) {
+        for ($i = 0; $i -lt $deepSouthRows.Count - 1; $i += 1) {
+          $rows.Add($deepSouthRows[$i])
+        }
+        $rows.Add($eclipseGateRow)
+        if ($voidGateRow.Length -gt 0 -and $chapter3Rows.Count -gt 0) {
+          for ($i = 0; $i -lt $chapter2Rows.Count - 1; $i += 1) {
+            $rows.Add($chapter2Rows[$i])
+          }
+          $rows.Add($voidGateRow)
+          foreach ($row in $chapter3Rows) {
+            $rows.Add($row)
+          }
+        } else {
+          foreach ($row in $chapter2Rows) {
+            $rows.Add($row)
+          }
+        }
+      } else {
+        foreach ($row in $deepSouthRows) {
+          $rows.Add($row)
+        }
       }
     } else {
       foreach ($row in $southRows) {

@@ -269,11 +269,17 @@ function assertMapReachability() {
     ["old-tower", 104, 90],
     ["moon-ruin", 97, 99],
     ["moon-road", 102, 106],
+    ["moon-camp", 102, 116],
+    ["eclipse-seal", 82, 121],
+    ["eclipseDragon", d.ECLIPSE_DRAGON_SITE.x, d.ECLIPSE_DRAGON_SITE.y],
+    ["black-fort", 98, 132],
+    ["void-seal", 82, 138],
+    ["voidDragon", d.VOID_DRAGON_SITE.x, d.VOID_DRAGON_SITE.y],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
-  assert(d.MAP_W === 120 && d.MAP_H === 112, "expanded map should be 120x112");
-  assert(state.npcs.length === 5, "expected 5 NPCs from WORLD_OBJECTS after ash hamlet expansion");
+  assert(d.MAP_W === 120 && d.MAP_H === 144, "expanded map should be 120x144");
+  assert(state.npcs.length === 7, "expected 7 NPCs from WORLD_OBJECTS after black fort expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   return { reachableTiles: seen.size, npcs: state.npcs.map((entry) => entry.type) };
 }
@@ -292,7 +298,9 @@ function assertSaveLoadAndEquipment() {
   player.trailCharm = true;
   player.aegisCharm = true;
   player.mineCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "trail", "aegis", "mine"];
+  player.eclipseCharm = true;
+  player.voidCharm = true;
+  player.ownedAccessories = ["hunter", "regen", "trail", "aegis", "mine", "eclipse", "void"];
   player.equippedAccessory = "trail";
   state.chests.add("town-cache");
   state.chests.add("north-ruin");
@@ -305,6 +313,12 @@ function assertSaveLoadAndEquipment() {
   state.spawnedWarden = true;
   state.ashKnightDefeated = true;
   state.spawnedAshKnight = true;
+  state.eclipseDragonDefeated = true;
+  state.spawnedEclipseDragon = true;
+  state.chapter2Reported = true;
+  state.voidDragonDefeated = true;
+  state.spawnedVoidDragon = true;
+  state.chapter3Reported = true;
   state.bossDefeated = true;
   state.spawnedBoss = true;
   state.elderReported = true;
@@ -318,9 +332,11 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.trailCharm, "trail charm should persist");
   assert(restored.player.aegisCharm, "aegis charm should persist");
   assert(restored.player.mineCharm, "mine charm should persist");
+  assert(restored.player.eclipseCharm, "eclipse charm should persist");
+  assert(restored.player.voidCharm, "void charm should persist");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("mine"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   const baseline = createRuntime();
   baseline.player.armor = restored.player.armor;
@@ -332,6 +348,8 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
   assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
+  assert(restored.state.eclipseDragonDefeated && restored.state.chapter2Reported, "chapter 2 flags should persist");
+  assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.guardianDefeated && restored.state.bossDefeated && restored.state.elderReported, "boss/clear flags should persist");
 
   const rewardHelpers = globalThis.DRAGON_HUNTER_REWARDS;
@@ -484,7 +502,40 @@ function assertStoryClearFlow() {
   const elder = state.npcs.find((entry) => entry.type === "elder");
   runtime.handleNpc(elder);
   assert(state.elderReported, "Elder report should complete clear state");
-  return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported };
+
+  state.chests.add("moon-ruin-cache");
+  state.discoveries.add("eclipse-seal");
+  player.level = d.CHAPTER2_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.ECLIPSE_DRAGON_SITE.x * d.TILE;
+  player.y = d.ECLIPSE_DRAGON_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedEclipseDragon, "Eclipse Dragon should spawn after chapter 2 requirements");
+  const eclipseDragon = state.monsters.find((monster) => monster.type === "eclipseDragon");
+  assert(eclipseDragon, "Eclipse Dragon monster should exist");
+  eclipseDragon.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.eclipseDragonDefeated && state.chapter2Victory, "Eclipse Dragon defeat should set chapter 2 victory");
+  runtime.handleNpc(elder);
+  assert(state.chapter2Reported, "Elder report should complete chapter 2 clear state");
+
+  state.chests.add("black-fort-armory");
+  state.chests.add("eclipse-castle-cache");
+  state.discoveries.add("void-seal");
+  player.level = d.CHAPTER3_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.VOID_DRAGON_SITE.x * d.TILE;
+  player.y = d.VOID_DRAGON_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedVoidDragon, "Void Dragon should spawn after chapter 3 requirements");
+  const voidDragon = state.monsters.find((monster) => monster.type === "voidDragon");
+  assert(voidDragon, "Void Dragon monster should exist");
+  voidDragon.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.voidDragonDefeated && state.chapter3Victory, "Void Dragon defeat should set chapter 3 victory");
+  runtime.handleNpc(elder);
+  assert(state.chapter3Reported, "Elder report should complete chapter 3 clear state");
+  return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported, chapter2Reported: state.chapter2Reported, chapter3Reported: state.chapter3Reported };
 }
 
 function assertMineContent() {
@@ -585,6 +636,10 @@ function assertExpandedWorldContent() {
   const { definitions: d, state, player, runtime, contexts } = createRuntime();
   assert(Boolean(d.monsterTypes.sorcerer), "sorcerer monster definition should exist");
   assert(Boolean(d.monsterTypes.ashKnight), "ash knight monster definition should exist");
+  assert(Boolean(d.monsterTypes.eclipseMage), "eclipse mage monster definition should exist");
+  assert(Boolean(d.monsterTypes.eclipseDragon), "eclipse dragon monster definition should exist");
+  assert(Boolean(d.monsterTypes.voidWraith), "void wraith monster definition should exist");
+  assert(Boolean(d.monsterTypes.voidDragon), "void dragon monster definition should exist");
 
   player.x = 90 * d.TILE;
   player.y = 60 * d.TILE;
@@ -595,12 +650,26 @@ function assertExpandedWorldContent() {
   player.x = 104 * d.TILE;
   player.y = 102 * d.TILE;
   assert(runtime.currentRegion() === "moon", "moon ruins should use moon region");
+  player.x = 86 * d.TILE;
+  player.y = 123 * d.TILE;
+  assert(runtime.currentRegion() === "eclipse", "eclipse castle should use eclipse region");
+  player.x = 82 * d.TILE;
+  player.y = 139 * d.TILE;
+  assert(runtime.currentRegion() === "void", "black sun region should use void region");
   const towerPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "tower");
   assert(towerPool.includes("sorcerer"), "tower spawn pool should include sorcerer");
   const moonPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
   assert(moonPool.includes("moonShade") && moonPool.includes("sorcerer"), "moon spawn pool should include moonShade and sorcerer");
+  player.level = 20;
+  const eclipsePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "eclipse");
+  assert(eclipsePool.includes("eclipseMage") && eclipsePool.includes("moonShade"), "eclipse spawn pool should include eclipse mage and moon shade");
+  player.level = 26;
+  const voidPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "void");
+  assert(voidPool.includes("voidWraith") && voidPool.includes("eclipseMage"), "void spawn pool should include void wraith and eclipse mage");
 
   assert(runtime.inTownTile(102, 58), "ash hamlet should be a safe-zone tile");
+  assert(runtime.inTownTile(102, 116), "moon camp should be a safe-zone tile");
+  assert(runtime.inTownTile(98, 132), "black fort should be a safe-zone tile");
   player.hp = 5;
   player.x = 102 * d.TILE;
   player.y = 58 * d.TILE;
@@ -614,6 +683,31 @@ function assertExpandedWorldContent() {
   runtime.handleNpc(ashFrontier);
   runtime.handleNpc(ashFrontier);
   assert(player.ownedWeapons.includes(8) && player.ownedArmors.includes(8), "ash hamlet should sell star gear after ash knight defeat");
+
+  const moonFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.y > 110 * d.TILE);
+  assert(moonFrontier, "moon camp frontier NPC should exist");
+  state.discoveries.add("eclipse-seal");
+  player.hp = player.hpMax;
+  player.stamina = player.staminaMax;
+  player.gold = d.weaponCosts[9] + d.armorCosts[9];
+  runtime.handleNpc(moonFrontier);
+  runtime.handleNpc(moonFrontier);
+  assert(player.ownedWeapons.includes(9) && player.ownedArmors.includes(9), "moon camp should sell eclipse gear after seal discovery");
+  runtime.handleNpc(moonFrontier);
+  assert(player.ownedAccessories.includes("eclipse"), "moon camp should grant eclipse accessory after gear");
+
+  const blackFortFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.y > 128 * d.TILE);
+  assert(blackFortFrontier, "black fort frontier NPC should exist");
+  state.discoveries.add("void-seal");
+  state.chests.add("black-fort-armory");
+  player.hp = player.hpMax;
+  player.stamina = player.staminaMax;
+  player.gold = d.weaponCosts[10] + d.armorCosts[10];
+  runtime.handleNpc(blackFortFrontier);
+  runtime.handleNpc(blackFortFrontier);
+  assert(player.ownedWeapons.includes(10) && player.ownedArmors.includes(10), "black fort should sell black sun gear after void seal discovery");
+  runtime.handleNpc(blackFortFrontier);
+  assert(player.ownedAccessories.includes("void"), "black fort should grant void accessory after gear");
 
   state.inventoryOpen = true;
   state.inventoryTab = "weapons";
@@ -632,7 +726,19 @@ function assertExpandedWorldContent() {
   assert(reward.player.bombs >= 3 && reward.player.wards >= 7, "moonSupply chest should add late expedition supplies");
   reward.runtime.grantDiscoveryReward({ id: "test-waystone", kind: "waystone" }, 0, 0);
   assert(reward.player.wards >= 8 && reward.player.stamina === reward.player.staminaMax, "waystone discovery should restore stamina and add a ward");
-  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", starGear: true };
+  reward.runtime.grantChestReward("eclipseGear");
+  assert(reward.player.ownedWeapons.includes(9) && reward.player.ownedArmors.includes(9), "eclipseGear chest should grant eclipse gear");
+  reward.runtime.grantChestReward("eclipseSupply");
+  assert(reward.player.ownedAccessories.includes("eclipse") && reward.player.wards >= 9, "eclipseSupply chest should grant eclipse accessory and wards");
+  reward.runtime.grantDiscoveryReward({ id: "test-eclipse", kind: "eclipseSeal" }, 0, 0);
+  assert(reward.player.wards >= 9 && reward.player.stamina === reward.player.staminaMax, "eclipse seal discovery should support chapter 2 route");
+  reward.runtime.grantChestReward("voidGear");
+  assert(reward.player.ownedWeapons.includes(10) && reward.player.ownedArmors.includes(10), "voidGear chest should grant black sun gear");
+  reward.runtime.grantChestReward("voidSupply");
+  assert(reward.player.ownedAccessories.includes("void") && reward.player.wards >= 9, "voidSupply chest should grant void accessory and wards");
+  reward.runtime.grantDiscoveryReward({ id: "test-void", kind: "voidSeal" }, 0, 0);
+  assert(reward.player.wards >= 9 && reward.player.stamina === reward.player.staminaMax, "void seal discovery should support chapter 3 route");
+  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", voidRegion: "void", blackSunGear: true };
 }
 
 function assertScriptLoadSmoke() {

@@ -67,7 +67,7 @@ Future work should grow the game into a larger RPG.
 
 Long-term direction:
 
-* Keep expanding the editable world beyond the current `120x112` overworld definition.
+* Keep expanding the editable world beyond the current `120x144` overworld definition.
 * Use hand-authored map data or additional hand-authored map files.
 * Add multiple regional arcs, not just one long walk from the starting village.
 * Add towns, frontier bases, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
@@ -123,6 +123,11 @@ Most important growth feeling: **reversal of power**.
 | Ash Hamlet / 灰道の宿場 | Second remote survival anchor: full recovery, supplies, and post-Ash-Knight star gear. |
 | Old Tower / 古塔 | Late optional danger pocket with dense magic pressure, Ash Knight midboss, and star-gear preparation. |
 | Moon Ruins / 月影廃墟 | Post-Old-Tower southern danger pocket with dense late enemies, moon relic rewards, and another reason to push beyond the Red Dragon route. |
+| Moon Camp / 月見砦 | Chapter 2 remote survival anchor: recovery, supplies, eclipse gear, and the feeling that the safe radius moved far beyond the village. |
+| Eclipse Castle / 月蝕城 | Chapter 2 final danger route: eclipse magic pressure, seal tablet, final supplies, and Eclipse Dragon arena. |
+| Black Gate / 黒門 | Chapter 3 transition route south of Eclipse Castle; the map becomes darker, enemy pressure rises, and retreat distance matters again. |
+| Black Fort / 黒門砦 | Chapter 3 remote survival anchor: recovery, supplies, Black Sun gear, and a new safe radius before the final southern push. |
+| Black Sun Castle / 黒陽城 | Chapter 3 high-danger route: void pressure, Black Sun seal, final cache, and the Black Sun Dragon arena. |
 | Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
 
 ## Enemy roles
@@ -136,11 +141,15 @@ Most important growth feeling: **reversal of power**.
 | Bubbler / 泡吐き | Mine enemy; bubble projectiles slow and drain stamina. |
 | Ash Sorcerer / 灰術師 | Farther-road magic enemy; fires faster magic shots and applies slow/stamina pressure. |
 | Moon Shade / 月影の亡霊 | Far-south magic enemy; faster magic shots and stamina pressure make star gear and wards matter. |
+| Eclipse Mage / 月蝕術師 | Chapter 2 caster; stronger magic shots and stamina pressure make eclipse gear/accessory meaningful. |
+| Void Wraith / 黒陽の影 | Chapter 3 high-pressure caster; dark projectiles apply heavier slow/stamina pressure and reward Black Sun gear/accessory preparation. |
 | Dragonling | Late stronger enemy; signals dragon-route danger. |
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
 | Old Tower Ash Knight | Optional late midboss after Southeast Warden + level 14; unlocks stronger magic-route preparation and tests the expanded-world route. |
 | Red Dragon | Chapter 1 final boss: enrage, spread shots, summons, preparation check. |
+| Eclipse Dragon / 月蝕竜 | Chapter 2 major boss after Red Dragon report, Ash Knight, moon relic, eclipse seal, and level 20; enrages into wider magic shots and summons late enemies. |
+| Black Sun Dragon / 黒陽竜 | Chapter 3 major boss after Chapter 2 report, Eclipse Castle cache, Black Fort armory, Black Sun seal, and level 26; uses heavy void projectiles, wider enraged spreads, and summons. |
 
 Enemies should differ by gameplay, not only appearance or stats.
 
@@ -179,8 +188,12 @@ Current direction:
   * `火返しの剣` and `耐火マント` prepare for fire enemies and eastern/dragon-route pressure.
   * `竜狩りの刃` and `巡礼鎧` are late route preparation gear for dragon cave pressure.
   * `星見の杖` and `星織りの衣` prepare for Ash Sorcerer / Ash Knight magic pressure.
+  * `月蝕の刃` and `月蝕の外套` prepare for Eclipse Mage / Eclipse Dragon pressure.
 * The southwest frontier camp is becoming the first remote equipment hub, not only a healing point.
 * The ash hamlet is the second remote equipment hub and sells star gear after the Ash Knight is defeated.
+* Moon Camp is the third remote equipment hub and sells/grants eclipse preparation after the player reaches the Chapter 2 route.
+* Black Fort is the fourth remote equipment hub and sells/grants Black Sun preparation after the player reaches the Chapter 3 route.
+* `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` prepare for Void Wraith / Black Sun Dragon pressure.
 * Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
 
 Future direction:

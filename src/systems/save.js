@@ -66,6 +66,8 @@
         trailCharm: player.trailCharm,
         aegisCharm: player.aegisCharm,
         mineCharm: player.mineCharm,
+        eclipseCharm: player.eclipseCharm,
+        voidCharm: player.voidCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -75,7 +77,15 @@
       wardenDefeated: state.wardenDefeated,
       spawnedAshKnight: state.spawnedAshKnight,
       ashKnightDefeated: state.ashKnightDefeated,
+      spawnedEclipseDragon: state.spawnedEclipseDragon,
+      eclipseDragonDefeated: state.eclipseDragonDefeated,
+      spawnedVoidDragon: state.spawnedVoidDragon,
+      voidDragonDefeated: state.voidDragonDefeated,
       elderReported: state.elderReported,
+      chapter2Victory: state.chapter2Victory,
+      chapter2Reported: state.chapter2Reported,
+      chapter3Victory: state.chapter3Victory,
+      chapter3Reported: state.chapter3Reported,
       chests: Array.from(state.chests),
       discoveries: Array.from(state.discoveries),
     };
@@ -99,6 +109,8 @@
       player.trailCharm = Boolean(player.trailCharm);
       player.aegisCharm = Boolean(player.aegisCharm);
       player.mineCharm = Boolean(player.mineCharm);
+      player.eclipseCharm = Boolean(player.eclipseCharm);
+      player.voidCharm = Boolean(player.voidCharm);
       normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
@@ -115,11 +127,19 @@
       state.guardianDefeated = Boolean(data.guardianDefeated);
       state.wardenDefeated = Boolean(data.wardenDefeated);
       state.ashKnightDefeated = Boolean(data.ashKnightDefeated);
+      state.eclipseDragonDefeated = Boolean(data.eclipseDragonDefeated);
+      state.voidDragonDefeated = Boolean(data.voidDragonDefeated);
       state.spawnedBoss = state.bossDefeated ? Boolean(data.spawnedBoss) : false;
       state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
       state.spawnedWarden = state.wardenDefeated ? Boolean(data.spawnedWarden) : false;
       state.spawnedAshKnight = state.ashKnightDefeated ? Boolean(data.spawnedAshKnight) : false;
+      state.spawnedEclipseDragon = state.eclipseDragonDefeated ? Boolean(data.spawnedEclipseDragon) : false;
+      state.spawnedVoidDragon = state.voidDragonDefeated ? Boolean(data.spawnedVoidDragon) : false;
       state.elderReported = Boolean(data.elderReported);
+      state.chapter2Reported = Boolean(data.chapter2Reported);
+      state.chapter2Victory = Boolean(data.eclipseDragonDefeated) && !state.chapter2Reported;
+      state.chapter3Reported = Boolean(data.chapter3Reported);
+      state.chapter3Victory = Boolean(data.voidDragonDefeated) && !state.chapter3Reported;
       state.clearPanelOpen = false;
       state.gameOver = false;
       state.inventoryOpen = false;
@@ -166,6 +186,8 @@
       trailCharm: false,
       aegisCharm: false,
       mineCharm: false,
+      eclipseCharm: false,
+      voidCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,
@@ -197,7 +219,15 @@
     state.wardenDefeated = false;
     state.spawnedAshKnight = false;
     state.ashKnightDefeated = false;
+    state.spawnedEclipseDragon = false;
+    state.eclipseDragonDefeated = false;
+    state.spawnedVoidDragon = false;
+    state.voidDragonDefeated = false;
     state.elderReported = false;
+    state.chapter2Victory = false;
+    state.chapter2Reported = false;
+    state.chapter3Victory = false;
+    state.chapter3Reported = false;
     state.clearPanelOpen = false;
     state.gameOver = false;
     state.victory = false;

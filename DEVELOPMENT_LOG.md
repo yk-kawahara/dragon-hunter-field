@@ -25,7 +25,7 @@ Current project status:
 * Core design: survival-range expansion.
 * Code structure is split across `src/data`, `src/core`, and `src/systems`.
 * Fixed hand-editable world map lives in `src/data/maps/world.js`.
-* Current map size is `120x112`; future work should deepen the expanded world while preserving density, purpose, and reachability.
+* Current map size is `120x144`; future work should deepen the expanded world while preserving density, purpose, and reachability.
 * Real `もちもの` inventory exists with item, weapon, armor, and accessory handling.
 * Accessories are moving from permanent passive flags into equipment choices.
 * Southwest mine + southwest frontier camp are the first concrete volume-expansion pilot.
@@ -33,6 +33,10 @@ Current project status:
 * Ash Road + Ash Hamlet + Old Tower are the first larger map-size expansion beyond the old `80x72` footprint.
 * Ash Sorcerer and Old Tower Ash Knight add magic-pressure content beyond the Southeast Warden route.
 * Moon Ruins extend the Old Tower route southward with Moon Shade pressure, late supplies, and moon relic rewards.
+* Moon Camp + Eclipse Castle are the first Chapter 2 boss route beyond Moon Ruins.
+* Eclipse Mage, eclipse gear, Eclipse Ring, and Eclipse Dragon add the first post-Red-Dragon major boss arc.
+* Black Gate + Black Fort + Black Sun Castle are the first Chapter 3 route beyond Eclipse Castle.
+* Void Wraith, Black Sun gear, Void Charm, and Black Sun Dragon add a harder post-Chapter-2 major boss arc.
 * Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
 
 Current high-priority risks:
@@ -40,7 +44,7 @@ Current high-priority risks:
 * Full real-browser desktop/mobile play QA is still needed.
 * Full fresh-save manual playthrough to elder report is still needed.
 * Mobile UI and inventory overlay need real-browser confirmation.
-* Future map expansion must avoid empty terrain and preserve reachability; the new 120x112 space needs more hand-authored content density.
+* Future map expansion must avoid empty terrain and preserve reachability; the new 120x144 space needs more hand-authored content density.
 * Gold/EXP/shop price balance should be checked after route expansion.
 
 Next verification target:
@@ -71,6 +75,98 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ## New entries
 
 _Add new entries here._
+
+### 2026-06-13: Chapter 3 Black Sun Dragon Boss Route
+
+Goal: add a harder Chapter 3 arc after the Eclipse Dragon route, increasing volume while preserving survival-range expansion.
+
+Key work:
+
+* Expanded the fixed overworld from `120x128` to `120x144`.
+* Added Black Gate, Black Fort, and Black Sun Castle as a southern Chapter 3 route.
+* Added Black Fort as a new remote safe base with full recovery, supplies, Black Sun gear, and Void Charm progression.
+* Added Void Wraith / `黒陽の影` as a high-pressure late caster with stronger slow/stamina projectile pressure.
+* Added Black Sun Dragon / `黒陽竜` as a Chapter 3 major boss after:
+  * Chapter 2 elder report,
+  * Eclipse Castle cache,
+  * Black Fort armory,
+  * Black Sun seal discovery,
+  * level 26.
+* Added Chapter 3 rewards:
+  * `black-fort-armory`,
+  * `black-sun-cache`,
+  * `void-seal`,
+  * `黒陽の剣`,
+  * `黒陽の鎧`,
+  * `黒陽の護符`.
+* Added Chapter 3 save/load fields, objective text, elder report flow, boss marker, ending banner, region UI, dark-region atmosphere, and boss/enemy rendering.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` at `120x144`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * `120x144` map size,
+  * reachability for Black Fort, Black Sun seal, Black Sun cache, and Black Sun Dragon,
+  * Black Fort safe-zone behavior,
+  * void region detection and spawn pool,
+  * Black Sun gear/accessory rewards,
+  * Black Sun Dragon spawn, defeat, save flags, and elder report.
+* Map preview generation passed at `120x144`.
+
+Known risks:
+
+* Real-browser interactive QA for walking from Eclipse Castle through Black Fort to Black Sun Castle is still pending.
+* In-app Browser QA was attempted, but the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Chapter 3 combat balance, especially Void Wraith projectile pressure and Black Sun Dragon HP/spread/summon pacing, needs manual playtesting.
+* The new Chapter 3 route is playable and VM-verified, but it should be deepened with more landmarks, enemies, optional rewards, and another remote town/dungeon in future passes.
+
+### 2026-06-12: Chapter 2 Eclipse Dragon Boss Route
+
+Goal: increase game volume beyond the Red Dragon / Moon Ruins route by adding a Chapter 2 major boss story that extends survival-range expansion farther south.
+
+Key work:
+
+* Expanded the fixed overworld from `120x112` to `120x128`.
+* Added Moon Camp / `月見砦` as a new remote safe base with recovery, supplies, and eclipse preparation.
+* Added Eclipse Castle / `月蝕城` as the Chapter 2 final danger pocket.
+* Added Eclipse Mage / `月蝕術師` as a stronger late magic enemy in the new `eclipse` region.
+* Added Eclipse Dragon / `月蝕竜` as a Chapter 2 major boss after:
+  * Red Dragon elder report,
+  * Ash Knight defeat,
+  * Moon Ruins relic chest,
+  * Eclipse Seal discovery,
+  * level 20.
+* Added eclipse gear and rewards:
+  * `月蝕の刃`,
+  * `月蝕の外套`,
+  * `月蝕の指輪`,
+  * `moon-camp-armory`,
+  * `eclipse-castle-cache`,
+  * `eclipse-seal`.
+* Added Chapter 2 save/load fields, objective text, elder report flow, boss marker, ending banner, and region UI.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` at `120x128`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * `120x128` map size,
+  * reachability for Moon Camp, Eclipse Seal, Eclipse Castle cache, and Eclipse Dragon,
+  * eclipse region detection and spawn pool,
+  * Moon Camp safe-zone/heal/shop behavior,
+  * eclipse gear/accessory rewards,
+  * Eclipse Dragon spawn, defeat, save flags, and elder report.
+* Map preview generation passed at `120x128`.
+
+Known risks:
+
+* Real-browser interactive QA for walking from Moon Ruins to Moon Camp and fighting Eclipse Dragon is still pending.
+* In-app Browser QA was attempted, but the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Chapter 2 combat balance, especially Eclipse Dragon HP/projectile pressure and level 20 pacing, needs manual playtesting.
+* The new Chapter 2 route is playable and VM-verified, but it should be deepened with more landmarks, enemies, and side rewards in future passes.
 
 ### 2026-06-12: Post-Dragon Ash Knight Fix and Moon Ruins Expansion
 

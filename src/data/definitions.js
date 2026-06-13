@@ -9,18 +9,22 @@
   const HUD_H = H - VIEW_H;
   const TILE = BASE_TILE * WORLD_SCALE;
   const MAP_W = 120;
-  const MAP_H = 112;
+  const MAP_H = 144;
   const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const SAFE_ZONES = [
     { id: "village", name: "村", x1: 5, y1: 39, x2: 18, y2: 55, outerX1: 4, outerY1: 38, outerX2: 19, outerY2: 57 },
     { id: "southwest-camp", name: "前線キャンプ", x1: 25, y1: 56, x2: 35, y2: 61, outerX1: 24, outerY1: 55, outerX2: 36, outerY2: 62 },
     { id: "ash-hamlet", name: "灰道の宿場", x1: 94, y1: 52, x2: 110, y2: 60, outerX1: 93, outerY1: 51, outerX2: 111, outerY2: 61 },
+    { id: "moon-camp", name: "月見砦", x1: 94, y1: 113, x2: 110, y2: 118, outerX1: 93, outerY1: 112, outerX2: 111, outerY2: 119 },
+    { id: "black-fort", name: "黒門砦", x1: 88, y1: 129, x2: 106, y2: 134, outerX1: 87, outerY1: 128, outerX2: 107, outerY2: 135 },
   ];
   const HEAL_POINTS = [
     { ...HEAL_CIRCLE, id: "village-circle", name: "村の回復陣" },
     { x: 31, y: 59, id: "southwest-camp-circle", name: "前線キャンプの回復陣" },
     { x: 102, y: 58, id: "ash-hamlet-circle", name: "灰道の宿場の回復陣" },
+    { x: 102, y: 116, id: "moon-camp-circle", name: "月見砦の回復陣" },
+    { x: 98, y: 132, id: "black-fort-circle", name: "黒門砦の回復陣" },
   ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
@@ -40,6 +44,10 @@
     { id: "old-tower-cache", x: 104, y: 90, reward: "towerSupply" },
     { id: "moon-ruin-cache", x: 97, y: 99, reward: "moonRelic" },
     { id: "moon-road-supply", x: 102, y: 106, reward: "moonSupply" },
+    { id: "moon-camp-armory", x: 106, y: 116, reward: "eclipseGear" },
+    { id: "eclipse-castle-cache", x: 86, y: 124, reward: "eclipseSupply" },
+    { id: "black-fort-armory", x: 103, y: 132, reward: "voidGear" },
+    { id: "black-sun-cache", x: 76, y: 140, reward: "voidSupply" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
@@ -49,12 +57,18 @@
     { id: "tower-cache", x: 99, y: 88, kind: "cache" },
     { id: "moon-waystone", x: 86, y: 101, kind: "waystone" },
     { id: "moon-field-cache", x: 108, y: 104, kind: "cache" },
+    { id: "eclipse-seal", x: 82, y: 121, kind: "eclipseSeal" },
+    { id: "void-seal", x: 82, y: 138, kind: "voidSeal" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
   const WARDEN_REQUIREMENTS = { level: 10 };
   const ASH_KNIGHT_SITE = { x: 103, y: 89 };
   const ASH_KNIGHT_REQUIREMENTS = { level: 14 };
+  const ECLIPSE_DRAGON_SITE = { x: 82, y: 123 };
+  const CHAPTER2_REQUIREMENTS = { level: 20 };
+  const VOID_DRAGON_SITE = { x: 80, y: 140 };
+  const CHAPTER3_REQUIREMENTS = { level: 26 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -66,6 +80,8 @@
     ash: { danger: 4, maxBonus: 5, pool: ["sorcerer", "wisp", "dragonling", "boar"] },
     tower: { danger: 5, maxBonus: 6, pool: ["sorcerer", "sorcerer", "dragonling", "wisp"] },
     moon: { danger: 6, maxBonus: 7, pool: ["moonShade", "sorcerer", "dragonling", "wisp"] },
+    eclipse: { danger: 7, maxBonus: 8, pool: ["eclipseMage", "moonShade", "sorcerer", "dragonling"] },
+    void: { danger: 8, maxBonus: 10, pool: ["voidWraith", "eclipseMage", "moonShade", "dragonling"] },
   };
 
   const TILE_GRASS = 0;
@@ -90,14 +106,14 @@
   const ATTACK_WIDTH = 20 * WORLD_SCALE;
   const DASH_COST = 34;
 
-  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖"];
-  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣"];
-  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効"];
-  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減"];
-  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100];
-  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 24, 18];
-  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900];
-  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 16];
+  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣"];
+  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧"];
+  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効"];
+  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減"];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 3400, 5600];
+  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 18, 21, 30];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 3200, 5200];
+  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
   const itemOrder = ["potion", "bomb", "ward"];
@@ -111,7 +127,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "trail", "aegis", "mine"];
+  const accessoryOrder = ["hunter", "regen", "trail", "aegis", "mine", "eclipse", "void"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -142,6 +158,18 @@
       trait: "泡と鈍足を軽減",
       sell: 120,
       flag: "mineCharm",
+    },
+    eclipse: {
+      name: "月蝕の指輪",
+      trait: "月蝕魔法を軽減",
+      sell: 0,
+      flag: "eclipseCharm",
+    },
+    void: {
+      name: "黒陽の護符",
+      trait: "黒陽圧と召喚魔法を軽減",
+      sell: 0,
+      flag: "voidCharm",
     },
   };
 
@@ -198,8 +226,8 @@
     sorcerer: {
       name: "灰術師",
       hp: 96,
-      atk: 68,
-      def: 18,
+      atk: 88,
+      def: 28,
       speed: 19 * WORLD_SCALE,
       xp: 92,
       gold: 34,
@@ -210,14 +238,39 @@
     moonShade: {
       name: "月影の亡霊",
       hp: 122,
-      atk: 74,
-      def: 22,
+      atk: 94,
+      def: 32,
       speed: 27 * WORLD_SCALE,
       xp: 118,
       gold: 42,
       color: "#7f8cff",
       shadow: "#263064",
       drop: 0.24,
+    },
+    eclipseMage: {
+      name: "月蝕術師",
+      hp: 180,
+      atk: 106,
+      def: 55,
+      speed: 22 * WORLD_SCALE,
+      xp: 170,
+      gold: 58,
+      color: "#e36dff",
+      shadow: "#4f206e",
+      drop: 0.28,
+    },
+    voidWraith: {
+      name: "黒陽の影",
+      hp: 260,
+      atk: 124,
+      def: 58,
+      speed: 34 * WORLD_SCALE,
+      xp: 245,
+      gold: 84,
+      color: "#2f335f",
+      shadow: "#080816",
+      drop: 0.32,
+      flying: true,
     },
     bubbler: {
       name: "泡吐き",
@@ -272,8 +325,8 @@
     ashKnight: {
       name: "古塔の灰騎士",
       hp: 1750,
-      atk: 90,
-      def: 58,
+      atk: 122,
+      def: 70,
       speed: 26 * WORLD_SCALE,
       xp: 760,
       gold: 360,
@@ -292,6 +345,32 @@
       gold: 500,
       color: "#ec342d",
       shadow: "#7d0808",
+      boss: true,
+      drop: 1,
+    },
+    eclipseDragon: {
+      name: "月蝕竜",
+      hp: 3600,
+      atk: 126,
+      def: 92,
+      speed: 20 * WORLD_SCALE,
+      xp: 2600,
+      gold: 1200,
+      color: "#8b5cff",
+      shadow: "#24153d",
+      boss: true,
+      drop: 1,
+    },
+    voidDragon: {
+      name: "黒陽竜",
+      hp: 5600,
+      atk: 154,
+      def: 118,
+      speed: 23 * WORLD_SCALE,
+      xp: 4200,
+      gold: 2200,
+      color: "#191c38",
+      shadow: "#05040d",
       boss: true,
       drop: 1,
     },
@@ -319,6 +398,10 @@
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_SITE,
     ASH_KNIGHT_REQUIREMENTS,
+    ECLIPSE_DRAGON_SITE,
+    CHAPTER2_REQUIREMENTS,
+    VOID_DRAGON_SITE,
+    CHAPTER3_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,

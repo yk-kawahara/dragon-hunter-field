@@ -28,6 +28,10 @@
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_SITE,
     ASH_KNIGHT_REQUIREMENTS,
+    ECLIPSE_DRAGON_SITE,
+    CHAPTER2_REQUIREMENTS,
+    VOID_DRAGON_SITE,
+    CHAPTER3_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -195,6 +199,8 @@ function draw(context) {
   drawTownDetails(cam);
   drawFrontierCampDetails(cam);
   drawAshHamletDetails(cam);
+  drawMoonCampDetails(cam);
+  drawBlackFortDetails(cam);
   drawVillageRoleMarkers(cam);
   drawHealCircle(cam);
   drawTownFence(cam);
@@ -204,6 +210,8 @@ function draw(context) {
   drawGuardianSite(cam);
   drawWardenSite(cam);
   drawAshKnightSite(cam);
+  drawEclipseDragonSite(cam);
+  drawVoidDragonSite(cam);
   drawNpcs(cam);
   drawEntities(cam);
   drawEffects(cam);
@@ -215,7 +223,7 @@ function draw(context) {
   drawInventoryOverlay();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
-  if (state.victory && !state.elderReported) drawVictoryBanner();
+  if ((state.victory && !state.elderReported) || state.chapter2Victory || state.chapter3Victory) drawVictoryBanner();
   if (state.clearPanelOpen) drawEndingOverlay();
 
   ctx.restore();
@@ -356,7 +364,25 @@ function drawWorldAtmosphere(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
 
-  if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) {
+  if (ty >= 128) {
+    ctx.fillStyle = "rgba(4, 5, 18, 0.38)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 18; i += 1) {
+      const x = (i * 23 + Math.floor(time / 80)) % W;
+      const y = (i * 29 + Math.floor(time / 120)) % VIEW_H;
+      ctx.fillStyle = i % 3 ? "#d8d8ff" : "#6de4ff";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (ty >= 112) {
+    ctx.fillStyle = "rgba(64, 18, 96, 0.22)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 14; i += 1) {
+      const x = (i * 31 + Math.floor(time / 110)) % W;
+      const y = (i * 23 + Math.floor(time / 170)) % VIEW_H;
+      ctx.fillStyle = i % 2 ? "#e36dff" : "#9fb3ff";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) {
     ctx.fillStyle = "rgba(75, 24, 18, 0.22)";
     ctx.fillRect(0, 0, W, VIEW_H);
     for (let i = 0; i < 12; i += 1) {
@@ -409,6 +435,28 @@ function drawAshHamletDetails(cam) {
   drawRoleMarker(102 * TILE - cam.x, 57 * TILE - cam.y, "回", "#6de4ff");
   drawRoleMarker(108 * TILE - cam.x, 57 * TILE - cam.y, "星", "#b990ff");
   drawSign(99 * TILE - cam.x, 58 * TILE - cam.y);
+}
+
+function drawMoonCampDetails(cam) {
+  drawTent(96 * TILE - cam.x, 114 * TILE - cam.y, "#e36dff");
+  drawTent(105 * TILE - cam.x, 114 * TILE - cam.y, "#7f8cff");
+  drawCrates(108 * TILE - cam.x, 117 * TILE - cam.y);
+  drawCampfire(101 * TILE - cam.x, 116 * TILE - cam.y);
+  drawLamp(110 * TILE - cam.x, 116 * TILE - cam.y);
+  drawRoleMarker(102 * TILE - cam.x, 115 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(108 * TILE - cam.x, 115 * TILE - cam.y, "蝕", "#e36dff");
+  drawSign(99 * TILE - cam.x, 117 * TILE - cam.y);
+}
+
+function drawBlackFortDetails(cam) {
+  drawTent(90 * TILE - cam.x, 130 * TILE - cam.y, "#2f335f");
+  drawTent(100 * TILE - cam.x, 130 * TILE - cam.y, "#5f668f");
+  drawCrates(104 * TILE - cam.x, 133 * TILE - cam.y);
+  drawCampfire(97 * TILE - cam.x, 132 * TILE - cam.y);
+  drawLamp(106 * TILE - cam.x, 132 * TILE - cam.y);
+  drawRoleMarker(98 * TILE - cam.x, 131 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(104 * TILE - cam.x, 131 * TILE - cam.y, "黒", "#d8d8ff");
+  drawSign(93 * TILE - cam.x, 133 * TILE - cam.y);
 }
 
 function drawCampBoundary(cam) {
@@ -741,6 +789,64 @@ function drawAshKnightSite(cam) {
   }
 }
 
+function drawEclipseDragonSite(cam) {
+  if (state.eclipseDragonDefeated) return;
+  const sx = ECLIPSE_DRAGON_SITE.x * TILE - cam.x;
+  const sy = ECLIPSE_DRAGON_SITE.y * TILE - cam.y;
+  if (sx < -28 || sy < -28 || sx > W || sy > VIEW_H) return;
+  const ready = state.elderReported
+    && state.ashKnightDefeated
+    && state.chests.has("moon-ruin-cache")
+    && state.discoveries.has("eclipse-seal")
+    && player.level >= CHAPTER2_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 180) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+  ctx.fillRect(sx - 3, sy + 16, 28, 4);
+  ctx.fillStyle = "#24153d";
+  ctx.fillRect(sx + 4, sy + 3, 15, 14);
+  ctx.fillStyle = ready ? "#e36dff" : "#53606f";
+  ctx.fillRect(sx + 7, sy, 9, 5);
+  ctx.fillRect(sx + 9, sy + 7, 5, 8);
+  ctx.fillStyle = ready ? "#fff2a6" : "#26384a";
+  ctx.fillRect(sx + 5, sy + 6, 3, 3);
+  ctx.fillRect(sx + 15, sy + 6, 3, 3);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#e36dff" : "#fff2a6";
+    ctx.strokeRect(sx + 1, sy - 1, 21, 20);
+  }
+}
+
+function drawVoidDragonSite(cam) {
+  if (state.voidDragonDefeated) return;
+  const sx = VOID_DRAGON_SITE.x * TILE - cam.x;
+  const sy = VOID_DRAGON_SITE.y * TILE - cam.y;
+  if (sx < -30 || sy < -30 || sx > W || sy > VIEW_H) return;
+  const ready = state.chapter2Reported
+    && state.eclipseDragonDefeated
+    && state.chests.has("black-fort-armory")
+    && state.chests.has("eclipse-castle-cache")
+    && state.discoveries.has("void-seal")
+    && player.level >= CHAPTER3_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 150) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+  ctx.fillRect(sx - 4, sy + 17, 31, 5);
+  ctx.fillStyle = "#070817";
+  ctx.fillRect(sx + 3, sy + 2, 17, 16);
+  ctx.fillStyle = ready ? "#d8d8ff" : "#53606f";
+  ctx.fillRect(sx + 6, sy - 1, 11, 5);
+  ctx.fillRect(sx + 8, sy + 8, 7, 8);
+  ctx.fillStyle = ready ? "#6de4ff" : "#26384a";
+  ctx.fillRect(sx + 5, sy + 6, 3, 3);
+  ctx.fillRect(sx + 16, sy + 6, 3, 3);
+  ctx.fillStyle = ready ? "#fff2a6" : "#1a2440";
+  ctx.fillRect(sx + 10, sy + 12, 5, 2);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#d8d8ff" : "#6de4ff";
+    ctx.strokeRect(sx, sy - 2, 24, 22);
+    ctx.strokeRect(sx + 3, sy + 1, 18, 16);
+  }
+}
+
 function drawDiscoveries(cam) {
   for (const discovery of DISCOVERY_POINTS) {
     const sx = discovery.x * TILE - cam.x;
@@ -772,6 +878,20 @@ function drawDiscoveries(cam) {
       ctx.fillStyle = found ? "#9fb3ff" : "#dce6ff";
       ctx.fillRect(sx + 7, sy + 6, 2, 5);
       if (!found) drawGlint(sx + 9, sy + 4, "#9fb3ff");
+    } else if (discovery.kind === "eclipseSeal") {
+      ctx.fillStyle = found ? "#3b2b5f" : "#24153d";
+      ctx.fillRect(sx + 3, sy + 3, 10, 12);
+      ctx.fillStyle = found ? "#9fb3ff" : "#e36dff";
+      ctx.fillRect(sx + 6, sy + 5, 4, 7);
+      if (!found) drawGlint(sx + 8, sy + 3, "#e36dff");
+    } else if (discovery.kind === "voidSeal") {
+      ctx.fillStyle = found ? "#1d2441" : "#070817";
+      ctx.fillRect(sx + 3, sy + 2, 11, 13);
+      ctx.fillStyle = found ? "#d8d8ff" : "#6de4ff";
+      ctx.fillRect(sx + 6, sy + 4, 4, 8);
+      ctx.fillStyle = found ? "#6de4ff" : "#fff2a6";
+      ctx.fillRect(sx + 8, sy + 1, 2, 2);
+      if (!found) drawGlint(sx + 9, sy + 3, "#d8d8ff");
     }
   }
 }
@@ -1179,7 +1299,7 @@ function drawActorShadow(sx, sy, w) {
 }
 
 function drawWeapon(sx, sy) {
-  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166", "#8dd7ff", "#ff9a3d", "#f8fbff"];
+  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166", "#8dd7ff", "#ff9a3d", "#f8fbff", "#b990ff", "#e36dff", "#d8d8ff"];
   ctx.fillStyle = colors[player.weapon] || "#ffd166";
   if (player.dir === "up") ctx.fillRect(sx + 5, sy - 4, 2, 7);
   if (player.dir === "down") ctx.fillRect(sx + 5, sy + 10, 2, 7);
@@ -1197,7 +1317,7 @@ function drawMonster(monster, sx, sy) {
     ctx.strokeStyle = "#ffef8a";
     ctx.strokeRect(sx - 2, sy - 2, spriteW + 4, spriteH + 4);
   }
-  if (monster.type === "dragon") {
+  if (monster.type === "dragon" || monster.type === "eclipseDragon" || monster.type === "voidDragon") {
     drawDragon(monster, sx, sy);
     return;
   }
@@ -1245,6 +1365,20 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(sx + 11, sy + 1 - pulse, 3, 3);
     ctx.fillRect(sx + 13, sy + 6, 2, 2);
+  } else if (monster.type === "voidWraith") {
+    const pulse = Math.floor(monster.age / 130) % 2;
+    ctx.fillStyle = "rgba(216, 216, 255, 0.22)";
+    ctx.fillRect(sx - 1, sy + 1 - pulse, 14, 12);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 4, 10, 9);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 2, 7, 10);
+    ctx.fillRect(sx + 1, sy + 8, 11, 4);
+    ctx.fillStyle = "#d8d8ff";
+    ctx.fillRect(sx + 4, sy + 5, 2, 2);
+    ctx.fillRect(sx + 8, sy + 5, 2, 2);
+    ctx.fillStyle = "#6de4ff";
+    ctx.fillRect(sx + 6, sy, 3, 3);
   } else if (monster.type === "boar") {
     ctx.fillStyle = monster.shadow;
     ctx.fillRect(sx + 1, sy + 5, 11, 6);
@@ -1331,7 +1465,13 @@ function drawMonster(monster, sx, sy) {
 function drawDragon(monster, sx, sy) {
   const mainColor = monster.hurt > 0 ? "#ffffff" : monster.color;
   const pulse = Math.floor(monster.age / 140) % 2;
-  ctx.fillStyle = monster.enraged ? "rgba(255, 42, 42, 0.38)" : "rgba(255, 88, 42, 0.25)";
+  const eclipse = monster.type === "eclipseDragon";
+  const voidBoss = monster.type === "voidDragon";
+  ctx.fillStyle = voidBoss
+    ? (monster.enraged ? "rgba(109, 228, 255, 0.36)" : "rgba(216, 216, 255, 0.22)")
+    : eclipse
+    ? (monster.enraged ? "rgba(227, 109, 255, 0.42)" : "rgba(127, 140, 255, 0.28)")
+    : (monster.enraged ? "rgba(255, 42, 42, 0.38)" : "rgba(255, 88, 42, 0.25)");
   ctx.fillRect(sx - (monster.enraged ? 6 : 3), sy + 4 - pulse, monster.enraged ? 36 : 30, 18);
   ctx.fillStyle = monster.shadow;
   ctx.fillRect(sx - 5, sy + 6, 9, 10);
@@ -1342,22 +1482,22 @@ function drawDragon(monster, sx, sy) {
   ctx.fillRect(sx + 18, sy + 7, 8, 7);
   ctx.fillRect(sx + 5, sy + 4, 13, 14);
   ctx.fillRect(sx + 16, sy + 8, 8, 8);
-  ctx.fillStyle = "#ff8c3e";
+  ctx.fillStyle = voidBoss ? "#d8d8ff" : eclipse ? "#7f8cff" : "#ff8c3e";
   ctx.fillRect(sx + 1, sy + 6, 7, 6);
   ctx.fillRect(sx + 10, sy, 3, 5);
   ctx.fillRect(sx + 16, sy, 3, 5);
-  ctx.fillStyle = "#ffd166";
+  ctx.fillStyle = voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ffd166";
   ctx.fillRect(sx + 11, sy - 2, 2, 3);
   ctx.fillRect(sx + 17, sy - 2, 2, 3);
   ctx.fillRect(sx + 9, sy + 9, 2, 2);
   ctx.fillRect(sx + 13, sy + 12, 2, 2);
-  ctx.fillStyle = "#fff2a6";
+  ctx.fillStyle = voidBoss ? "#ffffff" : eclipse ? "#fff2ff" : "#fff2a6";
   ctx.fillRect(sx + 18, sy + 10, 2, 2);
   ctx.fillStyle = "#211010";
   ctx.fillRect(sx + 21, sy + 11, 2, 1);
-  ctx.fillStyle = "#ff4e36";
+  ctx.fillStyle = voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ff4e36";
   ctx.fillRect(sx + 24, sy + 10, 4 + pulse, 2);
-  ctx.fillStyle = "#fff2a6";
+  ctx.fillStyle = voidBoss ? "#d8d8ff" : eclipse ? "#9fb3ff" : "#fff2a6";
   ctx.fillRect(sx + 26, sy + 10, 2, 1);
   drawMonsterHp(monster, sx, sy - 3);
 }
@@ -1570,12 +1710,15 @@ function drawEndingOverlay() {
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.font = "16px monospace";
-  ctx.fillText("QUEST CLEAR", W / 2, 52);
+  const title = state.chapter3Reported ? "CHAPTER 3 CLEAR" : state.chapter2Reported ? "CHAPTER 2 CLEAR" : "QUEST CLEAR";
+  const line1 = state.chapter3Reported ? "黒陽竜は封じられた" : state.chapter2Reported ? "月蝕竜は封じられた" : "赤竜は封じられた";
+  const line2 = state.chapter3Reported ? "黒門砦からさらに遠征路が開く" : state.chapter2Reported ? "月見砦の灯がさらに南を照らす" : "村に朝が戻り 旅は語り継がれる";
+  ctx.fillText(title, W / 2, 52);
   ctx.font = "8px monospace";
   ctx.fillStyle = "#fff2a6";
-  ctx.fillText("赤竜は封じられた", W / 2, 70);
+  ctx.fillText(line1, W / 2, 70);
   ctx.fillStyle = "#d7e2ea";
-  ctx.fillText("村に朝が戻り 旅は語り継がれる", W / 2, 84);
+  ctx.fillText(line2, W / 2, 84);
   ctx.fillStyle = "#74ff8f";
   ctx.fillText("N: 旅を続ける", W / 2, 103);
 }
@@ -1588,10 +1731,10 @@ function drawVictoryBanner() {
   ctx.textAlign = "center";
   ctx.fillStyle = "#fff2a6";
   ctx.font = "10px monospace";
-  ctx.fillText("DRAGON SEALED", W / 2, 39);
+  ctx.fillText(state.chapter3Victory ? "BLACK SUN SEALED" : state.chapter2Victory ? "ECLIPSE SEALED" : "DRAGON SEALED", W / 2, 39);
   ctx.font = "7px monospace";
   ctx.fillStyle = "#ffffff";
-  ctx.fillText("村へ戻り長老に報告", W / 2, 52);
+  ctx.fillText(state.chapter3Victory ? "長老へ第3章の報告" : state.chapter2Victory ? "長老へ第2章の報告" : "村へ戻り長老に報告", W / 2, 52);
 }
   globalThis.DRAGON_HUNTER_RENDER = {
     draw,

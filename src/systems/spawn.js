@@ -22,6 +22,10 @@
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_SITE,
     ASH_KNIGHT_REQUIREMENTS,
+    ECLIPSE_DRAGON_SITE,
+    CHAPTER2_REQUIREMENTS,
+    VOID_DRAGON_SITE,
+    CHAPTER3_REQUIREMENTS,
     monsterTypes,
   } = definitions;
 
@@ -123,6 +127,8 @@
     const { player } = requireSpawnContext(context);
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
+    if (ty >= 128) return "void";
+    if (ty >= 112) return "eclipse";
     if (ty >= 96) return "moon";
     if ((tx >= 90 && tx <= 115 && ty >= 84) || (tx >= 105 && tx <= 116 && ty >= 36 && ty <= 47)) return "tower";
     if (tx >= 80 || ty >= 72) return "ash";
@@ -155,6 +161,10 @@
     if (lv >= 3 && region === "mine") pool.push("dragonling");
     if (lv >= 8 && (region === "ash" || region === "tower" || region === "moon")) pool.push("sorcerer");
     if (lv >= 12 && region === "moon") pool.push("moonShade");
+    if (lv >= 16 && region === "eclipse") pool.push("eclipseMage", "moonShade");
+    if (lv >= 20 && region === "eclipse") pool.push("eclipseMage");
+    if (lv >= 22 && region === "void") pool.push("voidWraith", "eclipseMage");
+    if (lv >= 26 && region === "void") pool.push("voidWraith", "voidWraith");
     return pool;
   }
 
@@ -191,7 +201,7 @@
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : region === "ash" ? 6 : region === "tower" ? 7 : region === "moon" ? 8 : 5;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : region === "ash" ? 6 : region === "tower" ? 7 : region === "moon" ? 8 : region === "eclipse" ? 9 : region === "void" ? 10 : 5;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -251,6 +261,8 @@
   }
 
   function areaDangerText(region) {
+    if (region === "void") return "黒陽領: 第3章の高難度地帯";
+    if (region === "eclipse") return "月蝕城: 第2章の最奥";
     if (region === "moon") return "月影廃墟: 古塔の先の危険地帯";
     if (region === "north") return "北森: 強敵の気配";
     if (region === "east") return "東の森: 魔力が濃い";
@@ -273,6 +285,27 @@
   function ashKnightReady(context) {
     const { state, player } = requireSpawnContext(context);
     return !state.ashKnightDefeated && state.wardenDefeated && player.level >= ASH_KNIGHT_REQUIREMENTS.level;
+  }
+
+  function eclipseDragonReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.eclipseDragonDefeated
+      && state.elderReported
+      && state.ashKnightDefeated
+      && state.chests.has("moon-ruin-cache")
+      && state.discoveries.has("eclipse-seal")
+      && player.level >= CHAPTER2_REQUIREMENTS.level;
+  }
+
+  function voidDragonReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.voidDragonDefeated
+      && state.chapter2Reported
+      && state.eclipseDragonDefeated
+      && state.chests.has("black-fort-armory")
+      && state.chests.has("eclipse-castle-cache")
+      && state.discoveries.has("void-seal")
+      && player.level >= CHAPTER3_REQUIREMENTS.level;
   }
 
   function playerNearGuardianSite(context) {
@@ -299,6 +332,22 @@
     return Math.hypot(pc.x - ax, pc.y - ay) < worldPx(92);
   }
 
+  function playerNearEclipseDragonSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const ex = (ECLIPSE_DRAGON_SITE.x + 0.5) * TILE;
+    const ey = (ECLIPSE_DRAGON_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - ex, pc.y - ey) < worldPx(104);
+  }
+
+  function playerNearVoidDragonSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const vx = (VOID_DRAGON_SITE.x + 0.5) * TILE;
+    const vy = (VOID_DRAGON_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - vx, pc.y - vy) < worldPx(108);
+  }
+
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver) return;
@@ -312,11 +361,29 @@
     if (state.spawnedAshKnight && !state.ashKnightDefeated && !hasLiveMonster(context, "ashKnight")) {
       state.spawnedAshKnight = false;
     }
+    if (state.spawnedEclipseDragon && !state.eclipseDragonDefeated && !hasLiveMonster(context, "eclipseDragon")) {
+      state.spawnedEclipseDragon = false;
+    }
+    if (state.spawnedVoidDragon && !state.voidDragonDefeated && !hasLiveMonster(context, "voidDragon")) {
+      state.spawnedVoidDragon = false;
+    }
 
     if (ashKnightReady(context) && !state.spawnedAshKnight && playerNearAshKnightSite(context)) {
       state.spawnedAshKnight = true;
       spawnMonster(context, "ashKnight", ASH_KNIGHT_SITE.x * TILE, ASH_KNIGHT_SITE.y * TILE);
       say("古塔の灰騎士が道を塞いだ!", 2600);
+    }
+
+    if (eclipseDragonReady(context) && !state.spawnedEclipseDragon && playerNearEclipseDragonSite(context)) {
+      state.spawnedEclipseDragon = true;
+      spawnMonster(context, "eclipseDragon", ECLIPSE_DRAGON_SITE.x * TILE, ECLIPSE_DRAGON_SITE.y * TILE);
+      say("月蝕城の奥で月蝕竜が目覚めた!", 3200);
+    }
+
+    if (voidDragonReady(context) && !state.spawnedVoidDragon && playerNearVoidDragonSite(context)) {
+      state.spawnedVoidDragon = true;
+      spawnMonster(context, "voidDragon", VOID_DRAGON_SITE.x * TILE, VOID_DRAGON_SITE.y * TILE);
+      say("黒陽城の奥で黒陽竜が目覚めた!", 3400);
     }
 
     if (state.victory) return;
@@ -349,10 +416,14 @@
     guardianReady,
     wardenReady,
     ashKnightReady,
+    eclipseDragonReady,
+    voidDragonReady,
     hasLiveMonster,
     playerNearGuardianSite,
     playerNearWardenSite,
     playerNearAshKnightSite,
+    playerNearEclipseDragonSite,
+    playerNearVoidDragonSite,
     updateStoryEvents,
   };
 })();

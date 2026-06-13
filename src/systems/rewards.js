@@ -78,7 +78,7 @@
       if (flag) player[flag] = owned.has(id);
     }
     if (!player.ownedAccessories.includes(player.equippedAccessory)) {
-      player.equippedAccessory = ["trail", "regen", "aegis", "mine", "hunter"].find((id) => owned.has(id)) || "";
+      player.equippedAccessory = ["trail", "regen", "aegis", "mine", "eclipse", "void", "hunter"].find((id) => owned.has(id)) || "";
     }
   }
 
@@ -165,7 +165,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -235,6 +235,40 @@
       say("月影街道の補給箱を回収した");
       return true;
     }
+    if (reward === "eclipseGear") {
+      player.gold += 760;
+      addOwnedWeapon(player, 9);
+      addOwnedArmor(player, 9);
+      player.wards = Math.min(9, player.wards + 3);
+      say("月蝕装備を得た。もちもので月蝕竜への備えを選べる");
+      return true;
+    }
+    if (reward === "eclipseSupply") {
+      player.gold += 1180;
+      player.potions = Math.min(9, player.potions + 4);
+      player.bombs = Math.min(9, player.bombs + 3);
+      player.wards = Math.min(9, player.wards + 4);
+      grantAccessory(context, "eclipse", "月蝕の指輪を見つけた。装備すると月蝕魔法を軽くする");
+      say("月蝕城の秘庫から決戦物資を得た");
+      return true;
+    }
+    if (reward === "voidGear") {
+      player.gold += 1260;
+      addOwnedWeapon(player, 10);
+      addOwnedArmor(player, 10);
+      player.wards = Math.min(9, player.wards + 4);
+      say("黒陽装備を得た。黒陽領の圧に備えられる");
+      return true;
+    }
+    if (reward === "voidSupply") {
+      player.gold += 1880;
+      player.potions = Math.min(9, player.potions + 5);
+      player.bombs = Math.min(9, player.bombs + 4);
+      player.wards = Math.min(9, player.wards + 5);
+      grantAccessory(context, "void", "黒陽の護符を見つけた。装備すると黒陽圧を軽くする");
+      say("黒陽城の秘庫から最終遠征物資を得た");
+      return true;
+    }
     return false;
   }
 
@@ -276,6 +310,22 @@
       player.wards = Math.min(9, player.wards + 1);
       burst(x, y, "#9fb3ff", 20);
       say("古い道標を調べた。月影廃墟への道筋が見えた");
+      return;
+    }
+    if (discovery.kind === "eclipseSeal") {
+      player.gold += 360;
+      player.stamina = player.staminaMax;
+      player.wards = Math.min(9, player.wards + 2);
+      burst(x, y, "#e36dff", 22);
+      say("月蝕の封印碑を読んだ。月蝕竜への道が開いた");
+      return;
+    }
+    if (discovery.kind === "voidSeal") {
+      player.gold += 640;
+      player.stamina = player.staminaMax;
+      player.wards = Math.min(9, player.wards + 3);
+      burst(x, y, "#2f335f", 24);
+      say("黒陽の封印碑を読んだ。黒陽竜への道が開いた");
       return;
     }
     if (discovery.kind === "spring") {
