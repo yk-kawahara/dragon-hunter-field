@@ -323,14 +323,16 @@ function assertSaveLoadAndEquipment() {
   player.sealCrest = true;
   player.hunterCharm = true;
   player.regenCharm = true;
+  player.greaterRegenCharm = true;
   player.trailCharm = true;
   player.aegisCharm = true;
   player.mineCharm = true;
   player.eclipseCharm = true;
   player.voidCharm = true;
   player.obsidianCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
+  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
   player.equippedAccessory = "trail";
+  player.equippedAccessories = ["trail", "greaterRegen"];
   state.chests.add("town-cache");
   state.chests.add("north-ruin");
   state.chests.add("south-outpost");
@@ -361,6 +363,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.armor === 3, "armor rank should persist");
   assert(restored.player.shield === 2, "shield rank should persist");
   assert(restored.player.regenCharm, "regen charm should persist");
+  assert(restored.player.greaterRegenCharm, "greater regen charm should persist");
   assert(restored.player.trailCharm, "trail charm should persist");
   assert(restored.player.aegisCharm, "aegis charm should persist");
   assert(restored.player.mineCharm, "mine charm should persist");
@@ -370,8 +373,9 @@ function assertSaveLoadAndEquipment() {
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
+  assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
   const baseline = createRuntime();
   baseline.player.armor = restored.player.armor;
@@ -379,6 +383,7 @@ function assertSaveLoadAndEquipment() {
   baseline.runtime.refreshDerivedStats();
   assert(restored.runtime.dashCost() < baseline.runtime.dashCost(), "trail charm should reduce dash cost after load");
   assert(restored.runtime.playerMoveSpeed() > baseline.runtime.playerMoveSpeed(), "trail charm should improve movement speed after load");
+  assert(restored.runtime.regenRate() > baseline.runtime.regenRate(), "greater regen charm should improve HP regeneration after load");
   assert(restored.state.chests.size === 3, "opened chests should persist");
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
@@ -429,6 +434,7 @@ function assertSaveLoadAndEquipment() {
   assert(migrated.player.ownedAccessories.includes("regen"), "old regen flag should become owned accessory");
   assert(migrated.player.ownedAccessories.includes("trail"), "old trail flag should become owned accessory");
   assert(migrated.player.equippedAccessory === "trail", "old saves should equip trail by migration priority");
+  assert(migrated.player.equippedAccessories.includes("trail") && migrated.player.equippedAccessories.includes("regen"), "old saves should migrate to two accessory slots");
   return { saveKey: d.SAVE_KEY, weapon: restored.player.weapon, armor: restored.player.armor };
 }
 
@@ -442,6 +448,7 @@ function assertInventoryManagement() {
   player.trailCharm = true;
   player.mineCharm = true;
   player.equippedAccessory = "regen";
+  player.equippedAccessories = ["regen"];
   player.weapon = 1;
   player.armor = 0;
   player.shield = 0;
@@ -473,16 +480,16 @@ function assertInventoryManagement() {
   state.inventoryTab = "accessories";
   state.inventoryIndex = player.ownedAccessories.indexOf("trail");
   runtime.confirmInventory();
-  assert(player.equippedAccessory === "trail", "inventory should equip selected accessory");
+  assert(player.equippedAccessories.includes("regen") && player.equippedAccessories.includes("trail"), "inventory should equip selected accessory into second slot");
   assert(runtime.dashCost() < 34, "equipped trail accessory should affect dash cost");
   state.inventoryIndex = player.ownedAccessories.indexOf("mine");
   runtime.confirmInventory();
-  assert(player.equippedAccessory === "mine", "accessory slot should switch to mine charm");
-  assert(runtime.dashCost() === 34, "unequipped trail accessory should stop affecting dash cost");
+  assert(player.equippedAccessories.includes("trail") && player.equippedAccessories.includes("mine") && !player.equippedAccessories.includes("regen"), "third accessory should replace oldest equipped slot");
+  assert(runtime.dashCost() < 34, "trail should keep affecting dash cost while equipped with mine charm");
 
   runtime.closeInventory();
   assert(!state.inventoryOpen, "inventory should close");
-  return { weapon: player.weapon, equippedAccessory: player.equippedAccessory, gold: player.gold };
+  return { weapon: player.weapon, equippedAccessories: player.equippedAccessories, gold: player.gold };
 }
 
 function assertStoryClearFlow() {
@@ -665,10 +672,12 @@ function assertFrontierCamp() {
   const withCharm = runtime.armorDamageMultiplier({ type: "bubbler" }, 0.2, "contact");
   player.mineCharm = false;
   player.equippedAccessory = "";
+  player.equippedAccessories = [];
   const withoutCharm = runtime.armorDamageMultiplier({ type: "bubbler" }, 0.2, "contact");
   assert(withCharm < withoutCharm, "mine charm should reduce bubbler contact damage");
   player.mineCharm = true;
   player.equippedAccessory = "mine";
+  player.equippedAccessories = ["mine"];
   player.gold = d.weaponCosts[5];
   buyShopRow(runtime, state, (row) => row.type === "weapon" && row.id === 5, "frontier mine weapon should be selectable");
   assert(player.ownedWeapons.includes(5), "frontier supply NPC should sell mine sidegrade weapon");
@@ -725,6 +734,12 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.summoner), "summoner monster definition should exist");
   assert(Boolean(d.monsterTypes.trapFlower), "trap flower monster definition should exist");
 
+  player.x = 20 * d.TILE;
+  player.y = 100 * d.TILE;
+  assert(runtime.currentRegion() === "smuggler", "western shortcut should use smuggler region");
+  player.x = 54 * d.TILE;
+  player.y = 124 * d.TILE;
+  assert(runtime.currentRegion() === "regenCave", "black market north dungeon should use regen cave region");
   player.x = 90 * d.TILE;
   player.y = 60 * d.TILE;
   assert(runtime.currentRegion() === "ash", "expanded east road should use ash region");
@@ -757,6 +772,11 @@ function assertExpandedWorldContent() {
   player.level = 16;
   const moonTrapPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
   assert(moonTrapPool.includes("trapFlower"), "moon spawn pool should include trap flowers after level 16");
+  player.level = 1;
+  const smugglerLowPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "smuggler");
+  assert(smugglerLowPool.includes("shieldSoldier") && smugglerLowPool.includes("wisp"), "smuggler shortcut should remain dangerous even at low level");
+  const regenLowPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "regenCave");
+  assert(regenLowPool.includes("bubbler") && regenLowPool.includes("trapFlower"), "regen cave should have special hazards even at low level");
   player.level = 20;
   const eclipsePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "eclipse");
   assert(eclipsePool.includes("eclipseMage") && eclipsePool.includes("moonShade") && eclipsePool.includes("summoner") && eclipsePool.includes("trapFlower"), "eclipse spawn pool should include eclipse mage, moon shade, summoner, and trap flowers");
@@ -784,6 +804,7 @@ function assertExpandedWorldContent() {
   player.armor = 0;
   player.shield = 0;
   player.equippedAccessory = "";
+  player.equippedAccessories = [];
   player.hpMax = 260;
   player.hp = player.hpMax;
   player.invuln = 0;
@@ -793,6 +814,8 @@ function assertExpandedWorldContent() {
   runtime.spawnMonster("trapFlower", player.x + d.TILE, player.y);
   const trap = state.monsters.find((monster) => monster.type === "trapFlower");
   assert(trap, "trap flower should spawn for behavior verification");
+  runtime.updateMonsters(16);
+  assert(trap.trapPrimed && trap.trapTimer > 900, "trap flower should give roughly double warning time before exploding");
   trap.trapPrimed = true;
   trap.trapTimer = 0;
   runtime.updateMonsters(16);
@@ -922,13 +945,20 @@ function assertExpandedWorldContent() {
   assert(reward.player.ownedAccessories.includes("obsidian") && reward.player.elixirs >= 2 && reward.player.warps >= 1, "obsidianGear chest should grant obsidian accessory and premium supplies");
   reward.runtime.grantChestReward("obsidianSupply");
   assert(reward.player.elixirs >= 3 && reward.player.tonics >= 4 && reward.player.warps >= 2, "obsidianSupply chest should add route-extension supplies");
+  const regenBefore = reward.runtime.regenRate();
+  reward.runtime.grantChestReward("greaterRegen");
+  globalThis.DRAGON_HUNTER_REWARDS.equipAccessory(reward.player, "greaterRegen");
+  reward.runtime.refreshDerivedStats();
+  assert(reward.player.ownedAccessories.includes("greaterRegen") && reward.runtime.regenRate() > regenBefore && reward.player.warps >= 3, "greaterRegen chest should grant the large regen accessory and return supplies");
   reward.runtime.grantChestReward("shieldGear");
   assert(reward.player.ownedShields.includes(3), "shieldGear chest should grant a route shield");
   reward.runtime.grantChestReward("blackShieldSupply");
   assert(reward.player.ownedShields.includes(4) && reward.player.elixirs >= 4, "blackShieldSupply should grant black-route shield supplies");
   reward.runtime.grantDiscoveryReward({ id: "test-route-hint", kind: "routeHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-shortcut-hint", kind: "shortcutHint" }, 0, 0);
-  assert(reward.player.warps >= 4 && reward.player.tonics >= 5, "route and shortcut hints should provide travel supplies");
+  reward.runtime.grantDiscoveryReward({ id: "test-smuggler-hint", kind: "smugglerHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-greater-regen-hint", kind: "greaterRegenHint" }, 0, 0);
+  assert(reward.player.warps >= 5 && reward.player.tonics >= 6 && reward.player.wards >= 9, "route, shortcut, and cave hints should provide travel supplies");
   reward.runtime.grantChestReward("blackMarketSupply");
   assert(reward.player.potions >= 4 && reward.player.bombs >= 3 && reward.player.wards >= 9 && reward.player.warps >= 3, "blackMarketSupply chest should add deep-route supplies");
   return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", obsidianRegion: "obsidian", voidRegion: "void", blackSunGear: true };

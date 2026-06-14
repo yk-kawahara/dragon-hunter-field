@@ -87,6 +87,8 @@
     if (hpRate < 0.35) return "??: ????????????";
     const stage = gameStage(context);
     const region = currentRegion();
+    if (region === "regenCave") return "黒市北の再生洞窟。大再生の指輪を取ったら帰還鈴で戻れる";
+    if (region === "smuggler") return "密輸道は黒市への近道。序盤でも通れるが、強敵を避けて進め";
     if (region === "obsidian") return "黒曜洞は中ボス級の圧。黒市へ戻る余力を残そう";
     if (region === "void") return "黒陽領は最高危険度。砦へ戻る余力を残そう";
     if (region === "eclipse") return "月蝕魔法が濃い。砦へ戻れるHPを残そう";

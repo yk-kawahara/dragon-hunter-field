@@ -144,9 +144,16 @@
     warp: "warps",
   };
 
-  function playerItemCount(id) {
-    return player?.[itemRenderFields[id]] || 0;
+function playerItemCount(id) {
+  return player?.[itemRenderFields[id]] || 0;
+}
+
+function equippedAccessoryIds() {
+  if (Array.isArray(player?.equippedAccessories) && player.equippedAccessories.length > 0) {
+    return player.equippedAccessories.filter((id) => player.ownedAccessories?.includes(id));
   }
+  return player?.equippedAccessory ? [player.equippedAccessory] : [];
+}
 
   // Optional legacy fallback:
   //   assets/player.png
@@ -431,11 +438,12 @@ function inventoryRenderRows(tab) {
     }));
   }
   const owned = Array.isArray(player.ownedAccessories) ? player.ownedAccessories : [];
+  const equippedIds = equippedAccessoryIds();
   return owned.map((id) => ({
     name: accessoryData[id]?.name || id,
     detail: accessoryData[id]?.trait || "",
     sell: 0,
-    equipped: player.equippedAccessory === id,
+    equipped: equippedIds.includes(id),
   }));
 }
 
@@ -1071,14 +1079,14 @@ function drawDiscoveries(cam) {
       ctx.fillRect(sx + 6, sy + 3, 4, 4);
       ctx.fillRect(sx + 7, sy + 8, 2, 5);
       if (!found) drawGlint(sx + 11, sy + 4, "#ff5e9f");
-    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint") {
+    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint") {
       ctx.fillStyle = found ? "#604622" : "#7b4b25";
       ctx.fillRect(sx + 5, sy + 5, 7, 8);
-      ctx.fillStyle = found ? "#b08a54" : "#ffd166";
+      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : "#ffd166";
       ctx.fillRect(sx + 3, sy + 4, 10, 3);
       ctx.fillStyle = "#2a1d12";
       ctx.fillRect(sx + 8, sy + 8, 2, 6);
-      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" ? "#8dd7ff" : "#ffd166");
+      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : "#ffd166");
     }
   }
 }

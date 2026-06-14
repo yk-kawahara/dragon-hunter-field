@@ -65,6 +65,24 @@
     return Boolean(monster.boss || monster.midboss || monster.type === "warden");
   }
 
+  function activeAccessory(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories) && player.equippedAccessories.length > 0) {
+      return player.equippedAccessories.includes(id);
+    }
+    if (player.equippedAccessory) return player.equippedAccessory === id;
+    return Boolean(player[legacyFlag]);
+  }
+
+  function autoEquipAccessoryIfSlotOpen(player, id) {
+    const owned = Array.isArray(player.ownedAccessories) ? player.ownedAccessories : [];
+    const equipped = Array.isArray(player.equippedAccessories)
+      ? player.equippedAccessories.filter((value) => owned.includes(value))
+      : (player.equippedAccessory && owned.includes(player.equippedAccessory) ? [player.equippedAccessory] : []);
+    if (owned.includes(id) && !equipped.includes(id) && equipped.length < 2) equipped.push(id);
+    player.equippedAccessories = equipped.slice(0, 2);
+    player.equippedAccessory = player.equippedAccessories[0] || "";
+  }
+
   function resetStrongMonsterToHome(context, monster) {
     const { state, say } = requireMonsterContext(context);
     monster.x = monster.homeX;
@@ -237,7 +255,7 @@
       if (monster.type === "trapFlower") {
         if (!monster.trapPrimed && dist < worldPx(44)) {
           monster.trapPrimed = true;
-          monster.trapTimer = 520;
+          monster.trapTimer = 1040;
           addRing(c.x, c.y, "#ff5e9f", worldPx(25));
           if (!monster.trapAnnounced) {
             monster.trapAnnounced = true;
@@ -386,7 +404,7 @@
       player.slow = Math.max(player.slow, 1200);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "SLOW", "#9df27f");
     } else if (monster.type === "bubbler") {
-      const mineGuard = player.armor === 5 || player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
+      const mineGuard = player.armor === 5 || activeAccessory(player, "mine", "mineCharm");
       player.slow = Math.max(player.slow, mineGuard ? 520 : 1200);
       player.stamina = Math.max(0, player.stamina - (mineGuard ? 3 : 8));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
@@ -402,9 +420,9 @@
       player.stamina = Math.max(0, player.stamina - 10);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "罠", "#ff5e9f");
     } else if (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "obsidianCrawler" || monster.type === "obsidianGolem") {
-      const eclipseGuard = player.armor === 9 || player.equippedAccessory === "eclipse" || (!player.equippedAccessory && player.eclipseCharm);
-      const voidGuard = player.armor === 10 || player.equippedAccessory === "void" || (!player.equippedAccessory && player.voidCharm);
-      const obsidianGuard = player.armor === 11 || player.equippedAccessory === "obsidian" || (!player.equippedAccessory && player.obsidianCharm);
+      const eclipseGuard = player.armor === 9 || activeAccessory(player, "eclipse", "eclipseCharm");
+      const voidGuard = player.armor === 10 || activeAccessory(player, "void", "voidCharm");
+      const obsidianGuard = player.armor === 11 || activeAccessory(player, "obsidian", "obsidianCharm");
       const isVoid = monster.type === "voidWraith" || monster.type === "voidDragon";
       const isObsidian = monster.type === "obsidianCrawler" || monster.type === "obsidianGolem";
       const baseSlow = monster.type === "voidDragon" ? 1850 : monster.type === "obsidianGolem" ? 1650 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 1300 : monster.type === "eclipseDragon" ? 1400 : monster.type === "eclipseMage" ? 1050 : monster.type === "summoner" ? 950 : 800;
@@ -484,7 +502,7 @@
       player.aegisCharm = true;
       if (!Array.isArray(player.ownedAccessories)) player.ownedAccessories = [];
       if (!player.ownedAccessories.includes("aegis")) player.ownedAccessories.push("aegis");
-      if (!player.equippedAccessory) player.equippedAccessory = "aegis";
+      autoEquipAccessoryIfSlotOpen(player, "aegis");
       player.wards = Math.min(9, player.wards + 2);
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);

@@ -59,6 +59,14 @@
     addSlash(c.x + aim.x * worldPx(8), c.y + aim.y * worldPx(8), monster.dir, projectileColor);
   }
 
+  function activeAccessory(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories) && player.equippedAccessories.length > 0) {
+      return player.equippedAccessories.includes(id);
+    }
+    if (player.equippedAccessory) return player.equippedAccessory === id;
+    return Boolean(player[legacyFlag]);
+  }
+
   function updateProjectiles(context, dt) {
     const {
       state,
@@ -116,7 +124,7 @@
             const fireGuard = player.armor === 6;
             player.burn = Math.max(player.burn, Math.round((p.source === "dragon" ? 2600 : 1500) * (fireGuard ? 0.55 : 1)));
           } else if (p.source === "bubbler") {
-            const mineGuard = player.armor === 5 || player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
+            const mineGuard = player.armor === 5 || activeAccessory(player, "mine", "mineCharm");
             player.slow = Math.max(player.slow, mineGuard ? 560 : 1400);
             player.stamina = Math.max(0, player.stamina - (mineGuard ? 2 : 6));
             addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
@@ -126,9 +134,9 @@
             player.slow = Math.max(player.slow, 900);
             player.stamina = Math.max(0, player.stamina - 10);
           } else if (p.source === "sorcerer" || p.source === "summoner" || p.source === "moonShade" || p.source === "ashKnight" || p.source === "eclipseMage" || p.source === "eclipseDragon" || p.source === "voidWraith" || p.source === "voidDragon" || p.source === "obsidianCrawler" || p.source === "obsidianGolem") {
-            const eclipseGuard = player.armor === 9 || player.equippedAccessory === "eclipse" || (!player.equippedAccessory && player.eclipseCharm);
-            const voidGuard = player.armor === 10 || player.equippedAccessory === "void" || (!player.equippedAccessory && player.voidCharm);
-            const obsidianGuard = player.armor === 11 || player.equippedAccessory === "obsidian" || (!player.equippedAccessory && player.obsidianCharm);
+            const eclipseGuard = player.armor === 9 || activeAccessory(player, "eclipse", "eclipseCharm");
+            const voidGuard = player.armor === 10 || activeAccessory(player, "void", "voidCharm");
+            const obsidianGuard = player.armor === 11 || activeAccessory(player, "obsidian", "obsidianCharm");
             const baseSlow = p.source === "voidDragon" ? 1900 : p.source === "obsidianGolem" ? 1700 : p.source === "voidWraith" || p.source === "obsidianCrawler" ? 1350 : p.source === "eclipseDragon" ? 1500 : p.source === "ashKnight" ? 1200 : p.source === "eclipseMage" ? 1100 : p.source === "summoner" ? 1040 : p.source === "moonShade" ? 980 : 760;
             const baseStamina = p.source === "voidDragon" ? 26 : p.source === "obsidianGolem" ? 22 : p.source === "voidWraith" || p.source === "obsidianCrawler" ? 17 : p.source === "eclipseDragon" ? 18 : p.source === "ashKnight" ? 14 : p.source === "eclipseMage" ? 13 : p.source === "summoner" ? 12 : p.source === "moonShade" ? 11 : 8;
             const guard = p.source === "obsidianGolem" || p.source === "obsidianCrawler" ? obsidianGuard : p.source === "voidDragon" || p.source === "voidWraith" ? voidGuard : eclipseGuard;

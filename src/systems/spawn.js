@@ -134,6 +134,8 @@
     const { player } = requireSpawnContext(context);
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
+    if (tx >= 24 && tx <= 58 && ty >= 120 && ty <= 127) return "regenCave";
+    if (tx >= 18 && tx <= 23 && ty >= 95 && ty <= 128) return "smuggler";
     if (ty >= 128 && tx <= 58) return "obsidian";
     if (ty >= 128) return "void";
     if (ty >= 112) return "eclipse";
@@ -161,6 +163,8 @@
     const lv = player.level;
     const pool = [...(REGION_SPAWNS[region] || REGION_SPAWNS.grassland).pool];
     if (lv <= 1) {
+      if (region === "smuggler") return ["boar", "wisp", "shieldSoldier"];
+      if (region === "regenCave") return ["bubbler", "wisp", "trapFlower"];
       const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => !["dragonling", "wisp", "summoner", "trapFlower", "sorcerer", "moonShade", "eclipseMage", "voidWraith", "obsidianCrawler", "shieldSoldier"].includes(type));
       return safePool.length ? safePool : ["bat", "boar"];
     }
@@ -169,6 +173,11 @@
     if (lv >= 3 && region === "mine") pool.push("dragonling");
     if (lv >= 8 && (region === "ash" || region === "tower" || region === "moon")) pool.push("sorcerer");
     if (lv >= 12 && region === "moon") pool.push("moonShade");
+    if (lv < 14 && (region === "smuggler" || region === "regenCave")) {
+      const earlyDanger = pool.filter((type) => type !== "summoner" && type !== "obsidianCrawler" && type !== "moonShade");
+      earlyDanger.push("boar", "wisp");
+      return earlyDanger;
+    }
     if (lv < 14) return pool.filter((type) => type !== "summoner" && type !== "trapFlower");
     if (lv < 16 && (region === "moon" || region === "eclipse")) return pool.filter((type) => type !== "trapFlower" && !(region === "eclipse" && type === "summoner"));
     if (lv < 18 && region === "eclipse") return pool.filter((type) => type !== "summoner");
@@ -220,7 +229,7 @@
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "obsidian" ? 12 : region === "void" ? 13 : 6;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "obsidian" ? 12 : region === "void" ? 13 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -283,6 +292,8 @@
     if (region === "obsidian") return "黒曜洞: 黒市の外は巨人の縄張り";
     if (region === "void") return "黒陽領: 第3章の高難度地帯";
     if (region === "eclipse") return "月蝕城: 第2章の最奥";
+    if (region === "regenCave") return "再生洞窟: 大再生の指輪を守る危険地帯";
+    if (region === "smuggler") return "密輸道: 黒市へ抜ける危険な近道";
     if (region === "moon") return "月影廃墟: 古塔の先の危険地帯";
     if (region === "north") return "北森: 強敵の気配";
     if (region === "east") return "東の森: 魔力が濃い";

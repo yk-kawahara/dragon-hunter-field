@@ -183,8 +183,8 @@ Current direction:
 * Weapons and armor are owned as lists.
 * The player can choose equipped weapon and armor.
 * Consumables can be inspected, used, and sold.
-* Accessories are owned, and one accessory can be equipped.
-* Only the equipped accessory provides its active survival effect.
+* Accessories are owned, and up to two accessories can be equipped.
+* Only equipped accessories provide their active survival effects.
 * Sidegrade equipment now exists for route preparation:
   * `泡割り槍` and `鉱夫服` help against Bubbler pressure in the southwest mine.
   * `火返しの剣` and `耐火マント` prepare for fire enemies and eastern/dragon-route pressure.
@@ -197,6 +197,8 @@ Current direction:
 * Black Fort is the fourth remote equipment hub and sells/grants Black Sun preparation after the player reaches the Chapter 3 route.
 * `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` prepare for Void Wraith / Black Sun Dragon pressure.
 * Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
+* Accessory pairing is now part of route preparation: e.g. movement bell + resistance charm, or large regeneration + route resistance.
+* `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave.
 
 Future direction:
 
@@ -286,13 +288,15 @@ Current design additions:
 
 * Rigid wall corridors should become readable terrain: broken walls, side openings, ruined watchtowers, market alleys, old gates, roads, bridges, and landmark caches.
 * Major late routes should offer at least a small choice: safer main road, risky shortcut, or side reward pocket.
+* The western smuggler road is a dangerous shortcut toward Black Market. It can be entered early, but shield soldiers, wisps, and trap flowers make it a risk/reward route rather than a normal road.
+* Black Market north now has a regeneration cave side dungeon. It should feel like a dangerous optional expedition whose reward extends survival range.
 * Light side objectives can be implemented through chests, discoveries, NPC hints, and route rumors. They do not need a large quest framework if they teach geography or extend survival range.
 * Shields are now a formal equipment slot. They reduce frontal contact damage and make contact direction a preparation choice, not only a stat race.
 * Shield soldiers are a contact-combat lesson enemy: attacking their front is inefficient, while side/back attacks are rewarded.
 * Deeper route rewards should include route-extension supplies, shields, return bells, tonics, elixirs, and hint discoveries rather than only gold.
 * Remote bases and Black Market should continue gaining NPCs, signs, stalls, and small reward pockets so they feel like lived-in survival anchors.
 * Summoners are now part of late-route identity. They should be placed where "clear this threat first" matters, especially Moon Ruins, Eclipse, Obsidian, and Black Sun routes.
-* Trap Flowers are now part of late-route identity. They should mark dangerous shortcuts, ruined courtyards, and narrow castle approaches where route choice matters.
+* Trap Flowers are now part of late-route identity. They should mark dangerous shortcuts, ruined courtyards, and narrow castle approaches where route choice matters. Their warning time should remain readable enough that attentive players can react.
 * Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
 * `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.
 * Current `120x144` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and shortcut-like terrain before another size jump.

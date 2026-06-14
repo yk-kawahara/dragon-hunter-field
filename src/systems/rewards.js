@@ -98,6 +98,54 @@
     return Array.from(owned).sort((a, b) => a - b);
   }
 
+  const ACCESSORY_SLOT_COUNT = 2;
+
+  function uniqueAccessoryIds(ids) {
+    const unique = [];
+    for (const id of Array.isArray(ids) ? ids : []) {
+      if (!accessoryOrder.includes(id) || unique.includes(id)) continue;
+      unique.push(id);
+      if (unique.length >= ACCESSORY_SLOT_COUNT) break;
+    }
+    return unique;
+  }
+
+  function equippedAccessoryIds(player) {
+    const equipped = uniqueAccessoryIds(player.equippedAccessories);
+    if (equipped.length > 0) return equipped;
+    if (accessoryOrder.includes(player.equippedAccessory)) return [player.equippedAccessory];
+    return [];
+  }
+
+  function setEquippedAccessories(player, ids) {
+    const owned = new Set(Array.isArray(player.ownedAccessories) ? player.ownedAccessories : []);
+    const equipped = uniqueAccessoryIds(ids).filter((id) => owned.has(id));
+    player.equippedAccessories = equipped;
+    player.equippedAccessory = equipped[0] || "";
+    return equipped;
+  }
+
+  function accessoryActive(player, id, legacyFlag) {
+    const equipped = equippedAccessoryIds(player);
+    if (equipped.length > 0) return equipped.includes(id);
+    return Boolean(player[legacyFlag]);
+  }
+
+  function equipAccessory(player, id) {
+    normalizeInventory(player);
+    if (!accessoryOrder.includes(id) || !player.ownedAccessories.includes(id)) {
+      return { ok: false, equipped: equippedAccessoryIds(player), changed: false, replaced: "" };
+    }
+    const current = equippedAccessoryIds(player);
+    if (current.includes(id)) {
+      const next = setEquippedAccessories(player, current.filter((value) => value !== id));
+      return { ok: true, equipped: next, changed: true, unequipped: id, replaced: "" };
+    }
+    const replaced = current.length >= ACCESSORY_SLOT_COUNT ? current[0] : "";
+    const next = current.length >= ACCESSORY_SLOT_COUNT ? [...current.slice(1), id] : [...current, id];
+    return { ok: true, equipped: setEquippedAccessories(player, next), changed: true, replaced };
+  }
+
   function normalizeAccessoryInventory(player) {
     const owned = new Set();
     if (Array.isArray(player.ownedAccessories)) {
@@ -114,9 +162,11 @@
       const flag = accessoryData[id]?.flag;
       if (flag) player[flag] = owned.has(id);
     }
-    if (!player.ownedAccessories.includes(player.equippedAccessory)) {
-      player.equippedAccessory = ["trail", "regen", "aegis", "mine", "eclipse", "void", "hunter"].find((id) => owned.has(id)) || "";
+    const desired = equippedAccessoryIds(player).filter((id) => owned.has(id));
+    if (desired.length <= 0) {
+      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
     }
+    setEquippedAccessories(player, desired);
   }
 
   function normalizeInventory(player) {
@@ -184,7 +234,9 @@
     }
     player.ownedAccessories.push(id);
     player[accessoryData[id].flag] = true;
-    if (!player.equippedAccessory) player.equippedAccessory = id;
+    if (equippedAccessoryIds(player).length < ACCESSORY_SLOT_COUNT) {
+      setEquippedAccessories(player, [...equippedAccessoryIds(player), id]);
+    }
     refreshDerivedStats?.();
     say(message || `${accessoryData[id].name}を手に入れた`);
     return true;
@@ -232,7 +284,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "shieldSupply" || reward === "blackShieldSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -378,6 +430,15 @@
       say("黒曜路の遠征物資を見つけた");
       return true;
     }
+    if (reward === "greaterRegen") {
+      player.gold += 1280;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.wards = Math.min(9, player.wards + 3);
+      grantAccessory(context, "greaterRegen", "大再生の指輪を見つけた。装備すると遠征中のHP回復が大きく伸びる");
+      say("黒市北の再生洞窟で大再生の指輪と遠征物資を得た");
+      return true;
+    }
     if (reward === "shieldSupply") {
       player.gold += 520;
       grantShieldAtLeast(context, 3, "星盾を手に入れた。盾兵や魔法道を正面から受けやすい");
@@ -493,6 +554,22 @@
       addItem(player, "tonic", 1);
       burst(x, y, "#ffd166", 16);
       say("旅の噂を手帳に書き留めた。危険な近道には盾と帰還鈴が役立つ");
+      return;
+    }
+    if (discovery.kind === "smugglerHint") {
+      player.gold += 220;
+      addItem(player, "warp", 1);
+      addItem(player, "tonic", 1);
+      burst(x, y, "#ffd166", 18);
+      say("密輸道の札: 西の縦道は黒市へ抜ける近道。ただし盾兵と地雷花が多い");
+      return;
+    }
+    if (discovery.kind === "greaterRegenHint") {
+      player.gold += 160;
+      addItem(player, "ward", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#74ff8f", 20);
+      say("洞窟のメモ: 黒市北の奥に大再生の指輪。毒花と泡を避け、帰還鈴を残せ");
       return;
     }
     if (discovery.kind === "shortcutHint") {
@@ -719,6 +796,9 @@
     addOwnedArmor,
     addOwnedShield,
     grantAccessory,
+    equippedAccessoryIds,
+    accessoryActive,
+    equipAccessory,
     grantWeaponAtLeast,
     grantArmorAtLeast,
     grantShieldAtLeast,

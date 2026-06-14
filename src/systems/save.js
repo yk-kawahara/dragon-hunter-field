@@ -57,6 +57,7 @@
         ownedShields: player.ownedShields,
         ownedAccessories: player.ownedAccessories,
         equippedAccessory: player.equippedAccessory,
+        equippedAccessories: player.equippedAccessories,
         potions: player.potions,
         tonics: player.tonics,
         bombs: player.bombs,
@@ -68,6 +69,7 @@
         sealCrest: player.sealCrest,
         hunterCharm: player.hunterCharm,
         regenCharm: player.regenCharm,
+        greaterRegenCharm: player.greaterRegenCharm,
         trailCharm: player.trailCharm,
         aegisCharm: player.aegisCharm,
         mineCharm: player.mineCharm,
@@ -119,6 +121,7 @@
       player.sealCrest = Boolean(player.sealCrest);
       player.hunterCharm = Boolean(player.hunterCharm);
       player.regenCharm = Boolean(player.regenCharm);
+      player.greaterRegenCharm = Boolean(player.greaterRegenCharm);
       player.trailCharm = Boolean(player.trailCharm);
       player.aegisCharm = Boolean(player.aegisCharm);
       player.mineCharm = Boolean(player.mineCharm);
@@ -195,6 +198,7 @@
       ownedShields: [0],
       ownedAccessories: [],
       equippedAccessory: "",
+      equippedAccessories: [],
       potions: 2,
       tonics: 0,
       bombs: 1,
@@ -205,6 +209,7 @@
       sealCrest: false,
       hunterCharm: false,
       regenCharm: false,
+      greaterRegenCharm: false,
       trailCharm: false,
       aegisCharm: false,
       mineCharm: false,

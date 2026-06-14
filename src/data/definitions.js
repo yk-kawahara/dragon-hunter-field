@@ -67,6 +67,7 @@
     { id: "black-market-stash", x: 43, y: 135, reward: "blackMarketSupply" },
     { id: "black-market-alley-cache", x: 47, y: 132, reward: "blackMarketSupply" },
     { id: "obsidian-side-cache", x: 58, y: 135, reward: "obsidianSupply" },
+    { id: "regen-cave-ring", x: 54, y: 124, reward: "greaterRegen" },
     { id: "black-gate-shield-cache", x: 73, y: 134, reward: "blackShieldSupply" },
     { id: "black-sun-thorn-cache", x: 79, y: 139, reward: "trapSupply" },
     { id: "black-sun-cache", x: 76, y: 140, reward: "voidSupply" },
@@ -88,6 +89,8 @@
     { id: "obsidian-waystone", x: 52, y: 132, kind: "obsidianWaystone" },
     { id: "black-market-rumor", x: 41, y: 132, kind: "routeHint" },
     { id: "black-market-alley-map", x: 47, y: 133, kind: "shortcutHint" },
+    { id: "smuggler-road-sign", x: 20, y: 100, kind: "smugglerHint" },
+    { id: "regen-cave-note", x: 32, y: 121, kind: "greaterRegenHint" },
     { id: "broken-gate-marker", x: 74, y: 136, kind: "shortcutHint" },
     { id: "black-sun-trap-note", x: 75, y: 139, kind: "trapHint" },
   ];
@@ -114,6 +117,8 @@
     tower: { danger: 5, maxBonus: 6, pool: ["shieldSoldier", "sorcerer", "sorcerer", "dragonling", "wisp"] },
     moon: { danger: 6, maxBonus: 7, pool: ["moonShade", "summoner", "trapFlower", "sorcerer", "dragonling", "wisp"] },
     eclipse: { danger: 7, maxBonus: 8, pool: ["shieldSoldier", "summoner", "trapFlower", "eclipseMage", "moonShade", "sorcerer", "dragonling"] },
+    smuggler: { danger: 8, maxBonus: 8, pool: ["shieldSoldier", "trapFlower", "summoner", "wisp", "boar", "dragonling"] },
+    regenCave: { danger: 8, maxBonus: 9, pool: ["bubbler", "trapFlower", "summoner", "obsidianCrawler", "shieldSoldier", "moonShade"] },
     obsidian: { danger: 8, maxBonus: 9, pool: ["shieldSoldier", "obsidianCrawler", "summoner", "trapFlower", "voidWraith", "eclipseMage", "dragonling"] },
     void: { danger: 8, maxBonus: 10, pool: ["shieldSoldier", "summoner", "trapFlower", "voidWraith", "eclipseMage", "moonShade", "dragonling"] },
   };
@@ -172,7 +177,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -185,6 +190,12 @@
       trait: "HP自動回復",
       sell: 90,
       flag: "regenCharm",
+    },
+    greaterRegen: {
+      name: "大再生の指輪",
+      trait: "HP自動回復・大",
+      sell: 0,
+      flag: "greaterRegenCharm",
     },
     trail: {
       name: "旅人の鈴",

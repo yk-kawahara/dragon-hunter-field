@@ -213,7 +213,7 @@ Current:
 
 * Real `もちもの` exists.
 * Player can inspect consumables, weapons, armor, and accessories.
-* Player can equip owned weapons, armor, and one accessory.
+* Player can equip owned weapons, armor, and up to two accessories.
 * Consumables and unequipped weapons/armor can be sold.
 * Former charm flags are moving into equipable accessories.
 * First sidegrade equipment pass exists:
@@ -226,14 +226,25 @@ Current:
 * Moon Camp now sells/grants `月蝕の刃`, `月蝕の外套`, and `月蝕の指輪` for the Chapter 2 boss route.
 * Black Fort now sells/grants `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` for the Chapter 3 boss route.
 * Inventory and HUD now show ATK/DEF values and comparison deltas.
+* The western smuggler road adds an early-risk shortcut toward Black Market.
+* Black Market north regeneration cave adds an optional side dungeon and `大再生の指輪`.
+* `大再生の指輪` gives a stronger regeneration option, especially when paired with travel or resistance accessories.
+* Trap Flower priming time is doubled so the hazard is readable rather than instant-feeling.
 
 Next:
 
 * More sidegrade gear in new routes, with route recommendations.
-* More accessories.
+* More accessories and stronger two-accessory build identity.
 * Additional shop stock and remote-town equipment.
 * Better comparison text for special effects, resistances, and recommended areas.
 * Unique accessory sell protection or buyback.
+
+### Immediate content priorities after the smuggler/regeneration pass
+
+* Add more side pockets and visible landmark rewards along the western smuggler road so the shortcut has memorable encounters, not only danger.
+* Add a distinct mini-boss or named elite in/near the regeneration cave once the reward route needs more climax.
+* Add more alternate east-west connectors between the main road, Moon route, Black Market route, and Black Sun route so the overworld feels less like vertical lanes.
+* Improve accessory UI copy so two-slot build planning is clearer: movement, regeneration, magic resistance, bubble resistance, black sun resistance, frontal pressure.
 
 ## Architecture status
 

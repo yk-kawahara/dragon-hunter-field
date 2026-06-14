@@ -79,6 +79,46 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 _Add new entries here._
 
+### 2026-06-14: Smuggler shortcut, two accessory slots, and regeneration cave
+
+Goal:
+
+* Reduce the overworld's一本道 feel and add a high-risk shortcut / side-dungeon reward loop.
+* Make accessories less dead by allowing two equipped accessories.
+* Make Trap Flowers readable enough to react to.
+
+Implemented changes:
+
+* Added a western smuggler road through the southern map that can lead toward Black Market earlier than the normal route.
+* Added the Black Market north regeneration cave with a one-time `大再生の指輪` chest and a cave hint discovery.
+* Added `smuggler` and `regenCave` spawn regions with stronger shortcut/dungeon pressure.
+* Added `大再生の指輪` as a large regeneration accessory.
+* Added two equipped accessory slots with legacy `equippedAccessory` save compatibility.
+* Updated inventory/status UI to show two equipped accessories and support accessory equip/unequip/replacement.
+* Extended save/load and smoke tests for `equippedAccessories`, `greaterRegenCharm`, new route rewards, and old save migration.
+* Doubled Trap Flower priming time from `520ms` to `1040ms`.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification performed:
+
+* `node --check src/game.js`
+* `node --check src/systems/rewards.js`
+* `node --check src/systems/ui.js`
+* `node --check src/systems/spawn.js`
+* `node --check src/systems/monsters.js`
+* `node --check src/systems/save.js`
+* `node --check scripts/verify-game-smoke.js`
+* `node scripts/verify-game-smoke.js`
+* `git diff --check` passed with CRLF warnings only.
+* Map preview visually checked after regeneration.
+* In-app Browser QA was attempted but failed in this environment with `CreateProcessAsUserW failed: 5`.
+
+Known risks:
+
+* Real browser/manual play QA for the new smuggler road, regeneration cave, and two-accessory UI is still pending.
+* New shortcut enemy pressure and large regeneration balance need fresh-save playtesting.
+* The smuggler road currently improves route choice, but it still needs more landmark pockets or a named elite to feel fully authored.
+
 ### 2026-06-14: Trap Flower Area-Denial Route Pass
 
 Goal: make late routes more interesting to traverse by adding a danger that changes movement decisions, not only enemy stats. The target was survival-range expansion through risky shortcuts, visible warnings, and route-extension supplies.

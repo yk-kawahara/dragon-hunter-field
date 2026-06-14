@@ -44,6 +44,8 @@
     addOwnedArmor,
     addOwnedShield,
     grantAccessory,
+    equippedAccessoryIds,
+    equipAccessory,
     itemField,
   } = rewardHelpers;
 
@@ -306,14 +308,15 @@
         sell: shieldSellValues[rank],
       }));
     }
+    const equippedIds = equippedAccessoryIds(player);
     return player.ownedAccessories.map((id) => ({
       type: "accessory",
       id,
       name: accessoryData[id]?.name || id,
-      detail: accessoryData[id]?.trait || "",
-      equipped: player.equippedAccessory === id,
+      detail: `${accessoryData[id]?.trait || ""} ${equippedIds.includes(id) ? `装備中 ${equippedIds.indexOf(id) + 1}/2` : "未装備"}`,
+      equipped: equippedIds.includes(id),
       sell: 0,
-      currentValue: id === "regen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
+      currentValue: id === "regen" || id === "greaterRegen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
     }));
   }
 
@@ -390,10 +393,19 @@
       return;
     }
     if (row.type === "accessory") {
-      player.equippedAccessory = row.id;
+      const before = equippedAccessoryIds(player);
+      const result = equipAccessory(player, row.id);
       refreshDerivedStats();
       player.stamina = Math.min(player.stamina, player.staminaMax);
-      say(`${row.name}を装備した`);
+      if (result.unequipped) {
+        say(`${row.name}を外した`);
+      } else if (result.replaced) {
+        say(`${row.name}を装備した。${accessoryData[result.replaced]?.name || result.replaced}を外した`);
+      } else if (result.changed && before.length < 2) {
+        say(`${row.name}を装備した (${result.equipped.length}/2)`);
+      } else {
+        say(`${row.name}を装備した`);
+      }
     }
   }
 
@@ -504,6 +516,9 @@
     const weaponBonus = weaponAttack[player.weapon] || 0;
     const armorBonus = armorDefense[player.armor] || 0;
     const shieldCut = Math.round((1 - (shieldGuard[player.shield] || 1)) * 100);
+    const equippedAccessories = equippedAccessoryIds(player)
+      .map((id) => accessoryData[id]?.name || id)
+      .join(" / ") || "なし";
 
     return [
       {
@@ -513,6 +528,7 @@
           `${armorNames[player.armor]} ${armorTraits[player.armor]} DEF ${baseDefense}+${armorBonus}=${baseDefense + armorBonus}`,
           `戦闘中: ATK ${playerAttack()} / DEF ${playerDefense()}`,
           `${shieldNames[player.shield]} ${shieldTraits[player.shield]} 正面${shieldCut}%軽減`,
+          `装飾 ${equippedAccessories}`,
           nextUpgradeText(context),
         ],
       },
@@ -555,6 +571,8 @@
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
     if (inTown(player.x, player.y)) name = (tx >= 20 && tx <= 48 && ty >= 129 && ty <= 136) ? "黒市" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if (tx >= 24 && tx <= 58 && ty >= 120 && ty <= 127) name = "再生洞窟";
+    else if (tx >= 18 && tx <= 23 && ty >= 95 && ty <= 128) name = "密輸道";
     else if (ty >= 128 && tx <= 58) name = "黒曜洞";
     else if (ty >= 128) name = "黒陽城";
     else if (ty >= 112) name = "月蝕城";

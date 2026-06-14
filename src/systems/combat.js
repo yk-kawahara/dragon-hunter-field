@@ -22,6 +22,9 @@
   }
 
   function activeAccessory(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories) && player.equippedAccessories.length > 0) {
+      return player.equippedAccessories.includes(id);
+    }
     if (player.equippedAccessory) return player.equippedAccessory === id;
     return Boolean(player[legacyFlag]);
   }
@@ -117,8 +120,13 @@
 
   function regenRate(context) {
     const { player } = requireCombatContext(context);
-    if (!activeAccessory(player, "regen", "regenCharm")) return 0.2;
-    return 0.4 + (player.armor >= 3 ? 0.4 : 0.1) + (player.armor >= 4 ? 0.4 : 0.1);
+    const hasRegen = activeAccessory(player, "regen", "regenCharm");
+    const hasGreaterRegen = activeAccessory(player, "greaterRegen", "greaterRegenCharm");
+    if (!hasRegen && !hasGreaterRegen) return 0.2;
+    let rate = 0.2;
+    if (hasRegen) rate += 0.55 + (player.armor >= 3 ? 0.35 : 0.1) + (player.armor >= 4 ? 0.25 : 0.05);
+    if (hasGreaterRegen) rate += 1.15 + (player.armor >= 4 ? 0.45 : 0.2);
+    return rate;
   }
 
   globalThis.DRAGON_HUNTER_COMBAT = {
