@@ -2,7 +2,7 @@
 
 (() => {
   // Human-editable fixed world map for DRAGON HUNTER.
-  // Edit WORLD_MAP rows directly to change terrain.
+  // Edit BASE_MAP / EAST_EXPANSION / SOUTH_EXPANSION rows directly to change terrain.
   // Legend:
   //   . grass / open field
   //   + road or walkable clearing
@@ -14,7 +14,7 @@
   //   C cave entrance
   //   * flowers
   //   = harvest field
-  const WORLD_MAP = [
+  const BASE_MAP = [
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
     "T..............................................................................T",
     "T.........................................~~~~.................................T",
@@ -85,8 +85,189 @@
     "T...................###++++++++###++++++####..~~~~........T......TTTTTTTTTTT...T",
     "T...................#####++==++++++==+++####..~~~~.............................T",
     "T...................####++++++++####+++++###...................................T",
-    "T...................########################...................................T",
-    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+    "T...................##########++############...................................T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTT+++++++++++++++TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ];
+
+  const EAST_EXPANSION = [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "+.................T.TTTT.TTTT.TTTT.TTTTT",
+    "+..................TTTT.TTTT.TTTT.TTTT.T",
+    "+.................TTTT.TTTT.TTTT.TTTT.TT",
+    "+.................TTT.TTTT.TTTT.TTTT.TTT",
+    "+.................TT.TTTT.TTTT.TTTT.TTTT",
+    "+.###..##.........T.TTTT.TTTT.TTTT.TTTTT",
+    "+.###..##..........TTTT.TTTT.TTTT.TTTT.T",
+    "+.##....#.........TTTT.TTTT.TTTT.TTTT.TT",
+    "+.##....#.........TTT.TTTT.TTTT.TTTT.TTT",
+    "+.###..##.........TT.TTTT.TTTT.TTTT.TTTT",
+    "+.###++##.........T.TTTT.TTTT.TTTT.TTTTT",
+    "+.###++##..........TTTT.TTTT.TTTT.TTTT.T",
+    "+.................TTTT.TTTT.TTTT.TTTT.TT",
+    "+.................TTT.TTTT.TTTT.TTTT.TTT",
+    "++++++++++++++....TT.TTTT.TTTT.TTTT.TTTT",
+    "++++++++++++++....T.TTTT.TTTT.TTTT.TTTTT",
+    "++++++++++++++.....TTTT.TTTT.TTTT.TTTT.T",
+    "++++++++++++++.........................T",
+    "++++++++++++++.........................T",
+    "++++++++++++++.........................T",
+    "++++++++++++++.........................T",
+    "+.......~~~~..............*..*..*......T",
+    "+.......~~~~.............*..*..*..*....T",
+    "+.......~~~~............*..*..*..*.....T",
+    "+.......~~~~..............*..*..*......T",
+    "+.......~~~~.............*..*..*..*....T",
+    "+.......~~~~............*..*..*..*.....T",
+    "+++++++++++++++++++.......*..*..*......T",
+    "+++++++++++++++++++......*..*..*..*....T",
+    "++++++++++++++++++++++..*..*..*..*.....T",
+    "++++++++++++++++++++++....*..*..*......T",
+    "++++++++++++++++++++++...*..*..*..*....T",
+    "++++++++++++++++++++++..*..*..*..*.....T",
+    "++++++++++++++++++++++.................T",
+    "++++++++++++++++++++++.................T",
+    "+.................++++...###..######...T",
+    "+.................++++...#..++.....#...T",
+    "+.................++++...#.........#...T",
+    "+.................++++...#.....++..#...T",
+    "+.................++++...#...+++...#...T",
+    "+.................++++...#...+++...+...T",
+    "+.................++++...#...+++...#...T",
+    "+.................++++...#.........#...T",
+    "+.................++++...#.........#...T",
+    "+.................++++...#..++.....#...T",
+    "+.................++++...######..###...T",
+    "+.................++++.................T",
+    "+.................++++.................T",
+    "+++++++++++++++++++++++++++++++++++++++T",
+    "++======+++++++++++++++++++++++++++++++T",
+    "++======+++++++++++++++++++++++++++++++T",
+    "+.======..........++++.................T",
+    "+.======......._^^^^^_________.........T",
+    "+.======.......__#__#___#__#__.........T",
+    "+.======~~~~...__#__#___#__#__.........T",
+    "+.======~~~~..._______________.........T",
+    "+.======~~~~..._______________.........T",
+    "+++++++++++++++++++++++++++___.........T",
+    "+++++++++++++++++++++++_______.........T",
+    "+++++++++++++++++++++++................T",
+    "+++++++++++++++++++++++................T",
+    "+++++++++++++++++++++++................T",
+    "+++++++++++++++++++++++.TT.TTT.TTT.TTT.T",
+    "+++++++++++++++++++++++.T.TTT.TTT.TTT.TT",
+    "+++++++++++++++++++++++..TTT.TTT.TTT.TTT",
+    "+++++++++++++++++++++++.TTT.TTT.TTT.TTTT",
+    "+.......................TT.TTT.TTT.TTT.T",
+    "+.......................T.TTT.TTT.TTT.TT",
+    "+........................TTT.TTT.TTT.TTT",
+    "+.......................TTT.TTT.TTT.TTTT",
+    "TTTTTTTTTTTTTTTTTT+++++++++++++++++++++T"
+  ];
+
+  const SOUTH_EXPANSION = [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTT+++++++++++++++TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT++++++TTTTTTTTTTTTTTTT",
+    "T......................############++############.................................................+++++................T",
+    "T......................#.......++++++++++.......#...................~~~~~.........................+++++................T",
+    "T...TT.TT.TT.TT.TT.....#.......++++++++++.......#...................~~~~~...TTTT.TTTT.T...........+++++................T",
+    "T..TT.TT.TT.TT.TT.T....#.......++++++++++.......#...===========.....~~~~~...TTTT.TTTT.T...........+++++................T",
+    "T..T.TT.TT.TT.TT.TT....#.======++++++++++.......#...===========.....~~~~~.........................+++++................T",
+    "T...TT.TT.TT.TT.TT.....#.======++++++++++.#####.#...===========.....~~~~~...TTTT.TTTT.T...........+++++................T",
+    "T..TT.TT.TT.TT.TT.T....#.======++++++++++.#####.#...===========.....~~~~~...TTTT.TTTT.T...........+++++................T",
+    "T..T.TT.TT.TT.TT.TT....#.======++++++++++.#####.#...===========.....~~~~~...TTTT.TTTT.T...........+++++................T",
+    "T...TT.TT.TT.TT.TT.....#.======++++++++++.#####.#...................~~~~~...TTTT.TTTT.T...........+++++................T",
+    "T..TT.TT.TT.TT.TT.T....#.======++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++................T",
+    "T..T.TT.TT.TT.TT.TT....#.======+++++++++++++++++++++++++++++++++++++++++++++TTTT+TTTT+T++++++++++++++++................T",
+    "T...TT.TT.TT.TT.TT.....#.======+++++++++++++++++++++++++++++++++++++++++++++TTTT+TTTT+T++++++++++++++++................T",
+    "T..TT.TT.TT.TT.TT.T....#.======++++++++++.......#...................~~~~~...TTTT.TTTT.T...########+++++###########.....T",
+    "T..T.TT.TT.TT.TT.TT....#.......++++++++++.......#......*..*..*..*...~~~~~...TTTT.TTTT.T...#.......+++++..........#.....T",
+    "T...TT.TT.TT.TT.TT.....#.......++++++++++.......#.....*..*..*..*....~~~~~.................#.......+++++..........#.....T",
+    "T..TT.TT.TT.TT.TT.T....##########++++++##########.......*..*..*.....~~~~~...TTTT.TTTT.T...#.......+++++..........#.....T",
+    "T..T.TT.TT.TT.TT.TT....................................*..*..*..*...~~~~~...TTTT.TTTT.T...#.......++++++++.......#.....T",
+    "T...TT.TT.TT.TT.TT....................................*..*..*..*....~~~~~...TTTT.TTTT.T...#.......++++++++.......+.....T",
+    "T..TT.TT.TT.TT.TT.T.....................................*..*..*.....~~~~~...TTTT.TTTT.T...#.......++++++++.......#.....T",
+    "T..T.TT.TT.TT.TT.TT.................................................~~~~~.................#.......++++++++.......#.....T",
+    "T...................................................................~~~~~.................#.......+++++..........#.....T",
+    "T.........................................................................................########################.....T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ];
+
+  const SOUTH_GATE_ROW = "TTTTTTTTTTTTTTTTTT+++++TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.............+++++++++++++++.......T";
+
+  const DEEP_SOUTH_EXPANSION = [
+    "TTTTTTTTTTTTTTTTTT+++++TTTT...............................~~~~~~~~~~~~~...........TTTTTTT.......+++++++++++++++++++++..T",
+    "TTTTTTTTTTTTTTTTTT+++++TTTTTT.............................~~~~~~~~~~~~~.......TTTTTTT..........+++++++.###########.....T",
+    "TTTTTTTTTTTTTTTTTT+++++TT.................................~~~~~~~~~~~~~.....................++++++++...#.........#.....T",
+    "TTTTTTTTTTTTTTTTTT+++++...................................~~~~~~~~~~~~~.................+++++++++......#..=====..#.....T",
+    "TTTTTTTTTTTTTTTTTT+++++...................................~~~~~~~~~~~~~...............++++***++........#..=====..#.....T",
+    "TTTTTTTTTTTTTTTTTT+++++...................................~~~~~~~~~~~~~.............++++****+..........#..=====..#.....T",
+    "TTTTTTTTTTTTTTTTTT+++++...................................~~~~~~~~~~~~~...........+++++++++............###########.....T",
+    "TTTTTTTTTTTTTTTTTT+++++TT.................................~~~~~~~~~~~~~.........+++++++++++.TTTTT...+++++++++++++++++..T",
+    "TTTTTTTTTTTTTTTTTT+++++TTTTTT.............................~~~~~~~~~~~~~.......+++++++++++...TTTTT...+++++++++++++++++..T",
+    "TTTTTTTTTTTTTTTTTT+++++TTTTTTTT...........................~~~~~~~~~~~~~.....+++++++++++.TTTTTTTTT...+++++++++++++++++..T",
+    "TTTTTTTTTTTTTTTTTT+++++TT.................................~~~~~~~~~~~~~...+++++++++++...TTTTTTTTT.+++++++++++++........T",
+    "TTTTTTTTTTTTTTTTTT+++++TT.................................~~~~~~~~~~~~~.+++++++++++.....TTTTTTTTT...+++++++++..........T",
+    "TTTTTTTTTTTTTTTTTT+++++TTTTTTTT...........................~~~~~~~~~~~~+++++++++++.......TTTTTTTTTTTTTTT++++++++........T",
+    "TTTTTTTTTTTTTTTTTT+++++TTTTTTTTTTTT.......................~~~~~~~~~~~~+++++++++++++++++++++++++++++++++++++++++........T",
+    "TTTTTTTTTTTTTTTTTT+++++TTTTTTTTTTTT.......................~~~~~~~~~~~~.............++++++++++++++......................T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ];
+
+  const ECLIPSE_GATE_ROW = "TTTTTTTTTTTTTTTTTT+++++TTTTT.........................TTTTTTTTTTTTT.................++++++++++++++++++++++..............T";
+
+  const CHAPTER2_EXPANSION = [
+    "TTTTTTTTTTTTTTTTTT+++++TTT...........................~~~~~~~~~~~~~............................+++++++++................T",
+    "TTTTTTTTTTTTTTTTTT+++++TT............................~~~~~~~~~~~~~..........................._+++++++++++++++++_.......T",
+    "TTTTTTTTTTTTTTTTTT+++++T.............................~~~~~~~~~~~~~..........................._+++++++++++++++++_.......T",
+    "TTTTTTTTTTTTTTTTTT+++++..............................~~~~~~~~~~~~~....*..*..*..*..*..........________++++_______.......T",
+    "TTTTTTTTTTTTTTTTTT+++++..............................~~~~~~~~~~~~~....*..*..*..*..*..........________++++_______.......T",
+    "TTTTTTTTTTTTTTTTTT+++++...............=========......~~~~~~~~~~~~~....*..*..*..*..*..........________++++_______.......T",
+    "TTTTTTTTTTTTTTTTTT+++++...............=========......~~~~~~~~~~~~~...........................________++++_______.......T",
+    "TTTTTTTTTTTTTTTTTT+++++...............=========......~~~~~~~~~~~~~............................+++++++++++..............T",
+    "TTTTTTTTTTTTTTTTTT+++++.#########++++#######++++###########~~~~~~~............................+++++++++++....++++++....T",
+    "TTTTTTTTTTTTTTTTTT+++++.#________++++_______++++__________#~~~~~~~............................+++++++++++....++++++....T",
+    "TTTTTTTTTTTTTTTTTT+++++.#_______#+++++++++#_______________#~~~~~~~......######++++#######++++######.+++++...####+####..T",
+    "TTTTTTTTTTTTTTTTTT+++++.#_____+++++####+++++++____________#~~~~~~~......#.......+++++++++++++..++++++++++...####+####..T",
+    "TTTTTTTTTTTTTTTTTT+++++.#_____#+++++++++#_________________#~~~~~~~......#.......+++++++++++++...+++++++++...####+####..T",
+    "TTTTTTTTTTTTTTTTTT+++++.#_________++++++_________++++_____#~~~~~~~......#..++...+++++++++....++++++++++++...####+####..T",
+    "TTTTTTTTTTTTTTTTTT+++++.##########++++++#########++++######~~~~~~~......#.....+++++++++....+++++++++++..#....++++......T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+  ];
+
+  const VOID_GATE_ROW = "TTTTTTTTTTTTTTTTTT+++++T##########+C++++###################TTTTTTT................+++++++++++++++++++++++..............T";
+
+  const CHAPTER3_EXPANSION = [
+    "TTTTTTTTTTTTTTTTTT+++++...............................~~~~~~~~~~~~................+++++++++++++++++++++++..............T",
+    "TTTTTTTTTTTTTTTTTTTT____^^^^^_____+++++____^^^^^......~~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTTTTTT____^___^_____+++++____^___^..#####~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTTTTT.____^___^__+++++++++___^___^..#___#~~~~~~~~~~~................++++++__^^^^^_+++++++____............T",
+    "TTTTTTTTTTTTTTTTTT..++++_____++#########++_____+.+#_+_#~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTTT...++++_____++#_______#++_____+.+#___#~~~~~~~~~~~....*..*..*..*..*+++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTT....++++_____++#___+___#++_____+.+##+##~~~~~~~~~~~....*..*..*..*..*.....__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTT....+++++++++++#___+___#+++++++++++++++++++++++++++++++++++++++++++++...........+++++..................T",
+    "TTTTTTTTTTTTTTTT....++++_____++####+####++_____+......~~~~~~~~~~~~....*..*..*..*..*.............+++++..................T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..####++++++####..##++++++####+++++####..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....++++++++++++++++++..++++++++++#..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#..+++++++++++....++++++++++++++++..#..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....+++++++++++++++++++++++++++...#..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....+++++++++++++++++++++++++++...#..............T",
+    "TTTTTTTTTTTTTTTT......................................~~~~~~~~~~~~..#.....+++++++++++++++++++++++++++...#..............T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+  ];
+
+  function connectEastEdge(row, y) {
+    const open = (y >= 15 && y <= 21) || (y >= 28 && y <= 35) || (y >= 49 && y <= 51) || (y >= 58 && y <= 66);
+    return open ? `${row.slice(0, -1)}+` : row;
+  }
+
+  const WORLD_MAP = [
+    ...BASE_MAP.map((row, y) => connectEastEdge(row, y) + EAST_EXPANSION[y]),
+    ...SOUTH_EXPANSION.slice(0, -1),
+    SOUTH_GATE_ROW,
+    ...DEEP_SOUTH_EXPANSION.slice(0, -1),
+    ECLIPSE_GATE_ROW,
+    ...CHAPTER2_EXPANSION.slice(0, -1),
+    VOID_GATE_ROW,
+    ...CHAPTER3_EXPANSION,
   ];
 
   const WORLD_OBJECTS = [
@@ -94,11 +275,47 @@
     { type: "npc", npcType: "smith", x: 15, y: 48, offsetX: 4, offsetY: 1, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "healer", x: 13, y: 43, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
     { type: "npc", npcType: "frontier", x: 33, y: 59, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 108, y: 58, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 108, y: 116, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 104, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "merchant", x: 35, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "guide", x: 40, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 47, y: 135, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 24, y: 134, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 36, y: 135, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "guard", x: 99, y: 130, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 96, y: 116, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 101, y: 57, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "porter", x: 7, y: 50, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 11, y: 51, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "guard", x: 17, y: 49, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "porter", x: 29, y: 60, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "guard", x: 26, y: 58, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 34, y: 60, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "porter", x: 98, y: 58, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 106, y: 56, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "porter", x: 99, y: 116, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 105, y: 117, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "porter", x: 93, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 101, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "porter", x: 31, y: 135, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 21, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 43, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 27, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 39, y: 134, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "guard", x: 45, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 96, y: 58, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 106, y: 115, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "guard", x: 90, y: 130, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 32, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 47, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "guard", x: 96, y: 114, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 104, y: 59, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
   ];
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {
-    width: 80,
-    height: 72,
+    width: 120,
+    height: 144,
     rows: WORLD_MAP,
     objects: WORLD_OBJECTS,
   };

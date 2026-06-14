@@ -10,18 +10,87 @@ $svgPath = Join-Path $docsDir "world-map-preview.svg"
 New-Item -ItemType Directory -Force -Path $docsDir | Out-Null
 
 $content = Get-Content -LiteralPath $worldPath
-$rows = New-Object System.Collections.Generic.List[string]
-$inMap = $false
-foreach ($line in $content) {
-  if ($line -match 'const WORLD_MAP = \[') {
-    $inMap = $true
-    continue
+function Get-MapRows($name) {
+  $list = New-Object System.Collections.Generic.List[string]
+  $inside = $false
+  foreach ($line in $content) {
+    if ($line -match "const $name = \[") {
+      $inside = $true
+      continue
+    }
+    if ($inside -and $line -match '^\s*\];') {
+      break
+    }
+    if ($inside -and $line -match '"([.\+~T#\^_C\*=]+)"') {
+      $list.Add($Matches[1])
+    }
   }
-  if ($inMap -and $line -match '^\s*\];') {
-    break
+  return $list
+}
+
+function Get-MapRow($name) {
+  foreach ($line in $content) {
+    if ($line -match "const $name = `"([.\+~T#\^_C\*=]+)`";") {
+      return $Matches[1]
+    }
   }
-  if ($inMap -and $line -match '"([.\+~T#\^_C\*=]+)"') {
-    $rows.Add($Matches[1])
+  return ""
+}
+
+$rows = Get-MapRows "WORLD_MAP"
+if ($rows.Count -eq 0) {
+  $baseRows = Get-MapRows "BASE_MAP"
+  $eastRows = Get-MapRows "EAST_EXPANSION"
+  $southRows = Get-MapRows "SOUTH_EXPANSION"
+  $southGateRow = Get-MapRow "SOUTH_GATE_ROW"
+  $deepSouthRows = Get-MapRows "DEEP_SOUTH_EXPANSION"
+  $eclipseGateRow = Get-MapRow "ECLIPSE_GATE_ROW"
+  $chapter2Rows = Get-MapRows "CHAPTER2_EXPANSION"
+  $voidGateRow = Get-MapRow "VOID_GATE_ROW"
+  $chapter3Rows = Get-MapRows "CHAPTER3_EXPANSION"
+  if ($baseRows.Count -gt 0 -and $baseRows.Count -eq $eastRows.Count) {
+    $rows = New-Object System.Collections.Generic.List[string]
+    for ($i = 0; $i -lt $baseRows.Count; $i += 1) {
+      $baseRow = $baseRows[$i]
+      $openEast = ($i -ge 15 -and $i -le 21) -or ($i -ge 28 -and $i -le 35) -or ($i -ge 49 -and $i -le 51) -or ($i -ge 58 -and $i -le 66)
+      if ($openEast) {
+        $baseRow = $baseRow.Substring(0, $baseRow.Length - 1) + "+"
+      }
+      $rows.Add($baseRow + $eastRows[$i])
+    }
+    if ($southGateRow.Length -gt 0 -and $deepSouthRows.Count -gt 0) {
+      for ($i = 0; $i -lt $southRows.Count - 1; $i += 1) {
+        $rows.Add($southRows[$i])
+      }
+      $rows.Add($southGateRow)
+      if ($eclipseGateRow.Length -gt 0 -and $chapter2Rows.Count -gt 0) {
+        for ($i = 0; $i -lt $deepSouthRows.Count - 1; $i += 1) {
+          $rows.Add($deepSouthRows[$i])
+        }
+        $rows.Add($eclipseGateRow)
+        if ($voidGateRow.Length -gt 0 -and $chapter3Rows.Count -gt 0) {
+          for ($i = 0; $i -lt $chapter2Rows.Count - 1; $i += 1) {
+            $rows.Add($chapter2Rows[$i])
+          }
+          $rows.Add($voidGateRow)
+          foreach ($row in $chapter3Rows) {
+            $rows.Add($row)
+          }
+        } else {
+          foreach ($row in $chapter2Rows) {
+            $rows.Add($row)
+          }
+        }
+      } else {
+        foreach ($row in $deepSouthRows) {
+          $rows.Add($row)
+        }
+      }
+    } else {
+      foreach ($row in $southRows) {
+        $rows.Add($row)
+      }
+    }
   }
 }
 

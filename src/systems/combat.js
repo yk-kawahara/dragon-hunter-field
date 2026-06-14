@@ -9,7 +9,9 @@
   const {
     DASH_COST,
     WORLD_SCALE,
+    weaponAttack = [0, 5, 10, 15, 20],
     armorDefense,
+    shieldGuard,
   } = definitions;
 
   function requireCombatContext(context) {
@@ -20,6 +22,9 @@
   }
 
   function activeAccessory(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories) && player.equippedAccessories.length > 0) {
+      return player.equippedAccessories.includes(id);
+    }
     if (player.equippedAccessory) return player.equippedAccessory === id;
     return Boolean(player[legacyFlag]);
   }
@@ -27,13 +32,15 @@
   function playerAttack(context) {
     const { player } = requireCombatContext(context);
     const comboBonus = Math.min(8, Math.floor(player.combo / 2));
-    return 7 + player.level * 2 + player.weapon * 5 + comboBonus;
+    const strength = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+    return strength + (weaponAttack[player.weapon] || 0) + comboBonus;
   }
 
   function playerDefense(context) {
     const { player } = requireCombatContext(context);
     const guardBonus = player.guard > 0 ? 9 + player.armor * 3 : 0;
-    return 1 + player.level + (armorDefense[player.armor] || 0) + guardBonus;
+    const resilience = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
+    return resilience + (armorDefense[player.armor] || 0) + guardBonus;
   }
 
   function playerMoveSpeed(context) {
@@ -60,6 +67,18 @@
     if (player.weapon >= 2 && flanking) mult += 0.18;
     if (player.weapon >= 3 && behind) mult += 0.34;
     if (player.weapon >= 4 && (monster.boss || monster.midboss || monster.type === "dragonling")) mult += 0.25;
+    if (player.weapon === 5 && (monster.type === "bubbler" || monster.type === "slime")) mult += 0.85;
+    if (player.weapon === 6 && (monster.type === "wisp" || monster.type === "dragonling" || monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "trapFlower")) mult += 0.55;
+    if (player.weapon === 7 && (monster.boss || monster.type === "dragonling" || monster.type === "ashKnight")) mult += 0.6;
+    if (player.weapon === 8 && (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "ashKnight" || monster.midboss)) mult += 0.75;
+    if (player.weapon === 9 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "moonShade")) mult += 0.95;
+    if (player.weapon === 10 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "eclipseMage")) mult += 1.25;
+    if (player.weapon === 11 && (monster.type === "obsidianGolem" || monster.type === "obsidianCrawler" || monster.type === "trapFlower" || monster.type === "voidDragon" || monster.type === "voidWraith")) mult += 1.45;
+    if (monster.type === "shieldSoldier") {
+      if (behind) mult += 0.75;
+      else if (flanking) mult += 0.35;
+      else if (mDot > 0.55) mult *= 0.55;
+    }
     return mult;
   }
 
@@ -68,8 +87,23 @@
     let mult = 1;
     if (player.armor >= 2 && source === "contact" && pDot > 0.58) mult *= 0.8;
     if (player.armor >= 4 && (monster?.boss || monster?.type === "dragonling" || source === "fire")) mult *= 0.78;
+    if (player.armor === 5 && (monster?.type === "bubbler" || monster?.type === "trapFlower" || source === "bubble" || source === "trap")) mult *= 0.62;
+    if (player.armor === 6 && (monster?.type === "wisp" || monster?.type === "sorcerer" || monster?.type === "moonShade" || source === "fire")) mult *= 0.64;
+    if (player.armor === 7 && (monster?.boss || monster?.midboss || monster?.type === "dragonling" || source === "projectile")) mult *= 0.72;
+    if (player.armor === 8 && (monster?.type === "sorcerer" || monster?.type === "summoner" || monster?.type === "moonShade" || monster?.type === "ashKnight" || source === "magic" || source === "projectile")) mult *= 0.58;
+    if (player.armor === 9 && (monster?.type === "eclipseMage" || monster?.type === "eclipseDragon" || source === "eclipse" || source === "magic" || source === "projectile")) mult *= 0.48;
+    if (player.armor === 10 && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void" || source === "eclipse" || source === "projectile")) mult *= 0.42;
+    if (player.armor === 11 && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || monster?.type === "trapFlower" || monster?.type === "voidDragon" || source === "obsidian" || source === "void" || source === "trap" || source === "projectile" || source === "contact")) mult *= 0.36;
+    if (source === "contact" && pDot > 0.42 && player.shield > 0) {
+      const shieldMult = shieldGuard[player.shield] || 1;
+      mult *= shieldMult;
+      if (monster?.type === "shieldSoldier" && pDot > 0.58) mult *= 0.86;
+    }
     if (activeAccessory(player, "aegis", "aegisCharm") && (source === "fire" || source === "projectile")) mult *= 0.82;
-    if (activeAccessory(player, "mine", "mineCharm") && (monster?.type === "bubbler" || source === "bubble")) mult *= 0.72;
+    if (activeAccessory(player, "mine", "mineCharm") && (monster?.type === "bubbler" || monster?.type === "trapFlower" || source === "bubble" || source === "trap")) mult *= 0.72;
+    if (activeAccessory(player, "eclipse", "eclipseCharm") && (monster?.type === "eclipseMage" || monster?.type === "eclipseDragon" || source === "eclipse" || source === "magic")) mult *= 0.76;
+    if (activeAccessory(player, "void", "voidCharm") && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void")) mult *= 0.7;
+    if (activeAccessory(player, "obsidian", "obsidianCharm") && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || source === "obsidian" || (source === "contact" && pDot > 0.3))) mult *= 0.68;
     return mult;
   }
 
@@ -77,14 +111,22 @@
     const { player } = requireCombatContext(context);
     player.staminaMax = 100
       + (activeAccessory(player, "hunter", "hunterCharm") ? 15 : 0)
-      + (activeAccessory(player, "trail", "trailCharm") ? 10 : 0);
+      + (activeAccessory(player, "trail", "trailCharm") ? 10 : 0)
+      + (activeAccessory(player, "eclipse", "eclipseCharm") ? 8 : 0)
+      + (activeAccessory(player, "void", "voidCharm") ? 12 : 0)
+      + (activeAccessory(player, "obsidian", "obsidianCharm") ? 8 : 0);
     player.stamina = Math.min(player.stamina, player.staminaMax);
   }
 
   function regenRate(context) {
     const { player } = requireCombatContext(context);
-    if (!activeAccessory(player, "regen", "regenCharm")) return 0.2;
-    return 0.4 + (player.armor >= 3 ? 0.4 : 0.1) + (player.armor >= 4 ? 0.4 : 0.1);
+    const hasRegen = activeAccessory(player, "regen", "regenCharm");
+    const hasGreaterRegen = activeAccessory(player, "greaterRegen", "greaterRegenCharm");
+    if (!hasRegen && !hasGreaterRegen) return 0.2;
+    let rate = 0.2;
+    if (hasRegen) rate += 0.55 + (player.armor >= 3 ? 0.35 : 0.1) + (player.armor >= 4 ? 0.25 : 0.05);
+    if (hasGreaterRegen) rate += 1.15 + (player.armor >= 4 ? 0.45 : 0.2);
+    return rate;
   }
 
   globalThis.DRAGON_HUNTER_COMBAT = {

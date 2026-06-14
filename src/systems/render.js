@@ -25,14 +25,30 @@
     DISCOVERY_POINTS,
     GUARDIAN_SITE,
     WARDEN_SITE,
+    WARDEN_REQUIREMENTS,
+    ASH_KNIGHT_SITE,
+    ASH_KNIGHT_REQUIREMENTS,
+    ECLIPSE_DRAGON_SITE,
+    CHAPTER2_REQUIREMENTS,
+    VOID_DRAGON_SITE,
+    CHAPTER3_REQUIREMENTS,
+    OBSIDIAN_GOLEM_SITE,
+    OBSIDIAN_GOLEM_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
     armorTraits,
+    weaponAttack,
+    armorDefense,
+    shieldNames,
+    shieldTraits,
+    shieldGuard,
+    itemOrder,
     itemNames,
     itemSellValues,
     weaponSellValues,
     armorSellValues,
+    shieldSellValues,
     accessoryData,
     TILE_GRASS,
     TILE_PATH,
@@ -110,6 +126,34 @@
     right: { idle: "assets/player/right_idle.png", walk: "assets/player/right_walk.png" },
     up: { idle: "assets/player/up_idle.png", walk: "assets/player/up_walk.png" },
   };
+
+  const itemRenderDetails = {
+    potion: "HP",
+    tonic: "ST",
+    bomb: "範囲",
+    ward: "防御",
+    elixir: "全快",
+    warp: "帰還",
+  };
+  const itemRenderFields = {
+    potion: "potions",
+    tonic: "tonics",
+    bomb: "bombs",
+    ward: "wards",
+    elixir: "elixirs",
+    warp: "warps",
+  };
+
+function playerItemCount(id) {
+  return player?.[itemRenderFields[id]] || 0;
+}
+
+function equippedAccessoryIds() {
+  if (Array.isArray(player?.equippedAccessories) && player.equippedAccessories.length > 0) {
+    return player.equippedAccessories.filter((id) => player.ownedAccessories?.includes(id));
+  }
+  return player?.equippedAccessory ? [player.equippedAccessory] : [];
+}
 
   // Optional legacy fallback:
   //   assets/player.png
@@ -189,7 +233,12 @@ function draw(context) {
   drawFieldDetails(cam);
   drawTownDetails(cam);
   drawFrontierCampDetails(cam);
+  drawAshHamletDetails(cam);
+  drawMoonCampDetails(cam);
+  drawBlackMarketDetails(cam);
+  drawBlackFortDetails(cam);
   drawVillageRoleMarkers(cam);
+  drawTravelMarkers(cam);
   drawHealCircle(cam);
   drawTownFence(cam);
   drawTownGates(cam);
@@ -197,6 +246,10 @@ function draw(context) {
   drawDiscoveries(cam);
   drawGuardianSite(cam);
   drawWardenSite(cam);
+  drawAshKnightSite(cam);
+  drawEclipseDragonSite(cam);
+  drawObsidianGolemSite(cam);
+  drawVoidDragonSite(cam);
   drawNpcs(cam);
   drawEntities(cam);
   drawEffects(cam);
@@ -205,11 +258,12 @@ function draw(context) {
   drawContextPrompt();
   drawHud();
   drawInfoPanel();
+  drawShopOverlay();
   drawInventoryOverlay();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
-  if (state.victory && !state.elderReported) drawVictoryBanner();
-  if (state.elderReported) drawEndingOverlay();
+  if ((state.victory && !state.elderReported) || state.chapter2Victory || state.chapter3Victory) drawVictoryBanner();
+  if (state.clearPanelOpen) drawEndingOverlay();
 
   ctx.restore();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -237,13 +291,64 @@ function drawInfoPanel() {
   }
 }
 
+function drawShopOverlay() {
+  if (!state.shopOpen) return;
+  const x = 14;
+  const y = 16;
+  const w = W - 28;
+  const h = VIEW_H - 28;
+  const rows = Array.isArray(state.shopRows) ? state.shopRows : [];
+  const selected = Math.max(0, Math.min(state.shopIndex || 0, Math.max(0, rows.length - 1)));
+  const first = Math.max(0, Math.min(Math.max(0, selected - 4), Math.max(0, rows.length - 7)));
+  const selectedRow = rows[selected] || null;
+
+  ctx.fillStyle = "rgba(3, 8, 18, 0.95)";
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = "#ffd166";
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = "#fff2a6";
+  ctx.font = "9px monospace";
+  ctx.textAlign = "left";
+  ctx.fillText(state.shopTitle || "店", x + 7, y + 12);
+  ctx.fillStyle = "#8dd7ff";
+  ctx.fillText(`所持金 ${player.gold}G`, x + w - 80, y + 12);
+
+  ctx.font = "8px monospace";
+  for (let i = 0; i < 7; i += 1) {
+    const row = rows[first + i];
+    const rowY = y + 30 + i * 13;
+    if (!row) continue;
+    if (first + i === selected) {
+      ctx.fillStyle = "rgba(255, 209, 102, 0.25)";
+      ctx.fillRect(x + 5, rowY - 9, w - 10, 12);
+      ctx.strokeStyle = "#ffd166";
+      ctx.strokeRect(x + 5, rowY - 9, w - 10, 12);
+    }
+    const owned = row.owned || (row.type === "weapon" && player.ownedWeapons?.includes(row.id)) || (row.type === "armor" && player.ownedArmors?.includes(row.id)) || (row.type === "shield" && player.ownedShields?.includes(row.id)) || (row.type === "accessory" && player.ownedAccessories?.includes(row.id));
+    ctx.fillStyle = row.available === false ? "#687383" : owned ? "#74ff8f" : "#ffffff";
+    ctx.fillText(`${owned ? "済 " : "  "}${row.name}`, x + 9, rowY);
+    ctx.fillStyle = row.available === false ? "#6f7780" : "#d7e2ea";
+    ctx.fillText(row.available === false ? (row.lockedReason || "") : "", x + 116, rowY, w - 166);
+    ctx.fillStyle = player.gold >= row.cost && row.available !== false ? "#fff2a6" : "#ff9a8a";
+    ctx.fillText(`${row.cost || 0}G`, x + w - 39, rowY);
+  }
+  ctx.fillStyle = "#8dd7ff";
+  ctx.font = "7px monospace";
+  if (selectedRow) {
+    ctx.fillStyle = selectedRow.available === false ? "#ff9a8a" : "#d7e2ea";
+    ctx.fillText(selectedRow.available === false ? (selectedRow.lockedReason || selectedRow.detail || "") : (selectedRow.detail || ""), x + 7, y + h - 17, w - 14);
+  }
+  ctx.fillStyle = "#8dd7ff";
+  ctx.fillText("↑↓選択  Enter:買う  Esc/S:閉じる", x + 7, y + h - 7);
+}
+
 function drawInventoryOverlay() {
   if (!state.inventoryOpen) return;
   const x = 12;
   const y = 15;
   const w = W - 24;
   const h = VIEW_H - 25;
-  const tabs = ["items", "weapons", "armors", "accessories"];
+  const tabs = ["items", "weapons", "armors", "shields", "accessories"];
   const labels = { items: "道具", weapons: "武器", armors: "防具", accessories: "装飾" };
   if (!tabs.includes(state.inventoryTab)) state.inventoryTab = "items";
   const rows = inventoryRenderRows(state.inventoryTab);
@@ -260,12 +365,12 @@ function drawInventoryOverlay() {
   ctx.fillText("もちもの", x + 7, y + 12);
 
   for (let i = 0; i < tabs.length; i += 1) {
-    const tabX = x + 7 + i * 45;
+    const tabX = x + 7 + i * 37;
     const active = tabs[i] === state.inventoryTab;
     ctx.fillStyle = active ? "#ffd166" : "#1a3045";
-    ctx.fillRect(tabX, y + 18, 38, 12);
+    ctx.fillRect(tabX, y + 18, 32, 12);
     ctx.fillStyle = active ? "#08111c" : "#d7e2ea";
-    ctx.fillText(labels[tabs[i]], tabX + 4, y + 27);
+    ctx.fillText(tabs[i] === "shields" ? "盾" : (labels[tabs[i]] || tabs[i]), tabX + 3, y + 27);
   }
 
   ctx.font = "8px monospace";
@@ -282,7 +387,7 @@ function drawInventoryOverlay() {
     ctx.fillStyle = row.equipped ? "#74ff8f" : "#ffffff";
     ctx.fillText(`${row.equipped ? "E " : "  "}${row.name}`, x + 9, rowY);
     ctx.fillStyle = "#d7e2ea";
-    ctx.fillText(row.detail, x + 82, rowY);
+    ctx.fillText(row.detail, x + 82, rowY, w - 123);
     ctx.fillStyle = row.sell > 0 ? "#fff2a6" : "#687383";
     ctx.fillText(row.sell > 0 ? `${row.sell}G` : "-", x + w - 35, rowY);
   }
@@ -293,18 +398,23 @@ function drawInventoryOverlay() {
 }
 
 function inventoryRenderRows(tab) {
+  const baseAttack = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+  const baseDefense = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
+  const currentAttack = baseAttack + (weaponAttack[player.weapon] || 0);
+  const currentDefense = baseDefense + (armorDefense[player.armor] || 0);
+  const diffText = (value) => value === 0 ? "+0" : value > 0 ? `+${value}` : String(value);
   if (tab === "items") {
-    return [
-      { name: itemNames.potion, detail: `HP回復 x${player.potions}`, sell: itemSellValues.potion },
-      { name: itemNames.bomb, detail: `周囲攻撃 x${player.bombs}`, sell: itemSellValues.bomb },
-      { name: itemNames.ward, detail: `防御 x${player.wards}`, sell: itemSellValues.ward },
-    ];
+    return itemOrder.map((id) => ({
+      name: itemNames[id] || id,
+      detail: `${itemRenderDetails[id] || ""} x${playerItemCount(id)}`,
+      sell: itemSellValues[id] || 0,
+    }));
   }
   if (tab === "weapons") {
     const owned = Array.isArray(player.ownedWeapons) ? player.ownedWeapons : [player.weapon || 0];
     return owned.map((rank) => ({
       name: weaponNames[rank] || `武器${rank}`,
-      detail: weaponTraits[rank] || "",
+      detail: `${weaponTraits[rank] || ""} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - currentAttack)})`,
       sell: weaponSellValues[rank] || 0,
       equipped: player.weapon === rank,
     }));
@@ -313,17 +423,27 @@ function inventoryRenderRows(tab) {
     const owned = Array.isArray(player.ownedArmors) ? player.ownedArmors : [player.armor || 0];
     return owned.map((rank) => ({
       name: armorNames[rank] || `防具${rank}`,
-      detail: armorTraits[rank] || "",
+      detail: `${armorTraits[rank] || ""} DEF ${baseDefense + (armorDefense[rank] || 0)} (${diffText(baseDefense + (armorDefense[rank] || 0) - currentDefense)})`,
       sell: armorSellValues[rank] || 0,
       equipped: player.armor === rank,
     }));
   }
+  if (tab === "shields") {
+    const ownedShields = Array.isArray(player.ownedShields) ? player.ownedShields : [player.shield || 0];
+    return ownedShields.map((rank) => ({
+      name: shieldNames[rank] || `盾${rank}`,
+      detail: `${shieldTraits[rank] || ""} 正面${Math.round((1 - (shieldGuard[rank] || 1)) * 100)}%軽減`,
+      sell: shieldSellValues[rank] || 0,
+      equipped: player.shield === rank,
+    }));
+  }
   const owned = Array.isArray(player.ownedAccessories) ? player.ownedAccessories : [];
+  const equippedIds = equippedAccessoryIds();
   return owned.map((id) => ({
     name: accessoryData[id]?.name || id,
     detail: accessoryData[id]?.trait || "",
     sell: 0,
-    equipped: player.equippedAccessory === id,
+    equipped: equippedIds.includes(id),
   }));
 }
 
@@ -344,7 +464,34 @@ function drawWorldAtmosphere(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
 
-  if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) {
+  if (ty >= 128 && tx <= 58) {
+    ctx.fillStyle = "rgba(16, 14, 20, 0.28)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 16; i += 1) {
+      const x = (i * 19 + Math.floor(time / 95)) % W;
+      const y = (i * 31 + Math.floor(time / 145)) % VIEW_H;
+      ctx.fillStyle = i % 2 ? "#7f8cff" : "#d7e2ea";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (ty >= 128) {
+    ctx.fillStyle = "rgba(4, 5, 18, 0.38)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 18; i += 1) {
+      const x = (i * 23 + Math.floor(time / 80)) % W;
+      const y = (i * 29 + Math.floor(time / 120)) % VIEW_H;
+      ctx.fillStyle = i % 3 ? "#d8d8ff" : "#6de4ff";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (ty >= 112) {
+    ctx.fillStyle = "rgba(64, 18, 96, 0.22)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 14; i += 1) {
+      const x = (i * 31 + Math.floor(time / 110)) % W;
+      const y = (i * 23 + Math.floor(time / 170)) % VIEW_H;
+      ctx.fillStyle = i % 2 ? "#e36dff" : "#9fb3ff";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) {
     ctx.fillStyle = "rgba(75, 24, 18, 0.22)";
     ctx.fillRect(0, 0, W, VIEW_H);
     for (let i = 0; i < 12; i += 1) {
@@ -388,6 +535,56 @@ function drawFrontierCampDetails(cam) {
   drawRoleMarker(33 * TILE - cam.x, 58 * TILE - cam.y, "補", "#fff2a6");
 }
 
+function drawAshHamletDetails(cam) {
+  drawTent(96 * TILE - cam.x, 54 * TILE - cam.y, "#b990ff");
+  drawTent(105 * TILE - cam.x, 54 * TILE - cam.y, "#6de4ff");
+  drawCrates(108 * TILE - cam.x, 58 * TILE - cam.y);
+  drawCampfire(101 * TILE - cam.x, 57 * TILE - cam.y);
+  drawLamp(110 * TILE - cam.x, 57 * TILE - cam.y);
+  drawRoleMarker(102 * TILE - cam.x, 57 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(108 * TILE - cam.x, 57 * TILE - cam.y, "星", "#b990ff");
+  drawSign(99 * TILE - cam.x, 58 * TILE - cam.y);
+}
+
+function drawMoonCampDetails(cam) {
+  drawTent(96 * TILE - cam.x, 114 * TILE - cam.y, "#e36dff");
+  drawTent(105 * TILE - cam.x, 114 * TILE - cam.y, "#7f8cff");
+  drawCrates(108 * TILE - cam.x, 117 * TILE - cam.y);
+  drawCampfire(101 * TILE - cam.x, 116 * TILE - cam.y);
+  drawLamp(110 * TILE - cam.x, 116 * TILE - cam.y);
+  drawRoleMarker(102 * TILE - cam.x, 115 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(108 * TILE - cam.x, 115 * TILE - cam.y, "蝕", "#e36dff");
+  drawSign(99 * TILE - cam.x, 117 * TILE - cam.y);
+}
+
+function drawBlackMarketDetails(cam) {
+  drawTent(24 * TILE - cam.x, 132 * TILE - cam.y, "#5f668f");
+  drawTent(31 * TILE - cam.x, 132 * TILE - cam.y, "#ffd166");
+  drawTent(39 * TILE - cam.x, 132 * TILE - cam.y, "#b990ff");
+  drawTent(45 * TILE - cam.x, 134 * TILE - cam.y, "#8dd7ff");
+  drawCrates(27 * TILE - cam.x, 136 * TILE - cam.y);
+  drawCrates(36 * TILE - cam.x, 135 * TILE - cam.y);
+  drawCampfire(34 * TILE - cam.x, 134 * TILE - cam.y);
+  drawLamp(21 * TILE - cam.x, 133 * TILE - cam.y);
+  drawLamp(47 * TILE - cam.x, 133 * TILE - cam.y);
+  drawRoleMarker(35 * TILE - cam.x, 130 * TILE - cam.y, "B", "#ffd166");
+  drawRoleMarker(40 * TILE - cam.x, 131 * TILE - cam.y, "?", "#b990ff");
+  drawRoleMarker(35 * TILE - cam.x, 134 * TILE - cam.y, "H", "#6de4ff");
+  drawRoleMarker(47 * TILE - cam.x, 134 * TILE - cam.y, "G", "#8dd7ff");
+  drawSign(28 * TILE - cam.x, 136 * TILE - cam.y);
+}
+
+function drawBlackFortDetails(cam) {
+  drawTent(90 * TILE - cam.x, 130 * TILE - cam.y, "#2f335f");
+  drawTent(100 * TILE - cam.x, 130 * TILE - cam.y, "#5f668f");
+  drawCrates(104 * TILE - cam.x, 133 * TILE - cam.y);
+  drawCampfire(97 * TILE - cam.x, 132 * TILE - cam.y);
+  drawLamp(106 * TILE - cam.x, 132 * TILE - cam.y);
+  drawRoleMarker(98 * TILE - cam.x, 131 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(104 * TILE - cam.x, 131 * TILE - cam.y, "黒", "#d8d8ff");
+  drawSign(93 * TILE - cam.x, 133 * TILE - cam.y);
+}
+
 function drawCampBoundary(cam) {
   for (let tx = 25; tx <= 35; tx += 1) {
     if (tx < 30 || tx > 32) drawCampStake(tx * TILE - cam.x, 56 * TILE - cam.y);
@@ -419,6 +616,20 @@ function drawVillageRoleMarkers(cam) {
   drawRoleMarker(villageHeal.x * TILE - cam.x, (villageHeal.y - 1) * TILE - cam.y, "回", "#6de4ff");
   for (const gate of TOWN_GATES) {
     drawRoleMarker(gate.x * TILE - cam.x, (gate.y - 1) * TILE - cam.y, state.townGateOpen ? "開" : "門", state.townGateOpen ? "#ffd166" : "#d7e2ea");
+  }
+}
+
+function drawTravelMarkers(cam) {
+  const points = [
+    [7, 49],
+    [29, 59],
+    [98, 57],
+    [99, 115],
+    [93, 131],
+    [31, 134],
+  ];
+  for (const [x, y] of points) {
+    drawRoleMarker(x * TILE - cam.x, y * TILE - cam.y, "W", "#d7e2ea");
   }
 }
 
@@ -681,7 +892,7 @@ function drawWardenSite(cam) {
   const sx = WARDEN_SITE.x * TILE - cam.x;
   const sy = WARDEN_SITE.y * TILE - cam.y;
   if (sx < -24 || sy < -24 || sx > W || sy > VIEW_H) return;
-  const ready = player.trailCharm && player.level >= 3;
+  const ready = player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level;
   const pulse = Math.floor(performance.now() / 220) % 2;
   ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
   ctx.fillRect(sx - 1, sy + 14, 22, 3);
@@ -695,6 +906,111 @@ function drawWardenSite(cam) {
   if (ready) {
     ctx.strokeStyle = pulse ? "#6de4ff" : "#fff2a6";
     ctx.strokeRect(sx + 1, sy, 18, 17);
+  }
+}
+
+function drawAshKnightSite(cam) {
+  if (state.ashKnightDefeated) return;
+  const sx = ASH_KNIGHT_SITE.x * TILE - cam.x;
+  const sy = ASH_KNIGHT_SITE.y * TILE - cam.y;
+  if (sx < -24 || sy < -24 || sx > W || sy > VIEW_H) return;
+  const ready = state.wardenDefeated && player.level >= ASH_KNIGHT_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 200) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.32)";
+  ctx.fillRect(sx - 2, sy + 14, 24, 3);
+  ctx.fillStyle = "#3b2b5f";
+  ctx.fillRect(sx + 4, sy + 2, 12, 14);
+  ctx.fillStyle = ready ? "#b990ff" : "#53606f";
+  ctx.fillRect(sx + 7, sy, 6, 5);
+  ctx.fillRect(sx + 8, sy + 7, 4, 7);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#b990ff" : "#fff2a6";
+    ctx.strokeRect(sx + 1, sy, 18, 18);
+  }
+}
+
+function drawEclipseDragonSite(cam) {
+  if (state.eclipseDragonDefeated) return;
+  const sx = ECLIPSE_DRAGON_SITE.x * TILE - cam.x;
+  const sy = ECLIPSE_DRAGON_SITE.y * TILE - cam.y;
+  if (sx < -28 || sy < -28 || sx > W || sy > VIEW_H) return;
+  const ready = state.elderReported
+    && state.ashKnightDefeated
+    && state.chests.has("moon-ruin-cache")
+    && state.discoveries.has("eclipse-seal")
+    && player.level >= CHAPTER2_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 180) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+  ctx.fillRect(sx - 3, sy + 16, 28, 4);
+  ctx.fillStyle = "#24153d";
+  ctx.fillRect(sx + 4, sy + 3, 15, 14);
+  ctx.fillStyle = ready ? "#e36dff" : "#53606f";
+  ctx.fillRect(sx + 7, sy, 9, 5);
+  ctx.fillRect(sx + 9, sy + 7, 5, 8);
+  ctx.fillStyle = ready ? "#fff2a6" : "#26384a";
+  ctx.fillRect(sx + 5, sy + 6, 3, 3);
+  ctx.fillRect(sx + 15, sy + 6, 3, 3);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#e36dff" : "#fff2a6";
+    ctx.strokeRect(sx + 1, sy - 1, 21, 20);
+  }
+}
+
+function drawVoidDragonSite(cam) {
+  if (state.voidDragonDefeated) return;
+  const sx = VOID_DRAGON_SITE.x * TILE - cam.x;
+  const sy = VOID_DRAGON_SITE.y * TILE - cam.y;
+  if (sx < -30 || sy < -30 || sx > W || sy > VIEW_H) return;
+  const ready = state.chapter2Reported
+    && state.eclipseDragonDefeated
+    && state.chests.has("black-fort-armory")
+    && state.chests.has("eclipse-castle-cache")
+    && state.discoveries.has("void-seal")
+    && player.level >= CHAPTER3_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 150) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+  ctx.fillRect(sx - 4, sy + 17, 31, 5);
+  ctx.fillStyle = "#070817";
+  ctx.fillRect(sx + 3, sy + 2, 17, 16);
+  ctx.fillStyle = ready ? "#d8d8ff" : "#53606f";
+  ctx.fillRect(sx + 6, sy - 1, 11, 5);
+  ctx.fillRect(sx + 8, sy + 8, 7, 8);
+  ctx.fillStyle = ready ? "#6de4ff" : "#26384a";
+  ctx.fillRect(sx + 5, sy + 6, 3, 3);
+  ctx.fillRect(sx + 16, sy + 6, 3, 3);
+  ctx.fillStyle = ready ? "#fff2a6" : "#1a2440";
+  ctx.fillRect(sx + 10, sy + 12, 5, 2);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#d8d8ff" : "#6de4ff";
+    ctx.strokeRect(sx, sy - 2, 24, 22);
+    ctx.strokeRect(sx + 3, sy + 1, 18, 16);
+  }
+}
+
+function drawObsidianGolemSite(cam) {
+  if (state.obsidianGolemDefeated) return;
+  const sx = OBSIDIAN_GOLEM_SITE.x * TILE - cam.x;
+  const sy = OBSIDIAN_GOLEM_SITE.y * TILE - cam.y;
+  if (sx < -32 || sy < -32 || sx > W || sy > VIEW_H) return;
+  const ready = state.chapter2Reported
+    && state.chests.has("black-fort-armory")
+    && player.level >= OBSIDIAN_GOLEM_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 170) % 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.38)";
+  ctx.fillRect(sx - 5, sy + 17, 30, 4);
+  ctx.fillStyle = "#151821";
+  ctx.fillRect(sx + 3, sy + 3, 17, 15);
+  ctx.fillStyle = ready ? "#8dd7ff" : "#53606f";
+  ctx.fillRect(sx + 6, sy, 11, 5);
+  ctx.fillRect(sx + 7, sy + 8, 9, 8);
+  ctx.fillStyle = ready ? "#d7e2ea" : "#26384a";
+  ctx.fillRect(sx + 5, sy + 6, 3, 3);
+  ctx.fillRect(sx + 16, sy + 6, 3, 3);
+  ctx.fillStyle = ready ? "#ffd166" : "#1a2440";
+  ctx.fillRect(sx + 10, sy + 12, 5, 2);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#8dd7ff" : "#d7e2ea";
+    ctx.strokeRect(sx, sy - 2, 24, 22);
   }
 }
 
@@ -723,6 +1039,54 @@ function drawDiscoveries(cam) {
       ctx.fillStyle = found ? "#4f2e17" : "#7b4b25";
       ctx.fillRect(sx + 4, sy + 7, 8, 6);
       if (!found) drawGlint(sx + 11, sy + 6, "#ffd166");
+    } else if (discovery.kind === "waystone") {
+      ctx.fillStyle = found ? "#4a5268" : "#65739a";
+      ctx.fillRect(sx + 5, sy + 4, 6, 10);
+      ctx.fillStyle = found ? "#9fb3ff" : "#dce6ff";
+      ctx.fillRect(sx + 7, sy + 6, 2, 5);
+      if (!found) drawGlint(sx + 9, sy + 4, "#9fb3ff");
+    } else if (discovery.kind === "eclipseSeal") {
+      ctx.fillStyle = found ? "#3b2b5f" : "#24153d";
+      ctx.fillRect(sx + 3, sy + 3, 10, 12);
+      ctx.fillStyle = found ? "#9fb3ff" : "#e36dff";
+      ctx.fillRect(sx + 6, sy + 5, 4, 7);
+      if (!found) drawGlint(sx + 8, sy + 3, "#e36dff");
+    } else if (discovery.kind === "voidSeal") {
+      ctx.fillStyle = found ? "#1d2441" : "#070817";
+      ctx.fillRect(sx + 3, sy + 2, 11, 13);
+      ctx.fillStyle = found ? "#d8d8ff" : "#6de4ff";
+      ctx.fillRect(sx + 6, sy + 4, 4, 8);
+      ctx.fillStyle = found ? "#6de4ff" : "#fff2a6";
+      ctx.fillRect(sx + 8, sy + 1, 2, 2);
+      if (!found) drawGlint(sx + 9, sy + 3, "#d8d8ff");
+    } else if (discovery.kind === "obsidianWaystone") {
+      ctx.fillStyle = found ? "#3d465a" : "#111522";
+      ctx.fillRect(sx + 4, sy + 3, 8, 12);
+      ctx.fillStyle = found ? "#aab0c8" : "#8dd7ff";
+      ctx.fillRect(sx + 6, sy + 5, 4, 7);
+      if (!found) drawGlint(sx + 10, sy + 3, "#8dd7ff");
+    } else if (discovery.kind === "summonerHint") {
+      ctx.fillStyle = found ? "#3b2b4f" : "#271733";
+      ctx.fillRect(sx + 3, sy + 4, 10, 10);
+      ctx.fillStyle = found ? "#8a6fa8" : "#d678ff";
+      ctx.fillRect(sx + 5, sy + 2, 6, 4);
+      ctx.fillRect(sx + 7, sy + 7, 2, 5);
+      if (!found) drawGlint(sx + 10, sy + 3, "#d678ff");
+    } else if (discovery.kind === "trapHint") {
+      ctx.fillStyle = found ? "#4a3140" : "#2a1b22";
+      ctx.fillRect(sx + 4, sy + 4, 8, 10);
+      ctx.fillStyle = found ? "#a8788e" : "#ff5e9f";
+      ctx.fillRect(sx + 6, sy + 3, 4, 4);
+      ctx.fillRect(sx + 7, sy + 8, 2, 5);
+      if (!found) drawGlint(sx + 11, sy + 4, "#ff5e9f");
+    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint") {
+      ctx.fillStyle = found ? "#604622" : "#7b4b25";
+      ctx.fillRect(sx + 5, sy + 5, 7, 8);
+      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : "#ffd166";
+      ctx.fillRect(sx + 3, sy + 4, 10, 3);
+      ctx.fillStyle = "#2a1d12";
+      ctx.fillRect(sx + 8, sy + 8, 2, 6);
+      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : "#ffd166");
     }
   }
 }
@@ -1000,6 +1364,11 @@ function npcColor(type) {
   if (type === "smith") return "#d14f2b";
   if (type === "healer") return "#40c6ff";
   if (type === "frontier") return "#9ad16f";
+  if (type === "merchant") return "#ffd166";
+  if (type === "porter") return "#d7e2ea";
+  if (type === "guide") return "#b990ff";
+  if (type === "guard") return "#8dd7ff";
+  if (type === "villager") return "#f0a66a";
   return "#efe35a";
 }
 
@@ -1130,7 +1499,7 @@ function drawActorShadow(sx, sy, w) {
 }
 
 function drawWeapon(sx, sy) {
-  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166"];
+  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166", "#8dd7ff", "#ff9a3d", "#f8fbff", "#b990ff", "#e36dff", "#d8d8ff", "#b8c0cc"];
   ctx.fillStyle = colors[player.weapon] || "#ffd166";
   if (player.dir === "up") ctx.fillRect(sx + 5, sy - 4, 2, 7);
   if (player.dir === "down") ctx.fillRect(sx + 5, sy + 10, 2, 7);
@@ -1148,7 +1517,7 @@ function drawMonster(monster, sx, sy) {
     ctx.strokeStyle = "#ffef8a";
     ctx.strokeRect(sx - 2, sy - 2, spriteW + 4, spriteH + 4);
   }
-  if (monster.type === "dragon") {
+  if (monster.type === "dragon" || monster.type === "eclipseDragon" || monster.type === "voidDragon") {
     drawDragon(monster, sx, sy);
     return;
   }
@@ -1196,6 +1565,86 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(sx + 11, sy + 1 - pulse, 3, 3);
     ctx.fillRect(sx + 13, sy + 6, 2, 2);
+  } else if (monster.type === "shieldSoldier") {
+    const guardX = monster.dir === "left" ? sx + 1 : monster.dir === "right" ? sx + 8 : sx + 3;
+    const guardY = monster.dir === "up" ? sy + 1 : sy + 5;
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 5, 9, 7);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 6, 4);
+    ctx.fillRect(sx + 3, sy + 6, 8, 7);
+    ctx.fillStyle = "#202632";
+    ctx.fillRect(guardX, guardY, 5, 7);
+    ctx.fillStyle = "#d7e2ea";
+    ctx.fillRect(guardX + 1, guardY + 1, 3, 5);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(sx + 10, sy + 5, 2, 8);
+  } else if (monster.type === "summoner") {
+    const pulse = Math.floor(monster.age / 180) % 2;
+    ctx.fillStyle = "rgba(214, 120, 255, 0.24)";
+    ctx.fillRect(sx, sy + 2 - pulse, 13, 12);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 5, 9, 8);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 3, 7, 9);
+    ctx.fillRect(sx + 4, sy + 1, 5, 4);
+    ctx.fillStyle = "#fff2ff";
+    ctx.fillRect(sx + 5, sy + 5, 2, 2);
+    ctx.fillRect(sx + 8, sy + 5, 2, 2);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(sx + 11, sy + 2, 2, 9);
+    ctx.fillStyle = "#d678ff";
+    ctx.fillRect(sx + 10, sy + pulse, 4, 2);
+  } else if (monster.type === "trapFlower") {
+    const pulse = monster.trapPrimed ? Math.floor(monster.age / 80) % 2 : Math.floor(monster.age / 220) % 2;
+    ctx.fillStyle = monster.trapPrimed ? "rgba(255, 94, 159, 0.42)" : "rgba(255, 94, 159, 0.18)";
+    ctx.fillRect(sx - 1 - pulse, sy + 4 - pulse, 15 + pulse * 2, 10 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 3, sy + 9, 8, 4);
+    ctx.fillStyle = "#315d2c";
+    ctx.fillRect(sx + 6, sy + 6, 2, 6);
+    ctx.fillRect(sx + 3, sy + 9, 4, 2);
+    ctx.fillRect(sx + 8, sy + 8, 4, 2);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 3, 6, 5);
+    ctx.fillRect(sx + 2, sy + 5, 10, 3);
+    ctx.fillStyle = monster.trapPrimed ? "#fff2a6" : "#ffcee5";
+    ctx.fillRect(sx + 6, sy + 4, 2, 2);
+    if (monster.trapPrimed) {
+      ctx.strokeStyle = pulse ? "#fff2a6" : "#ff5e9f";
+      ctx.strokeRect(sx - 2, sy + 1, 16, 14);
+    }
+  } else if (monster.type === "obsidianCrawler") {
+    const pulse = Math.floor(monster.age / 150) % 2;
+    ctx.fillStyle = "rgba(141, 215, 255, 0.18)";
+    ctx.fillRect(sx, sy + 3 - pulse, 13, 10);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 7, 12, 5);
+    ctx.fillRect(sx - 1, sy + 9, 4, 3);
+    ctx.fillRect(sx + 10, sy + 9, 4, 3);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 2, sy + 4, 9, 7);
+    ctx.fillRect(sx + 4, sy + 1, 5, 5);
+    ctx.fillStyle = "#d7e2ea";
+    ctx.fillRect(sx + 4, sy + 5, 2, 2);
+    ctx.fillRect(sx + 9, sy + 5, 2, 2);
+    ctx.fillStyle = "#8dd7ff";
+    ctx.fillRect(sx + 6, sy, 3, 2);
+    ctx.fillRect(sx + 12, sy + 2 - pulse, 3, 3);
+  } else if (monster.type === "voidWraith") {
+    const pulse = Math.floor(monster.age / 130) % 2;
+    ctx.fillStyle = "rgba(216, 216, 255, 0.22)";
+    ctx.fillRect(sx - 1, sy + 1 - pulse, 14, 12);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 4, 10, 9);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 2, 7, 10);
+    ctx.fillRect(sx + 1, sy + 8, 11, 4);
+    ctx.fillStyle = "#d8d8ff";
+    ctx.fillRect(sx + 4, sy + 5, 2, 2);
+    ctx.fillRect(sx + 8, sy + 5, 2, 2);
+    ctx.fillStyle = "#6de4ff";
+    ctx.fillRect(sx + 6, sy, 3, 3);
   } else if (monster.type === "boar") {
     ctx.fillStyle = monster.shadow;
     ctx.fillRect(sx + 1, sy + 5, 11, 6);
@@ -1229,6 +1678,26 @@ function drawMonster(monster, sx, sy) {
     ctx.fillRect(sx + 11, sy + 15, 4, 3);
     ctx.fillStyle = "#ffd166";
     ctx.fillRect(sx + 8, sy, 3, 4);
+  } else if (monster.type === "obsidianGolem") {
+    const pulse = Math.floor(monster.age / 140) % 2;
+    ctx.fillStyle = "rgba(141, 215, 255, 0.22)";
+    ctx.fillRect(sx - 4, sy + 1 - pulse, 26, 20);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 7, 15, 13);
+    ctx.fillRect(sx - 3, sy + 10, 7, 7);
+    ctx.fillRect(sx + 16, sy + 10, 7, 7);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 3, 13, 14);
+    ctx.fillRect(sx + 1, sy + 8, 17, 8);
+    ctx.fillStyle = "#d7e2ea";
+    ctx.fillRect(sx + 6, sy + 6, 2, 2);
+    ctx.fillRect(sx + 12, sy + 6, 2, 2);
+    ctx.fillStyle = "#111522";
+    ctx.fillRect(sx + 4, sy + 17, 5, 3);
+    ctx.fillRect(sx + 12, sy + 17, 5, 3);
+    ctx.fillStyle = "#8dd7ff";
+    ctx.fillRect(sx + 8, sy, 4, 4);
+    ctx.fillRect(sx + 19, sy + 8, 4 + pulse, 2);
   } else if (monster.type === "warden") {
     const pulse = Math.floor(monster.age / 150) % 2;
     ctx.fillStyle = "rgba(109, 228, 255, 0.26)";
@@ -1282,7 +1751,13 @@ function drawMonster(monster, sx, sy) {
 function drawDragon(monster, sx, sy) {
   const mainColor = monster.hurt > 0 ? "#ffffff" : monster.color;
   const pulse = Math.floor(monster.age / 140) % 2;
-  ctx.fillStyle = monster.enraged ? "rgba(255, 42, 42, 0.38)" : "rgba(255, 88, 42, 0.25)";
+  const eclipse = monster.type === "eclipseDragon";
+  const voidBoss = monster.type === "voidDragon";
+  ctx.fillStyle = voidBoss
+    ? (monster.enraged ? "rgba(109, 228, 255, 0.36)" : "rgba(216, 216, 255, 0.22)")
+    : eclipse
+    ? (monster.enraged ? "rgba(227, 109, 255, 0.42)" : "rgba(127, 140, 255, 0.28)")
+    : (monster.enraged ? "rgba(255, 42, 42, 0.38)" : "rgba(255, 88, 42, 0.25)");
   ctx.fillRect(sx - (monster.enraged ? 6 : 3), sy + 4 - pulse, monster.enraged ? 36 : 30, 18);
   ctx.fillStyle = monster.shadow;
   ctx.fillRect(sx - 5, sy + 6, 9, 10);
@@ -1293,22 +1768,22 @@ function drawDragon(monster, sx, sy) {
   ctx.fillRect(sx + 18, sy + 7, 8, 7);
   ctx.fillRect(sx + 5, sy + 4, 13, 14);
   ctx.fillRect(sx + 16, sy + 8, 8, 8);
-  ctx.fillStyle = "#ff8c3e";
+  ctx.fillStyle = voidBoss ? "#d8d8ff" : eclipse ? "#7f8cff" : "#ff8c3e";
   ctx.fillRect(sx + 1, sy + 6, 7, 6);
   ctx.fillRect(sx + 10, sy, 3, 5);
   ctx.fillRect(sx + 16, sy, 3, 5);
-  ctx.fillStyle = "#ffd166";
+  ctx.fillStyle = voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ffd166";
   ctx.fillRect(sx + 11, sy - 2, 2, 3);
   ctx.fillRect(sx + 17, sy - 2, 2, 3);
   ctx.fillRect(sx + 9, sy + 9, 2, 2);
   ctx.fillRect(sx + 13, sy + 12, 2, 2);
-  ctx.fillStyle = "#fff2a6";
+  ctx.fillStyle = voidBoss ? "#ffffff" : eclipse ? "#fff2ff" : "#fff2a6";
   ctx.fillRect(sx + 18, sy + 10, 2, 2);
   ctx.fillStyle = "#211010";
   ctx.fillRect(sx + 21, sy + 11, 2, 1);
-  ctx.fillStyle = "#ff4e36";
+  ctx.fillStyle = voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ff4e36";
   ctx.fillRect(sx + 24, sy + 10, 4 + pulse, 2);
-  ctx.fillStyle = "#fff2a6";
+  ctx.fillStyle = voidBoss ? "#d8d8ff" : eclipse ? "#9fb3ff" : "#fff2a6";
   ctx.fillRect(sx + 26, sy + 10, 2, 1);
   drawMonsterHp(monster, sx, sy - 3);
 }
@@ -1476,7 +1951,7 @@ function drawItemChip(x, y) {
   ctx.strokeRect(x, y, 28, 19);
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "left";
-  ctx.fillText(labels[player.selectedItem], x + 4, y + 8);
+  ctx.fillText(({ tonic: "活", elixir: "霊", warp: "帰" }[player.selectedItem]) || labels[player.selectedItem] || "?", x + 4, y + 8);
   ctx.fillStyle = "#fff2a6";
   ctx.fillText(String(selectedItemCount()), x + 17, y + 17);
   if (player.combo > 0) {
@@ -1521,14 +1996,17 @@ function drawEndingOverlay() {
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.font = "16px monospace";
-  ctx.fillText("QUEST CLEAR", W / 2, 52);
+  const title = state.chapter3Reported ? "CHAPTER 3 CLEAR" : state.chapter2Reported ? "CHAPTER 2 CLEAR" : "QUEST CLEAR";
+  const line1 = state.chapter3Reported ? "黒陽竜は封じられた" : state.chapter2Reported ? "月蝕竜は封じられた" : "赤竜は封じられた";
+  const line2 = state.chapter3Reported ? "黒門砦からさらに遠征路が開く" : state.chapter2Reported ? "月見砦の灯がさらに南を照らす" : "村に朝が戻り 旅は語り継がれる";
+  ctx.fillText(title, W / 2, 52);
   ctx.font = "8px monospace";
   ctx.fillStyle = "#fff2a6";
-  ctx.fillText("赤竜は封じられた", W / 2, 70);
+  ctx.fillText(line1, W / 2, 70);
   ctx.fillStyle = "#d7e2ea";
-  ctx.fillText("村に朝が戻り 旅は語り継がれる", W / 2, 84);
+  ctx.fillText(line2, W / 2, 84);
   ctx.fillStyle = "#74ff8f";
-  ctx.fillText("N: はじめから", W / 2, 103);
+  ctx.fillText("N: 旅を続ける", W / 2, 103);
 }
 
 function drawVictoryBanner() {
@@ -1539,10 +2017,10 @@ function drawVictoryBanner() {
   ctx.textAlign = "center";
   ctx.fillStyle = "#fff2a6";
   ctx.font = "10px monospace";
-  ctx.fillText("DRAGON SEALED", W / 2, 39);
+  ctx.fillText(state.chapter3Victory ? "BLACK SUN SEALED" : state.chapter2Victory ? "ECLIPSE SEALED" : "DRAGON SEALED", W / 2, 39);
   ctx.font = "7px monospace";
   ctx.fillStyle = "#ffffff";
-  ctx.fillText("村へ戻り長老に報告", W / 2, 52);
+  ctx.fillText(state.chapter3Victory ? "長老へ第3章の報告" : state.chapter2Victory ? "長老へ第2章の報告" : "村へ戻り長老に報告", W / 2, 52);
 }
   globalThis.DRAGON_HUNTER_RENDER = {
     draw,

@@ -9,6 +9,7 @@
   const {
     TILE,
     TREASURE_CHESTS,
+    DISCOVERY_POINTS,
     TILE_WATER,
     weaponNames,
     armorNames,
@@ -16,8 +17,16 @@
     armorTraits,
     weaponCosts,
     armorCosts,
+    weaponAttack = [0, 5, 10, 15, 20],
+    armorDefense,
     weaponSellValues,
     armorSellValues,
+    shieldNames,
+    shieldTraits,
+    shieldCosts,
+    shieldGuard,
+    shieldSellValues,
+    itemOrder,
     itemNames,
     itemSellValues,
     accessoryOrder,
@@ -29,7 +38,25 @@
     throw new Error("DRAGON_HUNTER_REWARDS must be loaded before ui helpers");
   }
 
-  const { normalizeInventory } = rewardHelpers;
+  const {
+    normalizeInventory,
+    addOwnedWeapon,
+    addOwnedArmor,
+    addOwnedShield,
+    grantAccessory,
+    equippedAccessoryIds,
+    equipAccessory,
+    itemField,
+  } = rewardHelpers;
+
+  const itemDetails = {
+    potion: "HP回復",
+    tonic: "ST回復/防御",
+    bomb: "周囲攻撃",
+    ward: "一定時間防御",
+    elixir: "全回復",
+    warp: "拠点へ帰還",
+  };
 
   function requireUiContext(context) {
     if (!context?.ui || !context?.state || !context?.player || !context?.say) {
@@ -59,7 +86,7 @@
   }
 
   function inventoryTabs() {
-    return ["items", "weapons", "armors", "accessories"];
+    return ["items", "weapons", "armors", "shields", "accessories"];
   }
 
   function inventoryTabLabel(tab) {
@@ -79,23 +106,182 @@
     state.inventoryIndex = Math.max(0, Math.min(state.inventoryIndex || 0, rows.length - 1));
   }
 
+  function clampShopIndex(state) {
+    const rows = Array.isArray(state.shopRows) ? state.shopRows : [];
+    if (rows.length <= 0) {
+      state.shopIndex = 0;
+      return;
+    }
+    state.shopIndex = Math.max(0, Math.min(state.shopIndex || 0, rows.length - 1));
+  }
+
+  function openShop(context, title, rows) {
+    const { state, say } = requireUiContext(context);
+    state.shopOpen = true;
+    state.inventoryOpen = false;
+    state.infoPanel = null;
+    state.shopTitle = title || "店";
+    state.shopRows = Array.isArray(rows) ? rows : [];
+    state.shopIndex = 0;
+    state.keys?.clear?.();
+    state.virtualKeys?.clear?.();
+    state.pointerMove = null;
+    clampShopIndex(state);
+    say(`${state.shopTitle}を開いた`, 900);
+  }
+
+  function closeShop(context) {
+    const { state, say } = requireUiContext(context);
+    if (!state.shopOpen) return;
+    state.shopOpen = false;
+    say("店を閉じた", 700);
+  }
+
+  function moveShop(context, dy) {
+    const { state } = requireUiContext(context);
+    if (!state.shopOpen) return;
+    state.shopIndex += dy;
+    clampShopIndex(state);
+  }
+
+  function selectedShopRow(context) {
+    const { state } = requireUiContext(context);
+    clampShopIndex(state);
+    return (Array.isArray(state.shopRows) ? state.shopRows : [])[state.shopIndex] || null;
+  }
+
+  function confirmShop(context) {
+    const { state, player, say, refreshDerivedStats } = requireUiStatusContext(context);
+    const row = selectedShopRow(context);
+    if (!row) return;
+    normalizeInventory(player);
+    if (row.available === false) {
+      say(row.lockedReason || "まだ買えない");
+      return;
+    }
+    if (row.type === "item") {
+      const field = itemField(row.id);
+      const amount = row.amount || 1;
+      if ((player[field] || 0) >= 9) {
+        say(`${row.name}はこれ以上持てない`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      player[field] = Math.min(9, (player[field] || 0) + amount);
+      say(`${row.name}を買った`);
+      return;
+    }
+    if (row.type === "travel") {
+      if (player.gold < row.cost) {
+        say(`${row.name} ${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost || 0;
+      player.x = row.x * TILE;
+      player.y = row.y * TILE;
+      player.stamina = player.staminaMax;
+      player.invuln = Math.max(player.invuln, 900);
+      state.projectiles = [];
+      state.shopOpen = false;
+      say(`${row.name}へ移動した`);
+      return;
+    }
+    if (row.type === "weapon") {
+      if (player.ownedWeapons.includes(row.id)) {
+        say(`${row.name}は既に持っている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      addOwnedWeapon(player, row.id);
+      say(`${row.name}を買った。もちもので装備できる`);
+      return;
+    }
+    if (row.type === "armor") {
+      if (player.ownedArmors.includes(row.id)) {
+        say(`${row.name}は既に持っている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      addOwnedArmor(player, row.id);
+      say(`${row.name}を買った。もちもので装備できる`);
+      return;
+    }
+    if (row.type === "shield") {
+      if (player.ownedShields.includes(row.id)) {
+        say(`${row.name}は既に持っている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      addOwnedShield(player, row.id);
+      say(`${row.name}を買った。もちもので装備できる`);
+      return;
+    }
+    if (row.type === "shield") {
+      player.shield = row.id;
+      say(`${row.name}を構えた`);
+      return;
+    }
+    if (row.type === "shield") {
+      player.shield = row.id;
+      say(`${row.name}を構えた`);
+      return;
+    }
+    if (row.type === "accessory") {
+      if (player.ownedAccessories.includes(row.id)) {
+        say(`${row.name}は既に持っている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      grantAccessory(context, row.id, `${row.name}を買った。もちもので装備できる`);
+      refreshDerivedStats();
+    }
+  }
+
   function inventoryRows(context) {
     const { state, player, playerAttack, playerDefense, dashCost, regenRate } = requireUiStatusContext(context);
     normalizeInventory(player);
+    const baseAttack = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+    const baseDefense = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
+    const attackWithoutCombo = baseAttack + (weaponAttack[player.weapon] || 0);
+    const defenseWithoutGuard = baseDefense + (armorDefense[player.armor] || 0);
+    const diffText = (value) => value === 0 ? "+0" : value > 0 ? `+${value}` : String(value);
     const tab = inventoryTabs().includes(state.inventoryTab) ? state.inventoryTab : "items";
     if (tab === "items") {
-      return [
-        { type: "item", id: "potion", name: itemNames.potion, count: player.potions, detail: "HP回復", sell: itemSellValues.potion },
-        { type: "item", id: "bomb", name: itemNames.bomb, count: player.bombs, detail: "周囲攻撃", sell: itemSellValues.bomb },
-        { type: "item", id: "ward", name: itemNames.ward, count: player.wards, detail: "一定時間防御", sell: itemSellValues.ward },
-      ];
+      return itemOrder.map((id) => ({
+        type: "item",
+        id,
+        name: itemNames[id] || id,
+        count: player[itemField(id)] || 0,
+        detail: `${itemDetails[id] || ""} x${player[itemField(id)] || 0}`,
+        sell: itemSellValues[id] || 0,
+      }));
     }
     if (tab === "weapons") {
       return player.ownedWeapons.map((rank) => ({
         type: "weapon",
         id: rank,
         name: weaponNames[rank],
-        detail: `${weaponTraits[rank]} 攻${7 + player.level * 2 + rank * 5}`,
+        detail: `${weaponTraits[rank]} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - attackWithoutCombo)})`,
         equipped: player.weapon === rank,
         sell: weaponSellValues[rank],
         currentValue: playerAttack(),
@@ -106,20 +292,31 @@
         type: "armor",
         id: rank,
         name: armorNames[rank],
-        detail: `${armorTraits[rank]} 防${1 + player.level + (definitions.armorDefense[rank] || 0)}`,
+        detail: `${armorTraits[rank]} DEF ${baseDefense + (armorDefense[rank] || 0)} (${diffText(baseDefense + (armorDefense[rank] || 0) - defenseWithoutGuard)})`,
         equipped: player.armor === rank,
         sell: armorSellValues[rank],
         currentValue: playerDefense(),
       }));
     }
+    if (tab === "shields") {
+      return player.ownedShields.map((rank) => ({
+        type: "shield",
+        id: rank,
+        name: shieldNames[rank],
+        detail: `${shieldTraits[rank]} 正面${Math.round((1 - (shieldGuard[rank] || 1)) * 100)}%軽減`,
+        equipped: player.shield === rank,
+        sell: shieldSellValues[rank],
+      }));
+    }
+    const equippedIds = equippedAccessoryIds(player);
     return player.ownedAccessories.map((id) => ({
       type: "accessory",
       id,
       name: accessoryData[id]?.name || id,
-      detail: accessoryData[id]?.trait || "",
-      equipped: player.equippedAccessory === id,
+      detail: `${accessoryData[id]?.trait || ""} ${equippedIds.includes(id) ? `装備中 ${equippedIds.indexOf(id) + 1}/2` : "未装備"}`,
+      equipped: equippedIds.includes(id),
       sell: 0,
-      currentValue: id === "regen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : "",
+      currentValue: id === "regen" || id === "greaterRegen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
     }));
   }
 
@@ -175,6 +372,11 @@
     const row = selectedInventoryRow(context);
     if (!row) return;
     normalizeInventory(player);
+    if (row.type === "shield") {
+      player.shield = row.id;
+      say(`${row.name}を構えた`);
+      return;
+    }
     if (row.type === "item") {
       player.selectedItem = row.id;
       useSelectedItem?.();
@@ -191,10 +393,19 @@
       return;
     }
     if (row.type === "accessory") {
-      player.equippedAccessory = row.id;
+      const before = equippedAccessoryIds(player);
+      const result = equipAccessory(player, row.id);
       refreshDerivedStats();
       player.stamina = Math.min(player.stamina, player.staminaMax);
-      say(`${row.name}を装備した`);
+      if (result.unequipped) {
+        say(`${row.name}を外した`);
+      } else if (result.replaced) {
+        say(`${row.name}を装備した。${accessoryData[result.replaced]?.name || result.replaced}を外した`);
+      } else if (result.changed && before.length < 2) {
+        say(`${row.name}を装備した (${result.equipped.length}/2)`);
+      } else {
+        say(`${row.name}を装備した`);
+      }
     }
   }
 
@@ -208,7 +419,7 @@
       return;
     }
     if (row.type === "item") {
-      const field = row.id === "potion" ? "potions" : row.id === "bomb" ? "bombs" : "wards";
+      const field = itemField(row.id);
       if (player[field] <= 0) {
         say("売る分がない");
         return;
@@ -232,11 +443,63 @@
       player.ownedArmors = player.ownedArmors.filter((rank) => rank !== row.id);
       player.gold += row.sell;
       say(`${row.name}を${row.sell}Gで売った`);
+    } else if (row.type === "shield") {
+      if (player.shield === row.id || row.id === 0 || player.ownedShields.length <= 1) {
+        say("装備中または最後の盾は売れない");
+        return;
+      }
+      player.ownedShields = player.ownedShields.filter((rank) => rank !== row.id);
+      player.gold += row.sell;
+      say(`${row.name}を${row.sell}Gで売った`);
     } else if (row.type === "accessory") {
       refreshDerivedStats();
       say("一品物のアクセサリーは売れない");
     }
     clampInventoryIndex(state, inventoryRows(context));
+  }
+
+  function travelMemoLines(context) {
+    const { state, player } = requireUiStatusContext(context);
+    if (!state.elderReported) {
+      return [
+        "村近くで金と装備を整える",
+        "北森で紋章、竜洞で赤竜",
+        "危険なら拠点へ戻る",
+      ];
+    }
+    if (!state.ashKnightDefeated) {
+      return [
+        `灰道の宿場から南の古塔へ LV${player.level}/14`,
+        "盾兵は正面を避けて側面へ",
+        "星装備と盾があると楽",
+      ];
+    }
+    if (!state.chapter2Reported) {
+      return [
+        "古塔の南は月影廃墟",
+        "召喚士は放置せず先に倒す",
+        "地雷花は近づく前に斬る",
+      ];
+    }
+    if (!state.obsidianGolemDefeated) {
+      return [
+        "黒市東の黒曜洞窟へ",
+        "帰還鈴を残して深部へ進む",
+        `黒曜巨人はLV${player.level}/24目安`,
+      ];
+    }
+    if (!state.chapter3Reported) {
+      return [
+        "黒市で最終装備を選ぶ",
+        "黒陽城の地雷花は距離を取る",
+        "黒陽竜撃破後は長老へ報告",
+      ];
+    }
+    return [
+      "未開封宝箱と噂を探す",
+      `宝箱 ${state.chests.size}/${TREASURE_CHESTS.length}`,
+      `発見 ${state.discoveries.size}/${DISCOVERY_POINTS.length}`,
+    ];
   }
 
   function statsPanelPages(context) {
@@ -248,13 +511,24 @@
       dashCost,
       regenRate,
     } = requireUiStatusContext(context);
+    const baseAttack = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+    const baseDefense = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
+    const weaponBonus = weaponAttack[player.weapon] || 0;
+    const armorBonus = armorDefense[player.armor] || 0;
+    const shieldCut = Math.round((1 - (shieldGuard[player.shield] || 1)) * 100);
+    const equippedAccessories = equippedAccessoryIds(player)
+      .map((id) => accessoryData[id]?.name || id)
+      .join(" / ") || "なし";
 
     return [
       {
         title: "装備",
         lines: [
-          `${weaponNames[player.weapon]} ${weaponTraits[player.weapon]} 攻${playerAttack()}`,
-          `${armorNames[player.armor]} ${armorTraits[player.armor]} 防${playerDefense()}`,
+          `${weaponNames[player.weapon]} ${weaponTraits[player.weapon]} ATK ${baseAttack}+${weaponBonus}=${baseAttack + weaponBonus}`,
+          `${armorNames[player.armor]} ${armorTraits[player.armor]} DEF ${baseDefense}+${armorBonus}=${baseDefense + armorBonus}`,
+          `戦闘中: ATK ${playerAttack()} / DEF ${playerDefense()}`,
+          `${shieldNames[player.shield]} ${shieldTraits[player.shield]} 正面${shieldCut}%軽減`,
+          `装飾 ${equippedAccessories}`,
           nextUpgradeText(context),
         ],
       },
@@ -274,6 +548,10 @@
           `宝箱 ${state.chests.size}/${TREASURE_CHESTS.length} 鈴${player.trailCharm ? "有" : "無"} 石${player.aegisCharm ? "有" : "無"} 泡${player.mineCharm ? "有" : "無"}`,
         ],
       },
+      {
+        title: "旅メモ",
+        lines: travelMemoLines(context),
+      },
     ];
   }
 
@@ -292,7 +570,15 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
-    if (inTown(player.x, player.y)) name = (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    if (inTown(player.x, player.y)) name = (tx >= 20 && tx <= 48 && ty >= 129 && ty <= 136) ? "黒市" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if (tx >= 24 && tx <= 58 && ty >= 120 && ty <= 127) name = "再生洞窟";
+    else if (tx >= 18 && tx <= 23 && ty >= 95 && ty <= 128) name = "密輸道";
+    else if (ty >= 128 && tx <= 58) name = "黒曜洞";
+    else if (ty >= 128) name = "黒陽城";
+    else if (ty >= 112) name = "月蝕城";
+    else if (ty >= 96) name = "月影廃墟";
+    else if ((tx >= 90 && tx <= 115 && ty >= 84) || (tx >= 105 && tx <= 116 && ty >= 36 && ty <= 47)) name = "古塔";
+    else if (tx >= 80 || ty >= 72) name = "灰の街道";
     else if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) name = "竜洞";
     else if (tx >= 20 && tx <= 43 && ty >= 60) name = "廃坑";
     else if (tileAt(tx, ty) === TILE_WATER) name = "水辺";
@@ -308,8 +594,8 @@
     ui.level.textContent = String(player.level);
     ui.hp.textContent = `${Math.ceil(player.hp)}/${player.hpMax}`;
     ui.exp.textContent = `${player.xp}/${player.xpNext}`;
-    ui.weapon.textContent = `${weaponNames[player.weapon] || "竜"} ${weaponTraits[player.weapon] || ""}`;
-    ui.armor.textContent = `${armorNames[player.armor] || "竜"} ${armorTraits[player.armor] || ""}`;
+    ui.weapon.textContent = `${weaponNames[player.weapon] || "竜"} +${weaponAttack[player.weapon] || 0}`;
+    ui.armor.textContent = `${armorNames[player.armor] || "竜"} +${armorDefense[player.armor] || 0}`;
     ui.potion.textContent = String(player.potions);
     ui.bomb.textContent = String(player.bombs);
     ui.ward.textContent = String(player.wards);
@@ -332,6 +618,10 @@
     moveInventory,
     confirmInventory,
     sellInventorySelection,
+    openShop,
+    closeShop,
+    moveShop,
+    confirmShop,
     statsPanelPages,
     nextUpgradeText,
     updateZone,

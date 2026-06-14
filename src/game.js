@@ -148,7 +148,87 @@ function loadGame() {
 }
 
 function resetGame() {
+  if (state.gameOver) {
+    return respawnAtVillage();
+  }
+  if (state.clearPanelOpen) {
+    return closeClearPanelAfterClear();
+  }
+  return fullResetGame();
+}
+
+function fullResetGame() {
   return saveHelpers.resetGame(contexts.save());
+}
+
+function respawnAtVillage() {
+  const spawnTile = gameDefinitions.HEAL_CIRCLE || { x: 6, y: 48 };
+
+  state.gameOver = false;
+  state.monsters = [];
+  state.projectiles = [];
+  state.floaters = [];
+  state.slashes = [];
+  state.rings = [];
+  state.particles = [];
+  state.shake = 0;
+  state.spawnTimer = 0;
+  state.regionSpawnTimer = 0;
+  state.pointerMove = null;
+  state.inventoryOpen = false;
+  state.shopOpen = false;
+  state.clearPanelOpen = false;
+
+  if (!state.guardianDefeated) state.spawnedGuardian = false;
+  if (!state.wardenDefeated) state.spawnedWarden = false;
+  if (!state.ashKnightDefeated) state.spawnedAshKnight = false;
+  if (!state.eclipseDragonDefeated) state.spawnedEclipseDragon = false;
+  if (!state.voidDragonDefeated) state.spawnedVoidDragon = false;
+  if (!state.obsidianGolemDefeated) state.spawnedObsidianGolem = false;
+  if (!state.bossDefeated) {
+    state.spawnedBoss = false;
+    state.victory = false;
+  }
+
+  state.keys?.clear?.();
+  state.virtualKeys?.clear?.();
+
+  player.x = Math.floor((spawnTile.x + 0.5) * TILE - player.w / 2);
+  player.y = Math.floor((spawnTile.y + 0.5) * TILE - player.h / 2);
+  player.hp = player.hpMax;
+  player.stamina = player.staminaMax;
+  player.invuln = 1200;
+  player.slow = 0;
+  player.burn = 0;
+  player.guard = 0;
+  player.combo = 0;
+  player.comboTimer = 0;
+  player.attackCooldown = 0;
+  player.dashCooldown = 0;
+
+  requestedBgmKey = undefined;
+  canvas.focus();
+  say("村で目を覚ました", 1800);
+}
+
+function closeClearPanelAfterClear() {
+  state.clearPanelOpen = false;
+  saveGame();
+
+  state.keys?.clear?.();
+  state.virtualKeys?.clear?.();
+  state.pointerMove = null;
+  state.inventoryOpen = false;
+  state.shopOpen = false;
+
+  canvas.focus();
+  say("クリア状態を保存しました。旅を続けられます", 2200);
+}
+
+function refreshStartMenuState(infoText) {
+  const hasSave = hasSaveData();
+  startUi.continueGame.disabled = !hasSave;
+  startUi.info.textContent = infoText || (hasSave ? "Enter: つづき / N: はじめから" : "保存データなし / N または はじめから");
 }
 
 const controlsHelpers = globalThis.DRAGON_HUNTER_CONTROLS;
@@ -271,6 +351,9 @@ const contexts = contextHelpers.createContextFactory({
   moveInventory,
   confirmInventory,
   sellInventorySelection,
+  closeShop,
+  moveShop,
+  confirmShop,
   saveGame,
   selectItem,
   gameStage,
@@ -432,11 +515,15 @@ function grantMonsterDefeatDrops(monster) {
 
 // Monster facade -----------------------------------------------------------
 function levelUp() {
+  player.strength = Number.isFinite(player.strength) ? player.strength : 7 + player.level * 2;
+  player.resilience = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
   while (player.xp >= player.xpNext) {
     player.xp -= player.xpNext;
     player.level += 1;
     player.xpNext = Math.floor(player.xpNext * 1.45 + 18);
     player.hpMax += 12;
+    player.strength += 2;
+    player.resilience += 1;
     player.hp = player.hpMax;
     burst(player.x + 5 * WORLD_SCALE, player.y + 4 * WORLD_SCALE, "#fff36b", 18);
     say(`LEVEL UP! LV ${player.level}`);
@@ -553,7 +640,7 @@ function resolveContact(monster) {
     moveActor(player, -away.x * 4, -away.y * 4);
     if (player.hp <= 0) {
       state.gameOver = true;
-      say("倒れた... Rで再挑戦", 5000);
+      say("倒れた... Rで村から再開", 5000);
     }
     applyContactStatus(monster);
   }
@@ -761,6 +848,18 @@ function sellInventorySelection() {
   return uiHelpers.sellInventorySelection(contexts.ui());
 }
 
+function closeShop() {
+  return uiHelpers.closeShop(contexts.ui());
+}
+
+function moveShop(dy) {
+  return uiHelpers.moveShop(contexts.ui(), dy);
+}
+
+function confirmShop() {
+  return uiHelpers.confirmShop(contexts.ui());
+}
+
 function statsPanelPages() {
   return uiHelpers.statsPanelPages(contexts.ui());
 }
@@ -856,9 +955,7 @@ function hasSaveData() {
 }
 
 function setupStartMenu() {
-  const hasSave = hasSaveData();
-  startUi.continueGame.disabled = !hasSave;
-  startUi.info.textContent = hasSave ? "Enter: つづき / N: はじめから" : "保存データなし / N または はじめから";
+  refreshStartMenuState();
   startUi.newGame.addEventListener("click", () => startGame("new"));
   startUi.continueGame.addEventListener("click", () => startGame("continue"));
   window.addEventListener("keydown", handleStartMenuKey);
@@ -889,7 +986,7 @@ function startGame(mode) {
   if (mode === "continue" && loadGame()) {
     say("つづきから再開", 1200);
   } else {
-    resetGame();
+    fullResetGame();
     say("はじめから開始", 1600);
   }
 

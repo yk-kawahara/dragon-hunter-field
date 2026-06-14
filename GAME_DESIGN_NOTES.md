@@ -1,1087 +1,302 @@
-\# GAME\_DESIGN\_NOTES
+# GAME_DESIGN_NOTES.md
 
+Design truth for the RPG. Use this file to decide **what belongs in the game**.
 
+## Core thesis
 
-\# Core Design Update: Survival Range Expansion
+The core fun is **survival-range expansion**, not simply completing quests.
 
+At the start, the player should feel safe only near the village. Enemy contact damage should matter. As the player earns gold, buys equipment, levels up, finds rewards, and unlocks safe bases, old danger should become manageable.
 
+Target feelings:
 
-The core fun of this game is not simply completing quests.
+* "This enemy used to hurt, but now I can handle it."
+* "I can stay outside longer than before."
+* "I can finally reach that farther area."
+* "Buying better equipment made a visible difference."
+* "This new base moved my safe radius outward."
 
-The core fun is expanding the player's survivable range.
+## Core loop
 
+1. Leave a safe base.
+2. Fight nearby enemies.
+3. Take meaningful damage.
+4. Return before risk becomes fatal.
+5. Recover, restock, and improve equipment.
+6. Revisit the same area and feel stronger.
+7. Push farther into a more dangerous route.
+8. Find a new reward, shortcut, dungeon, town, or boss route.
+9. Repeat across a larger world.
 
+## Game identity
 
-At the beginning, the player should only feel safe near the village.
+Old mobile-style contact-combat action RPG.
 
-Enemy contact damage should feel dangerous, and pushing too far from the base should create tension.
+Not a button-mashing combo action game.
 
+Core mechanics:
 
+* Enemies roam the field.
+* The player moves through compact tile-based maps.
+* Contact with enemies creates combat pressure.
+* Damage depends on facing, contact direction, equipment, and positioning.
+* The village and later safe bases provide relief.
+* Growth comes from levels, gold, equipment, items, accessories, and exploration rewards.
+* The Red Dragon route is the current Chapter 1 endpoint, not the final world endpoint.
 
-As the player defeats enemies, earns gold, buys better equipment, and levels up, incoming damage should visibly decrease.
+## Chapter 1 role
 
-Enemies and areas that were once dangerous should gradually become manageable.
+The current village -> Guardian -> Red Dragon route is **Chapter 1 scale**.
 
+It should remain a complete route, but future development should expand beyond it.
 
+Current target route:
 
-The player should feel:
+1. Start in the village and learn the dragon route is too dangerous.
+2. Farm outskirts enemies, retreat often, and buy first gear.
+3. Push into grassland, North Forest, river, mine, and east/southeast routes.
+4. Find rewards that extend survivable range.
+5. Defeat the North Forest Guardian.
+6. Enter the dragon cave, defeat the Red Dragon, and report to the elder.
 
+Ideal feeling: **"I survived farther because I prepared better."**
 
+## Volume expansion rules
 
-\* "This enemy used to hurt a lot, but now I can handle it."
+Future work should grow the game into a larger RPG.
 
-\* "I can stay outside longer than before."
+Long-term direction:
 
-\* "I can finally reach a farther area."
-
-\* "Buying better equipment made a clear difference."
-
-\* "Weak enemies are no longer a real threat."
-
-
-
-\## Main Design Principle
-
-
-
-This game should be designed around the loop:
-
-
-
-1\. Leave the safe base.
-
-2\. Fight nearby enemies.
-
-3\. Take meaningful damage.
-
-4\. Return to the base to fully recover.
-
-5\. Earn gold and buy better equipment.
-
-6\. Reduce incoming damage through gear and levels.
-
-7\. Explore farther than before.
-
-8\. Find stronger enemies and better rewards.
-
-9\. Repeat.
-
-
-
-The village is not just a quest hub.
-
-It is a safe recovery point that gives the player relief after surviving dangerous areas.
-
-
-
-\## Growth Feeling
-
-
-
-The most important growth feeling is not just seeing numbers increase.
-
-
-
-The key feeling is a reversal of power:
-
-
-
-\* Early: an enemy can take a large portion of the player's HP on contact.
-
-\* Later: that same enemy deals very little damage.
-
-\* Eventually: the player's defense or HP regeneration can offset weak enemy damage.
-
-\* At that point, the player can move through previously dangerous areas with confidence.
-
-
-
-\## Equipment Progression
-
-
-
-Early progression should mainly come from shop equipment.
-
-
-
-The player should be able to earn gold near the village, buy better weapons and armor, and clearly feel that incoming damage has decreased.
-
-
-
-Mid-game and late-game progression can shift toward treasure, hidden rewards, dangerous-area rewards, and rare equipment.
-
-
-
-Equipment should not only increase numbers.
-
-Whenever possible, equipment should change survivability, exploration range, or contact-combat behavior.
-
-
-
-Examples:
-
-
-
-\* Armor that sharply reduces contact damage.
-
-\* Weapons that let the player defeat old enemies much faster.
-
-\* Gear that improves survivability in specific areas.
-
-\* Equipment that gives weak HP regeneration.
-
-\* Rare late-game gear that makes old enemies nearly harmless.
-
-
-
-\## HP Regeneration
-
-
-
-A weak HP regeneration element should exist from the mid-game onward.
-
-
-
-It should not make the early game too easy.
-
-
-
-The intended curve is:
-
-
-
-\* Early game: enemy damage is higher than recovery, so returning to base matters.
-
-\* Mid game: weak regeneration extends exploration time.
-
-\* Late game: strong defense plus regeneration can offset weak enemy damage.
-
-\* End game: the player feels powerful because old threats become manageable or harmless.
-
-
-
-HP regeneration should support the survival-range expansion loop, not replace it.
-
-
-
-\## Current Survival Range Balance
-
-
-
-Current implemented target:
-
-
-
-\* Early slime contact is intentionally painful enough to encourage retreating to the village.
-
-\* The first armor purchase sharply reduces early contact damage.
-
-\* Mid armor makes early enemies manageable while stronger enemies remain dangerous.
-
-\* Final armor makes old enemies feel weak, but bosses retain minimum threat damage.
-
-\* Passive HP regeneration is not available at the start.
-
-\* The river shrine chest grants a regeneration ring for mid-game survival range expansion.
-
-\* Regeneration is weak, disabled while burning, and becomes more valuable only when combined with better armor.
-
-
-
-\---
-
-
-
-\# Current Game Concept
-
-
-
-Old mobile-style contact-combat action RPG where the player leaves a safe village, grows through risky field battles, gradually expands survivable range, breaks the dragon seal, and defeats the red dragon.
-
-
-
-The dragon quest is the current clear objective, but the deeper design goal is the feeling of becoming strong enough to survive farther from the village.
-
-
-\## Volume Expansion Replan
-
-The current game is a compact first-route prototype with an estimated clear time around 20 minutes.
-
-From this point forward, development should treat that route as the first chapter, not the final game size.
-
-The next design target is a larger RPG where survival range expansion happens repeatedly across multiple regions and safe bases:
-
-1\. Village outskirts teach retreat, equipment buying, and contact/facing combat.
-2\. The first remote routes lead to river, forest, mine, and outpost rewards.
-3\. A second safe town or frontier base lets the player recover farther from the starting village.
-4\. New dungeons such as caves, towers, castles, ruins, and mines create area-specific threats and rewards.
-5\. Later towns sell new equipment tiers and hint toward deeper regions.
-6\. The player gradually builds an inventory of weapons, armor, accessories, and consumables.
-7\. Equipment choice becomes strategic: regeneration, movement, defense, anti-magic, anti-ranged, and boss preparation.
-
-## Inventory Direction Implemented
-
-The game now treats inventory as a core RPG system rather than a deferred future idea.
-
-Current inventory direction:
-
-* Weapons and armor are owned as lists, not only as one current rank.
-* The player can choose which owned weapon and armor to equip.
-* Consumables can be inspected and used from `もちもの`.
-* Unequipped weapons, unequipped armor, and consumables can be sold for gold.
-* Former fixed charm rewards are being treated as owned accessories.
-* Only the equipped accessory provides its active survival effect, making regeneration, movement, projectile defense, and mine resistance real equipment choices.
-
-Design rule:
-
-Do not avoid major player-facing systems only because they touch save data, UI, or balance. The correct response is to implement the system with migration and verification, then continue improving it.
-8\. The final dragon route should eventually become one endpoint of a larger world, not the only major destination.
-
-Long-term scale goals:
-
-\* The editable world should become at least 10x larger than the current route, either by expanding `src/data/maps/world.js`, adding separate map files, or both.
-\* The map should contain recognizable RPG landmarks: multiple towns, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
-\* Multiple towns should function as new survival anchors, not just decoration. Each should offer recovery, supplies, stronger equipment, hints, or a new progression role.
-\* Monster variety should increase dramatically. Add enemies that shoot bubbles, cast magic, poison, slow, summon allies, guard territory, flee, charge, and pressure the player from range.
-\* Inventory should become a real menu where players inspect items, weapons, armor, accessories, equip preferred gear, and sell unwanted gear.
-\* Accessories should move from fixed permanent flags toward equipable choices such as regeneration up, movement up, projectile resistance, fire resistance, poison resistance, and treasure/exploration support.
+* Keep expanding the editable world beyond the current `120x144` overworld definition.
+* Use hand-authored map data or additional hand-authored map files.
+* Add multiple regional arcs, not just one long walk from the starting village.
+* Add towns, frontier bases, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
+* Add enemy families with different behaviors: bubbles, magic, poison, slow, summons, charge attacks, territorial guarding, ranged pressure, and area denial.
+* Add equipment tiers, sidegrades, accessories, shop stock, and inventory decisions.
 
 Volume expansion must not mean empty walking space. Each new region should provide at least one of:
 
-\* A new survival threat.
-\* A new reward that changes survivable range.
-\* A new safe base or shortcut.
-\* A new enemy behavior.
-\* A new equipment or inventory decision.
-\* A route toward a boss, dungeon, town, or major treasure.
-
-\## Replanning Thesis: From Complete Loop To Memorable Route
-
-The current game has the necessary skeleton for a complete browser RPG: village, field combat, rewards, equipment, save/load, Guardian, Red Dragon, and clear reporting.
-
-The next design goal is to turn that skeleton into a memorable survival route.
-
-Target 20-30 minute slice:
-
-1\. The player starts in the safe village and learns that the dragon route is too dangerous now.
-2\. The player farms village-outskirts enemies, retreats often, and buys the first armor/weapon upgrade.
-3\. The player pushes into grassland and North Forest pressure, learning that distance from town means danger and better reward.
-4\. The player reaches the river/east route and finds a sustain or survivability reward that extends exploration time.
-5\. The player optionally explores east/southeast fixed-map space for a reward or shortcut that makes the final route feel earned.
-6\. The player defeats the North Forest Guardian, enters the dragon cave, beats the Red Dragon, then reports to the elder.
-
-The ideal feeling is not "I checked every requirement."
-
-The ideal feeling is:
-
-\* "I used to be scared outside town."
-\* "My new gear made old enemies manageable."
-\* "I can now survive this farther route."
-\* "The dragon cave is dangerous, but I prepared for it."
-
-\## Fixed Map Area Roles
-
-The fixed world should support memory and route planning:
-
-\* Village: safe base, full recovery, smith, healer, elder, save confidence.
-\* Village outskirts: painful but fair early enemies, first gold loop, retreat practice.
-\* Grassland/Wilds: longer travel pressure, mixed enemies, better drops than the outskirts.
-\* North Forest: first serious survival gate, Guardian pressure, seal crest.
-\* River/East route: mid-game sustain, ranged danger, optional exploration rewards.
-\* East/Southeast expansion: next content target; should become a deliberate risky route with a reward that extends survivable range.
-\* Dragon cave: final danger route and Red Dragon arena.
-
-Reward philosophy:
-
-\* Rewards should change where the player can safely go.
-\* Plain gold is useful near the village, but deeper rewards should feel like new survivability, route access, sustain, or protection.
-\* One-time rewards must remain persistent across save/load and must never downgrade equipment.
-
-
-
-\# Core Fun
-
-
-
-The fun is deciding when to push deeper into dangerous fields and when to retreat to town, while using facing, contact timing, items, equipment, and upgrades to survive.
-
-
-
-The player should repeatedly experience:
-
-
-
-\* Going slightly too far.
-
-\* Taking dangerous damage.
-
-\* Returning to the village for safety.
-
-\* Buying or finding stronger gear.
-
-\* Revisiting the same area and feeling stronger.
-
-\* Reaching a previously dangerous area more safely.
-
-
-
-\# Progression
-
-
-
-Current implemented progression:
-
-
-
-1\. Choose `はじめから` or `つづきから` from the start screen.
-
-2\. Start in the village and learn the objective.
-
-3\. Leave town, defeat roaming monsters, and gain EXP, gold, and items.
-
-4\. Explore fields and open treasure chests for supplies and upgrades.
-
-5\. Collect 3 dragon scales.
-
-6\. Reach level 4 and defeat the North Forest Guardian to obtain the seal crest.
-
-7\. Enter the northeast dragon cave.
-
-8\. Defeat the red dragon.
-
-9\. Return to the village and report victory for the final clear state.
-
-10\. After clearing, the player sees a final clear panel and can press `N` to replay from level 1, or return to the start screen on reload and choose `はじめから`.
-
-
-
-Dragon scales are the current boss-gating item, but they should not become the main identity of the game.
-
-The main identity should remain survival range expansion through growth, equipment, and exploration.
-
-
-
-\# Areas
-
-
-
-\## Village
-
-
-
-Safe base, healer, smith, recovery circle, gates, and objective guidance.
-
-
-
-The village should feel safe.
-
-It should be the place where the player returns after taking risks outside.
-
-
-
-\## Grassland
-
-
-
-Early monsters and basic gathering.
-
-This should be the first training zone where enemies are dangerous at the start but become manageable after early equipment purchases.
-
-Village-adjacent grassland should remain mostly weak even late in the game, so returning toward the village feels safer than pushing outward.
-
-
-
-\## Wilds
-
-
-
-Far grassland-like areas outside the village's immediate survival range.
-
-These areas should not feel as safe as the village outskirts; they can mix bats, boars, wisps, and later dragonlings to keep long-distance exploration populated.
-
-
-
-\## North Forest
-
-
-
-Stronger enemies and the North Forest Guardian.
-
-This area should initially feel risky, then become manageable as the player upgrades gear.
-
-
-
-\## East Forest / River
-
-
-
-Treasure, ranged enemies, hidden discoveries, and optional rewards.
-
-This should support mid-game exploration and survival range expansion.
-
-
-\## Southwest Mine
-
-
-
-Optional dangerous route in the expanded fixed map.
-
-The mine should introduce different enemy pressure from the forest and dragon cave. It can use bubble, magic, slow, and confined-path pressure to make the player prepare differently.
-
-Current pilot content:
-
-\* Southwest mine terrain and hidden cache.
-\* Mine-specific spawn region.
-\* `泡吐き`, a bubble projectile enemy that slows and drains stamina.
-\* `southwest-mine-cache`, a one-time gold reward that supports later equipment purchases.
-\* Southwest frontier camp near the mine route. It is a safe base with a recovery circle, visible camp props, and a supply NPC so the player can push beyond the original village survival radius.
-\* The frontier supply NPC sells a mine charm / bubble ward. This reduces bubble damage, slow duration, and stamina loss, making the mine a region the player can gradually master instead of a one-time loot stop.
-
-
-\## Dragon Cave
-
-
-
-Final boss arena.
-
-This area should feel dangerous and require preparation.
-
-
-
-\# Enemies
-
-
-
-\## Slime
-
-
-
-Slow early enemy.
-
-Should be dangerous enough at level 1 to teach the player that contact damage matters.
-
-
-
-\## Bat
-
-
-
-Fast low-HP enemy.
-
-Should pressure movement and stamina.
-
-
-
-\## Boar
-
-
-
-Charge windup enemy.
-
-Should reward avoiding direct frontal contact.
-
-
-
-\## Wisp
-
-
-
-Ranged fire enemy.
-
-Should introduce area-specific danger and make fire resistance meaningful.
-
-
-\## Bubbler / 泡吐き
-
-
-
-Mine enemy that fires slower bubble projectiles.
-
-Its purpose is to create a different kind of ranged pressure from fire wisps: it slows movement and drains stamina, making mine traversal and retreat timing feel different.
-
-
-\## Dragonling
-
-
-
-Late stronger enemy with scale drops.
-
-Should make the player feel that they are approaching dragon-level danger.
-
-
-
-\## North Forest Guardian
-
-
-
-Midboss gatekeeper with ranged pressure and seal crest reward.
-
-
-\## Southeast Warden
-
-
-
-Optional southeast-route midboss unlocked after the traveler bell and level 3.
-
-
-
-Its purpose is to turn the southeast expansion into a real destination: the player first earns travel range, then returns to challenge a stamina-draining projectile enemy for a defensive reward.
-
-
-
-\## Red Dragon
-
-
-
-Final boss.
-
-Enrages below half HP, fires spread shots, and summons lesser enemies.
-
-
-
-\# Rewards
-
-
-
-\## Basic Rewards
-
-
-
-\* EXP from monsters.
-
-\* Gold from monsters.
-
-\* Medicine, fire bottles, and wards.
-
-\* Dragon scales from relevant enemies or rewards.
-
-
-
-\## Treasure Rewards
-
-
-
-\* Gold.
-
-\* Supplies.
-
-\* Weapon upgrades.
-
-\* Armor upgrades.
-
-\* Dragon scale or equivalent progression item.
-
-
-
-\## Hidden Discoveries
-
-
-
-\* Recovery spring.
-
-\* Old iron ore.
-
-\* Hunter cache.
-
-
-
-Future hidden rewards should focus on extending the player's survivable range rather than only giving gold.
-
-
-
-\# Growth
-
-
-
-\## Level Growth
-
-
-
-Level raises HP and basic attack/defense.
-
-
-
-Leveling should matter, but it should not be the only source of power.
-
-
-
-\## Shop and Smith Growth
-
-
-
-Smith upgrades weapon and armor with gold.
-
-
-
-Early game should strongly emphasize earning gold and buying better equipment.
-
-Equipment purchases should visibly reduce incoming damage.
-
-
-
-\## Weapon Traits
-
-
-
-Weapon ranks change combat incentives:
-
-
-
-\* Frontal attack bonuses.
-
-\* Flank attack bonuses.
-
-\* Back attack bonuses.
-
-\* Dragon-slaying bonuses.
-
-
-
-These traits should reinforce contact and facing combat.
-
-
-
-\## Armor Traits
-
-
-
-Armor ranks change survival style:
-
-
-
-\* Movement bonuses.
-
-\* Frontal receiving bonuses.
-
-\* Longer ward duration.
-
-\* Dragon/fire resistance.
-
-\* Future HP regeneration effects.
-
-
-
-Armor should help the player survive farther from the village.
-
-
-
-\## Stamina and Exploration Growth
-
-
-
-Hunter cache increases stamina capacity.
-
-
-
-Future exploration rewards should include upgrades that let the player safely travel farther, survive longer, or recover more efficiently outside the village.
-
-
-
-\## HP Regeneration Growth
-
-
-
-A weak HP regeneration source should be added in the mid game.
-
-
-
-It should start small and become powerful only when combined with better armor or late-game equipment.
-
-
-
-The ideal end-game feeling is that weak enemies can no longer overcome the player's defense and regeneration.
-
-
-
-\# Boss Design
-
-
-
-\## North Forest Guardian
-
-
-
-A midboss with ranged pressure and seal crest reward.
-
-
-
-Its purpose is to test whether the player has expanded their survivable range enough to handle the North Forest.
-
-
-
-\## Red Dragon
-
-
-
-The final boss.
-
-
-
-It should not merely be a high-HP enemy.
-
-It should include:
-
-
-
-\* Enrage phase.
-
-\* Spread shots.
-
-\* Summons.
-
-\* Clear visual danger.
-
-\* A strong sense that preparation matters.
-
-
-
-\# Boss Challenge Conditions
-
-
-
-Current implemented conditions:
-
-
-
-\* 3 dragon scales.
-
-\* Level 4 or higher.
-
-\* North Forest Guardian defeated.
-
-\* Seal crest obtained.
-
-
-
-These conditions should remain understandable to the player.
-
-If future changes make a different gate more natural, prefer survival-range logic over arbitrary checklist collection.
-
-
-
-\# Clear Condition
-
-
-
-Defeat the red dragon.
-
-The game enters a victory state, then the player returns to the village and reports victory for the final clear state.
-
-After the elder report, the ending panel confirms that the dragon was sealed and the village is safe. The clear screen also shows `N: はじめから` so replay from level 1 is visible without manual storage cleanup.
-
-
-
-The ending should reinforce that the player has grown from a fragile village-bound hunter into someone capable of surviving the dragon's domain.
-
-
-
-\# Implemented Scope So Far
-
-
-
-\* Explicit game stage and objective text.
-
-\* Midboss and final boss gate.
-
-\* Expanded save data.
-
-\* More complete hint messages.
-
-\* Progression rewards and clear reporting.
-
-\* Equipment traits tied to facing/contact combat.
-
-\* Hidden exploration discoveries with persistent rewards.
-
-\* Enemy status effects and red dragon phase change.
-
-\* Survival-range rebalance: early contact damage is painful, shop armor visibly reduces it, and mid-game regeneration extends exploration without replacing retreat.
-
-\* Region-aware enemy populations so distant North Forest, East Forest/River, and Dragon Cave areas maintain stronger enemy pressure.
-
-\* Local monster pruning so stale ordinary enemies near old locations do not prevent fresh threats from appearing around the player after long-distance travel.
-
-\* A Wilds region for far non-north/non-east areas, keeping distant map spaces populated without making village-adjacent grassland too dangerous.
-
-\* Southeast route content: the far outpost grants the traveler bell, then the level-3 Southeast Warden challenge grants the Aegis Charm for fire/projectile resistance.
-
-\* Southwest mine pilot content: the mine has its own region classification, hidden cache reward, and the `泡吐き` enemy with slow bubble projectiles.
-
-\* First remote safe-base content: the southwest frontier camp is recognized as a safe zone, blocks ordinary monster entry, provides a second recovery circle, and includes a supply NPC for mine expeditions.
-\* Mine-specific equipment progression: the frontier camp sells a bubble-protection charm that makes `泡吐き` contact and projectile pressure more manageable.
-
-\* Village safety rules for projectiles and monsters: closed gates block danger, open gates allow danger through gate tiles only.
-
-\* Safer retreat behavior: gates close while the player is inside town, and the open-gate danger exception mainly applies when the player is outside near a gate.
-
-\* Stronger village boundary readability with stone-wall visuals and role markers for core village functions.
-
-\* Two-line objective guidance that teaches the current survival-range action: heal, buy gear, retreat, or push toward the next danger area.
-
-\* Context prompts for nearby NPCs, treasure, hidden discoveries, cave entry, and gathering.
-
-\* Static reward reachability safeguards for treasure, discoveries, and the Guardian site.
-
-\* Faster movement, dash, and stamina recovery to keep exploration tempo brisk.
-
-\* Slightly shorter attack, dash, and contact intervals to reduce downtime while keeping contact combat central.
-
-\* Strength-command info panels for equipment traits, survival stats, and inventory/progression items.
-
-\* One-time treasure and hidden discovery rewards persist across save/load and cannot be reacquired after reload.
-
-\* Equipment rewards are protected against downgrade: weaker or equal rewards leave the current weapon or armor equipped.
-
-\* Start screen supports `はじめから` and `つづきから`, so a cleared save no longer traps the player in the completed state.
-
-\* Elder report now leads to a final clear panel with replay guidance.
-
-
-
-\# Future Design Priorities
-
-
-
-1\. Run a full manual playthrough around survival range expansion.
-
-2\. Verify that early enemy damage, shop equipment, gold flow, and level 4 timing feel natural.
-
-3\. Verify that distant area enemy density feels dangerous but not exhausting.
-
-4\. Improve equipment UI into a fuller review menu once critical gameplay issues remain stable.
-
-5\. Add late-game gear or rewards that make old enemies nearly harmless.
-
-6\. Add exploration rewards that extend travel range.
-
-7\. Verify the ending panel and clear-screen replay input in a real browser/manual playthrough.
-
-8\. Run browser visual QA on desktop and mobile viewport.
-
-
-
-
-\# Design Rules Derived From Playtesting
-
-
-
-\## Safe Village Principle
-
-
-
-The village should be a true safe zone.
-
-
-
-Ordinary enemies should never enter the village.
-
-
-
-Enemy projectiles, magic, and hostile effects should not threaten the player inside the village.
-
-
-
-The village should provide a clear feeling of relief after surviving dangerous exploration.
-
-
-
-Visual design should clearly communicate safety through walls, gates, recovery points, and NPC placement.
-
-
-\## Player Character Sprite Direction
-
-
-The player character art now supports independent 32x32 frame files under `assets/player/`.
-
-
-This is the preferred workflow for the girl-style protagonist design because each direction and pose can be improved separately:
-
-
-\* `down_idle.png`
-\* `down_walk.png`
-\* `left_idle.png`
-\* `left_walk.png`
-\* `right_idle.png`
-\* `right_walk.png`
-\* `up_idle.png`
-\* `up_walk.png`
-
-
-The legacy `assets/player.png` 256x32 strip remains available as a fallback, but future character art work should favor replacing individual frame files.
-
-
-
-\## World Progression Principle
-
-
-
-The world should become more dangerous as distance from the village increases.
-
-
-
-Areas farther from the village should generally contain:
-
-
-
-\* Stronger enemies.
-
-\* Higher enemy density.
-
-\* Better rewards.
-
-\* Better treasure.
-
-\* More risk.
-
-
-
-The player should naturally feel that expanding survivable range allows access to more valuable parts of the world.
-
-
-
-Empty distant areas should be avoided.
-
-
-
-The player should never feel that the most valuable gameplay remains near the village after becoming stronger.
-
-
-\## Fixed Map Direction
-
-
-The world map should be treated as a fixed, hand-authored tile map.
-
-
-This project previously used deterministic pseudo-random terrain detail, but future map work should favor explicit tile painting so areas can be adjusted by hand.
-
-
-Current fixed-map direction:
-
-\* `src/data/definitions.js` defines an 80x72 world.
-
-\* `src/data/maps/world.js` is the primary human-editable world map data file.
-
-\* `WORLD_MAP` in `src/data/maps/world.js` defines terrain rows using a compact character legend.
-
-\* `WORLD_OBJECTS` in `src/data/maps/world.js` stores map objects such as NPC placements separately from terrain.
-
-\* `src/systems/map.js` should load and validate map data; it should not become a terrain painting script again.
-
-\* `docs/MAP_EDITING.md` documents the editing workflow, and `docs/world-map-preview.png` gives a quick whole-world visual check.
-
-\* The fixed east/southeast expansion should become a deliberate survival-range destination, not empty filler.
-
-\* Current southeast reward: the southeast outpost chest grants the traveler bell, a permanent exploration upgrade that slightly improves movement speed, stamina capacity, stamina regeneration, and dash cost.
-
-\* Current southeast follow-up: after obtaining the traveler bell and reaching level 3, the Southeast Warden appears near the outpost. Defeating it grants the Aegis Charm, reducing fire and projectile damage for deeper exploration and dragon preparation.
-
-\* Random/noise terrain should not be reintroduced unless there is a very clear gameplay reason.
-
-
-
-\## Tempo Principle
-
-
-
-The game should feel fast and responsive.
-
-
-
-Danger should come from enemy strength, positioning, and area design.
-
-
-
-Danger should not come from slow movement, excessive waiting, or sluggish controls.
-
-
-
-Travel between the village, hunting grounds, and dangerous areas should feel quick and satisfying.
-
-
-
-As the player becomes stronger, old enemies should be defeated rapidly and movement through previously dangerous areas should feel effortless.
-
-
-
-\## Readability Principle
-
-
-
-The player should immediately understand the function of important locations.
-
-
-
-Without talking to NPCs, players should be able to recognize:
-
-
-
-\* The Elder
-
-\* The Smith
-
-\* The Healer or Item Seller
-
-\* The Village Gate
-
-\* Recovery Locations
-
-\* Dangerous Area Entrances
-
-
-
-Visual readability is more important than decorative detail.
-
-
-
-Signs, building layouts, props, walls, gates, and terrain should communicate function clearly.
-
-
-# Refactor Architecture Note
-
-This section documents architecture only. It does not change the game design.
-
-The current implementation should preserve the same core design: survival range expansion, safe village retreat, contact/facing combat, equipment-driven survivability, exploration rewards, Guardian gate, red dragon clear, and elder report.
-
-The code is now expected to be organized as:
-
-```text
-src/data/
-  definitions.js  Static constants, tiles, equipment data, monster definitions, treasure/discovery definitions.
-  maps/world.js   Human-editable fixed world map rows and map object placements.
-
-src/core/
-  math.js         Pure math/geometry helpers.
-  state.js        Initial state/player factory.
-  context.js      Context factory that wires state/player/helpers into each system.
-
-src/systems/
-  map.js          Map data loading, validation, tile access, town/gate/collision helpers.
-  spawn.js        Region selection, monster spawning, regional replenishment, Guardian spawn story events.
-  monsters.js     Enemy AI, contact combat, contact status effects, monster defeat, level-up side effects.
-  combat.js       Player combat/stat calculations and equipment multipliers.
-  player.js       Player movement, dash, town gate, heal circle, discovery spring updates.
-  actions.js      Context action, attack action, chest opening, gathering, hidden discovery reveal.
-  rewards.js      Chest/discovery/monster reward grants, item use, equipment anti-downgrade helpers.
-  projectiles.js  Enemy projectile firing, movement, collision, damage/status application.
-  npc.js          NPC interaction, cave entry, dragon challenge requirement checks.
-  save.js         localStorage save/load/reset using SAVE_KEY.
-  effects.js      Floaters, slashes, rings, particles, toast expiry.
-  text.js         Objective/guidance/context prompt/stage text.
-  render.js       Canvas drawing only.
-  ui.js           DOM status updates and strength/info panel data.
-  controls.js     Keyboard/touch/button event binding.
-
-src/game.js       Entrypoint/司令塔: DOM binding, helper lookup, state/player creation, facades, loop, init.
-```
-
-
-Design work should continue to prioritize:
-
-* Survival range expansion.
-* Safe village readability and relief.
-* Equipment upgrades that visibly reduce danger.
-* Distant areas that feel more dangerous and more rewarding.
-* Responsive movement and contact combat.
-* Clear feedback for progression, equipment, regeneration, boss requirements, and clear state.
-
-Do not use the refactor as a reason to change balance or content accidentally. Behavior changes should be made only as explicit gameplay improvement passes.
+* New survival threat.
+* Reward that changes survivable range.
+* Safe base or shortcut.
+* New enemy behavior.
+* Equipment or inventory decision.
+* Route toward a boss, dungeon, town, or major treasure.
+
+## Growth curve
+
+### Early game
+
+* Nearby enemies hurt.
+* The player retreats often.
+* Shop armor/weapons give obvious value.
+* The village feels like relief.
+
+### Mid game
+
+* The player survives longer outside.
+* Regeneration or stamina bonuses extend exploration.
+* Stronger areas add ranged attacks, status effects, stamina pressure, or region-specific hazards.
+* Optional dangerous routes offer rewards that make later routes easier.
+
+### Late game
+
+* Strong defense, regeneration, resistance, and equipment choices make old enemies much less threatening.
+* The player can travel far from the original village with confidence.
+* Bosses still retain minimum threat.
+
+Most important growth feeling: **reversal of power**.
+
+## Area roles
+
+| Area | Role |
+|---|---|
+| Village | Starting safe base: recovery, smith, supplies, elder guidance, clear safety boundary. |
+| Grassland / Outskirts | First gold loop and retreat training. Weak enemies stay near village even later. |
+| Wilds | Farther grassland-like danger beyond the village safe radius. |
+| North Forest | First serious survival gate with Guardian pressure and seal crest progression. |
+| River / East Route | Mid-game exploration, ranged danger, hidden discoveries, sustain rewards. |
+| East / Southeast | Risky expansion route: traveler bell, Southeast Warden, Aegis Charm; should grow into a larger named route. |
+| Southwest Mine | Optional route with Bubbler pressure, slow/stamina drain, mine charm counterplay. |
+| Southwest Frontier Camp | First remote survival anchor: recovery, supplies, readable camp, outward safe radius. |
+| Ash Road / 灰の街道 | First larger eastward volume-expansion route beyond the Chapter 1 footprint; stronger magic pressure, farther rewards, and a route toward the old tower. |
+| Ash Hamlet / 灰道の宿場 | Second remote survival anchor: full recovery, supplies, and post-Ash-Knight star gear. |
+| Old Tower / 古塔 | Late optional danger pocket with dense magic pressure, Ash Knight midboss, and star-gear preparation. |
+| Moon Ruins / 月影廃墟 | Post-Old-Tower southern danger pocket with dense late enemies, moon relic rewards, and another reason to push beyond the Red Dragon route. |
+| Moon Camp / 月見砦 | Chapter 2 remote survival anchor: recovery, supplies, eclipse gear, and the feeling that the safe radius moved far beyond the village. |
+| Eclipse Castle / 月蝕城 | Chapter 2 final danger route: eclipse magic pressure, seal tablet, final supplies, and Eclipse Dragon arena. |
+| Black Gate / 黒門 | Chapter 3 transition route south of Eclipse Castle; the map becomes darker, enemy pressure rises, and retreat distance matters again. |
+| Black Fort / 黒門砦 | Chapter 3 remote survival anchor: recovery, supplies, Black Sun gear, and a new safe radius before the final southern push. |
+| Black Sun Castle / 黒陽城 | Chapter 3 high-danger route: void pressure, Black Sun seal, final cache, and the Black Sun Dragon arena. |
+| Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
+
+## Enemy roles
+
+| Enemy | Purpose |
+|---|---|
+| Slime | Slow early enemy; teaches contact damage. |
+| Bat | Fast low-HP enemy; pressures movement/stamina. |
+| Boar | Charge enemy; rewards avoiding frontal contact. |
+| Wisp | Ranged fire enemy; makes fire/projectile resistance meaningful. |
+| Bubbler / 泡吐き | Mine enemy; bubble projectiles slow and drain stamina. |
+| Ash Sorcerer / 灰術師 | Farther-road magic enemy; fires faster magic shots and applies slow/stamina pressure. |
+| Moon Shade / 月影の亡霊 | Far-south magic enemy; faster magic shots and stamina pressure make star gear and wards matter. |
+| Eclipse Mage / 月蝕術師 | Chapter 2 caster; stronger magic shots and stamina pressure make eclipse gear/accessory meaningful. |
+| Void Wraith / 黒陽の影 | Chapter 3 high-pressure caster; dark projectiles apply heavier slow/stamina pressure and reward Black Sun gear/accessory preparation. |
+| Summoner / 召喚士 | Late-route pressure enemy. If ignored, it calls reinforcements and turns a safe-looking road into a losing fight. The intended answer is to prioritize it, spend a ward/tonic, or retreat before the field fills up. |
+| Trap Flower / 地雷花 | Area-denial trap enemy for Moon Ruins / Eclipse / Obsidian / Black Sun routes. It stays still, warns briefly, then explodes for HP/stamina/slow pressure. The intended answer is to cut it before entering, route around it, or prepare wards/return bells for risky shortcuts. |
+| Dragonling | Late stronger enemy; signals dragon-route danger. |
+| North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
+| Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
+| Old Tower Ash Knight | Optional late midboss after Southeast Warden + level 14; unlocks stronger magic-route preparation and tests the expanded-world route. |
+| Red Dragon | Chapter 1 final boss: enrage, spread shots, summons, preparation check. |
+| Eclipse Dragon / 月蝕竜 | Chapter 2 major boss after Red Dragon report, Ash Knight, moon relic, eclipse seal, and level 20; enrages into wider magic shots and summons late enemies. |
+| Black Sun Dragon / 黒陽竜 | Chapter 3 major boss after Chapter 2 report, Eclipse Castle cache, Black Fort armory, Black Sun seal, and level 26; uses heavy void projectiles, wider enraged spreads, and summons. |
+
+Enemies should differ by gameplay, not only appearance or stats.
+
+## Rewards
+
+Rewards should change where the player can safely go.
+
+Good reward types:
+
+* Better equipment.
+* Area resistance.
+* HP regeneration.
+* Stamina or movement improvement.
+* Safe base or shortcut access.
+* Hidden recovery point.
+* Stronger shop access.
+* Boss preparation.
+
+Plain gold is useful near the village. Deeper rewards should feel like survivability, route access, sustain, resistance, or preparation.
+
+One-time rewards must persist across save/load and must never downgrade current equipment.
+
+## Equipment and inventory
+
+Inventory is now a core RPG system.
+
+Current direction:
+
+* Weapons and armor are owned as lists.
+* The player can choose equipped weapon and armor.
+* Consumables can be inspected, used, and sold.
+* Accessories are owned, and up to two accessories can be equipped.
+* Only equipped accessories provide their active survival effects.
+* Sidegrade equipment now exists for route preparation:
+  * `泡割り槍` and `鉱夫服` help against Bubbler pressure in the southwest mine.
+  * `火返しの剣` and `耐火マント` prepare for fire enemies and eastern/dragon-route pressure.
+  * `竜狩りの刃` and `巡礼鎧` are late route preparation gear for dragon cave pressure.
+  * `星見の杖` and `星織りの衣` prepare for Ash Sorcerer / Ash Knight magic pressure.
+  * `月蝕の刃` and `月蝕の外套` prepare for Eclipse Mage / Eclipse Dragon pressure.
+* The southwest frontier camp is becoming the first remote equipment hub, not only a healing point.
+* The ash hamlet is the second remote equipment hub and sells star gear after the Ash Knight is defeated.
+* Moon Camp is the third remote equipment hub and sells/grants eclipse preparation after the player reaches the Chapter 2 route.
+* Black Fort is the fourth remote equipment hub and sells/grants Black Sun preparation after the player reaches the Chapter 3 route.
+* `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` prepare for Void Wraith / Black Sun Dragon pressure.
+* Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
+* Accessory pairing is now part of route preparation: e.g. movement bell + resistance charm, or large regeneration + route resistance.
+* `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave.
+
+Future direction:
+
+* Add more sidegrade weapons/armor.
+* Add meaningful accessory identities.
+* Add additional remote shop stock and later-town stock.
+* Expand comparison text into route recommendations and special-effect previews.
+* Decide buyback or lock rules for unique accessories.
+
+Equipment should alter survivability, exploration range, route preparation, or contact-combat incentives, not only numbers.
+
+## UI, feedback, and visual direction
+
+## Latest design truth: selectable shops and Chapter 3 long expedition
+
+The Chapter 3 route should now read as a longer expedition rather than a short final lane.
+
+Current added structure:
+
+* Black Fort remains the first Chapter 3 remote base.
+* Black Market is the Chapter 3 second town: safe zone, recovery, late shop, NPC guidance, and supplies.
+* Obsidian Cave is a Chapter 3 branch dungeon between Black Market and Black Sun Castle.
+* Obsidian Crawler adds ranged obsidian pressure.
+* Obsidian Golem is a Chapter 3 midboss after Chapter 2 report, Black Fort armory, and level 24.
+* Obsidian gear and Obsidian Bracelet are rewards that make the final Black Sun push safer.
+* Black Sun Dragon remains the Chapter 3 major boss, now after Obsidian Golem preparation.
+
+Shop and reward rules:
+
+* Shops are selectable menus. They must not force fixed weak-to-strong purchase order.
+* The player should choose weapons, armor, accessories, and consumables directly.
+* Weaker found equipment must be added to inventory when new.
+* Weaker found equipment must not auto-equip over stronger current gear.
+* Shop UI and inventory UI should make ATK/DEF and special equipment value visible.
+
+Latest balance adjustment:
+
+* The strongest obsidian weapon/armor should be bought at Black Market after Obsidian Golem, not granted directly from a route chest.
+* Obsidian route treasure now gives the Obsidian Bracelet and premium expedition supplies instead of bypassing the weapon/armor economy.
+* Gold should remain useful deep into the game through high-tier gear, elixirs, return bells, tonics, wards, and wagon travel.
+* Remote bases now support wagon travel between unlocked safe bases. This reduces repetitive walking while preserving survival-range expansion.
+* Bases should feel inhabited. A base is not only a heal tile; it should have guards, travelers, merchants, porters, and readable role markers.
+* Dense late regions are preferred over long empty roads. Farther regions should have higher spawn pressure and more route-extension rewards.
+
+The player must understand why they became stronger.
+
+Prioritize clear feedback for:
+
+* Current objective and area danger.
+* HP, damage taken, damage reduction.
+* Equipment effects.
+* Regeneration, stamina, and movement bonuses.
+* Boss requirements.
+* Save/clear state.
+* Inventory/accessory effects.
+
+Keep the old mobile RPG feel:
+
+* Compact screen.
+* Dense tile-based maps.
+* Simple readable sprites.
+* Left command menu / RPG status feel.
+* Clear safe-vs-danger contrast.
+* Browser/mobile usability.
+
+## Content acceptance checklist
+
+A content pass is good if it improves at least one:
+
+* Survival-range expansion.
+* Clearer damage reduction.
+* Better equipment progression.
+* Safer village or remote-base recovery loop.
+* Better exploration reward.
+* Stronger power reversal.
+* Meaningful enemy difference.
+* Better route balance.
+* Larger world with density and purpose.
+
+A content pass is weak if it only adds empty walking space, cosmetic terrain, stat/color-swap enemies, rewards that do not change decisions, or UI that hides important survival information.
+
+## Latest Design Truth: Dense Routes, Shields, and Landmarks
+
+The next content direction is to deepen the current `120x144` overworld before expanding map size again.
+
+Current design additions:
+
+* Rigid wall corridors should become readable terrain: broken walls, side openings, ruined watchtowers, market alleys, old gates, roads, bridges, and landmark caches.
+* Major late routes should offer at least a small choice: safer main road, risky shortcut, or side reward pocket.
+* The western smuggler road is a dangerous shortcut toward Black Market. It can be entered early, but shield soldiers, wisps, and trap flowers make it a risk/reward route rather than a normal road.
+* Black Market north now has a regeneration cave side dungeon. It should feel like a dangerous optional expedition whose reward extends survival range.
+* Light side objectives can be implemented through chests, discoveries, NPC hints, and route rumors. They do not need a large quest framework if they teach geography or extend survival range.
+* Shields are now a formal equipment slot. They reduce frontal contact damage and make contact direction a preparation choice, not only a stat race.
+* Shield soldiers are a contact-combat lesson enemy: attacking their front is inefficient, while side/back attacks are rewarded.
+* Deeper route rewards should include route-extension supplies, shields, return bells, tonics, elixirs, and hint discoveries rather than only gold.
+* Remote bases and Black Market should continue gaining NPCs, signs, stalls, and small reward pockets so they feel like lived-in survival anchors.
+* Summoners are now part of late-route identity. They should be placed where "clear this threat first" matters, especially Moon Ruins, Eclipse, Obsidian, and Black Sun routes.
+* Trap Flowers are now part of late-route identity. They should mark dangerous shortcuts, ruined courtyards, and narrow castle approaches where route choice matters. Their warning time should remain readable enough that attentive players can react.
+* Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
+* `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.
+* Current `120x144` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and shortcut-like terrain before another size jump.

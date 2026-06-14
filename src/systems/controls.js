@@ -32,6 +32,9 @@
       "moveInventory",
       "confirmInventory",
       "sellInventorySelection",
+      "closeShop",
+      "moveShop",
+      "confirmShop",
       "saveGame",
       "selectItem",
     ];
@@ -67,11 +70,24 @@
       moveInventory,
       confirmInventory,
       sellInventorySelection,
+      closeShop,
+      moveShop,
+      confirmShop,
     } = requireControlsContext(context);
 
     window.addEventListener("keydown", (event) => {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "ShiftLeft", "ShiftRight"].includes(event.code)) {
         event.preventDefault();
+      }
+      if (state.shopOpen) {
+        if (["ArrowUp", "ArrowDown", "Enter", "Space", "Escape", "KeyS"].includes(event.code)) {
+          event.preventDefault();
+        }
+        if (event.code === "ArrowUp") moveShop(-1);
+        if (event.code === "ArrowDown") moveShop(1);
+        if (event.code === "Enter" || event.code === "Space") confirmShop();
+        if (event.code === "Escape" || event.code === "KeyS") closeShop();
+        return;
       }
       if (state.inventoryOpen) {
         if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Space", "Escape", "KeyI", "KeyM", "KeyS"].includes(event.code)) {
@@ -94,7 +110,7 @@
       if (event.code === "KeyQ") cycleItem(-1);
       if (event.code === "KeyE") cycleItem(1);
       if (event.code === "KeyR" && state.gameOver) resetGame();
-      if (event.code === "KeyN" && state.elderReported) resetGame();
+      if (event.code === "KeyN" && state.clearPanelOpen) resetGame();
     });
 
     window.addEventListener("keyup", (event) => {

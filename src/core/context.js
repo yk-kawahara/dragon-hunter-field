@@ -224,6 +224,9 @@
           moveInventory: r.moveInventory,
           confirmInventory: r.confirmInventory,
           sellInventorySelection: r.sellInventorySelection,
+          closeShop: r.closeShop,
+          moveShop: r.moveShop,
+          confirmShop: r.confirmShop,
           saveGame: r.saveGame,
           selectItem: r.selectItem,
         };

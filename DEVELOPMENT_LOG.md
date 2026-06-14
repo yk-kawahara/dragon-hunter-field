@@ -1,380 +1,663 @@
-# DEVELOPMENT LOG
+# DEVELOPMENT_LOG.md
 
-## 2026-06-05
-- Reviewed the existing browser RPG code and confirmed no prior planning docs existed.
-- Fixed the current design direction in `GAME_DESIGN_NOTES.md`.
-- Planned a minimum complete game loop: village objective, field growth, treasure, guardian, dragon cave, clear.
-- Implementation target: preserve contact/facing combat while adding progression gates and rewards.
-- Implemented the North Forest Guardian midboss.
-- Added boss challenge requirements: 3 dragon scales, level 4, and seal crest.
-- Added seal crest and elder report flags to save/load.
-- Changed dragon victory from a full blocking overlay to a return-to-village banner, then final `QUEST CLEAR` after elder report.
-- Verified syntax with `node --check src/game.js`.
-- Verified progression with a VM simulation: Guardian spawn/defeat, dragon unlock/spawn/defeat, elder report, and saved fields.
-- Browser visual QA is pending because a browser control tool was not available in this run.
-- Cycle 1 analysis: equipment rewards were mostly numeric. Implemented weapon traits for front/flank/back/dragon attacks and armor traits for movement, frontal receiving, ward duration, and fire resistance.
-- Cycle 2 analysis: exploration rewards did not change play enough. Implemented persistent hidden spring, ore, and hunter cache rewards.
-- Cycle 3 analysis: final boss was too close to a high-HP enemy. Implemented red dragon enrage, spread shots, and summons.
-- Survival range pass Cycle 1: early contact danger was too soft for the retreat-to-village loop. Increased early enemy attack values, changed armor defense to stepped values, and kept boss minimum damage.
-- Survival range pass Cycle 2: shop equipment needed clearer value. Lowered early weapon/armor costs, made the smith prioritize armor on equal ranks, and displayed equipment traits in messages/status.
-- Survival range pass Cycle 3: mid-game sustain was missing. Added regeneration ring from the river shrine chest; regeneration is weak, saved, disabled by burn, and scales slightly with armor.
-- Verification: `node --check src/game.js` passed. VM simulation showed slime damage sample 6 -> 2 after leather armor, boar sample 11 -> 3 after chain armor, no early regeneration, weak mid/late regeneration, saved regen/charm fields, and complete guardian-to-dragon-to-report flow.
-- Browser visual QA remains pending in this run.
-- Current lead pass analysis: the weakest survival-range issues were distant areas feeling empty, village safety being undermined by projectiles, weak safe-base readability, possible static reward placement risk, slow tempo, and weak inventory/equipment review.
-- Cycle 1: Implemented region-aware enemy pools and local replenishment. Grassland keeps early enemies, North Forest emphasizes boars/wisps, East Forest/River adds stronger ranged/late pressure, and Dragon Cave emphasizes dragonlings/wisps. Added regional danger messages and spawn caps so the world does not overfill.
-- Cycle 1 verification: VM simulation confirmed grassland, North Forest, East Forest/River, and Dragon Cave all spawn region-appropriate enemies.
-- Cycle 2: Implemented projectile town-entry blocking. Closed gates now remove enemy projectiles before they threaten the village; open gates allow danger only through gate tiles. Verified monster gate rules: closed gates block entry, open gates allow gate entry, and walls remain blocked.
-- Cycle 2 readability: Reworked the village boundary drawing from a weak fence look to a stronger stone-wall safe-base visual. Added compact role markers for elder, smith, healer, recovery circle, and gates.
-- Cycle 3: Added walkable reward clearings around static treasure, discoveries, and the Guardian site. Increased player movement speed, dash distance, and stamina recovery to improve travel and combat tempo.
-- Cycle 3 UI: Expanded the strength command into rotating pages for equipment traits, survival stats/regeneration, and inventory/progression items.
-- Cycle 4 analysis: rotating toast messages were still too easy to miss for equipment and inventory review. Upgraded the strength command to a short-lived in-game info panel with equipment, survival, and inventory/progression pages.
-- Verification: bundled Node `--check src/game.js` passed. VM simulations passed for region spawning, reward reachability, closed-gate projectile blocking, monster gate behavior, strength-command info-panel cycling, dragon spawn/defeat/elder report flow, and save/load persistence for clear progression.
-- Balance spot-check: average front-contact damage estimate shows slime about 9 damage in cloth, 3 in leather, and 0 in chain; boar/wisp remain threatening until mid armor. First armor requires about 3-4 early kills from the starting 18G. Level 4 requires roughly 216 total XP, or about 6-8 mid-area kills after early leveling. This supports the intended survival-range expansion curve, but still needs a real manual playthrough.
-- Browser QA attempt: in-app Browser setup failed because the Node REPL kernel exited with `windows sandbox failed: spawn setup refresh`. Fallback bundled Playwright was present but failed to load because `playwright-core` was missing. Desktop/mobile browser visual QA remains an unverified risk for the next session.
-- Remaining high-priority work after this pass: full manual playthrough to dragon clear and elder report, manual feel check for the faster movement/combat tempo, browser visual QA, and balance feel testing for gold/EXP/item flow.
-- Current lead pass analysis: user confirmed there are still places where enemies do not appear. A whole-map single-position scan had no holes, but a more realistic stale-cap scenario reproduced the problem: old monsters near the village could remain close enough to avoid pruning, yet far enough to leave the player's current area empty while still filling the global cap.
-- Cycle 5: Added local monster pruning when nearby density is below target, preserving bosses and midbosses while replacing stale ordinary enemies with current-region threats. Added a `wilds` region for far non-north/non-east areas so distant grassland-like zones are no longer treated as village outskirts. Tightened grassland pools so dragonlings do not appear near the village even at late levels.
-- Cycle 5 verification: stale-cap whole-map VM scan passed across 134 passable non-town sample points with 0 spawn holes. Region results covered grassland, Wilds, North Forest, East Forest/River, and Dragon Cave. Grassland now remains slime/bat/boar, while distant regions retain stronger enemies.
-- Regression verification: `node --check src/game.js` passed. VM checks passed for static reward and Guardian reachability, closed-gate projectile blocking, monster gate rules, strength info panel pages, dragon spawn/defeat/elder report flow, and save/load persistence.
-- Browser QA attempt: in-app Browser setup still fails with `windows sandbox failed: spawn setup refresh`; desktop/mobile visual QA remains pending due to environment constraints.
-- Current playtest pass analysis: after the spawn fix, the next highest-value non-spawn issues were that town safety could be undermined by standing near the gate, the objective text did not explain the survival-range next step, nearby interactables lacked prompts, and combat still had some downtime.
-- Cycle 6: Changed gate behavior so gates close while the player is inside town and open only when the player is outside near a gate. This makes returning to the village feel safer while preserving the open-gate danger exception outside the wall.
-- Cycle 7: Added a second objective guidance line that tells the player when to heal, buy the next upgrade, retreat at low HP, or push toward the next danger area. Added contextual prompts for nearby NPCs, treasure, hidden discoveries, cave entry, and gathering.
-- Cycle 8: Improved tempo by reducing attack cooldown from 280ms to 230ms, dash cooldown from 360ms to 320ms, and non-boss contact interval from 430ms to 380ms.
-- Verification: bundled Node `--check src/game.js` passed. VM checks passed for inside-town gate closure, outside gate opening, projectile blocking, monster gate rules, survival guidance, context prompts, static reward reachability, strength info panels, tempo constants, dragon clear flow, and save/load persistence.
-- Remaining risk: browser visual QA is still blocked by the same `windows sandbox failed: spawn setup refresh` issue, so the new two-line objective and context prompt need real screen fit verification later.
-- Current playtest pass analysis: the highest-priority survival-range risk was progression regression, specifically one-time treasure or hidden rewards being reacquired after save/load and weaker equipment rewards overwriting stronger current gear.
-- Cycle 10: Added save-load hardening for reward ID sets by sanitizing loaded chest and discovery IDs against known definitions.
-- Cycle 10: Added direct duplicate guards to hidden discovery reveals, so a discovered reward cannot grant gold, gear, charms, or healing setup again even if the reveal path is called directly.
-- Cycle 10: Added weapon and armor reward helpers that only upgrade equipment when the reward rank is stronger than the current gear. Weaker or equal rewards keep the current equipment and show a better-gear message.
-- Cycle 10 decision: deferred a larger equipment inventory because the current equipment model is rank-based. Anti-downgrade protection fixes the immediate Critical issue with less UI and save-data risk.
-- Verification: `node --check src/game.js` passed. `git diff --check` passed. VM checks passed for chest save/reload persistence, chest duplicate payout prevention, hidden discovery save/reload persistence, direct duplicate discovery prevention, weaker weapon/armor reward prevention, and equipment save/load preservation.
-- Remaining high-priority risk: real browser QA, full manual playthrough, and a future equipment inventory or comparison screen if sidegrade equipment rewards are added.
-- Refactor preparation analysis: `src/game.js` is about 3180 lines and currently owns static data, mutable state, map/collision, spawning, player update, enemy AI, projectiles, contact combat, rewards, NPCs, save/load, UI, drawing, input binding, and the main loop.
-- Cycle 11: Created `REFACTOR_PLAN.md` with responsibility classification, safe split order, first low-risk candidates, high-risk no-split areas, and required behavior checks.
-- Cycle 11: Created `docs/REFACTOR_CHECKLIST.md` so the next refactor pass can follow a repeatable checklist before and after extraction.
-- Cycle 11 decision: did not split `src/game.js` yet. Static definitions and pure helpers should be extracted first; behavior hubs such as player update, enemy AI, combat, save/load, NPCs, drawing orchestration, input, bosses, and loop/init should remain in place until the safe extractions are verified.
-- Verification note: no gameplay behavior was intentionally changed in this pass. Syntax, VM smoke checks, and `git diff --check` were run before commit.
-- Refactor extraction analysis: the first low-risk split was static definitions, because they are read by many systems but do not own runtime behavior.
-- Cycle 12: Added `src/data/definitions.js` and moved screen/map constants, save key, town gates, treasure, discoveries, boss requirements, region spawns, tile/direction constants, tempo constants, equipment data, item order, and monster definitions into it.
-- Cycle 12: Updated `index.html` to load `src/data/definitions.js` before `src/game.js`; kept non-module scripts to avoid breaking direct local HTML loading.
-- Cycle 12: Updated `src/game.js` to destructure the same local names from `globalThis.DRAGON_HUNTER_DEFINITIONS`, leaving behavior code unchanged.
-- Cycle 12 decision: did not split player update, enemy AI, contact combat, projectiles, rewards, NPCs, save/load, boss flow, drawing orchestration, input, loop, or init.
-- Cycle 12 verification: bundled Node syntax checks passed for `src/data/definitions.js` and `src/game.js`; `git diff --check` passed; VM smoke checks passed for definitions loading, static reward reachability, region pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
-- Cycle 12 remaining risk: real browser visual QA remains pending because Browser tooling was not available in this turn.
-- Refactor extraction analysis: the next safe target was deterministic pure math and geometry helpers. Random helpers were intentionally left in `src/game.js` to avoid changing spawn randomness.
-- Cycle 13: Added `src/core/math.js` and moved `clamp`, `hashNoise`, `rectsOverlap`, `centerOf`, `normalize`, `facingDot`, `directionFromVector`, and `makeRect` into it.
-- Cycle 13: Updated `index.html` to load `src/core/math.js` after definitions and before `src/game.js`.
-- Cycle 13: Updated `src/game.js` to destructure the same local helper names from `globalThis.DRAGON_HUNTER_MATH`.
-- Cycle 13 decision: did not split player update, enemy AI, contact combat, projectiles, rewards, NPCs, save/load, boss flow, drawing orchestration, input, loop, or init.
-- Cycle 13 verification: bundled Node syntax checks passed for `src/core/math.js`, `src/data/definitions.js`, and `src/game.js`; `git diff --check` passed; VM smoke checks passed for math helper loading, helper behavior, static reward reachability, region pools, chest/discovery persistence, equipment anti-downgrade behavior, and dragon challenge gating.
-- Cycle 13 remaining risk: real browser visual QA remains pending because Browser tooling was not available in this turn.
-- Cycle 13 Git status: final commit/push is pending because escalated command approval was blocked by the Codex usage limit after implementation and verification.
+Current status and historical implementation record.
 
+This file is **not** the active task list. Use `IMPROVEMENT_PLAN.md` for planning.
 
-## 2026-06-05 Refactor Handoff Update
-- Completed a large behavior-neutral extraction phase after the earlier definitions/math preparation passes.
-- Expected architecture now separates static data, core helpers, runtime context creation, and gameplay systems.
-- Added/expected core files: `src/core/state.js` and `src/core/context.js` in addition to `src/core/math.js`.
-- Added/expected system files: `map.js`, `spawn.js`, `monsters.js`, `combat.js`, `player.js`, `actions.js`, `rewards.js`, `projectiles.js`, `npc.js`, `save.js`, `effects.js`, `text.js`, `render.js`, `ui.js`, and `controls.js`.
-- `src/game.js` should now function primarily as the entrypoint/司令塔: DOM binding, helper lookup, state/player creation, thin facades, main loop, and init.
-- `src/systems/monsters.js` is the final large extraction target for this phase and owns enemy AI, contact combat, contact status effects, monster defeat, and level-up side effects.
-- `src/core/context.js` owns the context factory wiring that supplies state/player/helpers to each system.
-- The refactor intentionally preserves non-module script loading via `globalThis.DRAGON_HUNTER_*` to keep direct browser loading viable.
-- No gameplay design changes are intended by this handoff update.
-- Next session should prioritize verification over feature work: syntax checks for all JS files, `git diff --check`, browser startup, desktop/mobile smoke QA, save/load, enemy AI, contact combat, projectiles, Guardian defeat, red dragon defeat, and elder report.
-- Real browser QA and full manual playthrough remain required before new gameplay content or further architecture changes.
+## Current status summary
 
-## 2026-06-05 Player Sprite Asset Pass
-- Recognized user-led manual changes after the previous handoff: the project now contains a broader behavior-neutral extraction into `src/core`, `src/data`, and `src/systems`; new audio support/assets are present; and `src/systems/render.js` has a primary loader for independent player frame files under `assets/player/`.
-- Confirmed `assets/player.png` is a 256x32, 8-frame horizontal strip with 32x32 frames.
-- Split `assets/player.png` into eight independent frame files:
-  - `assets/player/down_idle.png`
-  - `assets/player/down_walk.png`
-  - `assets/player/left_idle.png`
-  - `assets/player/left_walk.png`
-  - `assets/player/right_idle.png`
-  - `assets/player/right_walk.png`
-  - `assets/player/up_idle.png`
-  - `assets/player/up_walk.png`
-- Verified all eight generated files are 32x32 PNGs.
-- Did not alter gameplay logic or overwrite the user's manual refactor/code changes.
-- `git diff --check` passed after the sprite split and documentation updates.
-- Git commit was intentionally not created in this pass because the working tree contains broad user-led manual changes that should be reviewed/staged intentionally.
-- Remaining risk: real browser visual QA is still needed to confirm the new player frames appear correctly in motion and at the current in-game draw scale.
+Active documents:
 
-## 2026-06-05 Fixed Map Pass
-- Replaced the old pseudo-random map fill in `src/systems/map.js` with a fixed, hand-editable tile layout.
-- Removed map-generation dependency on `hashNoise` and sine-based river placement; the map now uses explicit fixed painters such as world border, ground detail patches, river, forests/ridges, roads, village, and dragon cave.
-- Expanded the world size from 64x64 tiles to 80x72 tiles in `src/data/definitions.js`.
-- Added fixed east/southeast expansion space while preserving the existing village, North Forest, river/east area, Guardian site, treasure/discovery coordinates, and dragon cave progression.
-- Fixed a first-pass connectivity issue where the North Forest reward area and dragon cave became isolated by the new fixed forest/ridge painting. Added explicit road cuts to the North Forest, Guardian site, dragon cache, and cave entrance.
-- Verification:
-  - Bundled Node syntax checks passed for all JavaScript files under `src/`.
-  - VM map creation check passed: map size 80x72, 0 blocked important sites, and all 3 NPCs placed.
-  - BFS reachability from the player start passed for all treasure chests, hidden discoveries, Guardian site, dragon cave entrance, north road, far-east road, and the new east expansion path.
-  - Region spawn spot checks passed for grassland, wilds, north, east, cave, and expansion samples, each with nearby passable spawn space.
-  - `src/systems/map.js` no longer contains map-generation random/noise/sine references.
-- Remaining risk: real browser visual QA is still needed to confirm the expanded fixed map feels good in motion and that the screen framing around the new east/southeast area is readable.
+* `AGENTS.md` — workflow and development rules.
+* `GAME_DESIGN_NOTES.md` — design truth.
+* `IMPROVEMENT_PLAN.md` — current roadmap and next work order.
+* `DEVELOPMENT_LOG.md` — current status plus historical record.
 
-## 2026-06-05 Map Data Extraction Pass
-- Created `src/data/maps/world.js` as the dedicated human-editable world map data file.
-- `src/data/maps/world.js` now owns:
-  - `WORLD_MAP`: 80x72 fixed tile rows using a simple character legend.
-  - `WORLD_OBJECTS`: initial object data for NPC placement, separated from terrain tiles.
-- Updated `index.html` to load `src/data/maps/world.js` after definitions and before `src/systems/map.js`.
-- Reworked `src/systems/map.js` so terrain is loaded from `DRAGON_HUNTER_WORLD_MAP` instead of being painted procedurally by code.
-- Removed the temporary fixed-map painter functions from `src/systems/map.js`; future terrain edits should change `src/data/maps/world.js`.
-- Verification:
-  - Bundled Node syntax checks passed for all JavaScript files under `src/`.
-  - VM world-map data load passed: data size 80x72 matched definitions.
-  - BFS reachability from the player start passed for all treasure chests, hidden discoveries, Guardian site, dragon cave entrance, north road, far-east road, and east expansion path.
-  - Region spawn spot checks passed for grassland, wilds, north, east, cave, and expansion samples.
-  - NPC object conversion produced elder, smith, and healer placements.
-- Remaining risk: browser visual QA is still needed to confirm the data-driven fixed map looks good in the actual canvas.
+Deprecated documents:
 
-## 2026-06-05 Remaining Task Cleanup Pass
-- Updated stale architecture and script-order documentation in `AGENTS.md`, `IMPROVEMENT_PLAN.md`, and `NEXT_CODEX_TASK.md` so `src/data/maps/world.js` loads after definitions and before `src/systems/map.js`, and `src/data/audio.js` is reflected before `src/game.js`.
-- Corrected the saved verification target in `NEXT_CODEX_TASK.md` from the old `dragon-hunter-field-save-v1` key to the current `dragon-hunter-field-save-v2-32px` key.
-- Added `docs/MAP_EDITING.md` to document how to edit `WORLD_MAP`, how `WORLD_OBJECTS` is used, and what must be verified after terrain edits.
-- Generated fixed-map preview artifacts:
-  - `docs/world-map-preview.png`
-  - `docs/world-map-preview.svg`
-- Visual preview inspection shows the fixed world has a readable village, North Forest, river, dragon cave area, and east/southeast expansion path.
-- VM script-order smoke passed by loading all 22 `index.html` scripts in order with DOM/canvas/audio stubs. This confirms `src/data/maps/world.js` and `src/data/audio.js` are documented and loaded in the expected order.
-- VM save/load persistence smoke passed for opened chests, discovered rewards, equipment ranks, scales, seal crest, hunter charm, regeneration charm, Guardian defeated state, dragon defeated state, elder report state, and weaker equipment anti-downgrade guards.
-- Remaining risk: actual browser desktop/mobile QA and a full manual playthrough still require browser interaction that is not available in this tool session.
+* `TODO.md`
+* `NEXT_CODEX_TASK.md`
 
-## 2026-06-05 Verification Script Pass
-- Added `scripts/verify-game-smoke.js` as a repeatable VM verification entrypoint for high-priority non-browser checks.
-- The smoke script verifies:
-  - `index.html` script order.
-  - Fixed map data loading and reachability.
-  - NPC placement from `WORLD_OBJECTS`.
-  - Save/load persistence for chests, discoveries, equipment, charms, boss flags, and elder report state.
-  - Equipment anti-downgrade guards.
-  - Guardian spawn/defeat, seal crest grant, dragon challenge, dragon defeat, victory state, and elder report clear state.
-  - Full `index.html` script-load smoke with DOM/canvas/audio stubs.
-- Added `scripts/generate-map-preview.js` for SVG preview regeneration and `scripts/generate-map-preview.ps1` for PNG/SVG preview regeneration.
-- Ran both preview generators successfully and visually inspected `docs/world-map-preview.png`.
-- `scripts/verify-game-smoke.js` passed with `guardianDefeated`, `bossDefeated`, and `elderReported` all true.
+Current project status:
 
-## 2026-06-05 Replanning Documentation Pass
-- Reviewed the current management docs and current project state for a planning-only pass.
-- Current diagnosis: the project now has a stronger technical base than before, with behavior split across `src/data`, `src/core`, and `src/systems`, a fixed map in `src/data/maps/world.js`, repeatable VM smoke coverage, persistent one-time rewards, and equipment anti-downgrade protection.
-- Current main risk: real browser and full manual playthrough QA are still not complete. VM checks can prove many invariants, but they cannot fully verify screen fit, sprite readability, movement feel, village relief, audio/asset loading feel, or the 20-30 minute route.
-- Current main design gap: the fixed east/southeast expansion exists but still needs a clear gameplay purpose. It should become a deliberate survival-range destination with stronger danger and a reward that helps the player survive farther from the village.
-- Updated `IMPROVEMENT_PLAN.md` with a new replanning snapshot and next development order: browser QA, survival route content pass, survival-range reward pass, readable command/UI pass, then polish.
-- Updated `GAME_DESIGN_NOTES.md` with a target 20-30 minute route, fixed-map area roles, and reward philosophy focused on expanding survivable range rather than only granting gold.
-- Updated `TODO.md` with a current next-work-order section separating Critical, High, and Medium/Deferred items.
-- Updated `NEXT_CODEX_TASK.md` with the recommended next development pass, including the branch between browser-QA-first work and safe non-browser content work.
-- No gameplay code was intentionally changed in this pass.
+* Browser-based contact-combat action RPG.
+* Current village -> Guardian -> Red Dragon route is Chapter 1 scale.
+* Core design: survival-range expansion.
+* Code structure is split across `src/data`, `src/core`, and `src/systems`.
+* Fixed hand-editable world map lives in `src/data/maps/world.js`.
+* Current map size is `120x144`; future work should deepen the expanded world while preserving density, purpose, and reachability.
+* Real `もちもの` inventory exists with item, weapon, armor, and accessory handling.
+* Accessories are moving from permanent passive flags into equipment choices.
+* Southwest mine + southwest frontier camp are the first concrete volume-expansion pilot.
+* Southeast outpost + traveler bell + Southeast Warden + Aegis Charm make the southeast route a meaningful optional direction.
+* Ash Road + Ash Hamlet + Old Tower are the first larger map-size expansion beyond the old `80x72` footprint.
+* Ash Sorcerer and Old Tower Ash Knight add magic-pressure content beyond the Southeast Warden route.
+* Moon Ruins extend the Old Tower route southward with Moon Shade pressure, late supplies, and moon relic rewards.
+* Moon Camp + Eclipse Castle are the first Chapter 2 boss route beyond Moon Ruins.
+* Eclipse Mage, eclipse gear, Eclipse Ring, and Eclipse Dragon add the first post-Red-Dragon major boss arc.
+* Black Gate + Black Fort + Black Sun Castle are the first Chapter 3 route beyond Eclipse Castle.
+* Void Wraith, Black Sun gear, Void Charm, and Black Sun Dragon add a harder post-Chapter-2 major boss arc.
+* Black Market is now a Chapter 3 second town with recovery, selectable shop stock, guide/guards/villagers, and supplies.
+* Obsidian Cave + Obsidian Crawler + Obsidian Golem add a Chapter 3 branch dungeon and midboss before the Black Sun Dragon route.
+* Shops now use selectable buy menus instead of fixed-order auto-buying.
+* Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
 
-## 2026-06-05 Real Browser Rendering QA
-- Ran bundled Node syntax checks for all JavaScript files under `src/` and `scripts/`; all passed.
-- Ran `scripts/verify-game-smoke.js`; it passed with `guardianDefeated`, `bossDefeated`, and `elderReported` all true.
-- The in-app Browser connection still failed in this environment with the same Windows browser-session startup issue seen previously.
-- Used Microsoft Edge headless as a real browser engine fallback and loaded `index.html` through a `file://` URL.
-- Desktop viewport screenshot succeeded at `docs/browser-qa-desktop.png`.
-- Mobile portrait viewport screenshot succeeded at `docs/browser-qa-mobile.png`.
-- Mobile landscape-like screenshot succeeded at `docs/browser-qa-landscape.png`.
-- Result: the game boots and renders in a real browser engine. Canvas, village map, player sprite, HUD, command buttons, touch controls, and status panels are visible.
-- Desktop result: playable-looking initial screen with no black screen or missing primary assets.
-- Mobile portrait result: the game renders, but horizontal overflow is visible; the right side of the play area/action controls is clipped unless the page is scrolled or the layout is adjusted.
-- Mobile landscape result: the main screen renders, but vertical scrolling is still needed to reach touch controls.
-- Edge startup log check did not find fatal game script errors such as `Uncaught`, `ReferenceError`, `TypeError`, `SyntaxError`, or missing local files. The only captured warning was an Edge registry observation warning unrelated to the game.
-- Remaining risk: this pass verified real browser rendering through screenshots, not live manual input. Keyboard/touch movement, combat interaction, save/load UI, and full fresh-save playthrough should still be tested interactively.
+Current high-priority risks:
 
-## 2026-06-06 Southeast Survival Reward Pass
-- Goal: improve actual game completion value, not refactoring. Chosen task was to make the fixed east/southeast expansion more meaningful for survival-range expansion.
-- Added a new one-time treasure chest at the southeast outpost: `south-outpost`.
-- The southeast outpost chest grants the new `trailCharm` / traveler bell reward.
-- Traveler bell effects:
-  - Slightly increases movement speed.
-  - Reduces dash stamina cost.
-  - Increases maximum stamina slightly.
-  - Improves stamina regeneration slightly.
-  - Fully restores stamina when obtained.
-  - Adds one ward as a small safety reward for the long return trip.
-- Added `trailCharm` to initial player state, save data, load data, reset data, derived stat refresh, and the strength/info panel.
-- Updated `scripts/verify-game-smoke.js` to verify the new chest is reachable, persists through save/load, and that the traveler bell improves movement/dash stats after load.
-- Improved mobile browser usability:
-  - 560px and narrower now use a stronger single-column layout.
-  - Small portrait layouts constrain the game screen, command panel, status panel, and touch controls to the viewport width.
-  - Small landscape layouts pin touch controls near the bottom so they are usable without scrolling down to the controls.
-- Verification:
-  - Bundled Node syntax checks passed for all JavaScript files under `src/` and `scripts/`.
-  - `scripts/verify-game-smoke.js` passed.
-  - `git diff --check` passed with line-ending warnings only.
-  - Microsoft Edge headless screenshots were regenerated for desktop, mobile portrait, and mobile landscape.
-- Remaining risk:
-  - Interactive manual play from a new save is still needed to tune whether the southeast reward timing feels fair.
-  - Mobile portrait still feels dense; it is more usable than before, but further UI scaling may be useful after hands-on testing.
+* Full real-browser desktop/mobile play QA is still needed.
+* Full fresh-save manual playthrough to elder report is still needed.
+* Mobile UI and inventory overlay need real-browser confirmation.
+* Future map expansion must avoid empty terrain and preserve reachability; the new 120x144 space needs more hand-authored content density.
+* Gold/EXP/shop price balance should be checked after route expansion.
 
-## 2026-06-06 Southeast Warden Content Pass
-- Goal: continue moving the game toward completion through playable content, not refactoring or documentation-only work.
-- Analysis: the southeast outpost traveler bell made long-distance movement better, but the southeast expansion still risked feeling like a one-chest side path. The highest-value content addition was a follow-up challenge and survivability reward in the same route.
-- Implemented the `Southeast Warden` midboss at the southeast outpost site.
-- Warden unlock rule: requires the traveler bell and level 3, so the player first expands travel range, then returns for a stronger optional route challenge.
-- Warden combat identity: midboss HP/attack, projectile pressure, contact stamina drain, and short slow effect. This differentiates it from ordinary enemies without turning combat into button-mashing.
-- Implemented the Aegis Charm reward from Warden defeat. It reduces fire and projectile damage, helping with deeper east/cave survival and Red Dragon preparation.
-- Added Warden/Aegis state to initial state, save, load, reset, and UI info panel display.
-- Updated objective guidance so the player is directed toward the southeast Warden after the traveler bell and level 3.
-- Updated render support for the Warden site marker and Warden sprite.
-- Verification:
-  - Bundled Node syntax checks passed for `src/game.js`, `src/data/definitions.js`, `src/systems/spawn.js`, `src/systems/monsters.js`, `src/systems/projectiles.js`, and `scripts/verify-game-smoke.js`.
-  - `scripts/verify-game-smoke.js` passed. It now verifies Warden site reachability, Warden spawn/defeat, Aegis Charm persistence, and that Warden defeat does not set Guardian defeat.
-  - `git diff --check` passed with line-ending warnings only.
-- Browser QA:
-  - In-app Browser connection failed in this environment with `windows sandbox failed: spawn setup refresh`.
-  - Real visual confirmation of the Warden marker/sprite remains pending.
-- Remaining risk:
-  - Manual playtesting is needed to tune Warden difficulty, whether level 3 is the right timing, and whether the Aegis Charm reward feels strong enough without trivializing the Red Dragon.
+Next verification target:
 
-## 2026-06-06 Start Screen / Replay Flow Pass
-- Goal: fix a play-flow issue where the game always continued from the current save, making it awkward or impossible to replay from level 1 after clearing without manually deleting browser storage.
-- Implemented a start screen overlay with:
-  - `はじめから`
-  - `つづきから`
-- Continue is disabled when no save exists.
-- The game now creates the map and draws the initial screen, then waits for the player to choose New Game or Continue before starting the main loop.
-- New Game calls the reset flow, removes the saved data, and starts from the initial level 1 state.
-- Fixed reset behavior so opened chest state is cleared along with discoveries, boss flags, clear flags, charms, equipment, and inventory.
-- Adjusted the VM canvas stub to support initial rendering during script-load smoke checks.
-- Verification:
-  - Bundled Node syntax checks passed for `src/game.js` and `src/systems/save.js`.
-  - `scripts/verify-game-smoke.js` passed after the start-screen change.
-  - `git diff --check` passed with line-ending warnings only.
-- Remaining risk:
-  - Real browser QA should verify the actual start screen visuals and clicking/tapping `はじめから` / `つづきから`.
-  - Manual replay-after-clear should be tested by clearing the game, reloading, choosing `はじめから`, and confirming level 1 / unopened chests / no clear state.
+1. Syntax checks for `src/` and `scripts/`.
+2. `scripts/verify-game-smoke.js`.
+3. `git diff --check`.
+4. Browser desktop/mobile smoke QA if possible.
+5. Fresh-save route playthrough when feasible.
 
-## 2026-06-06 Ending Report / Clear Replay Pass
-- Goal: consume a remaining high-value gameplay-completion task, not refactoring. The end of the route needed more payoff after the player defeats the Red Dragon and returns to the elder.
-- Implemented a richer final clear overlay after elder report:
-  - Shows `QUEST CLEAR`.
-  - States that the Red Dragon has been sealed.
-  - Reinforces that the village is safe again.
-  - Shows `N: はじめから` as the immediate replay route.
-- Added keyboard support so pressing `N` after the final elder report calls the New Game reset flow. This clears the saved data, opened chests, discoveries, boss/clear flags, equipment, charms, and inventory through the existing `resetGame` path.
-- Design impact:
-  - The completion route now ends with a clearer payoff instead of a bare `CLEAR` label.
-  - Replay after completion is visible on the clear screen, not only after page reload.
-- Verification:
-  - Bundled Node syntax checks passed for all JavaScript files under `src/` and `scripts/`.
-  - `scripts/verify-game-smoke.js` passed. It still verifies map reachability, save/load, opened chest persistence, equipment anti-downgrade, start-menu New Game behavior, Warden, Guardian, Red Dragon defeat, and elder report clear state.
-  - `git diff --check` passed with line-ending warnings only.
-- Remaining risk:
-  - In-app Browser QA could not run in this environment; the browser connection failed with the same Windows browser-session startup issue seen previously.
-  - Real browser/manual QA should visually confirm the new ending panel and `N` replay behavior after an actual clear.
-  - The ending is intentionally compact; a richer epilogue should wait until the full route has been manually balanced.
+## Log maintenance rule
 
-## 2026-06-06 Volume Expansion Replan / Southwest Mine Enemy Pass
-- User direction: the current clear time is around 20 minutes, and the game now needs active volume expansion rather than treating the short route as final.
-- Updated design direction:
-  - Treat the current village-to-dragon route as chapter 1.
-  - Long-term map target is at least 10x the current playable scope.
-  - Future maps should include caves, towers, castles, mines, ruins, roads, bridges, and multiple towns/frontier bases.
-  - Multiple towns should become new safe anchors with healing, restocking, stronger equipment, and hints.
-  - Monster variety must expand through behavior: bubbles, magic, poison, slow, summons, territorial behavior, and ranged pressure.
-  - `もちもの` should become a real inventory for consumables, weapons, armor, accessories, equipment choice, and selling unwanted gear.
-  - Current fixed charm flags should eventually become equipable accessories.
-- Recognized existing uncommitted user-side changes and preserved them:
-  - Southwest mine terrain in `src/data/maps/world.js`.
-  - `southwest-mine-cache` treasure and `mineGold` reward.
-  - Strong enemy leash/home behavior.
-  - Regeneration tuning changes.
-- Implemented first volume-content step on top of those changes:
-  - Added a `mine` spawn region for the southwest mine area.
-  - Added the new `泡吐き` monster.
-  - `泡吐き` fires slower bubble projectiles.
-  - Bubble projectile hits apply slow and stamina pressure.
-  - Contact with `泡吐き` also applies slow/stamina pressure.
-  - Added a distinct bubble-like monster sprite treatment in the canvas renderer.
-- Design impact:
-  - The southwest mine becomes a differentiated risky destination, not only a 500G cache.
-  - This starts the requested direction of larger maps plus more varied monster behavior.
-- Verification:
-  - Syntax checks passed for all JavaScript files under `src/` and `scripts/`.
-  - `scripts/verify-game-smoke.js` passed and now reports `mine.region === "mine"` plus `泡吐き` in the mine spawn pool.
-  - `git diff --check` passed with line-ending warnings only.
-- Optional real browser QA remains desirable for the new sprite and mine route.
+Append new meaningful passes under **New entries**.
 
-## 2026-06-06 Volume Expansion Pass / Southwest Frontier Camp
-- Goal: continue gameplay-volume expansion, not refactoring. The southwest mine had a distinct enemy and reward, but the world still relied almost entirely on the starting village as the only true safe anchor.
-- Design decision: add the first remote safe base near the mine route so survival range expansion can repeat outside the original village radius.
-- Implemented `SAFE_ZONES` and `HEAL_POINTS` definitions so safe bases and recovery circles are data-driven beyond the original village.
-- Added the southwest frontier camp safe zone near the mine route.
-- Added a second recovery circle at the frontier camp.
-- Added a `frontier` supply NPC through `WORLD_OBJECTS`.
-- Added camp visuals in the renderer: low stakes, tents, campfire, supply marker, and recovery marker.
-- Updated UI/feedback: the zone display can now show `前線キャンプ` and `廃坑`, low-HP guidance now points to the nearest base rather than only the village, and context prompts show the supply NPC as `補給隊`.
-- Verification:
-  - Syntax checks passed for all 24 JavaScript files under `src/` and `scripts/`.
-  - `scripts/verify-game-smoke.js` passed. It now verifies the frontier NPC loads, the camp is a safe zone, the mine remains outside that safe zone, monsters cannot enter the closed camp, the camp recovery circle fully heals, and the supply NPC sells expedition items.
-  - `git diff --check` passed with CRLF warnings only.
-  - Edge headless real-browser rendering updated `docs/browser-qa-desktop.png`; visual inspection confirmed the game still boots and draws the main screen, player, map, HUD, and controls.
-- Remaining risk:
-  - In-app Browser interaction still failed with the known Windows browser-session startup issue, so live keyboard/touch play at the new camp was not verified.
-  - The camp's exact visual placement near the southwest mine should be checked interactively in a browser once browser control is available.
-  - Mine charm follow-up was implemented in the next pass.
+For each pass, record:
 
-## 2026-06-06 Volume Expansion Pass / Mine Charm
-- Goal: make the new southwest frontier camp more than a recovery marker by giving it a region-specific purchase that changes how far the player can safely push into the mine.
-- Analysis: the mine has a distinct enemy (`泡吐き`) and a remote safe base, but the player still needed a clear "I bought this and the mine became easier" progression beat.
-- Implemented `mineCharm` as an accessory-like progression flag.
-- Added `mineCharm` to initial player state, save data, load data, reset data, UI info panels, and VM smoke verification.
-- Frontier supply NPC now sells the mine charm / bubble ward for 180G before ordinary expedition supplies.
-- Mine charm effects:
-  - Reduces `泡吐き` contact damage.
-  - Reduces bubble projectile damage by treating bubbler shots as `bubble` source damage.
-  - Reduces bubble slow duration.
-  - Reduces bubble stamina loss from both contact and projectiles.
-- Design impact:
-  - Adds a region-specific equipment-like choice without doing the full inventory rewrite yet.
-  - Strengthens the survival range loop around the mine: enter mine, take bubble pressure, retreat to camp, earn/buy the charm, then push deeper more safely.
-- Verification:
-  - Syntax checks passed for all 24 JavaScript files under `src/` and `scripts/`.
-  - `scripts/verify-game-smoke.js` passed and now verifies mine charm purchase, persistence, and damage reduction against `泡吐き`.
-  - `git diff --check` passed with CRLF warnings only.
-- Remaining risk:
-  - Manual tuning is needed to decide whether 180G is the right price and whether the reduction is too strong or too subtle.
-  - This is still a flag-based accessory. A future `もちもの` / accessory menu should expose it as an equipable item once equipment sidegrades exist.
-  - The next high-value content pass should either expand this camp into a stronger shop/town step, add the next dungeon route, or begin the real `もちもの` inventory.
+* Date.
+* Goal.
+* Implemented changes.
+* Verification performed.
+* Known risks or unverified items.
+* Whether docs or map previews were updated.
 
-## 2026-06-06 Full Inventory / Anti-Conservative Direction Pass
-- User direction: do not avoid high-value gameplay systems by citing implementation risk. The correct posture is to implement major player-facing systems aggressively, then manage risk through save migration and verification.
-- Documentation updated:
-  - `AGENTS.md` now explicitly says not to hide behind conservatism when the user asks for a major gameplay system.
-  - `GAME_DESIGN_NOTES.md`, `IMPROVEMENT_PLAN.md`, and `TODO.md` now treat real inventory as an implemented core RPG direction, not a distant deferred idea.
-- Implemented a real `もちもの` inventory:
-  - Former `強さ` command is now `もちもの`.
-  - `I` / `M` or the command button opens the inventory overlay.
-  - Left/right changes category: items, weapons, armor, accessories.
-  - Up/down selects entries.
-  - Enter/Space uses consumables or equips selected gear.
-  - `S` sells consumables or unequipped weapons/armor.
-  - Esc closes the menu.
-- Added persistent inventory state:
-  - `ownedWeapons`
-  - `ownedArmors`
-  - `ownedAccessories`
-  - `equippedAccessory`
-- Save/load now migrates old charm flags into owned accessories and persists the equipped accessory.
-- Existing rank-based weapon/armor values remain as the equipped item for compatibility, but treasure/shop/discovery rewards now also populate owned gear lists.
-- Converted major charm effects into equipment choices:
-  - `hunter`: stamina max accessory
-  - `regen`: HP regeneration accessory
-  - `trail`: movement/dash accessory
-  - `aegis`: fire/projectile defense accessory
-  - `mine`: bubble/mine resistance accessory
-- Only the equipped accessory provides its active effect, while owned flags still support story/progression compatibility.
-- Verification:
-  - Bundled Node syntax checks passed for `src/data/definitions.js`, `src/systems/rewards.js`, `src/systems/ui.js`, `src/systems/render.js`, and `src/game.js`.
-  - `scripts/verify-game-smoke.js` passed.
-  - VM smoke now verifies inventory open/close, weapon equip, equipped-weapon sale prevention, unequipped-weapon selling, accessory equip switching, accessory effect switching, inventory save/load fields, and the existing story clear flow.
-- Remaining risk:
-  - Real browser/manual QA should confirm the overlay fits the compact canvas and feels usable on keyboard/touch.
-  - In-app Browser failed with the known Windows sandbox startup error, and the escalated Edge headless screenshot attempt was rejected by the approval system. No browser workaround was attempted after that rejection.
-  - Accessory selling needs a richer design. Unique accessories are now equipment choices, but the next pass should decide buyback, lock rules, or duplicate sidegrade sources before allowing all unique rewards to be sold freely.
-  - The inventory needs more sidegrade content. It is structurally playable now, but the next value comes from new weapons, armor, accessories, and shops that make choosing equipment interesting.
+Keep new entries concise. For deep historical detail, use git history instead of expanding this file indefinitely.
+
+---
+
+## New entries
+
+_Add new entries here._
+
+### 2026-06-14: Smuggler shortcut, two accessory slots, and regeneration cave
+
+Goal:
+
+* Reduce the overworld's一本道 feel and add a high-risk shortcut / side-dungeon reward loop.
+* Make accessories less dead by allowing two equipped accessories.
+* Make Trap Flowers readable enough to react to.
+
+Implemented changes:
+
+* Added a western smuggler road through the southern map that can lead toward Black Market earlier than the normal route.
+* Added the Black Market north regeneration cave with a one-time `大再生の指輪` chest and a cave hint discovery.
+* Added `smuggler` and `regenCave` spawn regions with stronger shortcut/dungeon pressure.
+* Added `大再生の指輪` as a large regeneration accessory.
+* Added two equipped accessory slots with legacy `equippedAccessory` save compatibility.
+* Updated inventory/status UI to show two equipped accessories and support accessory equip/unequip/replacement.
+* Extended save/load and smoke tests for `equippedAccessories`, `greaterRegenCharm`, new route rewards, and old save migration.
+* Doubled Trap Flower priming time from `520ms` to `1040ms`.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification performed:
+
+* `node --check src/game.js`
+* `node --check src/systems/rewards.js`
+* `node --check src/systems/ui.js`
+* `node --check src/systems/spawn.js`
+* `node --check src/systems/monsters.js`
+* `node --check src/systems/save.js`
+* `node --check scripts/verify-game-smoke.js`
+* `node scripts/verify-game-smoke.js`
+* `git diff --check` passed with CRLF warnings only.
+* Map preview visually checked after regeneration.
+* In-app Browser QA was attempted but failed in this environment with `CreateProcessAsUserW failed: 5`.
+
+Known risks:
+
+* Real browser/manual play QA for the new smuggler road, regeneration cave, and two-accessory UI is still pending.
+* New shortcut enemy pressure and large regeneration balance need fresh-save playtesting.
+* The smuggler road currently improves route choice, but it still needs more landmark pockets or a named elite to feel fully authored.
+
+### 2026-06-14: Trap Flower Area-Denial Route Pass
+
+Goal: make late routes more interesting to traverse by adding a danger that changes movement decisions, not only enemy stats. The target was survival-range expansion through risky shortcuts, visible warnings, and route-extension supplies.
+
+Key work:
+
+* Added Trap Flower / `地雷花` as a stationary late-route enemy in Moon Ruins, Eclipse, Obsidian, and Black Sun spawn pressure.
+* Trap Flowers now warn briefly, then explode for HP damage, stamina loss, and slow pressure; players can cut them early, route around them, or prepare with wards/return bells.
+* Added trap-warning discoveries and trap-route caches around Moon Ruins and Black Sun approaches.
+* Added `trapSupply` and `trapHint` rewards that provide wards, tonics, return bells, and warning text.
+* Added field rendering for trap-warning markers and Trap Flower sprites, including a primed warning flash.
+* Updated travel memo guidance so late-route notes mention how to handle Trap Flowers.
+* Updated VM smoke coverage for trap definition, level-gated spawn pools, explosion behavior, trap-route rewards, and travel memo guidance.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with CRLF warnings only.
+
+Known risks:
+
+* Real browser QA was attempted, but the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Browser readability is still pending for the new Trap Flower sprite/priming warning and route feel.
+* Manual balance is still needed for Trap Flower density, explosion damage, and whether the Moon Ruins first exposure feels fair.
+
+### 2026-06-14: Summoner, Travel Memo, and Late-Route Density Pass
+
+Goal: make the existing `120x144` overworld more worth exploring without another size jump. Focus was route density, readable landmarks, behaviorally distinct enemies, destination guidance, and late-route survival-range expansion.
+
+Key work:
+
+* Added Summoner / `召喚士` as a late-route enemy that calls reinforcements when ignored.
+* Added Summoners to Moon Ruins, Eclipse, Obsidian, and Black Sun spawn pools with level gating.
+* Added Moon/Eclipse/Black Market side caches and route discoveries that reward tonics, return bells, wards, bombs, and gold.
+* Added visible field markers for route hints, shortcut hints, obsidian waystones, and summoner warnings.
+* Added `旅メモ` to the status panel so players can understand the next route and preparation target without coordinate-style instructions.
+* Roughened selected Eclipse Castle and Black Sun Castle wall rows into broken courts and side paths.
+* Added four more NPCs to remote bases / Black Market areas to make bases feel more inhabited.
+* Localized remaining visible item-detail labels and the return-bell message into Japanese-facing text.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with CRLF warnings only.
+* Map preview generation passed at `120x144`.
+* VM smoke now verifies 40 NPCs, Summoner definition/spawn-pool membership, Summoner reinforcement behavior, `旅メモ` status-page presence, new summoner supply reward, and reachability for all chests/discoveries.
+
+Known risks:
+
+* Real in-app Browser QA was attempted, but the browser runtime failed again with Windows `CreateProcessAsUserW failed: 5`.
+* Manual balance is still needed for Summoner frequency, reinforcement pressure, late-route reward value, and whether the new side paths feel clear during actual play.
+
+### 2026-06-14: Dense Route, Shield Slot, and Landmark Side-Rewards Pass
+
+Goal: improve the existing `120x144` overworld as an RPG world rather than expanding map size again. Focus areas were sparse/linear route feel, wall-corridor terrain, remote-base life, side rewards, enemy behavior difference, equipment choice, and readable preparation.
+
+Key work:
+
+* Added a formal shield slot:
+  * `shield`, `ownedShields`, save/load migration, reset handling.
+  * Shield inventory tab, equip behavior, sell guards, shop purchases, status display.
+  * Shield definitions from wooden shields through Black Sun / Obsidian shields.
+* Added shield combat behavior:
+  * Shields reduce frontal contact damage.
+  * Shield Soldier is weak to side/back attacks but inefficient to attack from the front.
+* Added Shield Soldier to old tower, eclipse, obsidian, and void route spawn pressure.
+* Added shield route rewards:
+  * Ash Watchtower cache.
+  * Old Tower side cache.
+  * Black Gate shield cache.
+* Added route-hint and shortcut-hint discovery rewards that provide tonics/return bells and teach preparation.
+* Roughened selected old-tower / eastern-ruin map walls into broken wall openings and side pockets to reduce the sealed-corridor feeling.
+* Added more NPCs to Black Market, Ash Hamlet, Moon Camp, and Black Fort.
+* Localized newly added English-facing names/messages for Tonic, Elixir, Return Bell, Base Wagon, and obsidian supply text.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+* Expanded VM smoke coverage for NPC count, shield save/load, shield inventory equip, frontal shield mitigation, Shield Soldier spawn/combat behavior, shield shop stock, and shield reward chests.
+
+Verification:
+
+* `node --check` passed for all JavaScript files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* Map preview generation passed at `120x144`.
+* VM smoke verifies reachability for new shield reward locations and existing major route goals.
+
+Known risks:
+
+* Real in-app Browser QA was attempted, but the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Manual balance is still needed for shield prices, shield mitigation strength, Shield Soldier density, and whether heavy shields should eventually reduce movement.
+* Terrain improvements are intentionally focused and safe; more large-scale hand-authored terrainization is still needed for Moon Ruins, Black Market outskirts, and Black Sun Castle.
+
+### 2026-06-13: Base Travel, Shop Economy, and Late-Route Density Pass
+
+Goal: address playtest feedback that the strongest weapon could be found without buying gear, gold had too few uses, bases felt lonely, late maps felt sparse/over-walled, walking from the first village to late areas was tedious, and shop item rows overlapped.
+
+Key work:
+
+* Changed Obsidian Vault reward so it no longer grants rank 11 weapon/armor directly.
+* Kept the Obsidian Bracelet as a meaningful exploration reward and added premium route supplies instead.
+* Raised rank 11 weapon/armor prices so Black Market gear remains a real late-game gold sink.
+* Added new consumables:
+  * Tonic: restores stamina, clears slow, and gives a small guard buffer.
+  * Elixir: fully restores HP/stamina and clears slow/burn.
+  * Return Bell: returns to the nearest unlocked safe base.
+* Added Base Wagon travel through new porter NPCs at village and remote bases.
+* Added more guards/villagers/porters to village, southwest camp, Ash Hamlet, Moon Camp, Black Fort, and Black Market.
+* Expanded remote shop lineups with tonics, elixirs, return bells, bombs, wards, and premium Black Market supplies.
+* Added Black Market and Obsidian route supply rewards.
+* Increased late-region spawn density targets and max monster cap.
+* Opened an extra Black Sun Castle wall route to reduce the over-walled, single-corridor feel.
+* Updated shop rendering so row descriptions move to the bottom help line instead of overlapping item names and prices.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* `node --check` passed for changed JS files using bundled Node.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with CRLF warnings only.
+* Map preview generation passed at `120x144`.
+* VM smoke verifies 30 NPCs, porter loading, base travel, premium item purchases, updated Obsidian Vault reward, Obsidian route supply rewards, save/load for new items, and reachability for new rewards/discoveries.
+
+Known risks:
+
+* Real-browser QA was attempted, but the in-app browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Manual balance is still needed for late-game gold income versus rank 11 gear, elixir/return bell prices, and denser Chapter 3 enemy pressure.
+* Bases are more populated, but Black Market should still gain unique conversations/errands and more city identity in a future content pass.
+
+### 2026-06-13: Selectable Shops and Obsidian Branch Expedition
+
+Goal: address playtest issues with equipment acquisition/shop flow and make the Chapter 3 route feel like a longer expedition toward Black Sun Castle.
+
+Key work:
+
+* Replaced fixed-order NPC auto-buy behavior with selectable shop menus for smith, healer, frontier bases, and Black Market.
+* Added shop controls for up/down selection, confirm purchase, and close.
+* Added shop overlay rendering with cost, owned state, lock reason, and player gold.
+* Preserved the rule that weaker found equipment is added to inventory if new but does not auto-equip over stronger current gear.
+* Added Black Market as a Chapter 3 second town with safe-zone handling, recovery point, merchant, guide, guards, villagers, supplies, and map/readability details.
+* Added Obsidian Cave as a Chapter 3 branch region with Obsidian Crawler spawns.
+* Added Obsidian Golem as a Chapter 3 midboss before the Black Sun Dragon route.
+* Added obsidian weapon/armor/accessory rewards and Black Market shop stock after the Obsidian Golem is defeated.
+* Updated Chapter 3 objective/guidance, region text, save/load fields, combat modifiers, projectile/status handling, render markers, and VM smoke coverage.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with line-ending warnings only.
+* Map preview generation passed at `120x144`.
+* VM smoke now verifies:
+  * reachability for Black Market, Obsidian Golem site, Black Sun route, chests, and discoveries,
+  * 15 NPCs loaded from `WORLD_OBJECTS`,
+  * selectable shop purchasing for route gear, accessories, and supplies,
+  * weaker found equipment is kept without auto-equipping,
+  * Obsidian Golem spawn/defeat before Black Sun Dragon,
+  * obsidian rewards and save/load persistence.
+
+Known risks:
+
+* Real-browser visual QA is still pending. Browser connection was attempted, but this environment failed with Windows `CreateProcessAsUserW failed: 5`.
+* Chapter 3 balance after adding selectable shops and Obsidian Golem needs manual playtesting.
+* Black Market is functional, but should gain more city content, unique conversations, and optional side rewards in a later content pass.
+
+### 2026-06-13: Chapter 3 Black Sun Dragon Boss Route
+
+Goal: add a harder Chapter 3 arc after the Eclipse Dragon route, increasing volume while preserving survival-range expansion.
+
+Key work:
+
+* Expanded the fixed overworld from `120x128` to `120x144`.
+* Added Black Gate, Black Fort, and Black Sun Castle as a southern Chapter 3 route.
+* Added Black Fort as a new remote safe base with full recovery, supplies, Black Sun gear, and Void Charm progression.
+* Added Void Wraith / `黒陽の影` as a high-pressure late caster with stronger slow/stamina projectile pressure.
+* Added Black Sun Dragon / `黒陽竜` as a Chapter 3 major boss after:
+  * Chapter 2 elder report,
+  * Eclipse Castle cache,
+  * Black Fort armory,
+  * Black Sun seal discovery,
+  * level 26.
+* Added Chapter 3 rewards:
+  * `black-fort-armory`,
+  * `black-sun-cache`,
+  * `void-seal`,
+  * `黒陽の剣`,
+  * `黒陽の鎧`,
+  * `黒陽の護符`.
+* Added Chapter 3 save/load fields, objective text, elder report flow, boss marker, ending banner, region UI, dark-region atmosphere, and boss/enemy rendering.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` at `120x144`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * `120x144` map size,
+  * reachability for Black Fort, Black Sun seal, Black Sun cache, and Black Sun Dragon,
+  * Black Fort safe-zone behavior,
+  * void region detection and spawn pool,
+  * Black Sun gear/accessory rewards,
+  * Black Sun Dragon spawn, defeat, save flags, and elder report.
+* Map preview generation passed at `120x144`.
+
+Known risks:
+
+* Real-browser interactive QA for walking from Eclipse Castle through Black Fort to Black Sun Castle is still pending.
+* In-app Browser QA was attempted, but the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Chapter 3 combat balance, especially Void Wraith projectile pressure and Black Sun Dragon HP/spread/summon pacing, needs manual playtesting.
+* The new Chapter 3 route is playable and VM-verified, but it should be deepened with more landmarks, enemies, optional rewards, and another remote town/dungeon in future passes.
+
+### 2026-06-12: Chapter 2 Eclipse Dragon Boss Route
+
+Goal: increase game volume beyond the Red Dragon / Moon Ruins route by adding a Chapter 2 major boss story that extends survival-range expansion farther south.
+
+Key work:
+
+* Expanded the fixed overworld from `120x112` to `120x128`.
+* Added Moon Camp / `月見砦` as a new remote safe base with recovery, supplies, and eclipse preparation.
+* Added Eclipse Castle / `月蝕城` as the Chapter 2 final danger pocket.
+* Added Eclipse Mage / `月蝕術師` as a stronger late magic enemy in the new `eclipse` region.
+* Added Eclipse Dragon / `月蝕竜` as a Chapter 2 major boss after:
+  * Red Dragon elder report,
+  * Ash Knight defeat,
+  * Moon Ruins relic chest,
+  * Eclipse Seal discovery,
+  * level 20.
+* Added eclipse gear and rewards:
+  * `月蝕の刃`,
+  * `月蝕の外套`,
+  * `月蝕の指輪`,
+  * `moon-camp-armory`,
+  * `eclipse-castle-cache`,
+  * `eclipse-seal`.
+* Added Chapter 2 save/load fields, objective text, elder report flow, boss marker, ending banner, and region UI.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` at `120x128`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * `120x128` map size,
+  * reachability for Moon Camp, Eclipse Seal, Eclipse Castle cache, and Eclipse Dragon,
+  * eclipse region detection and spawn pool,
+  * Moon Camp safe-zone/heal/shop behavior,
+  * eclipse gear/accessory rewards,
+  * Eclipse Dragon spawn, defeat, save flags, and elder report.
+* Map preview generation passed at `120x128`.
+
+Known risks:
+
+* Real-browser interactive QA for walking from Moon Ruins to Moon Camp and fighting Eclipse Dragon is still pending.
+* In-app Browser QA was attempted, but the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Chapter 2 combat balance, especially Eclipse Dragon HP/projectile pressure and level 20 pacing, needs manual playtesting.
+* The new Chapter 2 route is playable and VM-verified, but it should be deepened with more landmarks, enemies, and side rewards in future passes.
+
+### 2026-06-12: Post-Dragon Ash Knight Fix and Moon Ruins Expansion
+
+Goal: apply playtest findings, fix the Ash Knight post-victory spawn blocker, improve Old Tower route guidance, and add more playable map content beyond the current expanded route.
+
+Key work:
+
+* Fixed `updateStoryEvents()` so game over still stops story events, but Red Dragon victory no longer prevents the Old Tower Ash Knight from spawning when its requirements are met.
+* Kept normal Guardian/Warden story spawning gated after `victory`, so the fix is targeted to the late optional Ash Knight route.
+* Expanded the fixed overworld from `120x96` to `120x112`.
+* Added the Moon Ruins / `月影廃墟` as a southern continuation past the Old Tower.
+* Added Moon Shade / `月影の亡霊` as a late magic enemy with faster magic projectiles and stamina/slow pressure.
+* Added Moon Ruins treasure and discovery content:
+  * `moon-ruin-cache`
+  * `moon-road-supply`
+  * `moon-waystone`
+  * `moon-field-cache`
+* Added `moonRelic`, `moonSupply`, and `waystone` rewards for late-route supplies, wards, stamina recovery, and star-gear reinforcement.
+* Added guidance text that points the player from Ash Hamlet south to the Old Tower and from the Old Tower south to the Moon Ruins.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` at `120x112`.
+* Updated `scripts/generate-map-preview.ps1` so map previews include `SOUTH_GATE_ROW` and `DEEP_SOUTH_EXPANSION`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * `120x112` map size,
+  * reachability for Moon Ruins treasure/discovery goals,
+  * Moon Ruins region detection,
+  * Moon Shade spawn pool membership,
+  * Moon rewards and waystone reward behavior,
+  * Ash Knight spawning after Red Dragon victory when requirements are met.
+* `git diff --check` passed with CRLF warnings only.
+* Map previews regenerated successfully at `120x112`.
+
+Known risks:
+
+* In-app Browser QA could not be run because the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Manual balance for Moon Shade, Moon Ruins reward value, and the Red Dragon -> Ash Knight -> Moon Ruins optional route still needs real playtesting.
+
+### 2026-06-12: 120x96 World Expansion and Equipment Visibility
+
+Goal: answer the player-facing request to make the world larger and make equipment strength/status understandable.
+
+Key work:
+
+* Expanded the fixed overworld definition from `80x72` to `120x96`.
+* Kept the original Chapter 1 route intact and added editable fixed-map expansion sections:
+  * `BASE_MAP`
+  * `EAST_EXPANSION`
+  * `SOUTH_EXPANSION`
+* Added Ash Road / `灰の街道`, Ash Hamlet / `灰道の宿場`, and Old Tower / `古塔`.
+* Added Ash Hamlet as a second remote safe base with a heal point and frontier-style supply NPC.
+* Added new one-time rewards:
+  * `ash-road-cache`
+  * `south-quarry-cache`
+  * `old-tower-cache`
+  * `ash-spring`
+  * `tower-cache`
+* Added `灰術師` as a magic/ranged enemy for the expanded road/tower regions.
+* Added `古塔の灰騎士` as an optional late midboss after Southeast Warden + level 14.
+* Added `星見の杖` and `星織りの衣` as magic-route sidegrade equipment.
+* Ash Hamlet sells star gear after the Ash Knight is defeated.
+* Inventory weapon/armor rows now show ATK/DEF totals and current-equipment deltas.
+* The side status panel now shows equipped weapon/armor bonus values.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+* Updated preview generation so the PowerShell preview script understands the split fixed-map sections.
+
+Verification:
+
+* Syntax checks passed for changed JavaScript files during the pass.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * `120x96` map size,
+  * reachability for the new chests, discoveries, Ash Hamlet, and Old Tower,
+  * Ash Hamlet safe-zone/heal behavior,
+  * Ash Sorcerer / Ash Knight definitions and region pools,
+  * Ash Knight defeat persistence and not counting as the Guardian,
+  * Ash Hamlet post-midboss star-gear sales,
+  * inventory ATK/DEF comparison text,
+  * `ashGear` chest reward.
+* Map previews regenerated successfully at `120x96`.
+
+Known risks:
+
+* Real-browser interactive QA for walking the full new Ash Road / Old Tower route is still pending.
+* In-app Browser connection failed with a Windows `CreateProcessAsUserW failed: 5` error in this environment.
+* Edge headless browser QA could not be run because the escalation request was rejected by the approval/usage system; do not work around this without user approval.
+* Balance for Ash Sorcerer, Ash Knight, and star gear needs manual playtesting.
+* The expanded map is much larger, but some new terrain should still be thickened with more NPC hints, rewards, and route landmarks.
+
+### 2026-06-12: Route Preparation Equipment Expansion
+
+Goal: continue aggressive game expansion by making the real `もちもの` inventory matter through actual equipment choices, not only UI structure.
+
+Key work:
+
+* Added new sidegrade weapons:
+  * `泡割り槍`: strong against Bubbler / slime-style mine pressure.
+  * `火返しの剣`: strong against Wisp and Dragonling fire-route enemies.
+  * `竜狩りの刃`: late preparation weapon for Dragonling and Red Dragon pressure.
+* Added new sidegrade armor:
+  * `鉱夫服`: reduces bubble damage, slow duration, and stamina loss pressure.
+  * `耐火マント`: reduces fire damage and burn duration.
+  * `巡礼鎧`: late-route defense against bosses, midbosses, dragonlings, and projectiles.
+* Southwest frontier camp now sells route-preparation gear after the player obtains the mine charm:
+  * mine gear first,
+  * fire-route gear from level 8,
+  * dragon-route gear from level 12.
+* Added a new reachable mine treasure chest, `mine-armory`, that grants `泡割り槍` and `鉱夫服` as an exploration reward.
+* Updated reward handling so sidegrade gear is added to inventory without auto-equipping over a higher raw-power current item.
+* Unified Southeast Warden readiness through `WARDEN_REQUIREMENTS.level` so spawn logic, guidance, and marker rendering use the same level gate.
+
+Verification:
+
+* Syntax checks passed for all JavaScript files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM smoke now verifies:
+  * sidegrade weapon inventory pickup without auto-downgrade,
+  * frontier camp sale of mine, fire-route, and dragon-route gear,
+  * mine sidegrade weapon damage against Bubbler,
+  * mine sidegrade armor bubble damage reduction,
+  * Warden gate using the new requirement,
+  * the new `mine-armory` chest is reachable.
+* `git diff --check` passed with CRLF warnings only.
+* Edge headless loaded `index.html` and wrote `docs/browser-qa-equipment-expansion.png`; the captured start screen rendered correctly.
+
+Known risks:
+
+* Interactive browser QA for actually opening `もちもの`, buying camp gear, and switching equipment remains pending.
+* New gear prices/effects need manual playtesting against the longer LV15 route.
+* The map size is still `80x72`; this pass expanded equipment/content depth, not world dimensions.
+
+---
+
+## Historical milestones
+
+### 2026-06-05: Core route and survival-range foundation
+
+Implemented the first complete village -> Guardian -> Red Dragon -> elder report route.
+
+Key work:
+
+* North Forest Guardian midboss.
+* Dragon challenge requirements: 3 scales, level 4, seal crest.
+* Red Dragon victory and elder report clear flow.
+* Save/load fields for progression.
+* Weapon/armor traits tied to facing/contact combat.
+* Persistent hidden discoveries: spring, ore, hunter cache.
+* Red Dragon enrage, spread shots, and summons.
+* Early damage and armor tuning so retreat/equipment matter.
+* Mid-game regeneration ring.
+
+Verification included syntax checks and VM simulation for Guardian, dragon, elder report, save/load, and damage-reduction samples.
+
+### 2026-06-05: Region population, village safety, tempo, and UI
+
+Improved survival-range feel and readability.
+
+Key work:
+
+* Region-aware spawn pools and local replenishment.
+* `wilds` region so distant grassland is not treated like village outskirts.
+* Local monster pruning to prevent stale off-screen monsters from blocking current-region spawns.
+* Projectile town-entry blocking.
+* Gates close while player is inside town.
+* Stronger village boundary and role markers.
+* Walkable clearings around static rewards.
+* Faster movement, dash, stamina recovery, attack cooldown, dash cooldown, and contact interval.
+* Objective guidance and context prompts.
+* Strength/info panel for equipment, survival, inventory/progression.
+
+Verification included VM checks for spawns, projectile blocking, gate behavior, reward reachability, prompts, tempo constants, clear flow, and save/load.
+
+### 2026-06-05: Refactor and fixed map foundation
+
+Moved from monolithic `src/game.js` toward the current structure.
+
+Key work:
+
+* Extracted definitions, math, state/context, and systems into `src/data`, `src/core`, and `src/systems`.
+* Preserved non-module script loading via `globalThis.DRAGON_HUNTER_*`.
+* Replaced pseudo-random map generation with fixed hand-editable map data.
+* Expanded map from 64x64 to 80x72.
+* Moved terrain to `src/data/maps/world.js`.
+* Added `WORLD_OBJECTS`.
+* Added map editing docs and map preview generation scripts.
+* Added `scripts/verify-game-smoke.js`.
+
+Verification included JS syntax checks, script-order smoke, map reachability, NPC placement, region spawn checks, save/load persistence, and preview generation.
+
+### 2026-06-05: Browser rendering QA
+
+Real browser engine rendering was checked with Microsoft Edge headless.
+
+Result:
+
+* Desktop, mobile portrait, and mobile landscape screenshots were produced.
+* Game booted and rendered canvas, player, map, HUD, commands, touch controls, and status panels.
+* No fatal script errors were found in captured logs.
+* Mobile portrait and landscape had usability/overflow density concerns.
+* This was rendering QA, not live manual input QA.
+
+Remaining risk: keyboard/touch movement, combat, save/load UI, and full fresh-save playthrough still need interactive browser/manual QA.
+
+### 2026-06-06: Southeast route content
+
+Made east/southeast expansion a more meaningful optional direction.
+
+Key work:
+
+* `south-outpost` chest.
+* `trailCharm` / traveler bell.
+* Traveler bell improves movement, stamina capacity, stamina recovery, and dash cost.
+* Southeast Warden midboss after traveler bell + level 3.
+* Aegis Charm reward from Warden defeat.
+* Guidance and UI visibility for Warden/Aegis.
+* Start screen with `はじめから` / `つづきから`.
+* New Game reset clears opened chests, discoveries, bosses, clear state, equipment, charms, and inventory.
+* Ending panel after elder report with `QUEST CLEAR` and `N: はじめから`.
+
+Verification included syntax checks, `verify-game-smoke`, Warden reachability/spawn/defeat, Aegis persistence, start menu behavior, and clear state.
+
+Remaining risk: manual tuning for Warden difficulty, Aegis strength, traveler bell timing, and ending/start screen browser interaction.
+
+### 2026-06-06: Southwest mine and frontier camp
+
+Started real volume expansion beyond the Chapter 1 route.
+
+Key work:
+
+* Southwest mine as distinct `mine` region.
+* `泡吐き` / Bubbler enemy.
+* Bubble projectiles slow and drain stamina.
+* Bubbler contact also applies slow/stamina pressure.
+* Southwest frontier camp as first remote safe base.
+* Data-driven `SAFE_ZONES` and `HEAL_POINTS`.
+* Camp recovery circle and `frontier` supply NPC.
+* Camp props and zone/UI text.
+* Mine charm / bubble ward sold at camp.
+* Mine charm reduces Bubbler contact damage, bubble projectile damage, slow duration, and stamina loss.
+
+Verification included syntax checks, smoke tests for mine region/pool, frontier NPC, safe zone, recovery circle, monster-entry blocking, supply purchase, mine charm persistence, and damage reduction.
+
+Remaining risk: manual tuning for mine charm price/effect strength and camp placement feel.
+
+### 2026-06-06: Real inventory implementation
+
+Implemented `もちもの` as a core RPG system.
+
+Key work:
+
+* Former `強さ` command became `もちもの`.
+* Inventory overlay supports item / weapon / armor / accessory categories.
+* Consumables can be used and sold.
+* Weapons/armor can be equipped; unequipped gear can be sold.
+* Accessories are owned and one accessory can be equipped.
+* Persistent state: `ownedWeapons`, `ownedArmors`, `ownedAccessories`, `equippedAccessory`.
+* Save/load migrates old charm flags into owned accessories.
+* Major charm effects became equipped accessory choices:
+  * hunter: stamina max.
+  * regen: HP regeneration.
+  * trail: movement/dash.
+  * aegis: fire/projectile defense.
+  * mine: bubble/mine resistance.
+
+Verification included syntax checks and smoke checks for inventory open/close, equip/sell guards, accessory switching/effects, save/load fields, and story clear flow.
+
+Remaining risk:
+
+* Real browser/manual QA for overlay fit and usability.
+* Accessory selling design: buyback, lock rules, or duplicate sources.
+* More sidegrade content is needed so inventory choices matter more.
+
+### 2026-06-06: Documentation cleanup
+
+Active documents were reduced to:
+
+* `AGENTS.md`
+* `GAME_DESIGN_NOTES.md`
+* `IMPROVEMENT_PLAN.md`
+* `DEVELOPMENT_LOG.md`
+
+`TODO.md` and `NEXT_CODEX_TASK.md` were removed from active workflow. The current docs were rewritten to reduce overlap and clarify roles.

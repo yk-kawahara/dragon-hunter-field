@@ -44,26 +44,38 @@
         hp: player.hp,
         hpMax: player.hpMax,
         level: player.level,
+        strength: player.strength,
+        resilience: player.resilience,
         xp: player.xp,
         xpNext: player.xpNext,
         gold: player.gold,
         weapon: player.weapon,
         armor: player.armor,
+        shield: player.shield,
         ownedWeapons: player.ownedWeapons,
         ownedArmors: player.ownedArmors,
+        ownedShields: player.ownedShields,
         ownedAccessories: player.ownedAccessories,
         equippedAccessory: player.equippedAccessory,
+        equippedAccessories: player.equippedAccessories,
         potions: player.potions,
+        tonics: player.tonics,
         bombs: player.bombs,
         wards: player.wards,
+        elixirs: player.elixirs,
+        warps: player.warps,
         selectedItem: player.selectedItem,
         scales: player.scales,
         sealCrest: player.sealCrest,
         hunterCharm: player.hunterCharm,
         regenCharm: player.regenCharm,
+        greaterRegenCharm: player.greaterRegenCharm,
         trailCharm: player.trailCharm,
         aegisCharm: player.aegisCharm,
         mineCharm: player.mineCharm,
+        eclipseCharm: player.eclipseCharm,
+        voidCharm: player.voidCharm,
+        obsidianCharm: player.obsidianCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -71,7 +83,19 @@
       guardianDefeated: state.guardianDefeated,
       spawnedWarden: state.spawnedWarden,
       wardenDefeated: state.wardenDefeated,
+      spawnedAshKnight: state.spawnedAshKnight,
+      ashKnightDefeated: state.ashKnightDefeated,
+      spawnedEclipseDragon: state.spawnedEclipseDragon,
+      eclipseDragonDefeated: state.eclipseDragonDefeated,
+      spawnedVoidDragon: state.spawnedVoidDragon,
+      voidDragonDefeated: state.voidDragonDefeated,
+      spawnedObsidianGolem: state.spawnedObsidianGolem,
+      obsidianGolemDefeated: state.obsidianGolemDefeated,
       elderReported: state.elderReported,
+      chapter2Victory: state.chapter2Victory,
+      chapter2Reported: state.chapter2Reported,
+      chapter3Victory: state.chapter3Victory,
+      chapter3Reported: state.chapter3Reported,
       chests: Array.from(state.chests),
       discoveries: Array.from(state.discoveries),
     };
@@ -85,14 +109,25 @@
       const data = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
       if (!data?.player) return false;
       Object.assign(player, data.player);
+      player.strength = Number.isFinite(data.player.strength) ? data.player.strength : 7 + player.level * 2;
+      player.resilience = Number.isFinite(data.player.resilience) ? data.player.resilience : 1 + player.level;
       player.bombs ??= 1;
       player.wards ??= 0;
+      player.shield ??= 0;
+      player.ownedShields ??= [player.shield || 0];
+      player.tonics ??= 0;
+      player.elixirs ??= 0;
+      player.warps ??= 0;
       player.sealCrest = Boolean(player.sealCrest);
       player.hunterCharm = Boolean(player.hunterCharm);
       player.regenCharm = Boolean(player.regenCharm);
+      player.greaterRegenCharm = Boolean(player.greaterRegenCharm);
       player.trailCharm = Boolean(player.trailCharm);
       player.aegisCharm = Boolean(player.aegisCharm);
       player.mineCharm = Boolean(player.mineCharm);
+      player.eclipseCharm = Boolean(player.eclipseCharm);
+      player.voidCharm = Boolean(player.voidCharm);
+      player.obsidianCharm = Boolean(player.obsidianCharm);
       normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
@@ -108,10 +143,28 @@
       state.bossDefeated = Boolean(data.bossDefeated);
       state.guardianDefeated = Boolean(data.guardianDefeated);
       state.wardenDefeated = Boolean(data.wardenDefeated);
+      state.ashKnightDefeated = Boolean(data.ashKnightDefeated);
+      state.eclipseDragonDefeated = Boolean(data.eclipseDragonDefeated);
+      state.voidDragonDefeated = Boolean(data.voidDragonDefeated);
+      state.obsidianGolemDefeated = Boolean(data.obsidianGolemDefeated);
       state.spawnedBoss = state.bossDefeated ? Boolean(data.spawnedBoss) : false;
       state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
       state.spawnedWarden = state.wardenDefeated ? Boolean(data.spawnedWarden) : false;
+      state.spawnedAshKnight = state.ashKnightDefeated ? Boolean(data.spawnedAshKnight) : false;
+      state.spawnedEclipseDragon = state.eclipseDragonDefeated ? Boolean(data.spawnedEclipseDragon) : false;
+      state.spawnedVoidDragon = state.voidDragonDefeated ? Boolean(data.spawnedVoidDragon) : false;
+      state.spawnedObsidianGolem = state.obsidianGolemDefeated ? Boolean(data.spawnedObsidianGolem) : false;
       state.elderReported = Boolean(data.elderReported);
+      state.chapter2Reported = Boolean(data.chapter2Reported);
+      state.chapter2Victory = Boolean(data.eclipseDragonDefeated) && !state.chapter2Reported;
+      state.chapter3Reported = Boolean(data.chapter3Reported);
+      state.chapter3Victory = Boolean(data.voidDragonDefeated) && !state.chapter3Reported;
+      state.clearPanelOpen = false;
+      state.gameOver = false;
+      state.inventoryOpen = false;
+      state.shopOpen = false;
+      state.pointerMove = null;
+      state.victory = Boolean(data.bossDefeated) && !state.elderReported;
       state.chests = savedIdSet(data.chests, rewardIds(TREASURE_CHESTS));
       state.discoveries = savedIdSet(data.discoveries, rewardIds(DISCOVERY_POINTS));
       say("旅を再開しました");
@@ -129,28 +182,40 @@
       w: 10 * WORLD_SCALE,
       h: 12 * WORLD_SCALE,
       dir: "down",
-      hp: 46,
-      hpMax: 46,
+      hp: 26,
+      hpMax: 26,
       level: 1,
+      strength: 9,
+      resilience: 2,
       xp: 0,
       xpNext: 34,
       gold: 18,
       weapon: 0,
       armor: 0,
+      shield: 0,
       ownedWeapons: [0],
       ownedArmors: [0],
+      ownedShields: [0],
       ownedAccessories: [],
       equippedAccessory: "",
+      equippedAccessories: [],
       potions: 2,
+      tonics: 0,
       bombs: 1,
       wards: 0,
+      elixirs: 0,
+      warps: 0,
       selectedItem: "potion",
       sealCrest: false,
       hunterCharm: false,
       regenCharm: false,
+      greaterRegenCharm: false,
       trailCharm: false,
       aegisCharm: false,
       mineCharm: false,
+      eclipseCharm: false,
+      voidCharm: false,
+      obsidianCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,
@@ -180,8 +245,22 @@
     state.guardianDefeated = false;
     state.spawnedWarden = false;
     state.wardenDefeated = false;
+    state.spawnedAshKnight = false;
+    state.ashKnightDefeated = false;
+    state.spawnedEclipseDragon = false;
+    state.eclipseDragonDefeated = false;
+    state.spawnedVoidDragon = false;
+    state.voidDragonDefeated = false;
+    state.spawnedObsidianGolem = false;
+    state.obsidianGolemDefeated = false;
     state.elderReported = false;
+    state.chapter2Victory = false;
+    state.chapter2Reported = false;
+    state.chapter3Victory = false;
+    state.chapter3Reported = false;
+    state.clearPanelOpen = false;
     state.gameOver = false;
+    state.shopOpen = false;
     state.victory = false;
     state.healCooldown = 0;
     state.townGateOpen = false;

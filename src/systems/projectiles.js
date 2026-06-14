@@ -35,8 +35,8 @@
   function shootProjectile(context, monster, target, angleOffset = 0) {
     const { state, addSlash } = requireProjectileContext(context);
     const c = centerOf(monster);
-    const midbossColor = monster.type === "warden" ? "#6de4ff" : "#55c7a0";
-    const projectileColor = monster.type === "bubbler" ? "#8dd7ff" : monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166";
+    const midbossColor = monster.type === "warden" ? "#6de4ff" : monster.type === "obsidianGolem" ? "#aab0c8" : "#55c7a0";
+    const projectileColor = monster.type === "bubbler" ? "#8dd7ff" : monster.type === "voidDragon" ? "#d8d8ff" : monster.type === "voidWraith" ? "#7b80d8" : monster.type === "obsidianCrawler" || monster.type === "obsidianGolem" ? "#aab0c8" : monster.type === "eclipseDragon" ? "#f06dff" : monster.type === "eclipseMage" ? "#e36dff" : monster.type === "summoner" ? "#d678ff" : monster.type === "moonShade" ? "#7f8cff" : monster.type === "sorcerer" ? "#b990ff" : monster.boss ? "#ff543d" : monster.midboss ? midbossColor : "#ffd166";
     const baseAim = normalize(target.x - c.x, target.y - c.y);
     const cos = Math.cos(angleOffset);
     const sin = Math.sin(angleOffset);
@@ -44,19 +44,27 @@
       x: baseAim.x * cos - baseAim.y * sin,
       y: baseAim.x * sin + baseAim.y * cos,
     };
-    const speed = (monster.boss ? 78 : monster.midboss ? 68 : monster.type === "bubbler" ? 52 : 62) * WORLD_SCALE;
+    const speed = (monster.type === "voidDragon" ? 94 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 88 : monster.type === "eclipseDragon" ? 86 : monster.boss ? 78 : monster.type === "obsidianGolem" ? 60 : monster.midboss ? 68 : monster.type === "bubbler" ? 52 : monster.type === "eclipseMage" ? 82 : monster.type === "moonShade" ? 76 : monster.type === "summoner" ? 66 : monster.type === "sorcerer" ? 70 : 62) * WORLD_SCALE;
     state.projectiles.push({
       x: c.x,
       y: c.y,
       vx: aim.x * speed,
       vy: aim.y * speed,
       r: worldPx(monster.boss ? 4 : monster.midboss ? 3 : 3),
-      damage: monster.boss ? 14 : monster.midboss ? 11 : monster.type === "bubbler" ? 6 : 8,
+      damage: monster.type === "voidDragon" ? 23 : monster.type === "obsidianGolem" ? 18 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 15 : monster.type === "eclipseDragon" ? 18 : monster.boss ? 14 : monster.midboss ? 11 : monster.type === "bubbler" ? 6 : monster.type === "eclipseMage" ? 13 : monster.type === "moonShade" ? 11 : monster.type === "summoner" ? 10 : monster.type === "sorcerer" ? 10 : 8,
       color: projectileColor,
-      source: monster.boss ? "dragon" : monster.midboss ? monster.type : monster.type,
-      life: monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
+      source: monster.type === "voidDragon" ? "voidDragon" : monster.type === "eclipseDragon" ? "eclipseDragon" : monster.boss ? "dragon" : monster.midboss ? monster.type : monster.type,
+      life: monster.type === "voidDragon" ? 1750 : monster.type === "eclipseDragon" ? 1650 : monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
     });
     addSlash(c.x + aim.x * worldPx(8), c.y + aim.y * worldPx(8), monster.dir, projectileColor);
+  }
+
+  function activeAccessory(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories) && player.equippedAccessories.length > 0) {
+      return player.equippedAccessories.includes(id);
+    }
+    if (player.equippedAccessory) return player.equippedAccessory === id;
+    return Boolean(player[legacyFlag]);
   }
 
   function updateProjectiles(context, dt) {
@@ -94,9 +102,12 @@
       const hitbox = { x: p.x - p.r, y: p.y - p.r, w: p.r * 2, h: p.r * 2 };
       if (rectsOverlap(player, hitbox)) {
         if (player.invuln <= 0 && player.hp > 0) {
-          const source = p.source === "wisp" || p.source === "dragon" ? "fire" : p.source === "bubbler" ? "bubble" : "projectile";
-          let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon" }, 0, source)));
+          const source = p.source === "obsidianGolem" || p.source === "obsidianCrawler" ? "obsidian" : p.source === "voidDragon" || p.source === "voidWraith" ? "void" : p.source === "eclipseDragon" || p.source === "eclipseMage" ? "eclipse" : p.source === "wisp" || p.source === "dragon" ? "fire" : p.source === "bubbler" ? "bubble" : p.source === "sorcerer" || p.source === "summoner" || p.source === "moonShade" || p.source === "ashKnight" ? "magic" : "projectile";
+          let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon" || p.source === "eclipseDragon" || p.source === "voidDragon", midboss: p.source === "ashKnight", type: p.source }, 0, source)));
           if (p.source === "dragon" && hurt < 3) hurt = 3;
+          if (p.source === "eclipseDragon" && hurt < 4) hurt = 4;
+          if (p.source === "voidDragon" && hurt < 5) hurt = 5;
+          if (p.source === "obsidianGolem" && hurt < 4) hurt = 4;
           if (p.source === "guardian" && hurt < 2) hurt = 2;
           if (p.source === "warden" && hurt < 2) hurt = 2;
           if (player.guard > 0) hurt = Math.floor(hurt * 0.3);
@@ -110,9 +121,10 @@
             say("倒れた... Rで再挑戦", 5000);
           }
           if (p.source === "wisp" || p.source === "dragon") {
-            player.burn = Math.max(player.burn, p.source === "dragon" ? 2600 : 1500);
+            const fireGuard = player.armor === 6;
+            player.burn = Math.max(player.burn, Math.round((p.source === "dragon" ? 2600 : 1500) * (fireGuard ? 0.55 : 1)));
           } else if (p.source === "bubbler") {
-            const mineGuard = player.equippedAccessory === "mine" || (!player.equippedAccessory && player.mineCharm);
+            const mineGuard = player.armor === 5 || activeAccessory(player, "mine", "mineCharm");
             player.slow = Math.max(player.slow, mineGuard ? 560 : 1400);
             player.stamina = Math.max(0, player.stamina - (mineGuard ? 2 : 6));
             addFloater(player.x + player.w / 2, player.y - worldPx(7), "泡", "#8dd7ff");
@@ -121,6 +133,15 @@
           } else if (p.source === "warden") {
             player.slow = Math.max(player.slow, 900);
             player.stamina = Math.max(0, player.stamina - 10);
+          } else if (p.source === "sorcerer" || p.source === "summoner" || p.source === "moonShade" || p.source === "ashKnight" || p.source === "eclipseMage" || p.source === "eclipseDragon" || p.source === "voidWraith" || p.source === "voidDragon" || p.source === "obsidianCrawler" || p.source === "obsidianGolem") {
+            const eclipseGuard = player.armor === 9 || activeAccessory(player, "eclipse", "eclipseCharm");
+            const voidGuard = player.armor === 10 || activeAccessory(player, "void", "voidCharm");
+            const obsidianGuard = player.armor === 11 || activeAccessory(player, "obsidian", "obsidianCharm");
+            const baseSlow = p.source === "voidDragon" ? 1900 : p.source === "obsidianGolem" ? 1700 : p.source === "voidWraith" || p.source === "obsidianCrawler" ? 1350 : p.source === "eclipseDragon" ? 1500 : p.source === "ashKnight" ? 1200 : p.source === "eclipseMage" ? 1100 : p.source === "summoner" ? 1040 : p.source === "moonShade" ? 980 : 760;
+            const baseStamina = p.source === "voidDragon" ? 26 : p.source === "obsidianGolem" ? 22 : p.source === "voidWraith" || p.source === "obsidianCrawler" ? 17 : p.source === "eclipseDragon" ? 18 : p.source === "ashKnight" ? 14 : p.source === "eclipseMage" ? 13 : p.source === "summoner" ? 12 : p.source === "moonShade" ? 11 : 8;
+            const guard = p.source === "obsidianGolem" || p.source === "obsidianCrawler" ? obsidianGuard : p.source === "voidDragon" || p.source === "voidWraith" ? voidGuard : eclipseGuard;
+            player.slow = Math.max(player.slow, Math.round(baseSlow * (guard ? 0.5 : 1)));
+            player.stamina = Math.max(0, player.stamina - (guard ? Math.ceil(baseStamina * 0.4) : baseStamina));
           }
         }
         return false;
