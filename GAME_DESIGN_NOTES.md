@@ -143,6 +143,8 @@ Most important growth feeling: **reversal of power**.
 | Moon Shade / 月影の亡霊 | Far-south magic enemy; faster magic shots and stamina pressure make star gear and wards matter. |
 | Eclipse Mage / 月蝕術師 | Chapter 2 caster; stronger magic shots and stamina pressure make eclipse gear/accessory meaningful. |
 | Void Wraith / 黒陽の影 | Chapter 3 high-pressure caster; dark projectiles apply heavier slow/stamina pressure and reward Black Sun gear/accessory preparation. |
+| Summoner / 召喚士 | Late-route pressure enemy. If ignored, it calls reinforcements and turns a safe-looking road into a losing fight. The intended answer is to prioritize it, spend a ward/tonic, or retreat before the field fills up. |
+| Trap Flower / 地雷花 | Area-denial trap enemy for Moon Ruins / Eclipse / Obsidian / Black Sun routes. It stays still, warns briefly, then explodes for HP/stamina/slow pressure. The intended answer is to cut it before entering, route around it, or prepare wards/return bells for risky shortcuts. |
 | Dragonling | Late stronger enemy; signals dragon-route danger. |
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
@@ -289,3 +291,8 @@ Current design additions:
 * Shield soldiers are a contact-combat lesson enemy: attacking their front is inefficient, while side/back attacks are rewarded.
 * Deeper route rewards should include route-extension supplies, shields, return bells, tonics, elixirs, and hint discoveries rather than only gold.
 * Remote bases and Black Market should continue gaining NPCs, signs, stalls, and small reward pockets so they feel like lived-in survival anchors.
+* Summoners are now part of late-route identity. They should be placed where "clear this threat first" matters, especially Moon Ruins, Eclipse, Obsidian, and Black Sun routes.
+* Trap Flowers are now part of late-route identity. They should mark dangerous shortcuts, ruined courtyards, and narrow castle approaches where route choice matters.
+* Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
+* `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.
+* Current `120x144` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and shortcut-like terrain before another size jump.

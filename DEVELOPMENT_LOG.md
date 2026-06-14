@@ -79,6 +79,61 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 _Add new entries here._
 
+### 2026-06-14: Trap Flower Area-Denial Route Pass
+
+Goal: make late routes more interesting to traverse by adding a danger that changes movement decisions, not only enemy stats. The target was survival-range expansion through risky shortcuts, visible warnings, and route-extension supplies.
+
+Key work:
+
+* Added Trap Flower / `地雷花` as a stationary late-route enemy in Moon Ruins, Eclipse, Obsidian, and Black Sun spawn pressure.
+* Trap Flowers now warn briefly, then explode for HP damage, stamina loss, and slow pressure; players can cut them early, route around them, or prepare with wards/return bells.
+* Added trap-warning discoveries and trap-route caches around Moon Ruins and Black Sun approaches.
+* Added `trapSupply` and `trapHint` rewards that provide wards, tonics, return bells, and warning text.
+* Added field rendering for trap-warning markers and Trap Flower sprites, including a primed warning flash.
+* Updated travel memo guidance so late-route notes mention how to handle Trap Flowers.
+* Updated VM smoke coverage for trap definition, level-gated spawn pools, explosion behavior, trap-route rewards, and travel memo guidance.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with CRLF warnings only.
+
+Known risks:
+
+* Real browser QA was attempted, but the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Browser readability is still pending for the new Trap Flower sprite/priming warning and route feel.
+* Manual balance is still needed for Trap Flower density, explosion damage, and whether the Moon Ruins first exposure feels fair.
+
+### 2026-06-14: Summoner, Travel Memo, and Late-Route Density Pass
+
+Goal: make the existing `120x144` overworld more worth exploring without another size jump. Focus was route density, readable landmarks, behaviorally distinct enemies, destination guidance, and late-route survival-range expansion.
+
+Key work:
+
+* Added Summoner / `召喚士` as a late-route enemy that calls reinforcements when ignored.
+* Added Summoners to Moon Ruins, Eclipse, Obsidian, and Black Sun spawn pools with level gating.
+* Added Moon/Eclipse/Black Market side caches and route discoveries that reward tonics, return bells, wards, bombs, and gold.
+* Added visible field markers for route hints, shortcut hints, obsidian waystones, and summoner warnings.
+* Added `旅メモ` to the status panel so players can understand the next route and preparation target without coordinate-style instructions.
+* Roughened selected Eclipse Castle and Black Sun Castle wall rows into broken courts and side paths.
+* Added four more NPCs to remote bases / Black Market areas to make bases feel more inhabited.
+* Localized remaining visible item-detail labels and the return-bell message into Japanese-facing text.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* JavaScript syntax checks passed for all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with CRLF warnings only.
+* Map preview generation passed at `120x144`.
+* VM smoke now verifies 40 NPCs, Summoner definition/spawn-pool membership, Summoner reinforcement behavior, `旅メモ` status-page presence, new summoner supply reward, and reachability for all chests/discoveries.
+
+Known risks:
+
+* Real in-app Browser QA was attempted, but the browser runtime failed again with Windows `CreateProcessAsUserW failed: 5`.
+* Manual balance is still needed for Summoner frequency, reinforcement pressure, late-route reward value, and whether the new side paths feel clear during actual play.
+
 ### 2026-06-14: Dense Route, Shield Slot, and Landmark Side-Rewards Pass
 
 Goal: improve the existing `120x144` overworld as an RPG world rather than expanding map size again. Focus areas were sparse/linear route feel, wall-corridor terrain, remote-base life, side rewards, enemy behavior difference, equipment choice, and readable preparation.

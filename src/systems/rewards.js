@@ -232,7 +232,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "shieldSupply" || reward === "blackShieldSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "shieldSupply" || reward === "blackShieldSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -305,6 +305,23 @@
       player.bombs = Math.min(9, player.bombs + 3);
       player.wards = Math.min(9, player.wards + 3);
       say("月影街道の補給箱を回収した");
+      return true;
+    }
+    if (reward === "summonerSupply") {
+      player.gold += 620;
+      addItem(player, "tonic", 2);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      say("召喚士対策の補給を得た。活力薬と帰還鈴で遠征を伸ばせる");
+      return true;
+    }
+    if (reward === "trapSupply") {
+      player.gold += 540;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      say("地雷花地帯の迂回補給を得た。護符と帰還鈴で危険な近道を抜けやすくなる");
       return true;
     }
     if (reward === "eclipseGear") {
@@ -454,6 +471,21 @@
       addItem(player, "tonic", 1);
       burst(x, y, "#8dd7ff", 24);
       say("黒曜の道標を読んだ。帰還の物資を得た");
+      return;
+    }
+    if (discovery.kind === "summonerHint") {
+      player.gold += 160;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      burst(x, y, "#d678ff", 18);
+      say("石碑: 召喚士は放置するな。先に倒すか、帰還鈴を残せ");
+      return;
+    }
+    if (discovery.kind === "trapHint") {
+      player.gold += 120;
+      addItem(player, "ward", 1);
+      burst(x, y, "#ff5e9f", 18);
+      say("石碑: 地雷花は近づくと爆ぜる。先に斬るか広く避けろ");
       return;
     }
     if (discovery.kind === "routeHint") {
@@ -657,7 +689,7 @@
     state.projectiles = [];
     addRing(player.x + player.w / 2, player.y + player.h / 2, "#8dd7ff", worldPx(42));
     burst(player.x + player.w / 2, player.y + player.h / 2, "#8dd7ff", 24);
-    say(`Returned to ${best.name}.`);
+    say(`${best.name}へ帰還した`);
   }
 
   function selectItem(context, item) {

@@ -130,10 +130,10 @@
   const itemRenderDetails = {
     potion: "HP",
     tonic: "ST",
-    bomb: "AOE",
-    ward: "Guard",
-    elixir: "Full",
-    warp: "Return",
+    bomb: "範囲",
+    ward: "防御",
+    elixir: "全快",
+    warp: "帰還",
   };
   const itemRenderFields = {
     potion: "potions",
@@ -1051,6 +1051,34 @@ function drawDiscoveries(cam) {
       ctx.fillStyle = found ? "#6de4ff" : "#fff2a6";
       ctx.fillRect(sx + 8, sy + 1, 2, 2);
       if (!found) drawGlint(sx + 9, sy + 3, "#d8d8ff");
+    } else if (discovery.kind === "obsidianWaystone") {
+      ctx.fillStyle = found ? "#3d465a" : "#111522";
+      ctx.fillRect(sx + 4, sy + 3, 8, 12);
+      ctx.fillStyle = found ? "#aab0c8" : "#8dd7ff";
+      ctx.fillRect(sx + 6, sy + 5, 4, 7);
+      if (!found) drawGlint(sx + 10, sy + 3, "#8dd7ff");
+    } else if (discovery.kind === "summonerHint") {
+      ctx.fillStyle = found ? "#3b2b4f" : "#271733";
+      ctx.fillRect(sx + 3, sy + 4, 10, 10);
+      ctx.fillStyle = found ? "#8a6fa8" : "#d678ff";
+      ctx.fillRect(sx + 5, sy + 2, 6, 4);
+      ctx.fillRect(sx + 7, sy + 7, 2, 5);
+      if (!found) drawGlint(sx + 10, sy + 3, "#d678ff");
+    } else if (discovery.kind === "trapHint") {
+      ctx.fillStyle = found ? "#4a3140" : "#2a1b22";
+      ctx.fillRect(sx + 4, sy + 4, 8, 10);
+      ctx.fillStyle = found ? "#a8788e" : "#ff5e9f";
+      ctx.fillRect(sx + 6, sy + 3, 4, 4);
+      ctx.fillRect(sx + 7, sy + 8, 2, 5);
+      if (!found) drawGlint(sx + 11, sy + 4, "#ff5e9f");
+    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint") {
+      ctx.fillStyle = found ? "#604622" : "#7b4b25";
+      ctx.fillRect(sx + 5, sy + 5, 7, 8);
+      ctx.fillStyle = found ? "#b08a54" : "#ffd166";
+      ctx.fillRect(sx + 3, sy + 4, 10, 3);
+      ctx.fillStyle = "#2a1d12";
+      ctx.fillRect(sx + 8, sy + 8, 2, 6);
+      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" ? "#8dd7ff" : "#ffd166");
     }
   }
 }
@@ -1543,6 +1571,41 @@ function drawMonster(monster, sx, sy) {
     ctx.fillRect(guardX + 1, guardY + 1, 3, 5);
     ctx.fillStyle = "#ffd166";
     ctx.fillRect(sx + 10, sy + 5, 2, 8);
+  } else if (monster.type === "summoner") {
+    const pulse = Math.floor(monster.age / 180) % 2;
+    ctx.fillStyle = "rgba(214, 120, 255, 0.24)";
+    ctx.fillRect(sx, sy + 2 - pulse, 13, 12);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 5, 9, 8);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 3, 7, 9);
+    ctx.fillRect(sx + 4, sy + 1, 5, 4);
+    ctx.fillStyle = "#fff2ff";
+    ctx.fillRect(sx + 5, sy + 5, 2, 2);
+    ctx.fillRect(sx + 8, sy + 5, 2, 2);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(sx + 11, sy + 2, 2, 9);
+    ctx.fillStyle = "#d678ff";
+    ctx.fillRect(sx + 10, sy + pulse, 4, 2);
+  } else if (monster.type === "trapFlower") {
+    const pulse = monster.trapPrimed ? Math.floor(monster.age / 80) % 2 : Math.floor(monster.age / 220) % 2;
+    ctx.fillStyle = monster.trapPrimed ? "rgba(255, 94, 159, 0.42)" : "rgba(255, 94, 159, 0.18)";
+    ctx.fillRect(sx - 1 - pulse, sy + 4 - pulse, 15 + pulse * 2, 10 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 3, sy + 9, 8, 4);
+    ctx.fillStyle = "#315d2c";
+    ctx.fillRect(sx + 6, sy + 6, 2, 6);
+    ctx.fillRect(sx + 3, sy + 9, 4, 2);
+    ctx.fillRect(sx + 8, sy + 8, 4, 2);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 3, 6, 5);
+    ctx.fillRect(sx + 2, sy + 5, 10, 3);
+    ctx.fillStyle = monster.trapPrimed ? "#fff2a6" : "#ffcee5";
+    ctx.fillRect(sx + 6, sy + 4, 2, 2);
+    if (monster.trapPrimed) {
+      ctx.strokeStyle = pulse ? "#fff2a6" : "#ff5e9f";
+      ctx.strokeRect(sx - 2, sy + 1, 16, 14);
+    }
   } else if (monster.type === "obsidianCrawler") {
     const pulse = Math.floor(monster.age / 150) % 2;
     ctx.fillStyle = "rgba(141, 215, 255, 0.18)";

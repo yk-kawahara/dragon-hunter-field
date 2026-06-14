@@ -91,6 +91,11 @@
       isMonster: true,
       contactTimer: rand(0, 300),
       fireCooldown: rand(900, 1800),
+      summonCooldown: typeName === "summoner" ? rand(1800, 3200) : 0,
+      summonAnnounced: false,
+      trapTimer: 0,
+      trapPrimed: false,
+      trapAnnounced: false,
       windup: 0,
       chargeTime: 0,
       chargeCooldown: rand(500, 1200),
@@ -156,7 +161,7 @@
     const lv = player.level;
     const pool = [...(REGION_SPAWNS[region] || REGION_SPAWNS.grassland).pool];
     if (lv <= 1) {
-      const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => type !== "dragonling" && type !== "wisp");
+      const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => !["dragonling", "wisp", "summoner", "trapFlower", "sorcerer", "moonShade", "eclipseMage", "voidWraith", "obsidianCrawler", "shieldSoldier"].includes(type));
       return safePool.length ? safePool : ["bat", "boar"];
     }
     if (lv >= 3 && region === "grassland") pool.push("boar");
@@ -164,9 +169,18 @@
     if (lv >= 3 && region === "mine") pool.push("dragonling");
     if (lv >= 8 && (region === "ash" || region === "tower" || region === "moon")) pool.push("sorcerer");
     if (lv >= 12 && region === "moon") pool.push("moonShade");
+    if (lv < 14) return pool.filter((type) => type !== "summoner" && type !== "trapFlower");
+    if (lv < 16 && (region === "moon" || region === "eclipse")) return pool.filter((type) => type !== "trapFlower" && !(region === "eclipse" && type === "summoner"));
+    if (lv < 18 && region === "eclipse") return pool.filter((type) => type !== "summoner");
+    if (lv < 22 && (region === "obsidian" || region === "void")) return pool.filter((type) => type !== "summoner" && type !== "trapFlower");
+    if (lv >= 14 && region === "moon") pool.push("summoner");
+    if (lv >= 16 && (region === "moon" || region === "eclipse")) pool.push("trapFlower");
     if (lv >= 16 && region === "eclipse") pool.push("eclipseMage", "moonShade");
+    if (lv >= 18 && region === "eclipse") pool.push("summoner");
     if (lv >= 20 && region === "eclipse") pool.push("eclipseMage");
     if (lv >= 22 && region === "void") pool.push("voidWraith", "eclipseMage");
+    if (lv >= 22 && (region === "obsidian" || region === "void")) pool.push("summoner");
+    if (lv >= 22 && (region === "obsidian" || region === "void")) pool.push("trapFlower");
     if (lv >= 26 && region === "void") pool.push("voidWraith", "voidWraith");
     if (lv >= 22 && region === "obsidian") pool.push("obsidianCrawler", "voidWraith");
     if (lv >= 24 && region === "obsidian") pool.push("obsidianCrawler", "obsidianCrawler");

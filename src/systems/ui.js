@@ -9,6 +9,7 @@
   const {
     TILE,
     TREASURE_CHESTS,
+    DISCOVERY_POINTS,
     TILE_WATER,
     weaponNames,
     armorNames,
@@ -445,6 +446,50 @@
     clampInventoryIndex(state, inventoryRows(context));
   }
 
+  function travelMemoLines(context) {
+    const { state, player } = requireUiStatusContext(context);
+    if (!state.elderReported) {
+      return [
+        "村近くで金と装備を整える",
+        "北森で紋章、竜洞で赤竜",
+        "危険なら拠点へ戻る",
+      ];
+    }
+    if (!state.ashKnightDefeated) {
+      return [
+        `灰道の宿場から南の古塔へ LV${player.level}/14`,
+        "盾兵は正面を避けて側面へ",
+        "星装備と盾があると楽",
+      ];
+    }
+    if (!state.chapter2Reported) {
+      return [
+        "古塔の南は月影廃墟",
+        "召喚士は放置せず先に倒す",
+        "地雷花は近づく前に斬る",
+      ];
+    }
+    if (!state.obsidianGolemDefeated) {
+      return [
+        "黒市東の黒曜洞窟へ",
+        "帰還鈴を残して深部へ進む",
+        `黒曜巨人はLV${player.level}/24目安`,
+      ];
+    }
+    if (!state.chapter3Reported) {
+      return [
+        "黒市で最終装備を選ぶ",
+        "黒陽城の地雷花は距離を取る",
+        "黒陽竜撃破後は長老へ報告",
+      ];
+    }
+    return [
+      "未開封宝箱と噂を探す",
+      `宝箱 ${state.chests.size}/${TREASURE_CHESTS.length}`,
+      `発見 ${state.discoveries.size}/${DISCOVERY_POINTS.length}`,
+    ];
+  }
+
   function statsPanelPages(context) {
     const {
       state,
@@ -486,6 +531,10 @@
           `鱗 ${player.scales}/3 紋 ${player.sealCrest ? "有" : "無"}`,
           `宝箱 ${state.chests.size}/${TREASURE_CHESTS.length} 鈴${player.trailCharm ? "有" : "無"} 石${player.aegisCharm ? "有" : "無"} 泡${player.mineCharm ? "有" : "無"}`,
         ],
+      },
+      {
+        title: "旅メモ",
+        lines: travelMemoLines(context),
       },
     ];
   }

@@ -300,7 +300,7 @@ function assertMapReachability() {
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
   assert(d.MAP_W === 120 && d.MAP_H === 144, "expanded map should be 120x144");
-  assert(state.npcs.length === 36, "expected 36 NPCs after base population, city, and wagon expansion");
+  assert(state.npcs.length === 40, "expected 40 NPCs after base population, city, and wagon expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "merchant"), "black market merchant should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "porter"), "porter NPCs should load from WORLD_OBJECTS");
@@ -722,6 +722,8 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.obsidianCrawler), "obsidian crawler monster definition should exist");
   assert(Boolean(d.monsterTypes.obsidianGolem), "obsidian golem monster definition should exist");
   assert(Boolean(d.monsterTypes.shieldSoldier), "shield soldier monster definition should exist");
+  assert(Boolean(d.monsterTypes.summoner), "summoner monster definition should exist");
+  assert(Boolean(d.monsterTypes.trapFlower), "trap flower monster definition should exist");
 
   player.x = 90 * d.TILE;
   player.y = 60 * d.TILE;
@@ -741,22 +743,62 @@ function assertExpandedWorldContent() {
   player.x = 52 * d.TILE;
   player.y = 132 * d.TILE;
   assert(runtime.currentRegion() === "obsidian", "black market branch dungeon should use obsidian region");
+  player.level = 14;
   const towerPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "tower");
   assert(towerPool.includes("sorcerer") && towerPool.includes("shieldSoldier"), "tower spawn pool should include sorcerer and shield soldiers");
   player.weapon = 3;
   const shieldFront = runtime.weaponDamageMultiplier({ type: "shieldSoldier" }, 0.1, 0.7);
   const shieldBack = runtime.weaponDamageMultiplier({ type: "shieldSoldier" }, 0.1, -0.8);
   assert(shieldBack > shieldFront, "shield soldiers should be weaker from back attacks than frontal attacks");
+  player.level = 14;
   const moonPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
-  assert(moonPool.includes("moonShade") && moonPool.includes("sorcerer"), "moon spawn pool should include moonShade and sorcerer");
+  assert(moonPool.includes("moonShade") && moonPool.includes("sorcerer") && moonPool.includes("summoner"), "moon spawn pool should include moonShade, sorcerer, and summoner");
+  assert(!moonPool.includes("trapFlower"), "moon trap flowers should wait until level 16");
+  player.level = 16;
+  const moonTrapPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
+  assert(moonTrapPool.includes("trapFlower"), "moon spawn pool should include trap flowers after level 16");
   player.level = 20;
   const eclipsePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "eclipse");
-  assert(eclipsePool.includes("eclipseMage") && eclipsePool.includes("moonShade"), "eclipse spawn pool should include eclipse mage and moon shade");
+  assert(eclipsePool.includes("eclipseMage") && eclipsePool.includes("moonShade") && eclipsePool.includes("summoner") && eclipsePool.includes("trapFlower"), "eclipse spawn pool should include eclipse mage, moon shade, summoner, and trap flowers");
   player.level = 26;
   const voidPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "void");
-  assert(voidPool.includes("voidWraith") && voidPool.includes("eclipseMage"), "void spawn pool should include void wraith and eclipse mage");
+  assert(voidPool.includes("voidWraith") && voidPool.includes("eclipseMage") && voidPool.includes("summoner") && voidPool.includes("trapFlower"), "void spawn pool should include void wraith, eclipse mage, summoner, and trap flowers");
   const obsidianPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "obsidian");
-  assert(obsidianPool.includes("obsidianCrawler") && obsidianPool.includes("voidWraith"), "obsidian spawn pool should include crawler and void pressure");
+  assert(obsidianPool.includes("obsidianCrawler") && obsidianPool.includes("voidWraith") && obsidianPool.includes("summoner") && obsidianPool.includes("trapFlower"), "obsidian spawn pool should include crawler, summoner, trap flowers, and void pressure");
+
+  state.monsters = [];
+  player.level = 18;
+  player.x = 84 * d.TILE;
+  player.y = 106 * d.TILE;
+  runtime.spawnMonster("summoner", player.x + d.TILE * 2, player.y);
+  const summoner = state.monsters.find((monster) => monster.type === "summoner");
+  assert(summoner, "summoner should spawn for behavior verification");
+  summoner.summonCooldown = 0;
+  const beforeSummon = state.monsters.length;
+  runtime.updateMonsters(16);
+  assert(state.monsters.length > beforeSummon, "summoner should call reinforcements when close to the player");
+
+  state.monsters = [];
+  state.gameOver = false;
+  player.level = 18;
+  player.armor = 0;
+  player.shield = 0;
+  player.equippedAccessory = "";
+  player.hpMax = 260;
+  player.hp = player.hpMax;
+  player.invuln = 0;
+  player.stamina = player.staminaMax;
+  player.x = 86 * d.TILE;
+  player.y = 105 * d.TILE;
+  runtime.spawnMonster("trapFlower", player.x + d.TILE, player.y);
+  const trap = state.monsters.find((monster) => monster.type === "trapFlower");
+  assert(trap, "trap flower should spawn for behavior verification");
+  trap.trapPrimed = true;
+  trap.trapTimer = 0;
+  runtime.updateMonsters(16);
+  assert(player.hp < player.hpMax && player.slow > 0, "armed trap flower should explode, damage, and slow nearby player");
+  assert(!state.monsters.some((monster) => monster.type === "trapFlower"), "trap flower should be removed after exploding");
+  state.gameOver = false;
 
   assert(runtime.inTownTile(102, 58), "ash hamlet should be a safe-zone tile");
   assert(runtime.inTownTile(102, 116), "moon camp should be a safe-zone tile");
@@ -767,6 +809,7 @@ function assertExpandedWorldContent() {
   player.y = 58 * d.TILE;
   runtime.updateHealCircle();
   assert(player.hp === player.hpMax, "ash hamlet heal circle should fully heal");
+  player.stamina = player.staminaMax;
 
   const ashFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.x > 90 * d.TILE);
   assert(ashFrontier, "ash hamlet frontier NPC should exist");
@@ -844,6 +887,8 @@ function assertExpandedWorldContent() {
   state.inventoryTab = "armors";
   const armorRows = globalThis.DRAGON_HUNTER_UI.inventoryRows(contexts.ui());
   assert(armorRows.some((row) => row.id === 8 && /DEF/.test(row.detail) && /\(/.test(row.detail)), "armor inventory rows should show DEF comparison");
+  const memoPages = globalThis.DRAGON_HUNTER_UI.statsPanelPages(contexts.ui());
+  assert(memoPages.some((page) => page.title === "旅メモ" && page.lines.some((line) => /召喚士|黒市|古塔/.test(line))), "status panel should include travel memo guidance");
 
   const reward = createRuntime();
   reward.runtime.grantChestReward("ashGear");
@@ -852,6 +897,12 @@ function assertExpandedWorldContent() {
   assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8) && reward.player.wards >= 4, "moonRelic chest should reinforce star gear and wards");
   reward.runtime.grantChestReward("moonSupply");
   assert(reward.player.bombs >= 3 && reward.player.wards >= 7, "moonSupply chest should add late expedition supplies");
+  reward.runtime.grantChestReward("summonerSupply");
+  assert(reward.player.tonics >= 2 && reward.player.warps >= 1 && reward.player.bombs >= 5, "summonerSupply should add route-extension supplies");
+  reward.runtime.grantChestReward("trapSupply");
+  assert(reward.player.tonics >= 3 && reward.player.warps >= 2 && reward.player.wards >= 9, "trapSupply should add trap-route survival supplies");
+  reward.runtime.grantDiscoveryReward({ id: "test-trap", kind: "trapHint" }, 0, 0);
+  assert(reward.player.wards >= 9, "trap hint should provide a ward and warning reward");
   reward.runtime.grantDiscoveryReward({ id: "test-waystone", kind: "waystone" }, 0, 0);
   assert(reward.player.wards >= 8 && reward.player.stamina === reward.player.staminaMax, "waystone discovery should restore stamina and add a ward");
   reward.runtime.grantChestReward("eclipseGear");

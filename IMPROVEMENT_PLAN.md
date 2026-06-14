@@ -35,6 +35,21 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 Completed in the latest pass:
 
+* Added Summoner / `召喚士` as a late-route enemy that calls reinforcements if ignored.
+* Added Summoners to Moon Ruins, Eclipse, Obsidian, and Black Sun region pressure with level-gated spawning so early-game survival-range pacing is not broken.
+* Added Moon/Eclipse/Black Market side caches and route discoveries that provide expedition supplies, return bells, tonics, wards, and route warnings.
+* Made route hints, shortcut hints, obsidian waystones, and summoner warnings visible on the field.
+* Added `旅メモ` to the status panel so the player can remember the next destination and route preparation without coordinate-style instructions.
+* Added Trap Flower / `地雷花` as a late-route area-denial enemy that stays still, warns briefly, then explodes for HP/stamina/slow pressure.
+* Added trap-warning discoveries and trap-route caches around Moon Ruins and Black Sun approaches so risky paths give route-extension supplies.
+* Updated late-route equipment counters so mine/obsidian preparation helps against trap pressure and stronger weapons can clear traps faster.
+* Roughened selected Eclipse Castle and Black Sun Castle walls into broken courts and side routes, preserving `120x144` scope while reducing box-corridor feel.
+* Added four more remote-base/city NPCs around Black Market, Moon Camp, Ash Hamlet, and Black Fort.
+* Localized remaining visible item detail labels such as return/full/guard into Japanese-facing text.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Previously completed:
+
 * Added a formal shield equipment slot with save/load, inventory tab, shop purchase, selling rules, and status display.
 * Added shield combat value: equipped shields reduce frontal contact damage, creating a clearer "brace from the front vs reposition for the back" choice.
 * Added Shield Soldier as a behaviorally distinct enemy: frontal attacks are weak, side/back attacks are rewarded.
@@ -45,8 +60,6 @@ Completed in the latest pass:
 * Added more NPCs to Black Market, Ash Hamlet, Moon Camp, and Black Fort to reduce remote-base emptiness.
 * Replaced newly added English item/travel text such as Tonic, Elixir, Return Bell, and Base Wagon with Japanese-facing names.
 * Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
-
-Previously completed:
 
 * Obsidian vault no longer grants the strongest weapon/armor directly; it now preserves Black Market gear purchases as the late-game gold sink.
 * Added premium consumables: Tonic, Elixir, and Return Bell.
@@ -70,8 +83,8 @@ Next high-value content direction:
 * Continue deepening the existing `120x144` overworld before another size jump: reduce wall-maze feel, add natural landmarks, and create side paths with reward reasons.
 * Make Black Market feel more like a city with more NPC conversations, stalls, alleys, small discoveries, and optional errands.
 * Add at least one more interior-style dungeon or castle segment beyond the overworld-only route.
-* Add another behaviorally distinct enemy, preferably a summoner or trap/area-denial enemy, so the long expedition does not rely only on stats.
-* Add route labels / travel journal presentation so players know "where" landmarks are without coordinate talk.
+* Add another behaviorally distinct enemy, preferably heavy-guard pressure or elite patrols, so the long expedition does not rely only on stats.
+* Expand `旅メモ` / route-label presentation into a richer rumor log if progression continues to grow.
 * Rebalance Chapter 3 gold/EXP after manual playtesting the new shop, wagon travel, premium items, and Obsidian Golem route.
 * Continue shield balance after manual playtesting: shield prices, front-reduction strength, and whether heavy shields should trade off movement.
 

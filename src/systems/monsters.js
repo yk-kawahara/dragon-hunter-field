@@ -76,6 +76,11 @@
     monster.hurt = 0;
     monster.contactTimer = 0;
     monster.fireCooldown = 700;
+    monster.summonCooldown = monster.type === "summoner" ? 1500 : 0;
+    monster.summonAnnounced = false;
+    monster.trapTimer = 0;
+    monster.trapPrimed = false;
+    monster.trapAnnounced = false;
     monster.windup = 0;
     monster.chargeTime = 0;
     monster.chargeCooldown = 0;
@@ -114,6 +119,43 @@
     return true;
   }
 
+  function explodeTrapFlower(context, monster) {
+    const {
+      state,
+      player,
+      playerDefense,
+      armorDamageMultiplier,
+      addFloater,
+      addRing,
+      burst,
+      say,
+    } = requireMonsterContext(context);
+    const pc = centerOf(player);
+    const mc = centerOf(monster);
+    const dist = Math.hypot(pc.x - mc.x, pc.y - mc.y);
+    const radius = worldPx(58);
+
+    addRing(mc.x, mc.y, "#ff5e9f", radius);
+    burst(mc.x, mc.y, "#ff5e9f", 18);
+    if (dist <= radius && player.hp > 0 && player.invuln <= 0) {
+      let hurt = Math.max(2, Math.round((monster.atk - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier(monster, 0.4, "trap")));
+      if (player.guard > 0) hurt = Math.floor(hurt * 0.32);
+      player.hp = Math.max(0, player.hp - hurt);
+      player.invuln = 360;
+      player.slow = Math.max(player.slow, 1300);
+      player.stamina = Math.max(0, player.stamina - 18);
+      state.shake = Math.max(state.shake, 170);
+      addFloater(player.x + player.w / 2, player.y, `罠 ${hurt}`, "#ff5e9f");
+      burst(pc.x, pc.y, "#ff5e9f", 10);
+      if (player.hp <= 0) {
+        state.gameOver = true;
+        say("地雷花の爆発に倒れた... Rで再挑戦", 5000);
+      }
+    }
+    monster.leashed = true;
+    monster.hp = 0;
+  }
+
   function updateMonsters(context, dt) {
     const {
       state,
@@ -133,6 +175,8 @@
       monster.hurt = Math.max(0, monster.hurt - dt);
       monster.contactTimer = Math.max(0, monster.contactTimer - dt);
       monster.fireCooldown = Math.max(0, monster.fireCooldown - dt);
+      monster.summonCooldown = Math.max(0, (monster.summonCooldown || 0) - dt);
+      monster.trapTimer = Math.max(0, (monster.trapTimer || 0) - dt);
       monster.windup = Math.max(0, monster.windup - dt);
       monster.chargeTime = Math.max(0, monster.chargeTime - dt);
       monster.chargeCooldown = Math.max(0, monster.chargeCooldown - dt);
@@ -178,7 +222,35 @@
         addRing(c.x, c.y, "#ff8a3d", worldPx(15));
       }
 
-      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "voidWraith" || monster.type === "obsidianCrawler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "voidDragon" ? 225 : monster.type === "eclipseDragon" ? 205 : monster.type === "obsidianGolem" ? 185 : monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 185 : monster.type === "eclipseMage" ? 180 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
+      if (monster.type === "summoner" && monster.summonCooldown <= 0 && dist < worldPx(185) && state.monsters.length < 18) {
+        const minion = monster.y > worldPx(126 * 16) ? "wisp" : monster.y > worldPx(111 * 16) ? "moonShade" : "bat";
+        spawnIfClear(minion, monster.x + worldPx(24), monster.y + worldPx(8));
+        spawnIfClear("bat", monster.x - worldPx(24), monster.y + worldPx(8));
+        monster.summonCooldown = rand(4300, 6500);
+        addRing(c.x, c.y, "#d678ff", worldPx(28));
+        if (!monster.summonAnnounced) {
+          monster.summonAnnounced = true;
+          say("召喚士が仲間を呼んだ!", 1700);
+        }
+      }
+
+      if (monster.type === "trapFlower") {
+        if (!monster.trapPrimed && dist < worldPx(44)) {
+          monster.trapPrimed = true;
+          monster.trapTimer = 520;
+          addRing(c.x, c.y, "#ff5e9f", worldPx(25));
+          if (!monster.trapAnnounced) {
+            monster.trapAnnounced = true;
+            say("地雷花がふくらみ始めた!", 1200);
+          }
+        }
+        if (monster.trapPrimed && monster.trapTimer <= 0) {
+          explodeTrapFlower(context, monster);
+          continue;
+        }
+      }
+
+      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "voidWraith" || monster.type === "obsidianCrawler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "voidDragon" ? 225 : monster.type === "eclipseDragon" ? 205 : monster.type === "obsidianGolem" ? 185 : monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 185 : monster.type === "eclipseMage" ? 180 : monster.type === "summoner" ? 170 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
         if (monster.type === "voidDragon" && monster.enraged) {
           shootProjectile(monster, playerCenter, -0.52);
           shootProjectile(monster, playerCenter, -0.26);
@@ -197,10 +269,13 @@
         } else {
           shootProjectile(monster, playerCenter);
         }
-        monster.fireCooldown = monster.type === "voidDragon" ? rand(660, 1040) : monster.type === "eclipseDragon" ? rand(760, 1180) : monster.type === "obsidianGolem" ? rand(920, 1450) : monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? rand(760, 1280) : monster.type === "eclipseMage" ? rand(820, 1320) : monster.type === "sorcerer" || monster.type === "moonShade" ? rand(900, 1450) : rand(1300, 2100);
+        monster.fireCooldown = monster.type === "voidDragon" ? rand(660, 1040) : monster.type === "eclipseDragon" ? rand(760, 1180) : monster.type === "obsidianGolem" ? rand(920, 1450) : monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? rand(760, 1280) : monster.type === "eclipseMage" ? rand(820, 1320) : monster.type === "summoner" ? rand(1100, 1700) : monster.type === "sorcerer" || monster.type === "moonShade" ? rand(900, 1450) : rand(1300, 2100);
       }
 
-      if (monster.windup > 0) {
+      if (monster.type === "trapFlower") {
+        vx = 0;
+        vy = 0;
+      } else if (monster.windup > 0) {
         vx = 0;
         vy = 0;
         if (monster.windup <= 40) monster.chargeTime = 360;
@@ -322,14 +397,18 @@
       player.stamina = Math.max(0, player.stamina - 18);
       player.slow = Math.max(player.slow, 700);
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "ST-", "#8dd7ff");
-    } else if (monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "obsidianCrawler" || monster.type === "obsidianGolem") {
+    } else if (monster.type === "trapFlower") {
+      player.slow = Math.max(player.slow, 900);
+      player.stamina = Math.max(0, player.stamina - 10);
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "罠", "#ff5e9f");
+    } else if (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "obsidianCrawler" || monster.type === "obsidianGolem") {
       const eclipseGuard = player.armor === 9 || player.equippedAccessory === "eclipse" || (!player.equippedAccessory && player.eclipseCharm);
       const voidGuard = player.armor === 10 || player.equippedAccessory === "void" || (!player.equippedAccessory && player.voidCharm);
       const obsidianGuard = player.armor === 11 || player.equippedAccessory === "obsidian" || (!player.equippedAccessory && player.obsidianCharm);
       const isVoid = monster.type === "voidWraith" || monster.type === "voidDragon";
       const isObsidian = monster.type === "obsidianCrawler" || monster.type === "obsidianGolem";
-      const baseSlow = monster.type === "voidDragon" ? 1850 : monster.type === "obsidianGolem" ? 1650 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 1300 : monster.type === "eclipseDragon" ? 1400 : monster.type === "eclipseMage" ? 1050 : 800;
-      const baseStamina = monster.type === "voidDragon" ? 24 : monster.type === "obsidianGolem" ? 22 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 16 : monster.type === "eclipseDragon" ? 18 : monster.type === "eclipseMage" ? 13 : 10;
+      const baseSlow = monster.type === "voidDragon" ? 1850 : monster.type === "obsidianGolem" ? 1650 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 1300 : monster.type === "eclipseDragon" ? 1400 : monster.type === "eclipseMage" ? 1050 : monster.type === "summoner" ? 950 : 800;
+      const baseStamina = monster.type === "voidDragon" ? 24 : monster.type === "obsidianGolem" ? 22 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 16 : monster.type === "eclipseDragon" ? 18 : monster.type === "eclipseMage" ? 13 : monster.type === "summoner" ? 12 : 10;
       const guard = isObsidian ? obsidianGuard : isVoid ? voidGuard : eclipseGuard;
       player.slow = Math.max(player.slow, Math.round(baseSlow * (guard ? 0.5 : 1)));
       player.stamina = Math.max(0, player.stamina - (guard ? 5 : baseStamina));
