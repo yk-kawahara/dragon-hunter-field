@@ -31,13 +31,17 @@
     armorCosts,
     weaponAttack,
     armorDefense,
+    shieldNames,
+    shieldTraits,
+    shieldCosts,
+    shieldGuard,
     itemNames,
     itemSellValues,
     accessoryData,
   } = definitions;
 
   const { centerOf } = mathHelpers;
-  const { addOwnedWeapon, addOwnedArmor, grantAccessory } = rewardHelpers;
+  const { addOwnedWeapon, addOwnedArmor, grantAccessory, availableTravelPoints } = rewardHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
 
@@ -65,14 +69,46 @@
     };
   }
 
+  function shieldRow(rank, available = true, lockedReason = "") {
+    return {
+      type: "shield",
+      id: rank,
+      name: shieldNames[rank],
+      detail: `${shieldTraits[rank]} 正面${Math.round((1 - (shieldGuard[rank] || 1)) * 100)}%軽減`,
+      cost: shieldCosts[rank],
+      available,
+      lockedReason,
+    };
+  }
+
   function itemRow(id, amount, cost) {
+    const details = {
+      potion: "HP回復",
+      tonic: "スタミナ/構え",
+      bomb: "範囲攻撃",
+      ward: "防御結界",
+      elixir: "完全回復",
+      warp: "拠点へ帰還",
+    };
     return {
       type: "item",
       id,
       name: `${itemNames[id]} x${amount}`,
-      detail: id === "potion" ? "HP回復" : id === "bomb" ? "周囲攻撃" : "防御札",
+      detail: details[id] || "",
       amount,
       cost,
+    };
+  }
+
+  function travelRow(point) {
+    return {
+      type: "travel",
+      id: point.id,
+      name: `馬車: ${point.name}`,
+      detail: "解放済み拠点へ移動",
+      cost: point.cost || 0,
+      x: point.x,
+      y: point.y,
     };
   }
 
@@ -168,8 +204,10 @@
       openShop(context, "村の鍛冶屋", [
         weaponRow(1),
         armorRow(1),
+        shieldRow(1),
         weaponRow(2),
         armorRow(2),
+        shieldRow(2),
         weaponRow(3),
         armorRow(3),
         weaponRow(4),
@@ -183,8 +221,11 @@
       if (player.hp === player.hpMax) {
         openShop(context, "薬師の店", [
           itemRow("potion", 1, 18 + player.level * 4),
+          itemRow("tonic", 1, 28 + player.level * 5),
           itemRow("bomb", 1, 36 + player.level * 5),
           itemRow("ward", 1, 42 + player.level * 6),
+          itemRow("elixir", 1, 120 + player.level * 10),
+          itemRow("warp", 1, 90 + player.level * 8),
         ]);
       } else if (player.gold >= cost) {
         const cost = player.level * 8;
@@ -200,11 +241,20 @@
       openShop(context, "黒市の大商館", [
         weaponRow(11, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
         armorRow(11, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
+        shieldRow(5, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
         accessoryRow("obsidian", 2600, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
-        itemRow("potion", 5, 150 + player.level * 12),
+        itemRow("elixir", 2, 360 + player.level * 16),
+        itemRow("warp", 2, 280 + player.level * 12),
+        itemRow("tonic", 4, 190 + player.level * 10),
         itemRow("bomb", 4, 165 + player.level * 12),
         itemRow("ward", 5, 180 + player.level * 12),
       ]);
+      return;
+    }
+
+    if (npc.type === "porter") {
+      const rows = availableTravelPoints(state, player).map(travelRow);
+      openShop(context, "拠点馬車", rows.length ? rows : [travelRow({ id: "village", name: "村", x: 10, y: 48, cost: 0 })]);
       return;
     }
 
@@ -244,8 +294,12 @@
         openShop(context, "黒門砦の隊商", [
           weaponRow(10, state.discoveries.has("void-seal"), "黒陽碑を読め"),
           armorRow(10, state.discoveries.has("void-seal"), "黒陽碑を読め"),
+          shieldRow(4, state.discoveries.has("void-seal"), "黒陽碑を読め"),
           accessoryRow("void", 1800, state.discoveries.has("void-seal"), "黒陽碑を読め"),
           itemRow("potion", 4, 110 + player.level * 12),
+          itemRow("tonic", 3, 130 + player.level * 10),
+          itemRow("elixir", 1, 250 + player.level * 14),
+          itemRow("warp", 1, 190 + player.level * 10),
           itemRow("bomb", 3, 120 + player.level * 12),
           itemRow("ward", 4, 130 + player.level * 12),
         ]);
@@ -255,8 +309,12 @@
         openShop(context, "月見砦の隊商", [
           weaponRow(9, state.discoveries.has("eclipse-seal"), "月蝕碑を読め"),
           armorRow(9, state.discoveries.has("eclipse-seal"), "月蝕碑を読め"),
+          shieldRow(3, state.discoveries.has("eclipse-seal"), "月蝕碑を読め"),
           accessoryRow("eclipse", 1200, state.discoveries.has("eclipse-seal"), "月蝕碑を読め"),
           itemRow("potion", 3, 72 + player.level * 10),
+          itemRow("tonic", 2, 90 + player.level * 8),
+          itemRow("elixir", 1, 180 + player.level * 12),
+          itemRow("warp", 1, 150 + player.level * 8),
           itemRow("bomb", 2, 82 + player.level * 10),
           itemRow("ward", 3, 92 + player.level * 10),
         ]);
@@ -266,7 +324,10 @@
         openShop(context, "灰道の宿場", [
           weaponRow(8, state.ashKnightDefeated, "灰騎士を倒せ"),
           armorRow(8, state.ashKnightDefeated, "灰騎士を倒せ"),
+          shieldRow(3, state.ashKnightDefeated, "灰騎士を倒せ"),
           itemRow("potion", 2, 48 + player.level * 8),
+          itemRow("tonic", 1, 62 + player.level * 7),
+          itemRow("warp", 1, 110 + player.level * 7),
           itemRow("bomb", 2, 58 + player.level * 8),
           itemRow("ward", 2, 68 + player.level * 8),
         ]);
@@ -276,11 +337,13 @@
         accessoryRow("mine", 180),
         weaponRow(5),
         armorRow(5),
+        shieldRow(2),
         weaponRow(6, player.level >= 8, "LV8から"),
         armorRow(6, player.level >= 8, "LV8から"),
         weaponRow(7, player.level >= 12, "LV12から"),
         armorRow(7, player.level >= 12, "LV12から"),
         itemRow("potion", 2, 28 + player.level * 6),
+        itemRow("tonic", 1, 38 + player.level * 6),
         itemRow("bomb", 1, 38 + player.level * 6),
         itemRow("ward", 1, 48 + player.level * 6),
       ]);

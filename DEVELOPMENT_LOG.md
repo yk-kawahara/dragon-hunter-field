@@ -79,6 +79,80 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 _Add new entries here._
 
+### 2026-06-14: Dense Route, Shield Slot, and Landmark Side-Rewards Pass
+
+Goal: improve the existing `120x144` overworld as an RPG world rather than expanding map size again. Focus areas were sparse/linear route feel, wall-corridor terrain, remote-base life, side rewards, enemy behavior difference, equipment choice, and readable preparation.
+
+Key work:
+
+* Added a formal shield slot:
+  * `shield`, `ownedShields`, save/load migration, reset handling.
+  * Shield inventory tab, equip behavior, sell guards, shop purchases, status display.
+  * Shield definitions from wooden shields through Black Sun / Obsidian shields.
+* Added shield combat behavior:
+  * Shields reduce frontal contact damage.
+  * Shield Soldier is weak to side/back attacks but inefficient to attack from the front.
+* Added Shield Soldier to old tower, eclipse, obsidian, and void route spawn pressure.
+* Added shield route rewards:
+  * Ash Watchtower cache.
+  * Old Tower side cache.
+  * Black Gate shield cache.
+* Added route-hint and shortcut-hint discovery rewards that provide tonics/return bells and teach preparation.
+* Roughened selected old-tower / eastern-ruin map walls into broken wall openings and side pockets to reduce the sealed-corridor feeling.
+* Added more NPCs to Black Market, Ash Hamlet, Moon Camp, and Black Fort.
+* Localized newly added English-facing names/messages for Tonic, Elixir, Return Bell, Base Wagon, and obsidian supply text.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+* Expanded VM smoke coverage for NPC count, shield save/load, shield inventory equip, frontal shield mitigation, Shield Soldier spawn/combat behavior, shield shop stock, and shield reward chests.
+
+Verification:
+
+* `node --check` passed for all JavaScript files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* Map preview generation passed at `120x144`.
+* VM smoke verifies reachability for new shield reward locations and existing major route goals.
+
+Known risks:
+
+* Real in-app Browser QA was attempted, but the browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Manual balance is still needed for shield prices, shield mitigation strength, Shield Soldier density, and whether heavy shields should eventually reduce movement.
+* Terrain improvements are intentionally focused and safe; more large-scale hand-authored terrainization is still needed for Moon Ruins, Black Market outskirts, and Black Sun Castle.
+
+### 2026-06-13: Base Travel, Shop Economy, and Late-Route Density Pass
+
+Goal: address playtest feedback that the strongest weapon could be found without buying gear, gold had too few uses, bases felt lonely, late maps felt sparse/over-walled, walking from the first village to late areas was tedious, and shop item rows overlapped.
+
+Key work:
+
+* Changed Obsidian Vault reward so it no longer grants rank 11 weapon/armor directly.
+* Kept the Obsidian Bracelet as a meaningful exploration reward and added premium route supplies instead.
+* Raised rank 11 weapon/armor prices so Black Market gear remains a real late-game gold sink.
+* Added new consumables:
+  * Tonic: restores stamina, clears slow, and gives a small guard buffer.
+  * Elixir: fully restores HP/stamina and clears slow/burn.
+  * Return Bell: returns to the nearest unlocked safe base.
+* Added Base Wagon travel through new porter NPCs at village and remote bases.
+* Added more guards/villagers/porters to village, southwest camp, Ash Hamlet, Moon Camp, Black Fort, and Black Market.
+* Expanded remote shop lineups with tonics, elixirs, return bells, bombs, wards, and premium Black Market supplies.
+* Added Black Market and Obsidian route supply rewards.
+* Increased late-region spawn density targets and max monster cap.
+* Opened an extra Black Sun Castle wall route to reduce the over-walled, single-corridor feel.
+* Updated shop rendering so row descriptions move to the bottom help line instead of overlapping item names and prices.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* `node --check` passed for changed JS files using bundled Node.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with CRLF warnings only.
+* Map preview generation passed at `120x144`.
+* VM smoke verifies 30 NPCs, porter loading, base travel, premium item purchases, updated Obsidian Vault reward, Obsidian route supply rewards, save/load for new items, and reachability for new rewards/discoveries.
+
+Known risks:
+
+* Real-browser QA was attempted, but the in-app browser runtime failed with Windows `CreateProcessAsUserW failed: 5`.
+* Manual balance is still needed for late-game gold income versus rank 11 gear, elixir/return bell prices, and denser Chapter 3 enemy pressure.
+* Bases are more populated, but Black Market should still gain unique conversations/errands and more city identity in a future content pass.
+
 ### 2026-06-13: Selectable Shops and Obsidian Branch Expedition
 
 Goal: address playtest issues with equipment acquisition/shop flow and make the Chapter 3 route feel like a longer expedition toward Black Sun Castle.

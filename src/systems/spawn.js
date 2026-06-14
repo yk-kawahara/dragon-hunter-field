@@ -180,7 +180,7 @@
     state.spawnTimer -= dt;
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
-    const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
+    const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
     if (state.spawnTimer > 0 || state.monsters.length >= maxMonsters) return;
     state.spawnTimer = rand(780, 1320) / regionInfo.danger;
 
@@ -205,8 +205,8 @@
     state.regionSpawnTimer = Math.max(0, state.regionSpawnTimer - dt);
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
-    const maxMonsters = clamp(5 + player.level * 2 + regionInfo.maxBonus, 7, 16);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 4 : region === "east" ? 5 : region === "ash" ? 6 : region === "tower" ? 7 : region === "moon" ? 8 : region === "eclipse" ? 9 : region === "obsidian" ? 9 : region === "void" ? 10 : 5;
+    const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "obsidian" ? 12 : region === "void" ? 13 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;

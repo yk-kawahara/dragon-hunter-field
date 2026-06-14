@@ -28,6 +28,14 @@
     { x: 35, y: 135, id: "black-market-circle", name: "黒市の回復陣" },
     { x: 98, y: 132, id: "black-fort-circle", name: "黒門砦の回復陣" },
   ];
+  const TRAVEL_POINTS = [
+    { id: "village", name: "村", x: 10, y: 48, cost: 0, unlock: "always" },
+    { id: "southwest-camp", name: "前線キャンプ", x: 31, y: 59, cost: 35, unlock: "trail" },
+    { id: "ash-hamlet", name: "灰道の宿場", x: 102, y: 58, cost: 90, unlock: "elderReported" },
+    { id: "moon-camp", name: "月見砦", x: 102, y: 116, cost: 170, unlock: "ashKnightDefeated" },
+    { id: "black-fort", name: "黒門砦", x: 98, y: 132, cost: 260, unlock: "chapter2Reported" },
+    { id: "black-market", name: "黒市", x: 35, y: 135, cost: 320, unlock: "blackMarket" },
+  ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
     { name: "東門", x: 18, y: 48, w: 1, h: 3, axis: "y" },
@@ -42,8 +50,10 @@
     { id: "mine-armory", x: 32, y: 64, reward: "mineGear" },
     { id: "southwest-mine-cache", x: 39, y: 67, reward: "mineGold" },
     { id: "ash-road-cache", x: 111, y: 41, reward: "ashGear" },
+    { id: "ash-watchtower-cache", x: 112, y: 45, reward: "shieldGear" },
     { id: "south-quarry-cache", x: 58, y: 78, reward: "mineGold" },
     { id: "old-tower-cache", x: 104, y: 90, reward: "towerSupply" },
+    { id: "old-tower-side-cache", x: 97, y: 92, reward: "shieldSupply" },
     { id: "moon-ruin-cache", x: 97, y: 99, reward: "moonRelic" },
     { id: "moon-road-supply", x: 102, y: 106, reward: "moonSupply" },
     { id: "moon-camp-armory", x: 106, y: 116, reward: "eclipseGear" },
@@ -51,6 +61,9 @@
     { id: "black-fort-armory", x: 103, y: 132, reward: "voidGear" },
     { id: "obsidian-vault-cache", x: 52, y: 133, reward: "obsidianGear" },
     { id: "black-market-supply", x: 28, y: 136, reward: "blackMarketSupply" },
+    { id: "black-market-stash", x: 43, y: 135, reward: "blackMarketSupply" },
+    { id: "obsidian-side-cache", x: 58, y: 135, reward: "obsidianSupply" },
+    { id: "black-gate-shield-cache", x: 73, y: 134, reward: "blackShieldSupply" },
     { id: "black-sun-cache", x: 76, y: 140, reward: "voidSupply" },
   ];
   const DISCOVERY_POINTS = [
@@ -61,8 +74,12 @@
     { id: "tower-cache", x: 99, y: 88, kind: "cache" },
     { id: "moon-waystone", x: 86, y: 101, kind: "waystone" },
     { id: "moon-field-cache", x: 108, y: 104, kind: "cache" },
+    { id: "moon-grave-note", x: 91, y: 103, kind: "routeHint" },
     { id: "eclipse-seal", x: 82, y: 121, kind: "eclipseSeal" },
     { id: "void-seal", x: 82, y: 138, kind: "voidSeal" },
+    { id: "obsidian-waystone", x: 52, y: 132, kind: "obsidianWaystone" },
+    { id: "black-market-rumor", x: 41, y: 132, kind: "routeHint" },
+    { id: "broken-gate-marker", x: 74, y: 136, kind: "shortcutHint" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
@@ -84,11 +101,11 @@
     mine: { danger: 3, maxBonus: 3, pool: ["bubbler", "bubbler", "wisp", "boar"] },
     cave: { danger: 4, maxBonus: 4, pool: ["dragonling", "wisp", "dragonling"] },
     ash: { danger: 4, maxBonus: 5, pool: ["sorcerer", "wisp", "dragonling", "boar"] },
-    tower: { danger: 5, maxBonus: 6, pool: ["sorcerer", "sorcerer", "dragonling", "wisp"] },
+    tower: { danger: 5, maxBonus: 6, pool: ["shieldSoldier", "sorcerer", "sorcerer", "dragonling", "wisp"] },
     moon: { danger: 6, maxBonus: 7, pool: ["moonShade", "sorcerer", "dragonling", "wisp"] },
-    eclipse: { danger: 7, maxBonus: 8, pool: ["eclipseMage", "moonShade", "sorcerer", "dragonling"] },
-    obsidian: { danger: 8, maxBonus: 9, pool: ["obsidianCrawler", "voidWraith", "eclipseMage", "dragonling"] },
-    void: { danger: 8, maxBonus: 10, pool: ["voidWraith", "eclipseMage", "moonShade", "dragonling"] },
+    eclipse: { danger: 7, maxBonus: 8, pool: ["shieldSoldier", "eclipseMage", "moonShade", "sorcerer", "dragonling"] },
+    obsidian: { danger: 8, maxBonus: 9, pool: ["shieldSoldier", "obsidianCrawler", "voidWraith", "eclipseMage", "dragonling"] },
+    void: { danger: 8, maxBonus: 10, pool: ["shieldSoldier", "voidWraith", "eclipseMage", "moonShade", "dragonling"] },
   };
 
   const TILE_GRASS = 0;
@@ -117,19 +134,30 @@
   const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧"];
   const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し"];
   const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御"];
-  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 3400, 5600, 6800];
-  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 18, 21, 30, 34];
-  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 3200, 5200, 6600];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 3400, 5600, 9800];
+  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 3200, 5200, 9200];
   const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
-  const itemOrder = ["potion", "bomb", "ward"];
+  const shieldNames = ["なし", "木盾", "鉄盾", "星盾", "黒陽盾", "黒曜大盾"];
+  const shieldTraits = ["盾なし", "正面接触を少し軽減", "正面接触を軽減", "魔法敵にも構えやすい", "黒陽領の正面圧を軽減", "重いが正面戦闘に強い"];
+  const shieldCosts = [0, 120, 520, 1700, 3600, 6200];
+  const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48];
+  const shieldSellValues = shieldCosts.map((cost) => Math.floor(cost * 0.45));
+  const itemOrder = ["potion", "tonic", "bomb", "ward", "elixir", "warp"];
   const itemNames = {
+    tonic: "活力薬",
+    elixir: "霊薬",
+    warp: "帰還鈴",
     potion: "薬草",
     bomb: "火薬壺",
     ward: "護符",
   };
   const itemSellValues = {
+    tonic: 16,
+    elixir: 44,
+    warp: 62,
     potion: 8,
     bomb: 14,
     ward: 18,
@@ -309,6 +337,18 @@
       shadow: "#1d4f78",
       drop: 0.16,
     },
+    shieldSoldier: {
+      name: "盾兵",
+      hp: 210,
+      atk: 96,
+      def: 62,
+      speed: 17 * WORLD_SCALE,
+      xp: 155,
+      gold: 54,
+      color: "#9aa6b2",
+      shadow: "#333a46",
+      drop: 0.22,
+    },
     dragonling: {
       name: "小竜",
       hp: 158,
@@ -428,6 +468,7 @@
     HEAL_CIRCLE,
     SAFE_ZONES,
     HEAL_POINTS,
+    TRAVEL_POINTS,
     TOWN_GATES,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
@@ -468,6 +509,11 @@
     armorDefense,
     weaponSellValues,
     armorSellValues,
+    shieldNames,
+    shieldTraits,
+    shieldCosts,
+    shieldGuard,
+    shieldSellValues,
     itemOrder,
     itemNames,
     itemSellValues,

@@ -40,10 +40,15 @@
     armorTraits,
     weaponAttack,
     armorDefense,
+    shieldNames,
+    shieldTraits,
+    shieldGuard,
+    itemOrder,
     itemNames,
     itemSellValues,
     weaponSellValues,
     armorSellValues,
+    shieldSellValues,
     accessoryData,
     TILE_GRASS,
     TILE_PATH,
@@ -121,6 +126,27 @@
     right: { idle: "assets/player/right_idle.png", walk: "assets/player/right_walk.png" },
     up: { idle: "assets/player/up_idle.png", walk: "assets/player/up_walk.png" },
   };
+
+  const itemRenderDetails = {
+    potion: "HP",
+    tonic: "ST",
+    bomb: "AOE",
+    ward: "Guard",
+    elixir: "Full",
+    warp: "Return",
+  };
+  const itemRenderFields = {
+    potion: "potions",
+    tonic: "tonics",
+    bomb: "bombs",
+    ward: "wards",
+    elixir: "elixirs",
+    warp: "warps",
+  };
+
+  function playerItemCount(id) {
+    return player?.[itemRenderFields[id]] || 0;
+  }
 
   // Optional legacy fallback:
   //   assets/player.png
@@ -205,6 +231,7 @@ function draw(context) {
   drawBlackMarketDetails(cam);
   drawBlackFortDetails(cam);
   drawVillageRoleMarkers(cam);
+  drawTravelMarkers(cam);
   drawHealCircle(cam);
   drawTownFence(cam);
   drawTownGates(cam);
@@ -266,6 +293,7 @@ function drawShopOverlay() {
   const rows = Array.isArray(state.shopRows) ? state.shopRows : [];
   const selected = Math.max(0, Math.min(state.shopIndex || 0, Math.max(0, rows.length - 1)));
   const first = Math.max(0, Math.min(Math.max(0, selected - 4), Math.max(0, rows.length - 7)));
+  const selectedRow = rows[selected] || null;
 
   ctx.fillStyle = "rgba(3, 8, 18, 0.95)";
   ctx.fillRect(x, y, w, h);
@@ -289,16 +317,21 @@ function drawShopOverlay() {
       ctx.strokeStyle = "#ffd166";
       ctx.strokeRect(x + 5, rowY - 9, w - 10, 12);
     }
-    const owned = row.owned || (row.type === "weapon" && player.ownedWeapons?.includes(row.id)) || (row.type === "armor" && player.ownedArmors?.includes(row.id)) || (row.type === "accessory" && player.ownedAccessories?.includes(row.id));
+    const owned = row.owned || (row.type === "weapon" && player.ownedWeapons?.includes(row.id)) || (row.type === "armor" && player.ownedArmors?.includes(row.id)) || (row.type === "shield" && player.ownedShields?.includes(row.id)) || (row.type === "accessory" && player.ownedAccessories?.includes(row.id));
     ctx.fillStyle = row.available === false ? "#687383" : owned ? "#74ff8f" : "#ffffff";
     ctx.fillText(`${owned ? "済 " : "  "}${row.name}`, x + 9, rowY);
     ctx.fillStyle = row.available === false ? "#6f7780" : "#d7e2ea";
-    ctx.fillText(row.available === false ? (row.lockedReason || row.detail || "") : (row.detail || ""), x + 96, rowY, w - 150);
+    ctx.fillText(row.available === false ? (row.lockedReason || "") : "", x + 116, rowY, w - 166);
     ctx.fillStyle = player.gold >= row.cost && row.available !== false ? "#fff2a6" : "#ff9a8a";
     ctx.fillText(`${row.cost || 0}G`, x + w - 39, rowY);
   }
   ctx.fillStyle = "#8dd7ff";
   ctx.font = "7px monospace";
+  if (selectedRow) {
+    ctx.fillStyle = selectedRow.available === false ? "#ff9a8a" : "#d7e2ea";
+    ctx.fillText(selectedRow.available === false ? (selectedRow.lockedReason || selectedRow.detail || "") : (selectedRow.detail || ""), x + 7, y + h - 17, w - 14);
+  }
+  ctx.fillStyle = "#8dd7ff";
   ctx.fillText("↑↓選択  Enter:買う  Esc/S:閉じる", x + 7, y + h - 7);
 }
 
@@ -308,7 +341,7 @@ function drawInventoryOverlay() {
   const y = 15;
   const w = W - 24;
   const h = VIEW_H - 25;
-  const tabs = ["items", "weapons", "armors", "accessories"];
+  const tabs = ["items", "weapons", "armors", "shields", "accessories"];
   const labels = { items: "道具", weapons: "武器", armors: "防具", accessories: "装飾" };
   if (!tabs.includes(state.inventoryTab)) state.inventoryTab = "items";
   const rows = inventoryRenderRows(state.inventoryTab);
@@ -325,12 +358,12 @@ function drawInventoryOverlay() {
   ctx.fillText("もちもの", x + 7, y + 12);
 
   for (let i = 0; i < tabs.length; i += 1) {
-    const tabX = x + 7 + i * 45;
+    const tabX = x + 7 + i * 37;
     const active = tabs[i] === state.inventoryTab;
     ctx.fillStyle = active ? "#ffd166" : "#1a3045";
-    ctx.fillRect(tabX, y + 18, 38, 12);
+    ctx.fillRect(tabX, y + 18, 32, 12);
     ctx.fillStyle = active ? "#08111c" : "#d7e2ea";
-    ctx.fillText(labels[tabs[i]], tabX + 4, y + 27);
+    ctx.fillText(tabs[i] === "shields" ? "盾" : (labels[tabs[i]] || tabs[i]), tabX + 3, y + 27);
   }
 
   ctx.font = "8px monospace";
@@ -364,11 +397,11 @@ function inventoryRenderRows(tab) {
   const currentDefense = baseDefense + (armorDefense[player.armor] || 0);
   const diffText = (value) => value === 0 ? "+0" : value > 0 ? `+${value}` : String(value);
   if (tab === "items") {
-    return [
-      { name: itemNames.potion, detail: `HP回復 x${player.potions}`, sell: itemSellValues.potion },
-      { name: itemNames.bomb, detail: `周囲攻撃 x${player.bombs}`, sell: itemSellValues.bomb },
-      { name: itemNames.ward, detail: `防御 x${player.wards}`, sell: itemSellValues.ward },
-    ];
+    return itemOrder.map((id) => ({
+      name: itemNames[id] || id,
+      detail: `${itemRenderDetails[id] || ""} x${playerItemCount(id)}`,
+      sell: itemSellValues[id] || 0,
+    }));
   }
   if (tab === "weapons") {
     const owned = Array.isArray(player.ownedWeapons) ? player.ownedWeapons : [player.weapon || 0];
@@ -386,6 +419,15 @@ function inventoryRenderRows(tab) {
       detail: `${armorTraits[rank] || ""} DEF ${baseDefense + (armorDefense[rank] || 0)} (${diffText(baseDefense + (armorDefense[rank] || 0) - currentDefense)})`,
       sell: armorSellValues[rank] || 0,
       equipped: player.armor === rank,
+    }));
+  }
+  if (tab === "shields") {
+    const ownedShields = Array.isArray(player.ownedShields) ? player.ownedShields : [player.shield || 0];
+    return ownedShields.map((rank) => ({
+      name: shieldNames[rank] || `盾${rank}`,
+      detail: `${shieldTraits[rank] || ""} 正面${Math.round((1 - (shieldGuard[rank] || 1)) * 100)}%軽減`,
+      sell: shieldSellValues[rank] || 0,
+      equipped: player.shield === rank,
     }));
   }
   const owned = Array.isArray(player.ownedAccessories) ? player.ownedAccessories : [];
@@ -566,6 +608,20 @@ function drawVillageRoleMarkers(cam) {
   drawRoleMarker(villageHeal.x * TILE - cam.x, (villageHeal.y - 1) * TILE - cam.y, "回", "#6de4ff");
   for (const gate of TOWN_GATES) {
     drawRoleMarker(gate.x * TILE - cam.x, (gate.y - 1) * TILE - cam.y, state.townGateOpen ? "開" : "門", state.townGateOpen ? "#ffd166" : "#d7e2ea");
+  }
+}
+
+function drawTravelMarkers(cam) {
+  const points = [
+    [7, 49],
+    [29, 59],
+    [98, 57],
+    [99, 115],
+    [93, 131],
+    [31, 134],
+  ];
+  for (const [x, y] of points) {
+    drawRoleMarker(x * TILE - cam.x, y * TILE - cam.y, "W", "#d7e2ea");
   }
 }
 
@@ -1273,6 +1329,7 @@ function npcColor(type) {
   if (type === "healer") return "#40c6ff";
   if (type === "frontier") return "#9ad16f";
   if (type === "merchant") return "#ffd166";
+  if (type === "porter") return "#d7e2ea";
   if (type === "guide") return "#b990ff";
   if (type === "guard") return "#8dd7ff";
   if (type === "villager") return "#f0a66a";
@@ -1472,6 +1529,20 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(sx + 11, sy + 1 - pulse, 3, 3);
     ctx.fillRect(sx + 13, sy + 6, 2, 2);
+  } else if (monster.type === "shieldSoldier") {
+    const guardX = monster.dir === "left" ? sx + 1 : monster.dir === "right" ? sx + 8 : sx + 3;
+    const guardY = monster.dir === "up" ? sy + 1 : sy + 5;
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 5, 9, 7);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 6, 4);
+    ctx.fillRect(sx + 3, sy + 6, 8, 7);
+    ctx.fillStyle = "#202632";
+    ctx.fillRect(guardX, guardY, 5, 7);
+    ctx.fillStyle = "#d7e2ea";
+    ctx.fillRect(guardX + 1, guardY + 1, 3, 5);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(sx + 10, sy + 5, 2, 8);
   } else if (monster.type === "obsidianCrawler") {
     const pulse = Math.floor(monster.age / 150) % 2;
     ctx.fillStyle = "rgba(141, 215, 255, 0.18)";
@@ -1809,7 +1880,7 @@ function drawItemChip(x, y) {
   ctx.strokeRect(x, y, 28, 19);
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "left";
-  ctx.fillText(labels[player.selectedItem], x + 4, y + 8);
+  ctx.fillText(({ tonic: "活", elixir: "霊", warp: "帰" }[player.selectedItem]) || labels[player.selectedItem] || "?", x + 4, y + 8);
   ctx.fillStyle = "#fff2a6";
   ctx.fillText(String(selectedItemCount()), x + 17, y + 17);
   if (player.combo > 0) {

@@ -69,6 +69,7 @@ Expand the game into a larger RPG while preserving density and purpose:
 * Add monsters with behavior differences, not only stat/color changes.
 * Add equipment tiers, sidegrades, accessories, inventory decisions, and route preparation.
 * Dangerous areas should be more rewarding and more populated than safe areas.
+* When the current map already has empty or wall-corridor space, deepen density and route quality before making the world larger again.
 
 ## Implementation rules
 
@@ -97,6 +98,7 @@ Expand the game into a larger RPG while preserving density and purpose:
 * Weapons, armor, items, and accessories should be inspectable where appropriate.
 * Accessories should be equipment choices, not only permanent flags.
 * Equipment should affect survivability, exploration range, route preparation, or contact combat.
+* Shields are a first-class equipment slot for contact combat. Preserve save/load, inventory, shop, and frontal-damage behavior when editing equipment systems.
 * One-time rewards must persist across save/load and must never make the player weaker.
 * The village and remote bases must be true safe zones: no ordinary enemy/projectile/magic leakage.
 * Remote bases should provide recovery, supplies, readable landmarks, and a feeling that the safe radius moved outward.

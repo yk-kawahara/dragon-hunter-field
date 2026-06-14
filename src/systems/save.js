@@ -51,13 +51,18 @@
         gold: player.gold,
         weapon: player.weapon,
         armor: player.armor,
+        shield: player.shield,
         ownedWeapons: player.ownedWeapons,
         ownedArmors: player.ownedArmors,
+        ownedShields: player.ownedShields,
         ownedAccessories: player.ownedAccessories,
         equippedAccessory: player.equippedAccessory,
         potions: player.potions,
+        tonics: player.tonics,
         bombs: player.bombs,
         wards: player.wards,
+        elixirs: player.elixirs,
+        warps: player.warps,
         selectedItem: player.selectedItem,
         scales: player.scales,
         sealCrest: player.sealCrest,
@@ -106,6 +111,11 @@
       player.resilience = Number.isFinite(data.player.resilience) ? data.player.resilience : 1 + player.level;
       player.bombs ??= 1;
       player.wards ??= 0;
+      player.shield ??= 0;
+      player.ownedShields ??= [player.shield || 0];
+      player.tonics ??= 0;
+      player.elixirs ??= 0;
+      player.warps ??= 0;
       player.sealCrest = Boolean(player.sealCrest);
       player.hunterCharm = Boolean(player.hunterCharm);
       player.regenCharm = Boolean(player.regenCharm);
@@ -179,13 +189,18 @@
       gold: 18,
       weapon: 0,
       armor: 0,
+      shield: 0,
       ownedWeapons: [0],
       ownedArmors: [0],
+      ownedShields: [0],
       ownedAccessories: [],
       equippedAccessory: "",
       potions: 2,
+      tonics: 0,
       bombs: 1,
       wards: 0,
+      elixirs: 0,
+      warps: 0,
       selectedItem: "potion",
       sealCrest: false,
       hunterCharm: false,

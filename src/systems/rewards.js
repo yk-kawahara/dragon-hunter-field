@@ -13,6 +13,7 @@
 
   const {
     TILE_FIELD,
+    TRAVEL_POINTS,
     WORLD_SCALE,
     weaponNames,
     armorNames,
@@ -20,7 +21,11 @@
     armorDefense,
     weaponSellValues,
     armorSellValues,
+    shieldNames,
+    shieldGuard,
+    shieldSellValues,
     itemOrder,
+    itemNames,
     accessoryOrder,
     accessoryData,
   } = definitions;
@@ -31,6 +36,38 @@
   } = mathHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
+  const itemFields = {
+    potion: "potions",
+    tonic: "tonics",
+    bomb: "bombs",
+    ward: "wards",
+    elixir: "elixirs",
+    warp: "warps",
+  };
+
+  function itemField(id) {
+    return itemFields[id] || "potions";
+  }
+
+  function addItem(player, id, amount = 1) {
+    const field = itemField(id);
+    player[field] = Math.min(9, Math.max(0, player[field] || 0) + amount);
+    return player[field];
+  }
+
+  function travelPointUnlocked(point, state, player) {
+    if (!point || point.unlock === "always") return true;
+    if (point.unlock === "trail") return Boolean(player.trailCharm || state.wardenDefeated || state.elderReported);
+    if (point.unlock === "elderReported") return Boolean(state.elderReported || state.chapter2Reported || state.chapter3Reported);
+    if (point.unlock === "ashKnightDefeated") return Boolean(state.ashKnightDefeated || state.chapter2Reported || state.chapter3Reported);
+    if (point.unlock === "chapter2Reported") return Boolean(state.chapter2Reported || state.chapter3Reported);
+    if (point.unlock === "blackMarket") return Boolean(state.chapter2Reported && (state.chests?.has?.("black-fort-armory") || state.obsidianGolemDefeated || state.chapter3Reported));
+    return false;
+  }
+
+  function availableTravelPoints(state, player) {
+    return (TRAVEL_POINTS || []).filter((point) => travelPointUnlocked(point, state, player));
+  }
 
   function rewardIds(list) {
     return new Set(list.map((entry) => entry.id));
@@ -85,8 +122,10 @@
   function normalizeInventory(player) {
     player.weapon = normalizedRank(player.weapon, weaponNames.length);
     player.armor = normalizedRank(player.armor, armorNames.length);
+    player.shield = normalizedRank(player.shield, shieldNames.length);
     player.ownedWeapons = normalizeRankInventory(player.ownedWeapons, player.weapon, weaponNames.length);
     player.ownedArmors = normalizeRankInventory(player.ownedArmors, player.armor, armorNames.length);
+    player.ownedShields = normalizeRankInventory(player.ownedShields, player.shield, shieldNames.length);
     normalizeAccessoryInventory(player);
     return player;
   }
@@ -105,6 +144,34 @@
     if (!player.ownedArmors.includes(target)) player.ownedArmors.push(target);
     player.ownedArmors.sort((a, b) => a - b);
     return target;
+  }
+
+  function addOwnedShield(player, rank) {
+    normalizeInventory(player);
+    const target = normalizedRank(rank, shieldNames.length);
+    if (!player.ownedShields.includes(target)) player.ownedShields.push(target);
+    player.ownedShields.sort((a, b) => a - b);
+    return target;
+  }
+
+  function grantShieldAtLeast(context, rank, upgradedMessage, keptMessage = "既により良い盾を持っている") {
+    const { player, say } = requireRewardContext(context);
+    const target = clamp(rank, 0, shieldNames.length - 1);
+    const ownedBefore = Array.isArray(player.ownedShields) && player.ownedShields.includes(target);
+    addOwnedShield(player, target);
+    const currentPower = 1 - (shieldGuard[player.shield] || 1);
+    const targetPower = 1 - (shieldGuard[target] || 1);
+    if (player.shield === target || currentPower >= targetPower) {
+      if (!ownedBefore && player.shield !== target) {
+        say(`${shieldNames[target]}を入手した。もちもので装備できる`);
+        return true;
+      }
+      say(keptMessage);
+      return false;
+    }
+    player.shield = target;
+    say(upgradedMessage || `${shieldNames[player.shield]}を装備した`);
+    return true;
   }
 
   function grantAccessory(context, id, message) {
@@ -165,7 +232,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "blackMarketSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "shieldSupply" || reward === "blackShieldSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -208,6 +275,11 @@
       addOwnedArmor(player, 8);
       player.wards = Math.min(9, player.wards + 2);
       say("星見の装備を見つけた。魔法に備えてもちもので選べる");
+    } else if (reward === "shieldGear") {
+      player.gold += 260;
+      grantShieldAtLeast(context, 3, "星盾を見つけた。正面から受ける遠征が楽になる");
+      addItem(player, "tonic", 1);
+      player.wards = Math.min(9, player.wards + 1);
     } else if (reward === "towerSupply") {
       player.gold += 680;
       player.potions = Math.min(9, player.potions + 3);
@@ -270,12 +342,37 @@
       return true;
     }
     if (reward === "obsidianGear") {
-      player.gold += 1500;
-      addOwnedWeapon(player, 11);
-      addOwnedArmor(player, 11);
-      player.wards = Math.min(9, player.wards + 5);
+      player.gold += 900;
+      addItem(player, "elixir", 2);
+      addItem(player, "tonic", 2);
+      addItem(player, "warp", 1);
+      player.wards = Math.min(9, player.wards + 4);
       grantAccessory(context, "obsidian", "黒曜の腕輪を見つけた。正面戦闘に強い");
-      say("黒曜洞の武具を得た。黒陽城を正面から押し返せる");
+      say("黒曜洞の腕輪と遠征物資を得た。黒曜装備は黒市で買おう");
+      return true;
+    }
+    if (reward === "obsidianSupply") {
+      player.gold += 720;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      say("黒曜路の遠征物資を見つけた");
+      return true;
+    }
+    if (reward === "shieldSupply") {
+      player.gold += 520;
+      grantShieldAtLeast(context, 3, "星盾を手に入れた。盾兵や魔法道を正面から受けやすい");
+      addItem(player, "tonic", 2);
+      player.wards = Math.min(9, player.wards + 2);
+      return true;
+    }
+    if (reward === "blackShieldSupply") {
+      player.gold += 820;
+      grantShieldAtLeast(context, 4, "黒陽盾を手に入れた。黒陽城の正面圧に備えられる");
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
       return true;
     }
     if (reward === "blackMarketSupply") {
@@ -283,6 +380,8 @@
       player.potions = Math.min(9, player.potions + 4);
       player.bombs = Math.min(9, player.bombs + 3);
       player.wards = Math.min(9, player.wards + 4);
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
       say("黒市の隠し倉庫から遠征物資を得た");
       return true;
     }
@@ -301,10 +400,13 @@
       if (drop < 0.18) {
         player.potions = Math.min(9, player.potions + 1);
         say("薬草を拾った");
-      } else if (drop < 0.29) {
+      } else if (drop < 0.25) {
+        addItem(player, "tonic", 1);
+        say("活力薬を拾った");
+      } else if (drop < 0.33) {
         player.bombs = Math.min(9, player.bombs + 1);
         say("火瓶を拾った");
-      } else if (drop < 0.36) {
+      } else if (drop < 0.40) {
         player.wards = Math.min(9, player.wards + 1);
         say("護符を拾った");
       }
@@ -345,6 +447,30 @@
       say("黒陽の封印碑を読んだ。黒陽竜への道が開いた");
       return;
     }
+    if (discovery.kind === "obsidianWaystone") {
+      player.gold += 320;
+      player.stamina = player.staminaMax;
+      addItem(player, "warp", 1);
+      addItem(player, "tonic", 1);
+      burst(x, y, "#8dd7ff", 24);
+      say("黒曜の道標を読んだ。帰還の物資を得た");
+      return;
+    }
+    if (discovery.kind === "routeHint") {
+      player.gold += 120;
+      addItem(player, "tonic", 1);
+      burst(x, y, "#ffd166", 16);
+      say("旅の噂を手帳に書き留めた。危険な近道には盾と帰還鈴が役立つ");
+      return;
+    }
+    if (discovery.kind === "shortcutHint") {
+      player.gold += 180;
+      addItem(player, "warp", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#8dd7ff", 18);
+      say("崩れた門の抜け道を見つけた。帰還鈴を補給した");
+      return;
+    }
     if (discovery.kind === "spring") {
       player.hp = player.hpMax;
       player.stamina = player.staminaMax;
@@ -371,7 +497,10 @@
     if (tile === TILE_FIELD || roll < 0.58) {
       player.potions = Math.min(9, player.potions + 1);
       say("薬草を見つけた");
-    } else if (roll < 0.84) {
+    } else if (roll < 0.76) {
+      addItem(player, "tonic", 1);
+      say("活力薬を見つけた");
+    } else if (roll < 0.88) {
       player.bombs = Math.min(9, player.bombs + 1);
       say("火瓶を見つけた");
     } else {
@@ -391,8 +520,11 @@
   function useSelectedItem(context) {
     const { player } = requireItemContext(context);
     if (player.selectedItem === "potion") usePotion(context);
+    if (player.selectedItem === "tonic") useTonic(context);
     if (player.selectedItem === "bomb") useBomb(context);
     if (player.selectedItem === "ward") useWard(context);
+    if (player.selectedItem === "elixir") useElixir(context);
+    if (player.selectedItem === "warp") useWarp(context);
   }
 
   function usePotion(context) {
@@ -410,6 +542,21 @@
     player.hp = Math.min(player.hpMax, player.hp + 30 + player.level * 6);
     burst(player.x + player.w / 2, player.y + player.h / 2, "#74ff8f", 10);
     say("薬を使った");
+  }
+
+  function useTonic(context) {
+    const { player, say, burst } = requireItemContext(context);
+    if (player.hp <= 0) return;
+    if ((player.tonics || 0) <= 0) {
+      say("活力薬がない");
+      return;
+    }
+    player.tonics -= 1;
+    player.stamina = player.staminaMax;
+    player.slow = 0;
+    player.guard = Math.max(player.guard, 1200 + player.level * 40);
+    burst(player.x + player.w / 2, player.y + player.h / 2, "#ffd166", 12);
+    say("活力薬を使った。スタミナと構えを整えた");
   }
 
   function useBomb(context) {
@@ -457,6 +604,62 @@
     say("護符をかざした");
   }
 
+  function useElixir(context) {
+    const { player, say, burst, addRing } = requireItemContext(context);
+    if (player.hp <= 0) return;
+    if ((player.elixirs || 0) <= 0) {
+      say("霊薬がない");
+      return;
+    }
+    player.elixirs -= 1;
+    player.hp = player.hpMax;
+    player.stamina = player.staminaMax;
+    player.slow = 0;
+    player.burn = 0;
+    player.guard = Math.max(player.guard, 2200 + player.level * 60);
+    addRing(player.x + player.w / 2, player.y + player.h / 2, "#fff2a6", worldPx(34));
+    burst(player.x + player.w / 2, player.y + player.h / 2, "#fff2a6", 22);
+    say("霊薬を使った。完全に回復した");
+  }
+
+  function useWarp(context) {
+    const { player, state, say, burst, addRing } = requireItemContext(context);
+    if (player.hp <= 0) return;
+    if ((player.warps || 0) <= 0) {
+      say("帰還鈴がない");
+      return;
+    }
+    const points = availableTravelPoints(state, player);
+    if (points.length <= 0) {
+      say("まだ帰れる拠点がつながっていない");
+      return;
+    }
+    const tileSize = worldPx(16);
+    const pc = centerOf(player);
+    let best = points[0];
+    let bestDistance = Infinity;
+    for (const point of points) {
+      const px = (point.x + 0.5) * tileSize;
+      const py = (point.y + 0.5) * tileSize;
+      const distance = Math.hypot(pc.x - px, pc.y - py);
+      if (distance < bestDistance) {
+        best = point;
+        bestDistance = distance;
+      }
+    }
+    player.warps -= 1;
+    player.x = best.x * tileSize;
+    player.y = best.y * tileSize;
+    player.stamina = player.staminaMax;
+    player.invuln = Math.max(player.invuln, 900);
+    player.slow = 0;
+    player.burn = 0;
+    state.projectiles = [];
+    addRing(player.x + player.w / 2, player.y + player.h / 2, "#8dd7ff", worldPx(42));
+    burst(player.x + player.w / 2, player.y + player.h / 2, "#8dd7ff", 24);
+    say(`Returned to ${best.name}.`);
+  }
+
   function selectItem(context, item) {
     const { player } = requireItemContext(context);
     if (!itemOrder.includes(item)) return;
@@ -467,15 +670,13 @@
     const { player, say } = requireItemContext(context);
     const index = itemOrder.indexOf(player.selectedItem);
     player.selectedItem = itemOrder[(index + step + itemOrder.length) % itemOrder.length];
-    const names = { potion: "薬", bomb: "火瓶", ward: "護符" };
+    const names = { potion: "薬", tonic: "活力薬", bomb: "火瓶", ward: "護符", elixir: "霊薬", warp: "帰還鈴" };
     say(`${names[player.selectedItem]}を選んだ`, 900);
   }
 
   function selectedItemCount(context) {
     const { player } = requireItemContext(context);
-    if (player.selectedItem === "potion") return player.potions;
-    if (player.selectedItem === "bomb") return player.bombs;
-    return player.wards;
+    return player[itemField(player.selectedItem)] || 0;
   }
 
   globalThis.DRAGON_HUNTER_REWARDS = {
@@ -484,19 +685,28 @@
     normalizeInventory,
     addOwnedWeapon,
     addOwnedArmor,
+    addOwnedShield,
     grantAccessory,
     grantWeaponAtLeast,
     grantArmorAtLeast,
+    grantShieldAtLeast,
     grantChestReward,
     grantMonsterDefeatDrops,
     grantDiscoveryReward,
     gainFoundItem,
     useSelectedItem,
     usePotion,
+    useTonic,
     useBomb,
     useWard,
+    useElixir,
+    useWarp,
     selectItem,
     cycleItem,
     selectedItemCount,
+    itemField,
+    addItem,
+    availableTravelPoints,
+    travelPointUnlocked,
   };
 })();

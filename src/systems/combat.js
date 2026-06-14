@@ -11,6 +11,7 @@
     WORLD_SCALE,
     weaponAttack = [0, 5, 10, 15, 20],
     armorDefense,
+    shieldGuard,
   } = definitions;
 
   function requireCombatContext(context) {
@@ -70,6 +71,11 @@
     if (player.weapon === 9 && (monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "moonShade")) mult += 0.95;
     if (player.weapon === 10 && (monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "eclipseMage")) mult += 1.25;
     if (player.weapon === 11 && (monster.type === "obsidianGolem" || monster.type === "obsidianCrawler" || monster.type === "voidDragon" || monster.type === "voidWraith")) mult += 1.45;
+    if (monster.type === "shieldSoldier") {
+      if (behind) mult += 0.75;
+      else if (flanking) mult += 0.35;
+      else if (mDot > 0.55) mult *= 0.55;
+    }
     return mult;
   }
 
@@ -85,6 +91,11 @@
     if (player.armor === 9 && (monster?.type === "eclipseMage" || monster?.type === "eclipseDragon" || source === "eclipse" || source === "magic" || source === "projectile")) mult *= 0.48;
     if (player.armor === 10 && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void" || source === "eclipse" || source === "projectile")) mult *= 0.42;
     if (player.armor === 11 && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || monster?.type === "voidDragon" || source === "obsidian" || source === "void" || source === "projectile" || source === "contact")) mult *= 0.36;
+    if (source === "contact" && pDot > 0.42 && player.shield > 0) {
+      const shieldMult = shieldGuard[player.shield] || 1;
+      mult *= shieldMult;
+      if (monster?.type === "shieldSoldier" && pDot > 0.58) mult *= 0.86;
+    }
     if (activeAccessory(player, "aegis", "aegisCharm") && (source === "fire" || source === "projectile")) mult *= 0.82;
     if (activeAccessory(player, "mine", "mineCharm") && (monster?.type === "bubbler" || source === "bubble")) mult *= 0.72;
     if (activeAccessory(player, "eclipse", "eclipseCharm") && (monster?.type === "eclipseMage" || monster?.type === "eclipseDragon" || source === "eclipse" || source === "magic")) mult *= 0.76;

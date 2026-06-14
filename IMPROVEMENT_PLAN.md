@@ -35,6 +35,28 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 Completed in the latest pass:
 
+* Added a formal shield equipment slot with save/load, inventory tab, shop purchase, selling rules, and status display.
+* Added shield combat value: equipped shields reduce frontal contact damage, creating a clearer "brace from the front vs reposition for the back" choice.
+* Added Shield Soldier as a behaviorally distinct enemy: frontal attacks are weak, side/back attacks are rewarded.
+* Added Shield Soldiers to old tower, eclipse, obsidian, and void region pressure.
+* Added route-extension shield rewards around Ash Watchtower / Old Tower side pocket / Black Gate.
+* Added route-hint and shortcut-hint discovery rewards that give travel supplies and teach route preparation.
+* Opened and roughened selected old-tower/eastern ruins walls so they read more like broken terrain than sealed corridors.
+* Added more NPCs to Black Market, Ash Hamlet, Moon Camp, and Black Fort to reduce remote-base emptiness.
+* Replaced newly added English item/travel text such as Tonic, Elixir, Return Bell, and Base Wagon with Japanese-facing names.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Previously completed:
+
+* Obsidian vault no longer grants the strongest weapon/armor directly; it now preserves Black Market gear purchases as the late-game gold sink.
+* Added premium consumables: Tonic, Elixir, and Return Bell.
+* Shops and inventory now support the expanded item list.
+* Black Market and remote bases sell more attractive route-preparation supplies.
+* Added Base Wagon travel between unlocked safe bases.
+* Added porter NPCs, guards, and villagers across bases so remote bases feel less empty.
+* Increased late-region enemy density and opened an extra Black Sun Castle route seam to reduce sparse/over-walled feel.
+* Added extra Black Market / Obsidian route rewards and verified they are reachable.
+
 * Shops now open selectable buy menus instead of auto-buying in fixed order.
 * Weapon, armor, accessory, and consumable purchases can be chosen directly.
 * Weak found equipment is kept in inventory when new and does not auto-equip over stronger current gear.
@@ -45,10 +67,13 @@ Completed in the latest pass:
 
 Next high-value content direction:
 
-* Make Black Market feel more like a city with more NPC conversations, landmarks, and optional errands.
+* Continue deepening the existing `120x144` overworld before another size jump: reduce wall-maze feel, add natural landmarks, and create side paths with reward reasons.
+* Make Black Market feel more like a city with more NPC conversations, stalls, alleys, small discoveries, and optional errands.
 * Add at least one more interior-style dungeon or castle segment beyond the overworld-only route.
-* Add more behaviorally distinct Chapter 3 enemies so the long expedition does not rely only on stats.
-* Rebalance Chapter 3 gold/EXP after manual playtesting the new shop and Obsidian Golem route.
+* Add another behaviorally distinct enemy, preferably a summoner or trap/area-denial enemy, so the long expedition does not rely only on stats.
+* Add route labels / travel journal presentation so players know "where" landmarks are without coordinate talk.
+* Rebalance Chapter 3 gold/EXP after manual playtesting the new shop, wagon travel, premium items, and Obsidian Golem route.
+* Continue shield balance after manual playtesting: shield prices, front-reduction strength, and whether heavy shields should trade off movement.
 
 ### 1. Baseline verification checkpoint
 
@@ -105,6 +130,7 @@ Preferred first targets:
 * Deepen the new Chapter 3 route beyond Eclipse Castle: Black Gate, Black Fort, Black Sun Castle, Void Wraith, Black Sun gear, and Black Sun Dragon need more landmarks and preparation side rewards.
 * Continue southwest mine expansion using Bubbler pressure and mine charm counterplay.
 * Add another remote road/frontier base, dungeon entrance, or town that moves the safe radius outward.
+* Add more dense landmarks around Black Market / Obsidian Cave / Black Sun Castle now that base travel reduces backtracking.
 
 Each new region should include at least three:
 

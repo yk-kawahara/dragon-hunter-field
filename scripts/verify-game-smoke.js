@@ -291,16 +291,19 @@ function assertMapReachability() {
     ["eclipseDragon", d.ECLIPSE_DRAGON_SITE.x, d.ECLIPSE_DRAGON_SITE.y],
     ["black-fort", 98, 132],
     ["black-market", 35, 135],
+    ["old-tower-side-cache", 97, 92],
     ["obsidianGolem", d.OBSIDIAN_GOLEM_SITE.x, d.OBSIDIAN_GOLEM_SITE.y],
+    ["black-gate-shield-cache", 73, 134],
     ["void-seal", 82, 138],
     ["voidDragon", d.VOID_DRAGON_SITE.x, d.VOID_DRAGON_SITE.y],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
   assert(d.MAP_W === 120 && d.MAP_H === 144, "expanded map should be 120x144");
-  assert(state.npcs.length === 15, "expected 15 NPCs from WORLD_OBJECTS after black market expansion");
+  assert(state.npcs.length === 36, "expected 36 NPCs after base population, city, and wagon expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "merchant"), "black market merchant should load from WORLD_OBJECTS");
+  assert(state.npcs.some((entry) => entry.type === "porter"), "porter NPCs should load from WORLD_OBJECTS");
   return { reachableTiles: seen.size, npcs: state.npcs.map((entry) => entry.type) };
 }
 
@@ -308,9 +311,14 @@ function assertSaveLoadAndEquipment() {
   const { definitions: d, state, player, runtime } = createRuntime();
   player.weapon = 3;
   player.armor = 3;
+  player.shield = 2;
   player.ownedWeapons = [0, 1, 2, 3];
   player.ownedArmors = [0, 1, 2, 3];
+  player.ownedShields = [0, 1, 2];
   player.gold = 123;
+  player.tonics = 3;
+  player.elixirs = 2;
+  player.warps = 1;
   player.scales = 2;
   player.sealCrest = true;
   player.hunterCharm = true;
@@ -351,6 +359,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.runtime.loadGame(), "loadGame should succeed");
   assert(restored.player.weapon === 3, "weapon rank should persist");
   assert(restored.player.armor === 3, "armor rank should persist");
+  assert(restored.player.shield === 2, "shield rank should persist");
   assert(restored.player.regenCharm, "regen charm should persist");
   assert(restored.player.trailCharm, "trail charm should persist");
   assert(restored.player.aegisCharm, "aegis charm should persist");
@@ -360,8 +369,10 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.obsidianCharm, "obsidian charm should persist");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
+  assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
   assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
+  assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
   const baseline = createRuntime();
   baseline.player.armor = restored.player.armor;
   baseline.player.weapon = restored.player.weapon;
@@ -388,12 +399,16 @@ function assertSaveLoadAndEquipment() {
   const weakGear = createRuntime();
   weakGear.player.weapon = 4;
   weakGear.player.armor = 4;
+  weakGear.player.shield = 3;
   weakGear.player.ownedWeapons = [0, 4];
   weakGear.player.ownedArmors = [0, 4];
+  weakGear.player.ownedShields = [0, 3];
   rewardHelpers.grantWeaponAtLeast({ player: weakGear.player, say: () => {} }, 1, "upgrade");
   rewardHelpers.grantArmorAtLeast({ player: weakGear.player, say: () => {} }, 1, "upgrade");
+  rewardHelpers.grantShieldAtLeast({ player: weakGear.player, say: () => {} }, 1, "upgrade");
   assert(weakGear.player.ownedWeapons.includes(1) && weakGear.player.weapon === 4, "weaker found weapon should be kept in inventory without auto-equip");
   assert(weakGear.player.ownedArmors.includes(1) && weakGear.player.armor === 4, "weaker found armor should be kept in inventory without auto-equip");
+  assert(weakGear.player.ownedShields.includes(1) && weakGear.player.shield === 3, "weaker found shield should be kept in inventory without auto-equip");
 
   globalThis.localStorage.setItem(d.SAVE_KEY, JSON.stringify({
     player: {
@@ -421,6 +436,7 @@ function assertInventoryManagement() {
   const { state, player, runtime } = createRuntime();
   player.ownedWeapons = [0, 1, 3];
   player.ownedArmors = [0, 2];
+  player.ownedShields = [0, 1, 2];
   player.ownedAccessories = ["regen", "trail", "mine"];
   player.regenCharm = true;
   player.trailCharm = true;
@@ -428,6 +444,7 @@ function assertInventoryManagement() {
   player.equippedAccessory = "regen";
   player.weapon = 1;
   player.armor = 0;
+  player.shield = 0;
   player.gold = 10;
   runtime.refreshDerivedStats();
 
@@ -443,6 +460,15 @@ function assertInventoryManagement() {
   state.inventoryIndex = 1;
   runtime.sellInventorySelection();
   assert(!player.ownedWeapons.includes(1) && player.gold > goldBeforeSellEquipped, "unequipped weapon should sell for gold");
+
+  state.inventoryTab = "shields";
+  state.inventoryIndex = 2;
+  runtime.confirmInventory();
+  assert(player.shield === 2, "inventory should equip selected shield");
+  const withShield = runtime.armorDamageMultiplier({ type: "shieldSoldier" }, 0.8, "contact");
+  player.shield = 0;
+  const withoutShield = runtime.armorDamageMultiplier({ type: "shieldSoldier" }, 0.8, "contact");
+  assert(withShield < withoutShield, "equipped shield should reduce frontal contact damage");
 
   state.inventoryTab = "accessories";
   state.inventoryIndex = player.ownedAccessories.indexOf("trail");
@@ -695,6 +721,7 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.voidDragon), "void dragon monster definition should exist");
   assert(Boolean(d.monsterTypes.obsidianCrawler), "obsidian crawler monster definition should exist");
   assert(Boolean(d.monsterTypes.obsidianGolem), "obsidian golem monster definition should exist");
+  assert(Boolean(d.monsterTypes.shieldSoldier), "shield soldier monster definition should exist");
 
   player.x = 90 * d.TILE;
   player.y = 60 * d.TILE;
@@ -715,7 +742,11 @@ function assertExpandedWorldContent() {
   player.y = 132 * d.TILE;
   assert(runtime.currentRegion() === "obsidian", "black market branch dungeon should use obsidian region");
   const towerPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "tower");
-  assert(towerPool.includes("sorcerer"), "tower spawn pool should include sorcerer");
+  assert(towerPool.includes("sorcerer") && towerPool.includes("shieldSoldier"), "tower spawn pool should include sorcerer and shield soldiers");
+  player.weapon = 3;
+  const shieldFront = runtime.weaponDamageMultiplier({ type: "shieldSoldier" }, 0.1, 0.7);
+  const shieldBack = runtime.weaponDamageMultiplier({ type: "shieldSoldier" }, 0.1, -0.8);
+  assert(shieldBack > shieldFront, "shield soldiers should be weaker from back attacks than frontal attacks");
   const moonPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
   assert(moonPool.includes("moonShade") && moonPool.includes("sorcerer"), "moon spawn pool should include moonShade and sorcerer");
   player.level = 20;
@@ -740,23 +771,25 @@ function assertExpandedWorldContent() {
   const ashFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.x > 90 * d.TILE);
   assert(ashFrontier, "ash hamlet frontier NPC should exist");
   state.ashKnightDefeated = true;
-  player.gold = d.weaponCosts[8] + d.armorCosts[8];
+  player.gold = d.weaponCosts[8] + d.armorCosts[8] + d.shieldCosts[3];
   openNpcShop(runtime, state, ashFrontier);
   buyShopRow(runtime, state, (row) => row.type === "weapon" && row.id === 8, "ash hamlet weapon should be selectable");
   buyShopRow(runtime, state, (row) => row.type === "armor" && row.id === 8, "ash hamlet armor should be selectable");
-  assert(player.ownedWeapons.includes(8) && player.ownedArmors.includes(8), "ash hamlet should sell star gear after ash knight defeat");
+  buyShopRow(runtime, state, (row) => row.type === "shield" && row.id === 3, "ash hamlet shield should be selectable");
+  assert(player.ownedWeapons.includes(8) && player.ownedArmors.includes(8) && player.ownedShields.includes(3), "ash hamlet should sell star gear and shield after ash knight defeat");
 
   const moonFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.y > 110 * d.TILE);
   assert(moonFrontier, "moon camp frontier NPC should exist");
   state.discoveries.add("eclipse-seal");
   player.hp = player.hpMax;
   player.stamina = player.staminaMax;
-  player.gold = d.weaponCosts[9] + d.armorCosts[9];
+  player.gold = d.weaponCosts[9] + d.armorCosts[9] + d.shieldCosts[3];
   runtime.closeShop();
   openNpcShop(runtime, state, moonFrontier);
   buyShopRow(runtime, state, (row) => row.type === "weapon" && row.id === 9, "moon camp weapon should be selectable");
   buyShopRow(runtime, state, (row) => row.type === "armor" && row.id === 9, "moon camp armor should be selectable");
-  assert(player.ownedWeapons.includes(9) && player.ownedArmors.includes(9), "moon camp should sell eclipse gear after seal discovery");
+  buyShopRow(runtime, state, (row) => row.type === "shield" && row.id === 3, "moon camp shield should be selectable");
+  assert(player.ownedWeapons.includes(9) && player.ownedArmors.includes(9) && player.ownedShields.includes(3), "moon camp should sell eclipse gear and shields after seal discovery");
   player.gold = 1200;
   buyShopRow(runtime, state, (row) => row.type === "accessory" && row.id === "eclipse", "moon camp accessory should be selectable");
   assert(player.ownedAccessories.includes("eclipse"), "moon camp should grant eclipse accessory after gear");
@@ -767,12 +800,13 @@ function assertExpandedWorldContent() {
   state.chests.add("black-fort-armory");
   player.hp = player.hpMax;
   player.stamina = player.staminaMax;
-  player.gold = d.weaponCosts[10] + d.armorCosts[10];
+  player.gold = d.weaponCosts[10] + d.armorCosts[10] + d.shieldCosts[4];
   runtime.closeShop();
   openNpcShop(runtime, state, blackFortFrontier);
   buyShopRow(runtime, state, (row) => row.type === "weapon" && row.id === 10, "black fort weapon should be selectable");
   buyShopRow(runtime, state, (row) => row.type === "armor" && row.id === 10, "black fort armor should be selectable");
-  assert(player.ownedWeapons.includes(10) && player.ownedArmors.includes(10), "black fort should sell black sun gear after void seal discovery");
+  buyShopRow(runtime, state, (row) => row.type === "shield" && row.id === 4, "black fort shield should be selectable");
+  assert(player.ownedWeapons.includes(10) && player.ownedArmors.includes(10) && player.ownedShields.includes(4), "black fort should sell black sun gear and shield after void seal discovery");
   player.gold = 1800;
   buyShopRow(runtime, state, (row) => row.type === "accessory" && row.id === "void", "black fort accessory should be selectable");
   assert(player.ownedAccessories.includes("void"), "black fort should grant void accessory after gear");
@@ -780,14 +814,28 @@ function assertExpandedWorldContent() {
   const merchant = state.npcs.find((entry) => entry.type === "merchant");
   assert(merchant, "black market merchant NPC should exist");
   state.obsidianGolemDefeated = true;
-  player.gold = d.weaponCosts[11] + d.armorCosts[11] + 2600;
+  player.gold = d.weaponCosts[11] + d.armorCosts[11] + d.shieldCosts[5] + 2600;
   runtime.closeShop();
   openNpcShop(runtime, state, merchant);
   buyShopRow(runtime, state, (row) => row.type === "weapon" && row.id === 11, "black market weapon should be selectable");
   buyShopRow(runtime, state, (row) => row.type === "armor" && row.id === 11, "black market armor should be selectable");
+  buyShopRow(runtime, state, (row) => row.type === "shield" && row.id === 5, "black market shield should be selectable");
   buyShopRow(runtime, state, (row) => row.type === "accessory" && row.id === "obsidian", "black market accessory should be selectable");
-  assert(player.ownedWeapons.includes(11) && player.ownedArmors.includes(11), "black market should sell obsidian gear after golem defeat");
+  assert(player.ownedWeapons.includes(11) && player.ownedArmors.includes(11) && player.ownedShields.includes(5), "black market should sell obsidian gear after golem defeat");
   assert(player.ownedAccessories.includes("obsidian"), "black market should sell obsidian accessory after golem defeat");
+  player.gold = 2500;
+  buyShopRow(runtime, state, (row) => row.type === "item" && row.id === "elixir", "black market should sell elixir supplies");
+  buyShopRow(runtime, state, (row) => row.type === "item" && row.id === "warp", "black market should sell return bells");
+  assert(player.elixirs >= 2 && player.warps >= 2, "black market premium items should enter inventory");
+
+  const porter = state.npcs.find((entry) => entry.type === "porter");
+  assert(porter, "porter NPC should exist for base travel");
+  state.elderReported = true;
+  player.gold = 500;
+  runtime.closeShop();
+  openNpcShop(runtime, state, porter);
+  buyShopRow(runtime, state, (row) => row.type === "travel" && row.id === "ash-hamlet", "porter should offer unlocked base travel");
+  assert(Math.floor(player.x / d.TILE) === 102 && Math.floor(player.y / d.TILE) === 58, "porter travel should move player to selected base");
 
   state.inventoryOpen = true;
   state.inventoryTab = "weapons";
@@ -819,10 +867,19 @@ function assertExpandedWorldContent() {
   reward.runtime.grantDiscoveryReward({ id: "test-void", kind: "voidSeal" }, 0, 0);
   assert(reward.player.wards >= 9 && reward.player.stamina === reward.player.staminaMax, "void seal discovery should support chapter 3 route");
   reward.runtime.grantChestReward("obsidianGear");
-  assert(reward.player.ownedWeapons.includes(11) && reward.player.ownedArmors.includes(11), "obsidianGear chest should grant obsidian gear");
-  assert(reward.player.ownedAccessories.includes("obsidian"), "obsidianGear chest should grant obsidian accessory");
+  assert(!reward.player.ownedWeapons.includes(11) && !reward.player.ownedArmors.includes(11), "obsidianGear chest should not bypass black market obsidian gear purchase");
+  assert(reward.player.ownedAccessories.includes("obsidian") && reward.player.elixirs >= 2 && reward.player.warps >= 1, "obsidianGear chest should grant obsidian accessory and premium supplies");
+  reward.runtime.grantChestReward("obsidianSupply");
+  assert(reward.player.elixirs >= 3 && reward.player.tonics >= 4 && reward.player.warps >= 2, "obsidianSupply chest should add route-extension supplies");
+  reward.runtime.grantChestReward("shieldGear");
+  assert(reward.player.ownedShields.includes(3), "shieldGear chest should grant a route shield");
+  reward.runtime.grantChestReward("blackShieldSupply");
+  assert(reward.player.ownedShields.includes(4) && reward.player.elixirs >= 4, "blackShieldSupply should grant black-route shield supplies");
+  reward.runtime.grantDiscoveryReward({ id: "test-route-hint", kind: "routeHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-shortcut-hint", kind: "shortcutHint" }, 0, 0);
+  assert(reward.player.warps >= 4 && reward.player.tonics >= 5, "route and shortcut hints should provide travel supplies");
   reward.runtime.grantChestReward("blackMarketSupply");
-  assert(reward.player.potions >= 4 && reward.player.bombs >= 3 && reward.player.wards >= 9, "blackMarketSupply chest should add deep-route supplies");
+  assert(reward.player.potions >= 4 && reward.player.bombs >= 3 && reward.player.wards >= 9 && reward.player.warps >= 3, "blackMarketSupply chest should add deep-route supplies");
   return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", obsidianRegion: "obsidian", voidRegion: "void", blackSunGear: true };
 }
 

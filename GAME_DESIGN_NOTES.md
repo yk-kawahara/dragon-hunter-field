@@ -230,6 +230,15 @@ Shop and reward rules:
 * Weaker found equipment must not auto-equip over stronger current gear.
 * Shop UI and inventory UI should make ATK/DEF and special equipment value visible.
 
+Latest balance adjustment:
+
+* The strongest obsidian weapon/armor should be bought at Black Market after Obsidian Golem, not granted directly from a route chest.
+* Obsidian route treasure now gives the Obsidian Bracelet and premium expedition supplies instead of bypassing the weapon/armor economy.
+* Gold should remain useful deep into the game through high-tier gear, elixirs, return bells, tonics, wards, and wagon travel.
+* Remote bases now support wagon travel between unlocked safe bases. This reduces repetitive walking while preserving survival-range expansion.
+* Bases should feel inhabited. A base is not only a heal tile; it should have guards, travelers, merchants, porters, and readable role markers.
+* Dense late regions are preferred over long empty roads. Farther regions should have higher spawn pressure and more route-extension rewards.
+
 The player must understand why they became stronger.
 
 Prioritize clear feedback for:
@@ -266,3 +275,17 @@ A content pass is good if it improves at least one:
 * Larger world with density and purpose.
 
 A content pass is weak if it only adds empty walking space, cosmetic terrain, stat/color-swap enemies, rewards that do not change decisions, or UI that hides important survival information.
+
+## Latest Design Truth: Dense Routes, Shields, and Landmarks
+
+The next content direction is to deepen the current `120x144` overworld before expanding map size again.
+
+Current design additions:
+
+* Rigid wall corridors should become readable terrain: broken walls, side openings, ruined watchtowers, market alleys, old gates, roads, bridges, and landmark caches.
+* Major late routes should offer at least a small choice: safer main road, risky shortcut, or side reward pocket.
+* Light side objectives can be implemented through chests, discoveries, NPC hints, and route rumors. They do not need a large quest framework if they teach geography or extend survival range.
+* Shields are now a formal equipment slot. They reduce frontal contact damage and make contact direction a preparation choice, not only a stat race.
+* Shield soldiers are a contact-combat lesson enemy: attacking their front is inefficient, while side/back attacks are rewarded.
+* Deeper route rewards should include route-extension supplies, shields, return bells, tonics, elixirs, and hint discoveries rather than only gold.
+* Remote bases and Black Market should continue gaining NPCs, signs, stalls, and small reward pockets so they feel like lived-in survival anchors.

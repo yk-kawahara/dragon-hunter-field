@@ -20,6 +20,12 @@
     armorDefense,
     weaponSellValues,
     armorSellValues,
+    shieldNames,
+    shieldTraits,
+    shieldCosts,
+    shieldGuard,
+    shieldSellValues,
+    itemOrder,
     itemNames,
     itemSellValues,
     accessoryOrder,
@@ -35,8 +41,19 @@
     normalizeInventory,
     addOwnedWeapon,
     addOwnedArmor,
+    addOwnedShield,
     grantAccessory,
+    itemField,
   } = rewardHelpers;
+
+  const itemDetails = {
+    potion: "HP回復",
+    tonic: "ST回復/防御",
+    bomb: "周囲攻撃",
+    ward: "一定時間防御",
+    elixir: "全回復",
+    warp: "拠点へ帰還",
+  };
 
   function requireUiContext(context) {
     if (!context?.ui || !context?.state || !context?.player || !context?.say) {
@@ -66,7 +83,7 @@
   }
 
   function inventoryTabs() {
-    return ["items", "weapons", "armors", "accessories"];
+    return ["items", "weapons", "armors", "shields", "accessories"];
   }
 
   function inventoryTabLabel(tab) {
@@ -140,9 +157,9 @@
       return;
     }
     if (row.type === "item") {
-      const field = row.id === "potion" ? "potions" : row.id === "bomb" ? "bombs" : "wards";
+      const field = itemField(row.id);
       const amount = row.amount || 1;
-      if (player[field] >= 9) {
+      if ((player[field] || 0) >= 9) {
         say(`${row.name}はこれ以上持てない`);
         return;
       }
@@ -151,8 +168,23 @@
         return;
       }
       player.gold -= row.cost;
-      player[field] = Math.min(9, player[field] + amount);
+      player[field] = Math.min(9, (player[field] || 0) + amount);
       say(`${row.name}を買った`);
+      return;
+    }
+    if (row.type === "travel") {
+      if (player.gold < row.cost) {
+        say(`${row.name} ${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost || 0;
+      player.x = row.x * TILE;
+      player.y = row.y * TILE;
+      player.stamina = player.staminaMax;
+      player.invuln = Math.max(player.invuln, 900);
+      state.projectiles = [];
+      state.shopOpen = false;
+      say(`${row.name}へ移動した`);
       return;
     }
     if (row.type === "weapon") {
@@ -183,6 +215,30 @@
       say(`${row.name}を買った。もちもので装備できる`);
       return;
     }
+    if (row.type === "shield") {
+      if (player.ownedShields.includes(row.id)) {
+        say(`${row.name}は既に持っている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      addOwnedShield(player, row.id);
+      say(`${row.name}を買った。もちもので装備できる`);
+      return;
+    }
+    if (row.type === "shield") {
+      player.shield = row.id;
+      say(`${row.name}を構えた`);
+      return;
+    }
+    if (row.type === "shield") {
+      player.shield = row.id;
+      say(`${row.name}を構えた`);
+      return;
+    }
     if (row.type === "accessory") {
       if (player.ownedAccessories.includes(row.id)) {
         say(`${row.name}は既に持っている`);
@@ -208,11 +264,14 @@
     const diffText = (value) => value === 0 ? "+0" : value > 0 ? `+${value}` : String(value);
     const tab = inventoryTabs().includes(state.inventoryTab) ? state.inventoryTab : "items";
     if (tab === "items") {
-      return [
-        { type: "item", id: "potion", name: itemNames.potion, count: player.potions, detail: "HP回復", sell: itemSellValues.potion },
-        { type: "item", id: "bomb", name: itemNames.bomb, count: player.bombs, detail: "周囲攻撃", sell: itemSellValues.bomb },
-        { type: "item", id: "ward", name: itemNames.ward, count: player.wards, detail: "一定時間防御", sell: itemSellValues.ward },
-      ];
+      return itemOrder.map((id) => ({
+        type: "item",
+        id,
+        name: itemNames[id] || id,
+        count: player[itemField(id)] || 0,
+        detail: `${itemDetails[id] || ""} x${player[itemField(id)] || 0}`,
+        sell: itemSellValues[id] || 0,
+      }));
     }
     if (tab === "weapons") {
       return player.ownedWeapons.map((rank) => ({
@@ -234,6 +293,16 @@
         equipped: player.armor === rank,
         sell: armorSellValues[rank],
         currentValue: playerDefense(),
+      }));
+    }
+    if (tab === "shields") {
+      return player.ownedShields.map((rank) => ({
+        type: "shield",
+        id: rank,
+        name: shieldNames[rank],
+        detail: `${shieldTraits[rank]} 正面${Math.round((1 - (shieldGuard[rank] || 1)) * 100)}%軽減`,
+        equipped: player.shield === rank,
+        sell: shieldSellValues[rank],
       }));
     }
     return player.ownedAccessories.map((id) => ({
@@ -299,6 +368,11 @@
     const row = selectedInventoryRow(context);
     if (!row) return;
     normalizeInventory(player);
+    if (row.type === "shield") {
+      player.shield = row.id;
+      say(`${row.name}を構えた`);
+      return;
+    }
     if (row.type === "item") {
       player.selectedItem = row.id;
       useSelectedItem?.();
@@ -332,7 +406,7 @@
       return;
     }
     if (row.type === "item") {
-      const field = row.id === "potion" ? "potions" : row.id === "bomb" ? "bombs" : "wards";
+      const field = itemField(row.id);
       if (player[field] <= 0) {
         say("売る分がない");
         return;
@@ -356,6 +430,14 @@
       player.ownedArmors = player.ownedArmors.filter((rank) => rank !== row.id);
       player.gold += row.sell;
       say(`${row.name}を${row.sell}Gで売った`);
+    } else if (row.type === "shield") {
+      if (player.shield === row.id || row.id === 0 || player.ownedShields.length <= 1) {
+        say("装備中または最後の盾は売れない");
+        return;
+      }
+      player.ownedShields = player.ownedShields.filter((rank) => rank !== row.id);
+      player.gold += row.sell;
+      say(`${row.name}を${row.sell}Gで売った`);
     } else if (row.type === "accessory") {
       refreshDerivedStats();
       say("一品物のアクセサリーは売れない");
@@ -376,6 +458,7 @@
     const baseDefense = Number.isFinite(player.resilience) ? player.resilience : 1 + player.level;
     const weaponBonus = weaponAttack[player.weapon] || 0;
     const armorBonus = armorDefense[player.armor] || 0;
+    const shieldCut = Math.round((1 - (shieldGuard[player.shield] || 1)) * 100);
 
     return [
       {
@@ -384,6 +467,7 @@
           `${weaponNames[player.weapon]} ${weaponTraits[player.weapon]} ATK ${baseAttack}+${weaponBonus}=${baseAttack + weaponBonus}`,
           `${armorNames[player.armor]} ${armorTraits[player.armor]} DEF ${baseDefense}+${armorBonus}=${baseDefense + armorBonus}`,
           `戦闘中: ATK ${playerAttack()} / DEF ${playerDefense()}`,
+          `${shieldNames[player.shield]} ${shieldTraits[player.shield]} 正面${shieldCut}%軽減`,
           nextUpgradeText(context),
         ],
       },

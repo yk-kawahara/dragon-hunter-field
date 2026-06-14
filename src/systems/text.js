@@ -180,6 +180,7 @@
       tileAt,
     } = requireTextContext(context);
     const npc = nearestNpc();
+    if (npc?.type === "porter") return "話す: 馬車";
     if (npc) return `話す: ${npcRoleName(npc.type)}`;
     const chest = nearestChest();
     if (chest) return "調べる: 宝箱";
