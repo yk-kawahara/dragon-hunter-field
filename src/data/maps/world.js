@@ -254,12 +254,48 @@
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
   ];
 
+  const TERRAIN_DETAILS = [
+    { id: "grassland-camp", x: 20, y: 33, rows: ["....==....", "..****.."] },
+    { id: "river-fork-farm", x: 22, y: 50, rows: ["..==..***.."] },
+    { id: "river-fork-marker", x: 72, y: 50, rows: ["..==.."] },
+    { id: "smuggler-north-camp", x: 28, y: 96, rows: ["..==..**.."] },
+    { id: "smuggler-broken-wall", x: 72, y: 96, rows: ["..####.."] },
+    { id: "smuggler-thorn-field", x: 34, y: 100, rows: ["..****.."] },
+    { id: "smuggler-old-stall", x: 84, y: 100, rows: ["..==.."] },
+    { id: "regen-cave-ruin", x: 30, y: 104, rows: ["..####.."] },
+    { id: "regen-cave-garden", x: 78, y: 104, rows: ["..****.."] },
+    { id: "regen-side-supply", x: 34, y: 122, rows: ["..==.."] },
+    { id: "regen-moss-field", x: 58, y: 122, rows: ["..****.."] },
+    { id: "black-sun-thorn-field", x: 60, y: 136, rows: ["..****.."] },
+    { id: "black-sun-muster-ground", x: 68, y: 136, rows: ["..==.."] },
+    { id: "black-sun-bone-yard", x: 110, y: 136, rows: ["..**.."] },
+  ];
+
+  function applyTerrainDetails(rows) {
+    const detailed = rows.slice();
+    for (const detail of TERRAIN_DETAILS) {
+      for (let dy = 0; dy < detail.rows.length; dy += 1) {
+        const y = detail.y + dy;
+        const row = detailed[y];
+        if (!row) continue;
+        const chars = row.split("");
+        const pattern = detail.rows[dy];
+        for (let dx = 0; dx < pattern.length; dx += 1) {
+          const x = detail.x + dx;
+          if (x > 0 && x < chars.length - 1) chars[x] = pattern[dx];
+        }
+        detailed[y] = chars.join("");
+      }
+    }
+    return detailed;
+  }
+
   function connectEastEdge(row, y) {
     const open = (y >= 15 && y <= 21) || (y >= 28 && y <= 35) || (y >= 49 && y <= 51) || (y >= 58 && y <= 66);
     return open ? `${row.slice(0, -1)}+` : row;
   }
 
-  const WORLD_MAP = [
+  const WORLD_MAP = applyTerrainDetails([
     ...BASE_MAP.map((row, y) => connectEastEdge(row, y) + EAST_EXPANSION[y]),
     ...SOUTH_EXPANSION.slice(0, -1),
     SOUTH_GATE_ROW,
@@ -268,7 +304,7 @@
     ...CHAPTER2_EXPANSION.slice(0, -1),
     VOID_GATE_ROW,
     ...CHAPTER3_EXPANSION,
-  ];
+  ]);
 
   const WORLD_OBJECTS = [
     { type: "npc", npcType: "elder", x: 9, y: 47, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
@@ -311,6 +347,15 @@
     { type: "npc", npcType: "guard", x: 47, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
     { type: "npc", npcType: "guard", x: 96, y: 114, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
     { type: "npc", npcType: "villager", x: 104, y: 59, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "guard", x: 23, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 25, y: 135, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 46, y: 134, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 95, y: 54, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 109, y: 55, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 95, y: 115, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 109, y: 117, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 90, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 105, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
   ];
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {

@@ -35,6 +35,13 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 Completed in the latest pass:
 
+* Added fixed terrain-detail overlays in `src/data/maps/world.js` so small landmarks can be hand-authored without changing map size.
+* Added camp remains, shrine markers, thorn fields, old stalls, moss fields, and muster grounds across sparse grassland, river fork, smuggler road, regeneration cave, and Black Sun approaches.
+* Added seven additional treasure caches across early, mid, and late routes so optional exploration has more rewards.
+* Added seven additional discovery points for route hints, shortcut hints, trap warnings, waystones, and regeneration-cave guidance.
+* Added nine more NPCs across Black Market, Ash Hamlet, Moon Camp, and Black Fort so remote bases feel less empty.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
 * Added Smuggler Captain / `密輸隊長` as a named midboss on the western smuggler road, making the early Black Market shortcut a real risk/reward route.
 * Added two smuggler supply caches and an extra route hint on the western shortcut so the path has rewards, not only danger.
 * Added Regen Sentinel / `再生洞の守護者` as a named guardian for the Black Market north regeneration cave.
@@ -88,6 +95,7 @@ Previously completed:
 Next high-value content direction:
 
 * Continue deepening the existing `120x144` overworld before another size jump: reduce wall-maze feel, add natural landmarks, and create side paths with reward reasons.
+* Continue the density pass region by region: every long open stretch should gain either a landmark, route choice, warning, small reward, or distinct enemy pocket.
 * Make Black Market feel more like a city with more NPC conversations, stalls, alleys, small discoveries, and optional errands.
 * Add at least one more interior-style dungeon or castle segment beyond the overworld-only route.
 * Add another behaviorally distinct enemy, preferably heavy-guard pressure or elite patrols, so the long expedition does not rely only on stats.

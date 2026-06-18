@@ -302,7 +302,7 @@ function assertMapReachability() {
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
   assert(d.MAP_W === 120 && d.MAP_H === 144, "expanded map should be 120x144");
-  assert(state.npcs.length === 40, "expected 40 NPCs after base population, city, and wagon expansion");
+  assert(state.npcs.length === 49, "expected 49 NPCs after base population, city, wagon, and density expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "merchant"), "black market merchant should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "porter"), "porter NPCs should load from WORLD_OBJECTS");

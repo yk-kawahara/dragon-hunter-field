@@ -83,6 +83,12 @@ Volume expansion must not mean empty walking space. Each new region should provi
 * Equipment or inventory decision.
 * Route toward a boss, dungeon, town, or major treasure.
 
+Density rule:
+
+* Large open regions need visible landmarks every short walk: camp remains, ruined stones, fields, flower patches, shrines, warning signs, caches, or NPC pockets.
+* Landmarks should usually pair with a small gameplay reason: chest, discovery reward, shortcut hint, recovery clue, route warning, or enemy pressure.
+* Empty terrain is acceptable only when it creates a deliberate feeling of danger, distance, or relief.
+
 ## Growth curve
 
 ### Early game
@@ -303,6 +309,7 @@ Current design additions:
 * Trap Flowers are now part of late-route identity. They should mark dangerous shortcuts, ruined courtyards, and narrow castle approaches where route choice matters. Their warning time should remain readable enough that attentive players can react.
 * The western smuggler road now has a named Smuggler Captain encounter and smuggler supply caches. Future route work should keep optional shortcuts dangerous but rewarding, not merely faster.
 * The regeneration cave now has the Regen Sentinel as a required guardian for the Greater Regeneration Ring. Future major survival-range rewards should be tied to a clear danger climax.
+* The latest density pass added fixed terrain-detail overlays, additional supply caches, route hints, camp remains, shrine markers, thorn fields, and more remote-base NPCs. Continue using these small hand-authored landmarks to reduce sparse walking without bloating map size.
 * Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
 * `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.
 * Current `120x144` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and shortcut-like terrain before another size jump.

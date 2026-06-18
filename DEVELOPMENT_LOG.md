@@ -41,6 +41,7 @@ Current project status:
 * Obsidian Cave + Obsidian Crawler + Obsidian Golem add a Chapter 3 branch dungeon and midboss before the Black Sun Dragon route.
 * Western Smuggler Road now has Smuggler Captain, extra supply caches, and route guidance so the early Black Market shortcut has a danger climax and reward reason.
 * Black Market north regeneration cave now has Regen Sentinel guarding the Greater Regeneration Ring, turning the strongest sustain accessory into an earned side-dungeon reward.
+* A density pass has added hand-authored small terrain landmarks, extra caches, discovery points, and more NPCs around remote bases to reduce sparse walking.
 * Shops now use selectable buy menus instead of fixed-order auto-buying.
 * Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
 
@@ -78,6 +79,33 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-18: World density pass
+
+Goal: reduce sparse-feeling map travel without expanding map size or adding empty walking space.
+
+Implemented:
+
+* Added `TERRAIN_DETAILS` in `src/data/maps/world.js` for fixed, hand-authored small landmark overlays.
+* Added camp remains, shrine/marker grounds, thorn fields, moss patches, old stalls, and muster-ground details across sparse areas.
+* Added seven additional treasure caches across grassland, river fork, ash road, moon west route, regeneration cave side route, eclipse approach, and Black Sun approach.
+* Added seven additional discovery points that provide route hints, shortcut hints, trap warnings, waystone support, and regeneration-cave guidance.
+* Added nine NPCs across Black Market, Ash Hamlet, Moon Camp, and Black Fort to make remote bases feel more inhabited.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* `node --check src/data/maps/world.js`
+* `node --check src/data/definitions.js`
+* `node --check scripts/verify-game-smoke.js`
+* `node scripts/verify-game-smoke.js` passed.
+* Map preview was regenerated and visually inspected.
+
+Known risks:
+
+* Real browser/manual play QA was not performed in this pass.
+* This pass improves density in representative areas, but the world still needs region-by-region landmark and route-choice passes.
+* Added rewards may slightly accelerate gold/item economy and should be checked in a fresh-save playthrough.
 
 ### 2026-06-18: Smuggler shortcut and regeneration cave climax
 
