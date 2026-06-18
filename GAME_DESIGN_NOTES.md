@@ -128,6 +128,8 @@ Most important growth feeling: **reversal of power**.
 | Black Gate / 黒門 | Chapter 3 transition route south of Eclipse Castle; the map becomes darker, enemy pressure rises, and retreat distance matters again. |
 | Black Fort / 黒門砦 | Chapter 3 remote survival anchor: recovery, supplies, Black Sun gear, and a new safe radius before the final southern push. |
 | Black Sun Castle / 黒陽城 | Chapter 3 high-danger route: void pressure, Black Sun seal, final cache, and the Black Sun Dragon arena. |
+| Western Smuggler Road | Dangerous early-access shortcut toward Black Market. It can be entered before the player is ready, contains named pressure from the Smuggler Captain, and rewards risk with route supplies. |
+| Regeneration Cave | Optional side dungeon north of Black Market. Its Greater Regeneration Ring is a major survival-range reward, so it is guarded by the Regen Sentinel rather than being a free pickup. |
 | Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
 
 ## Enemy roles
@@ -145,6 +147,8 @@ Most important growth feeling: **reversal of power**.
 | Void Wraith / 黒陽の影 | Chapter 3 high-pressure caster; dark projectiles apply heavier slow/stamina pressure and reward Black Sun gear/accessory preparation. |
 | Summoner / 召喚士 | Late-route pressure enemy. If ignored, it calls reinforcements and turns a safe-looking road into a losing fight. The intended answer is to prioritize it, spend a ward/tonic, or retreat before the field fills up. |
 | Trap Flower / 地雷花 | Area-denial trap enemy for Moon Ruins / Eclipse / Obsidian / Black Sun routes. It stays still, warns briefly, then explodes for HP/stamina/slow pressure. The intended answer is to cut it before entering, route around it, or prepare wards/return bells for risky shortcuts. |
+| Smuggler Captain | Named shortcut midboss on the western smuggler road. It turns the early Black Market route into a real risk/reward challenge and makes the shortcut feel like a dangerous place rather than empty bypass terrain. |
+| Regen Sentinel | Named side-dungeon guardian in the regeneration cave. It gates the Greater Regeneration Ring so the strongest sustain reward feels earned through preparation and survival. |
 | Dragonling | Late stronger enemy; signals dragon-route danger. |
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
@@ -198,7 +202,7 @@ Current direction:
 * `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` prepare for Void Wraith / Black Sun Dragon pressure.
 * Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
 * Accessory pairing is now part of route preparation: e.g. movement bell + resistance charm, or large regeneration + route resistance.
-* `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave.
+* `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave after defeating the Regen Sentinel.
 
 Future direction:
 
@@ -297,6 +301,8 @@ Current design additions:
 * Remote bases and Black Market should continue gaining NPCs, signs, stalls, and small reward pockets so they feel like lived-in survival anchors.
 * Summoners are now part of late-route identity. They should be placed where "clear this threat first" matters, especially Moon Ruins, Eclipse, Obsidian, and Black Sun routes.
 * Trap Flowers are now part of late-route identity. They should mark dangerous shortcuts, ruined courtyards, and narrow castle approaches where route choice matters. Their warning time should remain readable enough that attentive players can react.
+* The western smuggler road now has a named Smuggler Captain encounter and smuggler supply caches. Future route work should keep optional shortcuts dangerous but rewarding, not merely faster.
+* The regeneration cave now has the Regen Sentinel as a required guardian for the Greater Regeneration Ring. Future major survival-range rewards should be tied to a clear danger climax.
 * Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
 * `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.
 * Current `120x144` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and shortcut-like terrain before another size jump.

@@ -35,6 +35,13 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 Completed in the latest pass:
 
+* Added Smuggler Captain / `密輸隊長` as a named midboss on the western smuggler road, making the early Black Market shortcut a real risk/reward route.
+* Added two smuggler supply caches and an extra route hint on the western shortcut so the path has rewards, not only danger.
+* Added Regen Sentinel / `再生洞の守護者` as a named guardian for the Black Market north regeneration cave.
+* Locked the `大再生の指輪` chest behind Regen Sentinel defeat so a major survival-range reward is earned through preparation and combat.
+* Added save/load coverage for Smuggler Captain and Regen Sentinel defeat state.
+* Updated region guidance so the player understands the smuggler road and regeneration cave goals without coordinate-style instructions.
+
 * Added Summoner / `召喚士` as a late-route enemy that calls reinforcements if ignored.
 * Added Summoners to Moon Ruins, Eclipse, Obsidian, and Black Sun region pressure with level-gated spawning so early-game survival-range pacing is not broken.
 * Added Moon/Eclipse/Black Market side caches and route discoveries that provide expedition supplies, return bells, tonics, wards, and route warnings.
@@ -241,8 +248,8 @@ Next:
 
 ### Immediate content priorities after the smuggler/regeneration pass
 
-* Add more side pockets and visible landmark rewards along the western smuggler road so the shortcut has memorable encounters, not only danger.
-* Add a distinct mini-boss or named elite in/near the regeneration cave once the reward route needs more climax.
+* Add more terrain variety and route choices around the western smuggler road and Black Market north so the new encounters sit in memorable geography, not a narrow lane.
+* Add another small interior-style dungeon or tower segment after the regeneration cave so optional route rewards continue beyond one guardian chest.
 * Add more alternate east-west connectors between the main road, Moon route, Black Market route, and Black Sun route so the overworld feels less like vertical lanes.
 * Improve accessory UI copy so two-slot build planning is clearer: movement, regeneration, magic resistance, bubble resistance, black sun resistance, frontal pressure.
 

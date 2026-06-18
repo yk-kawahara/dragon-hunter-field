@@ -39,6 +39,8 @@ Current project status:
 * Void Wraith, Black Sun gear, Void Charm, and Black Sun Dragon add a harder post-Chapter-2 major boss arc.
 * Black Market is now a Chapter 3 second town with recovery, selectable shop stock, guide/guards/villagers, and supplies.
 * Obsidian Cave + Obsidian Crawler + Obsidian Golem add a Chapter 3 branch dungeon and midboss before the Black Sun Dragon route.
+* Western Smuggler Road now has Smuggler Captain, extra supply caches, and route guidance so the early Black Market shortcut has a danger climax and reward reason.
+* Black Market north regeneration cave now has Regen Sentinel guarding the Greater Regeneration Ring, turning the strongest sustain accessory into an earned side-dungeon reward.
 * Shops now use selectable buy menus instead of fixed-order auto-buying.
 * Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
 
@@ -77,7 +79,30 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
-_Add new entries here._
+### 2026-06-18: Smuggler shortcut and regeneration cave climax
+
+Goal: make existing optional routes more interesting without broad refactoring or empty map expansion.
+
+Implemented:
+
+* Added Smuggler Captain as a named midboss on the western shortcut toward Black Market.
+* Added two smuggler supply caches and another smuggler hint so the shortcut has tangible risk/reward value.
+* Added Regen Sentinel as the guardian of the Black Market north regeneration cave.
+* Locked the Greater Regeneration Ring chest until Regen Sentinel is defeated.
+* Added save/load/reset state for Smuggler Captain and Regen Sentinel flags.
+* Updated regional guidance for the smuggler road and regeneration cave.
+* Extended smoke verification for named midboss spawn/defeat, save/load persistence, shortcut rewards, and the guarded Greater Regeneration Ring chest.
+
+Verification:
+
+* `node --check` for changed source files and `src/game.js`.
+* `node scripts/verify-game-smoke.js` passed.
+
+Known risks:
+
+* Real browser/manual QA was not performed in this pass.
+* Smuggler Captain and Regen Sentinel difficulty still need manual tuning against fresh-save progression and current late-shop prices.
+* The new encounters improve optional-route purpose, but the western shortcut and Black Market north terrain still need more landmark/route variety.
 
 ### 2026-06-14: Smuggler shortcut, two accessory slots, and regeneration cave
 

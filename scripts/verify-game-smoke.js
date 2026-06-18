@@ -216,7 +216,9 @@ function createRuntime() {
     handleCave: () => npc.handleCave(contexts.npc()),
     canChallengeDragon: () => npc.canChallengeDragon(contexts.npc()),
     nearestChest: () => actions.nearestChest(contexts.action()),
+    openChest: (chest) => actions.openChest(contexts.action(), chest),
     nearestDiscovery: () => actions.nearestDiscovery(contexts.action()),
+    searchGround: () => actions.searchGround(contexts.action()),
     objectiveText: () => text.objectiveText(contexts.text()),
     guidanceText: () => text.guidanceText(contexts.text()),
     contextPromptText: () => text.contextPromptText(contexts.text()),
@@ -344,6 +346,10 @@ function assertSaveLoadAndEquipment() {
   state.spawnedWarden = true;
   state.ashKnightDefeated = true;
   state.spawnedAshKnight = true;
+  state.smugglerCaptainDefeated = true;
+  state.spawnedSmugglerCaptain = true;
+  state.regenSentinelDefeated = true;
+  state.spawnedRegenSentinel = true;
   state.eclipseDragonDefeated = true;
   state.spawnedEclipseDragon = true;
   state.chapter2Reported = true;
@@ -388,6 +394,8 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
   assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
+  assert(restored.state.smugglerCaptainDefeated, "smuggler captain defeat flag should persist");
+  assert(restored.state.regenSentinelDefeated, "regen sentinel defeat flag should persist");
   assert(restored.state.eclipseDragonDefeated && restored.state.chapter2Reported, "chapter 2 flags should persist");
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.obsidianGolemDefeated, "obsidian golem defeat flag should persist");
@@ -522,6 +530,32 @@ function assertStoryClearFlow() {
   runtime.updateMonsters(16);
   assert(state.ashKnightDefeated, "Ash Knight defeat should set ashKnightDefeated");
   assert(!state.guardianDefeated, "Ash Knight defeat should not count as Guardian defeat");
+
+  player.level = d.SMUGGLER_CAPTAIN_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.SMUGGLER_CAPTAIN_SITE.x * d.TILE;
+  player.y = d.SMUGGLER_CAPTAIN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedSmugglerCaptain, "Smuggler Captain should spawn on the dangerous shortcut at its level gate");
+  const smugglerCaptain = state.monsters.find((monster) => monster.type === "smugglerCaptain");
+  assert(smugglerCaptain, "Smuggler Captain monster should exist");
+  smugglerCaptain.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.smugglerCaptainDefeated, "Smuggler Captain defeat should persist in state");
+  assert(!state.guardianDefeated, "Smuggler Captain defeat should not count as Guardian defeat");
+
+  player.level = d.REGEN_SENTINEL_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.REGEN_SENTINEL_SITE.x * d.TILE;
+  player.y = d.REGEN_SENTINEL_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedRegenSentinel, "Regen Sentinel should spawn inside the greater regeneration cave");
+  const regenSentinel = state.monsters.find((monster) => monster.type === "regenSentinel");
+  assert(regenSentinel, "Regen Sentinel monster should exist");
+  regenSentinel.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.regenSentinelDefeated, "Regen Sentinel defeat should persist in state");
+  assert(!state.guardianDefeated, "Regen Sentinel defeat should not count as Guardian defeat");
 
   player.level = 3;
   player.scales = 2;
@@ -733,6 +767,8 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.shieldSoldier), "shield soldier monster definition should exist");
   assert(Boolean(d.monsterTypes.summoner), "summoner monster definition should exist");
   assert(Boolean(d.monsterTypes.trapFlower), "trap flower monster definition should exist");
+  assert(Boolean(d.monsterTypes.smugglerCaptain), "smuggler captain monster definition should exist");
+  assert(Boolean(d.monsterTypes.regenSentinel), "regen sentinel monster definition should exist");
 
   player.x = 20 * d.TILE;
   player.y = 100 * d.TILE;
@@ -777,6 +813,18 @@ function assertExpandedWorldContent() {
   assert(smugglerLowPool.includes("shieldSoldier") && smugglerLowPool.includes("wisp"), "smuggler shortcut should remain dangerous even at low level");
   const regenLowPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "regenCave");
   assert(regenLowPool.includes("bubbler") && regenLowPool.includes("trapFlower"), "regen cave should have special hazards even at low level");
+  player.level = d.SMUGGLER_CAPTAIN_REQUIREMENTS.level;
+  player.x = d.SMUGGLER_CAPTAIN_SITE.x * d.TILE;
+  player.y = d.SMUGGLER_CAPTAIN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.monsters.some((monster) => monster.type === "smugglerCaptain"), "smuggler shortcut should spawn its named captain encounter");
+  state.monsters = [];
+  player.level = d.REGEN_SENTINEL_REQUIREMENTS.level;
+  player.x = d.REGEN_SENTINEL_SITE.x * d.TILE;
+  player.y = d.REGEN_SENTINEL_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.monsters.some((monster) => monster.type === "regenSentinel"), "greater regen cave should spawn its guardian encounter");
+  state.monsters = [];
   player.level = 20;
   const eclipsePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "eclipse");
   assert(eclipsePool.includes("eclipseMage") && eclipsePool.includes("moonShade") && eclipsePool.includes("summoner") && eclipsePool.includes("trapFlower"), "eclipse spawn pool should include eclipse mage, moon shade, summoner, and trap flowers");
@@ -945,6 +993,18 @@ function assertExpandedWorldContent() {
   assert(reward.player.ownedAccessories.includes("obsidian") && reward.player.elixirs >= 2 && reward.player.warps >= 1, "obsidianGear chest should grant obsidian accessory and premium supplies");
   reward.runtime.grantChestReward("obsidianSupply");
   assert(reward.player.elixirs >= 3 && reward.player.tonics >= 4 && reward.player.warps >= 2, "obsidianSupply chest should add route-extension supplies");
+  reward.runtime.grantChestReward("smugglerSupply");
+  assert(reward.player.warps >= 3 && reward.player.bombs >= 4, "smugglerSupply should add shortcut-route supplies");
+
+  const guardedChest = createRuntime();
+  const regenChest = d.TREASURE_CHESTS.find((chest) => chest.id === "regen-cave-ring");
+  assert(regenChest, "greater regen cave chest should exist");
+  guardedChest.runtime.openChest(regenChest);
+  assert(!guardedChest.state.chests.has("regen-cave-ring") && !guardedChest.player.ownedAccessories.includes("greaterRegen"), "greater regen chest should stay locked until its guardian is defeated");
+  guardedChest.state.regenSentinelDefeated = true;
+  guardedChest.runtime.openChest(regenChest);
+  assert(guardedChest.state.chests.has("regen-cave-ring") && guardedChest.player.ownedAccessories.includes("greaterRegen"), "greater regen chest should open after Regen Sentinel defeat");
+
   const regenBefore = reward.runtime.regenRate();
   reward.runtime.grantChestReward("greaterRegen");
   globalThis.DRAGON_HUNTER_REWARDS.equipAccessory(reward.player, "greaterRegen");

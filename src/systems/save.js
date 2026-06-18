@@ -85,6 +85,10 @@
       wardenDefeated: state.wardenDefeated,
       spawnedAshKnight: state.spawnedAshKnight,
       ashKnightDefeated: state.ashKnightDefeated,
+      spawnedSmugglerCaptain: state.spawnedSmugglerCaptain,
+      smugglerCaptainDefeated: state.smugglerCaptainDefeated,
+      spawnedRegenSentinel: state.spawnedRegenSentinel,
+      regenSentinelDefeated: state.regenSentinelDefeated,
       spawnedEclipseDragon: state.spawnedEclipseDragon,
       eclipseDragonDefeated: state.eclipseDragonDefeated,
       spawnedVoidDragon: state.spawnedVoidDragon,
@@ -144,6 +148,8 @@
       state.guardianDefeated = Boolean(data.guardianDefeated);
       state.wardenDefeated = Boolean(data.wardenDefeated);
       state.ashKnightDefeated = Boolean(data.ashKnightDefeated);
+      state.smugglerCaptainDefeated = Boolean(data.smugglerCaptainDefeated);
+      state.regenSentinelDefeated = Boolean(data.regenSentinelDefeated);
       state.eclipseDragonDefeated = Boolean(data.eclipseDragonDefeated);
       state.voidDragonDefeated = Boolean(data.voidDragonDefeated);
       state.obsidianGolemDefeated = Boolean(data.obsidianGolemDefeated);
@@ -151,6 +157,8 @@
       state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
       state.spawnedWarden = state.wardenDefeated ? Boolean(data.spawnedWarden) : false;
       state.spawnedAshKnight = state.ashKnightDefeated ? Boolean(data.spawnedAshKnight) : false;
+      state.spawnedSmugglerCaptain = state.smugglerCaptainDefeated ? Boolean(data.spawnedSmugglerCaptain) : false;
+      state.spawnedRegenSentinel = state.regenSentinelDefeated ? Boolean(data.spawnedRegenSentinel) : false;
       state.spawnedEclipseDragon = state.eclipseDragonDefeated ? Boolean(data.spawnedEclipseDragon) : false;
       state.spawnedVoidDragon = state.voidDragonDefeated ? Boolean(data.spawnedVoidDragon) : false;
       state.spawnedObsidianGolem = state.obsidianGolemDefeated ? Boolean(data.spawnedObsidianGolem) : false;
@@ -247,6 +255,10 @@
     state.wardenDefeated = false;
     state.spawnedAshKnight = false;
     state.ashKnightDefeated = false;
+    state.spawnedSmugglerCaptain = false;
+    state.smugglerCaptainDefeated = false;
+    state.spawnedRegenSentinel = false;
+    state.regenSentinelDefeated = false;
     state.spawnedEclipseDragon = false;
     state.eclipseDragonDefeated = false;
     state.spawnedVoidDragon = false;

@@ -18,6 +18,8 @@
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
     OBSIDIAN_GOLEM_REQUIREMENTS,
+    SMUGGLER_CAPTAIN_REQUIREMENTS,
+    REGEN_SENTINEL_REQUIREMENTS,
     weaponNames,
     weaponCosts,
     armorCosts,
@@ -87,8 +89,12 @@
     if (hpRate < 0.35) return "??: ????????????";
     const stage = gameStage(context);
     const region = currentRegion();
-    if (region === "regenCave") return "黒市北の再生洞窟。大再生の指輪を取ったら帰還鈴で戻れる";
-    if (region === "smuggler") return "密輸道は黒市への近道。序盤でも通れるが、強敵を避けて進め";
+    if (region === "regenCave" && !state.regenSentinelDefeated && player.level < REGEN_SENTINEL_REQUIREMENTS.level) return `再生洞の守護者にはLV${REGEN_SENTINEL_REQUIREMENTS.level}ほど欲しい`;
+    if (region === "regenCave" && !state.regenSentinelDefeated) return "再生洞の守護者を倒せば大再生の指輪に近づける";
+    if (region === "regenCave") return "大再生の指輪で遠征が伸びる。帰還鈴で拠点へ戻ろう";
+    if (region === "smuggler" && !state.smugglerCaptainDefeated && player.level < SMUGGLER_CAPTAIN_REQUIREMENTS.level) return `密輸道は危険な近道。隊長に挑むならLV${SMUGGLER_CAPTAIN_REQUIREMENTS.level}が目安`;
+    if (region === "smuggler" && !state.smugglerCaptainDefeated) return "密輸隊長を倒せば黒市への近道が少し安全になる";
+    if (region === "smuggler") return "密輸道は黒市への近道。補給箱を拾いながら抜けよう";
     if (region === "obsidian") return "黒曜洞は中ボス級の圧。黒市へ戻る余力を残そう";
     if (region === "void") return "黒陽領は最高危険度。砦へ戻る余力を残そう";
     if (region === "eclipse") return "月蝕魔法が濃い。砦へ戻れるHPを残そう";

@@ -28,6 +28,10 @@
     CHAPTER3_REQUIREMENTS,
     OBSIDIAN_GOLEM_SITE,
     OBSIDIAN_GOLEM_REQUIREMENTS,
+    SMUGGLER_CAPTAIN_SITE,
+    SMUGGLER_CAPTAIN_REQUIREMENTS,
+    REGEN_SENTINEL_SITE,
+    REGEN_SENTINEL_REQUIREMENTS,
     monsterTypes,
   } = definitions;
 
@@ -348,6 +352,16 @@
       && player.level >= OBSIDIAN_GOLEM_REQUIREMENTS.level;
   }
 
+  function smugglerCaptainReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.smugglerCaptainDefeated && player.level >= SMUGGLER_CAPTAIN_REQUIREMENTS.level;
+  }
+
+  function regenSentinelReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.regenSentinelDefeated && player.level >= REGEN_SENTINEL_REQUIREMENTS.level;
+  }
+
   function playerNearGuardianSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -396,6 +410,22 @@
     return Math.hypot(pc.x - ox, pc.y - oy) < worldPx(96);
   }
 
+  function playerNearSmugglerCaptainSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const sx = (SMUGGLER_CAPTAIN_SITE.x + 0.5) * TILE;
+    const sy = (SMUGGLER_CAPTAIN_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - sx, pc.y - sy) < worldPx(92);
+  }
+
+  function playerNearRegenSentinelSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const rx = (REGEN_SENTINEL_SITE.x + 0.5) * TILE;
+    const ry = (REGEN_SENTINEL_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - rx, pc.y - ry) < worldPx(98);
+  }
+
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver) return;
@@ -417,6 +447,24 @@
     }
     if (state.spawnedObsidianGolem && !state.obsidianGolemDefeated && !hasLiveMonster(context, "obsidianGolem")) {
       state.spawnedObsidianGolem = false;
+    }
+    if (state.spawnedSmugglerCaptain && !state.smugglerCaptainDefeated && !hasLiveMonster(context, "smugglerCaptain")) {
+      state.spawnedSmugglerCaptain = false;
+    }
+    if (state.spawnedRegenSentinel && !state.regenSentinelDefeated && !hasLiveMonster(context, "regenSentinel")) {
+      state.spawnedRegenSentinel = false;
+    }
+
+    if (smugglerCaptainReady(context) && !state.spawnedSmugglerCaptain && playerNearSmugglerCaptainSite(context)) {
+      state.spawnedSmugglerCaptain = true;
+      spawnMonster(context, "smugglerCaptain", SMUGGLER_CAPTAIN_SITE.x * TILE, SMUGGLER_CAPTAIN_SITE.y * TILE);
+      say("密輸道の隊長が退路を塞いだ!", 2600);
+    }
+
+    if (regenSentinelReady(context) && !state.spawnedRegenSentinel && playerNearRegenSentinelSite(context)) {
+      state.spawnedRegenSentinel = true;
+      spawnMonster(context, "regenSentinel", REGEN_SENTINEL_SITE.x * TILE, REGEN_SENTINEL_SITE.y * TILE);
+      say("再生洞の守護者が指輪を守っている!", 3000);
     }
 
     if (ashKnightReady(context) && !state.spawnedAshKnight && playerNearAshKnightSite(context)) {
@@ -476,6 +524,8 @@
     eclipseDragonReady,
     voidDragonReady,
     obsidianGolemReady,
+    smugglerCaptainReady,
+    regenSentinelReady,
     hasLiveMonster,
     playerNearGuardianSite,
     playerNearWardenSite,
@@ -483,6 +533,8 @@
     playerNearEclipseDragonSite,
     playerNearVoidDragonSite,
     playerNearObsidianGolemSite,
+    playerNearSmugglerCaptainSite,
+    playerNearRegenSentinelSite,
     updateStoryEvents,
   };
 })();

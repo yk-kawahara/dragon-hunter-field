@@ -489,6 +489,24 @@
       player.wards = Math.min(9, player.wards + 3);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#aab0c8", 52);
       say("黒曜巨人を倒した。黒市に黒曜装備が並ぶ!", 4600);
+    } else if (monster.type === "smugglerCaptain") {
+      state.smugglerCaptainDefeated = true;
+      state.spawnedSmugglerCaptain = true;
+      player.gold += 360;
+      player.potions = Math.min(9, player.potions + 2);
+      player.bombs = Math.min(9, player.bombs + 1);
+      player.wards = Math.min(9, player.wards + 1);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#c28b42", 44);
+      say("密輸隊長を倒した。黒市への近道が少し安全になった!", 4200);
+    } else if (monster.type === "regenSentinel") {
+      state.regenSentinelDefeated = true;
+      state.spawnedRegenSentinel = true;
+      player.gold += 620;
+      player.potions = Math.min(9, player.potions + 2);
+      player.wards = Math.min(9, player.wards + 3);
+      player.warps = Math.min(9, player.warps + 1);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#74ff8f", 54);
+      say("再生洞の守護者を倒した。奥の宝箱を開けられる!", 4600);
     } else if (monster.type === "ashKnight") {
       state.ashKnightDefeated = true;
       player.gold += 420;
@@ -507,7 +525,7 @@
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
       say("南東の道番を越え、守りの護石を得た!", 4200);
-    } else if (monster.midboss && monster.type !== "obsidianGolem") {
+    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel"].includes(monster.type)) {
       state.guardianDefeated = true;
       player.sealCrest = true;
       player.scales = Math.min(3, player.scales + 1);

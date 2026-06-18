@@ -122,10 +122,10 @@
     const { player } = requireCombatContext(context);
     const hasRegen = activeAccessory(player, "regen", "regenCharm");
     const hasGreaterRegen = activeAccessory(player, "greaterRegen", "greaterRegenCharm");
-    if (!hasRegen && !hasGreaterRegen) return 0.2;
+    if (!hasRegen && !hasGreaterRegen) return 0.2 + Math.max(0, (player.level || 1) - 1) * 0.05;
     let rate = 0.2;
-    if (hasRegen) rate += 0.55 + (player.armor >= 3 ? 0.35 : 0.1) + (player.armor >= 4 ? 0.25 : 0.05);
-    if (hasGreaterRegen) rate += 1.15 + (player.armor >= 4 ? 0.45 : 0.2);
+    if (hasRegen) rate += 0.55 + (player.armor >= 3 ? 0.35 : 0.1) + (player.armor >= 4 ? 0.5 : 0.05);
+    if (hasGreaterRegen) rate += 1.15 + (player.armor >= 8 ? 2.0 : 1.5);
     return rate;
   }
 

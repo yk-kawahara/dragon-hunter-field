@@ -284,7 +284,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -461,6 +461,15 @@
       addItem(player, "tonic", 1);
       addItem(player, "warp", 1);
       say("黒市の隠し倉庫から遠征物資を得た");
+      return true;
+    }
+    if (reward === "smugglerSupply") {
+      player.gold += 360;
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      say("密輸道の隠し荷を見つけた。危険な近道用の物資を得た");
       return true;
     }
     return false;

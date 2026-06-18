@@ -188,8 +188,12 @@
   }
 
   function openChest(context, chest) {
-    const { state, addRing, burst, grantChestReward } = requireActionContext(context);
+    const { state, say, addRing, burst, grantChestReward } = requireActionContext(context);
     if (state.chests.has(chest.id)) return;
+    if (chest.id === "regen-cave-ring" && !state.regenSentinelDefeated) {
+      say("再生洞の守護者を倒さないと宝箱に近づけない", 2200);
+      return;
+    }
     state.chests.add(chest.id);
     const cx = (chest.x + 0.5) * TILE;
     const cy = (chest.y + 0.5) * TILE;

@@ -67,6 +67,8 @@
     { id: "black-market-stash", x: 43, y: 135, reward: "blackMarketSupply" },
     { id: "black-market-alley-cache", x: 47, y: 132, reward: "blackMarketSupply" },
     { id: "obsidian-side-cache", x: 58, y: 135, reward: "obsidianSupply" },
+    { id: "smuggler-north-cache", x: 21, y: 106, reward: "smugglerSupply" },
+    { id: "smuggler-south-cache", x: 22, y: 122, reward: "smugglerSupply" },
     { id: "regen-cave-ring", x: 54, y: 124, reward: "greaterRegen" },
     { id: "black-gate-shield-cache", x: 73, y: 134, reward: "blackShieldSupply" },
     { id: "black-sun-thorn-cache", x: 79, y: 139, reward: "trapSupply" },
@@ -90,6 +92,7 @@
     { id: "black-market-rumor", x: 41, y: 132, kind: "routeHint" },
     { id: "black-market-alley-map", x: 47, y: 133, kind: "shortcutHint" },
     { id: "smuggler-road-sign", x: 20, y: 100, kind: "smugglerHint" },
+    { id: "smuggler-ambush-note", x: 22, y: 116, kind: "smugglerHint" },
     { id: "regen-cave-note", x: 32, y: 121, kind: "greaterRegenHint" },
     { id: "broken-gate-marker", x: 74, y: 136, kind: "shortcutHint" },
     { id: "black-sun-trap-note", x: 75, y: 139, kind: "trapHint" },
@@ -105,6 +108,10 @@
   const CHAPTER3_REQUIREMENTS = { level: 26 };
   const OBSIDIAN_GOLEM_SITE = { x: 52, y: 132 };
   const OBSIDIAN_GOLEM_REQUIREMENTS = { level: 24 };
+  const SMUGGLER_CAPTAIN_SITE = { x: 21, y: 115 };
+  const SMUGGLER_CAPTAIN_REQUIREMENTS = { level: 8 };
+  const REGEN_SENTINEL_SITE = { x: 43, y: 124 };
+  const REGEN_SENTINEL_REQUIREMENTS = { level: 16 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -149,15 +156,15 @@
   const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧"];
   const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し"];
   const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御"];
-  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 3400, 5600, 9800];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 7400, 9600, 12800];
   const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34];
-  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 3200, 5200, 9200];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 6200, 12200, 15200];
   const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
   const shieldNames = ["なし", "木盾", "鉄盾", "星盾", "黒陽盾", "黒曜大盾"];
   const shieldTraits = ["盾なし", "正面接触を少し軽減", "正面接触を軽減", "魔法敵にも構えやすい", "黒陽領の正面圧を軽減", "重いが正面戦闘に強い"];
-  const shieldCosts = [0, 120, 520, 1700, 3600, 6200];
+  const shieldCosts = [0, 120, 520, 1700, 6600, 26200];
   const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48];
   const shieldSellValues = shieldCosts.map((cost) => Math.floor(cost * 0.45));
   const itemOrder = ["potion", "tonic", "bomb", "ward", "elixir", "warp"];
@@ -388,11 +395,37 @@
       atk: 116,
       def: 36,
       speed: 0,
-      xp: 130,
+      xp: 330,
       gold: 38,
       color: "#ff5e9f",
       shadow: "#3b5d24",
       drop: 0.12,
+    },
+    smugglerCaptain: {
+      name: "密輸隊長",
+      hp: 980,
+      atk: 84,
+      def: 48,
+      speed: 30 * WORLD_SCALE,
+      xp: 520,
+      gold: 420,
+      color: "#c28b42",
+      shadow: "#4a2812",
+      midboss: true,
+      drop: 0.6,
+    },
+    regenSentinel: {
+      name: "再生洞の守護者",
+      hp: 2100,
+      atk: 126,
+      def: 88,
+      speed: 19 * WORLD_SCALE,
+      xp: 1450,
+      gold: 760,
+      color: "#74ff8f",
+      shadow: "#214d31",
+      midboss: true,
+      drop: 0.8,
     },
     dragonling: {
       name: "小竜",
@@ -488,7 +521,7 @@
       name: "黒陽竜",
       hp: 5600,
       atk: 154,
-      def: 118,
+      def: 128,
       speed: 23 * WORLD_SCALE,
       xp: 4200,
       gold: 2200,
@@ -528,6 +561,10 @@
     CHAPTER3_REQUIREMENTS,
     OBSIDIAN_GOLEM_SITE,
     OBSIDIAN_GOLEM_REQUIREMENTS,
+    SMUGGLER_CAPTAIN_SITE,
+    SMUGGLER_CAPTAIN_REQUIREMENTS,
+    REGEN_SENTINEL_SITE,
+    REGEN_SENTINEL_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,
