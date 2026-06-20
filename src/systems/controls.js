@@ -22,6 +22,7 @@
       "contextAction",
       "dash",
       "useSelectedItem",
+      "useQuickItem",
       "cycleItem",
       "resetGame",
       "interact",
@@ -32,6 +33,7 @@
       "moveInventory",
       "confirmInventory",
       "sellInventorySelection",
+      "assignInventoryQuickSlot",
       "closeShop",
       "moveShop",
       "confirmShop",
@@ -62,6 +64,7 @@
       contextAction,
       dash,
       useSelectedItem,
+      useQuickItem,
       cycleItem,
       resetGame,
       selectItem,
@@ -70,6 +73,7 @@
       moveInventory,
       confirmInventory,
       sellInventorySelection,
+      assignInventoryQuickSlot,
       closeShop,
       moveShop,
       confirmShop,
@@ -90,7 +94,7 @@
         return;
       }
       if (state.inventoryOpen) {
-        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Space", "Escape", "KeyI", "KeyM", "KeyS"].includes(event.code)) {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Space", "Escape", "KeyI", "KeyM", "KeyS", "Digit1", "Digit2", "Digit3"].includes(event.code)) {
           event.preventDefault();
         }
         if (event.code === "ArrowUp") moveInventory(0, -1);
@@ -99,6 +103,7 @@
         if (event.code === "ArrowRight") moveInventory(1, 0);
         if (event.code === "Enter" || event.code === "Space") confirmInventory();
         if (event.code === "KeyS") sellInventorySelection();
+        if (["Digit1", "Digit2", "Digit3"].includes(event.code)) assignInventoryQuickSlot(Number(event.code.slice(-1)) - 1);
         if (event.code === "Escape" || event.code === "KeyI" || event.code === "KeyM") closeInventory();
         return;
       }
@@ -106,6 +111,7 @@
       if (event.code === "Enter" || event.code === "Space") contextAction();
       if (event.code === "ShiftLeft" || event.code === "ShiftRight") dash();
       if (event.code === "KeyH") useSelectedItem();
+      if (["Digit1", "Digit2", "Digit3"].includes(event.code)) useQuickItem(Number(event.code.slice(-1)) - 1);
       if (event.code === "KeyI" || event.code === "KeyM") toggleInventory();
       if (event.code === "KeyQ") cycleItem(-1);
       if (event.code === "KeyE") cycleItem(1);
@@ -121,8 +127,8 @@
       button.addEventListener("click", () => command(context, button.dataset.command));
     });
 
-    document.querySelectorAll("[data-item]").forEach((button) => {
-      button.addEventListener("click", () => selectItem(button.dataset.item));
+    document.querySelectorAll("[data-quick-slot]").forEach((button) => {
+      button.addEventListener("click", () => useQuickItem(Number(button.dataset.quickSlot)));
     });
 
     document.querySelectorAll("[data-key], [data-keys]").forEach((button) => {

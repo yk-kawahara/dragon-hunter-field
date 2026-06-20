@@ -45,6 +45,59 @@
   const { centerOf } = mathHelpers;
   const { addOwnedWeapon, addOwnedArmor, grantAccessory, availableTravelPoints } = rewardHelpers;
 
+  function localDialogue(npc, lines) {
+    const tx = Math.floor(npc.x / TILE);
+    const ty = Math.floor(npc.y / TILE);
+    return lines[Math.abs(tx * 7 + ty * 11) % lines.length];
+  }
+
+  const townDialogue = {
+    village: [
+      "村人「北門の外は近くても危険だ。傷を見たら魔法陣まで戻れ」",
+      "門番「門を閉じれば魔物も魔法も入れない。出発前に向きを確かめろ」",
+      "木こり「北森の木は風向きが違う。守護者の縄張りが近い印だ」",
+      "旅支度の娘「もちものでは武器の振り方も読めるよ。速い武器も便利」",
+    ],
+    camp: [
+      "坑夫「泡吐きは追うより弾を横へ避けてから詰めるんだ」",
+      "見張り「このキャンプの灯が、村から届く最初の安全圏だ」",
+      "荷運び「鉱夫服と泡除けがあれば、廃坑で粘れる時間が違う」",
+      "採掘師「古鉄は南西の壁際に出る。帰る体力まで掘るなよ」",
+    ],
+    ash: [
+      "宿場の客「古塔へは南。灰術師の弾を壁際で受けるな」",
+      "宿の女将「星装備目当ての旅人で、今夜も寝床が足りないよ」",
+      "灰道衛兵「東の旧街道は速いが、盾兵の正面を抜くのは骨だ」",
+      "行商人「月影まで行くなら帰還鈴を一つ残しておけ」",
+    ],
+    moon: [
+      "砦兵「月影の亡霊より、放置した召喚士の方が戦線を壊す」",
+      "斥候「廃墟の花が膨らんだら斬るか離れろ。迷う時間はない」",
+      "旅人「ここから村の灯は見えない。でもこの砦の灯なら見える」",
+      "料理番「月蝕城帰りは皆、護符より先に温かい汁を頼むんだ」",
+    ],
+    market: [
+      "黒市商人「正規品かは聞くな。黒曜巨人に効くかだけ聞け」",
+      "地下案内人「東端の階段は墓所だ。吸命鬼に囲まれる前に戻れ」",
+      "露店主「霊薬と帰還鈴は高い。でも全滅よりは安いだろ」",
+      "用心棒「路地の北は密輸道、東は黒曜洞。どちらも近道ではない」",
+      "旅芸人「黒市には国境も昼夜もない。財布だけは閉じておけ」",
+    ],
+    fort: [
+      "黒門兵「黒陽城の影弾は鎧だけでなく、横移動で減らせ」",
+      "補給兵「砦から先は戻り道も戦場だ。帰還鈴を最後まで残せ」",
+      "斥候「城壁の割れ目は二つある。正門だけが道ではない」",
+      "鍛冶助手「黒曜大盾は重いが、正面を受けるなら別物だ」",
+    ],
+    frost: [
+      "白銀宿の猟師「霜牙獣は踏み込む前に肩が下がる。そこで横へ飛べ」",
+      "宿の住人「塔の昇降機を動かせば、二度目の登頂はずっと短い」",
+      "氷商人「霊薬は凍る前に懐へ。外袋に入れた旅人は皆泣いたよ」",
+      "白銀衛兵「霜冠城へは本道、氷窟へは南道。準備で道を選べ」",
+      "盾刻師の弟子「刻印は盾を替えても残る。戦い方で彫り直すんだ」",
+    ],
+  };
+
   const worldPx = (value) => value * WORLD_SCALE;
 
   function weaponRow(rank, available = true, lockedReason = "") {
@@ -312,21 +365,23 @@
 
     if (npc.type === "villager" || npc.type === "guard") {
       if (npc.y > 144 * TILE) {
-        if (npc.type === "guard") say("白銀衛兵「北の本道は速い。南の氷窟道は危険だが遺物がある」", 3800);
-        else if (npc.x < 24 * TILE) say("宿の住人「東の霜見塔には古い昇降機がある。上で動かせるらしい」", 3800);
-        else say("宿の住人「凍える前に戻っておいで。ここなら何度でも休める」", 3800);
+        say(localDialogue(npc, townDialogue.frost), 3800);
       } else if (npc.y > 128 * TILE) {
         if (npc.x > 44 * TILE && !state.cryptWardenDefeated) {
           say("衛兵「この先の地下口は墓所だ。吸命鬼に囲まれたら入口まで退け」", 3800);
+        } else if (npc.x > 80 * TILE) {
+          say(localDialogue(npc, townDialogue.fort), 3800);
         } else {
-          say(npc.type === "guard" ? "衛兵「黒市の外は黒陽の影が濃い。門の外で油断するな」" : "住人「ここまで来た旅人は少ない。物資を整えていきな」", 3600);
+          say(localDialogue(npc, townDialogue.market), 3800);
         }
       } else if (npc.y > 110 * TILE) {
-        say("旅人「月見砦から先は戻る判断が命を分ける」", 3200);
-      } else if (npc.x > 90 * TILE) {
-        say("旅人「灰道の宿場から南へ行けば、古塔と月影の道だ」", 3200);
+        say(localDialogue(npc, townDialogue.moon), 3600);
+      } else if (npc.x > 90 * TILE && npc.y > 50 * TILE && npc.y < 65 * TILE) {
+        say(localDialogue(npc, townDialogue.ash), 3600);
+      } else if (npc.x > 23 * TILE && npc.x < 38 * TILE && npc.y > 54 * TILE && npc.y < 64 * TILE) {
+        say(localDialogue(npc, townDialogue.camp), 3600);
       } else {
-        say("村人「遠くへ行くなら、帰れるだけのHPを残しておくんだ」", 3200);
+        say(localDialogue(npc, townDialogue.village), 3600);
       }
       return;
     }

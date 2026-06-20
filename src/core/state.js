@@ -118,6 +118,8 @@
       elixirs: 0,
       warps: 0,
       selectedItem: "potion",
+      quickItems: ["potion", "bomb", "ward"],
+      activeQuickSlot: 0,
       scales: 0,
       sealCrest: false,
       hunterCharm: false,

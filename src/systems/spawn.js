@@ -52,6 +52,7 @@
   } = mathHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
+  const INTERIOR_REGIONS = new Set(["cave", "undercity", "frostTower1", "frostTower2"]);
 
   function monsterSize(typeName, template) {
     return worldPx(template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11);
@@ -76,6 +77,7 @@
     const size = monsterSize(typeName, template);
     const monster = {
       type: typeName,
+      spawnRegion: regionAtPosition(x + size / 2, y + size / 2),
       name: template.name,
       x,
       y,
@@ -146,8 +148,12 @@
 
   function currentRegion(context) {
     const { player } = requireSpawnContext(context);
-    const tx = Math.floor((player.x + player.w / 2) / TILE);
-    const ty = Math.floor((player.y + player.h / 2) / TILE);
+    return regionAtPosition(player.x + player.w / 2, player.y + player.h / 2);
+  }
+
+  function regionAtPosition(x, y) {
+    const tx = Math.floor(x / TILE);
+    const ty = Math.floor(y / TILE);
     if (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) return "undercity";
     if (tx >= 88 && tx <= 102 && ty >= 18 && ty <= 32) return "frostTower1";
     if (tx >= 104 && tx <= 118 && ty >= 18 && ty <= 32) return "frostTower2";
@@ -167,7 +173,7 @@
     if (tx >= 20 && tx <= 43 && ty >= 60) return "mine";
     if (tx > 40) return "east";
     if (ty < 25) return "north";
-    if (distanceFromVillage(context) > worldPx(330)) return "wilds";
+    if (Math.hypot(x - 12 * TILE, y - 48 * TILE) > worldPx(330)) return "wilds";
     return "grassland";
   }
 
@@ -232,16 +238,19 @@
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
-    if (state.spawnTimer > 0 || state.monsters.length >= maxMonsters) return;
+    const interior = INTERIOR_REGIONS.has(region);
+    const population = interior ? countRegionMonsters(context, region) : state.monsters.length;
+    if (state.spawnTimer > 0 || population >= maxMonsters) return;
     state.spawnTimer = rand(780, 1320) / regionInfo.danger;
 
     for (let i = 0; i < 40; i += 1) {
       const angle = rand(0, Math.PI * 2);
-      const radius = rand(worldPx(92), worldPx(190 + regionInfo.danger * 18));
+      const radius = interior ? rand(worldPx(38), worldPx(98)) : rand(worldPx(92), worldPx(190 + regionInfo.danger * 18));
       const x = clamp(player.x + Math.cos(angle) * radius, TILE, MAP_W * TILE - TILE * 2);
       const y = clamp(player.y + Math.sin(angle) * radius, TILE, MAP_H * TILE - TILE * 2);
       const actor = { x, y, w: worldPx(12), h: worldPx(12), flying: false };
       if (inTown(x, y)) continue;
+      if (interior && regionAtPosition(x, y) !== region) continue;
       if (isPassableRect(actor)) {
         spawnMonster(context, monsterChoice(context), x, y);
         return;
@@ -257,6 +266,7 @@
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
+    const interior = INTERIOR_REGIONS.has(region);
     const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
@@ -268,19 +278,25 @@
       pruneDistantMonsters(context, worldPx(230));
       nearby = countNearbyMonsters(context, worldPx(210));
     }
-    if (state.regionSpawnTimer > 0 || state.monsters.length >= maxMonsters) return;
-    state.regionSpawnTimer = 1600;
-    for (let i = nearby; i < target && state.monsters.length < maxMonsters; i += 1) {
-      spawnNearPlayer(context, region, worldPx(105 + i * 16), worldPx(235 + i * 10));
+    const localPopulation = interior ? countRegionMonsters(context, region) : state.monsters.length;
+    if (state.regionSpawnTimer > 0 || localPopulation >= maxMonsters) return;
+    state.regionSpawnTimer = interior ? 900 : 1600;
+    for (let i = nearby; i < target && (interior ? countRegionMonsters(context, region) : state.monsters.length) < maxMonsters; i += 1) {
+      const minRadius = interior ? worldPx(36 + i * 3) : worldPx(105 + i * 16);
+      const maxRadius = interior ? worldPx(92 + i * 4) : worldPx(235 + i * 10);
+      spawnNearPlayer(context, region, minRadius, maxRadius);
     }
   }
 
   function pruneDistantMonsters(context, maxDistance = worldPx(520)) {
     const { state, player } = requireSpawnContext(context);
     const pc = centerOf(player);
+    const region = currentRegion(context);
+    const interior = INTERIOR_REGIONS.has(region);
     state.monsters = state.monsters.filter((monster) => {
       if (monster.boss || monster.midboss) return true;
       const mc = centerOf(monster);
+      if (interior && regionAtPosition(mc.x, mc.y) !== region) return false;
       return Math.hypot(mc.x - pc.x, mc.y - pc.y) < maxDistance;
     });
   }
@@ -288,10 +304,22 @@
   function countNearbyMonsters(context, radius) {
     const { state, player } = requireSpawnContext(context);
     const pc = centerOf(player);
+    const region = currentRegion(context);
+    const interior = INTERIOR_REGIONS.has(region);
     return state.monsters.filter((monster) => {
       if (monster.hp <= 0) return false;
       const mc = centerOf(monster);
+      if (interior && regionAtPosition(mc.x, mc.y) !== region) return false;
       return Math.hypot(mc.x - pc.x, mc.y - pc.y) < radius;
+    }).length;
+  }
+
+  function countRegionMonsters(context, region) {
+    const { state } = requireSpawnContext(context);
+    return state.monsters.filter((monster) => {
+      if (monster.hp <= 0) return false;
+      const mc = centerOf(monster);
+      return regionAtPosition(mc.x, mc.y) === region;
     }).length;
   }
 
@@ -308,6 +336,7 @@
       const template = monsterTypes[type];
       const size = monsterSize(type, template);
       const actor = { x, y, w: size, h: size, flying: Boolean(template.flying), isMonster: true };
+      if (INTERIOR_REGIONS.has(region) && regionAtPosition(x + size / 2, y + size / 2) !== region) continue;
       if (isPassableRect(actor)) {
         spawnMonster(context, type, x, y);
         return true;
@@ -663,12 +692,14 @@
     spawnIfClear,
     monsterChoice,
     currentRegion,
+    regionAtPosition,
     distanceFromVillage,
     monsterPoolForRegion,
     trySpawnMonster,
     updateRegionSpawns,
     pruneDistantMonsters,
     countNearbyMonsters,
+    countRegionMonsters,
     spawnNearPlayer,
     areaDangerText,
     guardianReady,

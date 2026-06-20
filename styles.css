@@ -314,12 +314,17 @@ canvas:focus {
 .item-dock button {
   height: 32px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 4px;
   padding: 3px 6px;
   background:
     linear-gradient(180deg, rgba(19, 31, 49, 0.92), rgba(5, 8, 18, 0.94));
+}
+
+.item-dock small {
+  color: #ffd166;
+  font-size: 9px;
 }
 
 .item-dock span {

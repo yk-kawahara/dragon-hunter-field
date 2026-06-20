@@ -49,6 +49,8 @@ Current project status:
 * Frost Moth, Frost Beast, Frost Golem, frost equipment, Frost Heart Charm, and Frost Crown Dragon add a higher-difficulty frozen expedition arc.
 * Frost Haven now has a unique shield-engraving service with defensive, traversal, and counterattack build choices.
 * Frost Watchtower adds a two-floor Chapter 4 side dungeon with Frost Beacon aura hazards, a named warden, a persistent elevator shortcut, and the dash-focused Sky Emblem reward.
+* All weapons now have distinct attack profiles, the field UI has three configurable all-item quick slots, and interior enemy density is isolated from exterior spawn budgets.
+* Settlement NPC dialogue now varies by location and resident instead of repeating one generic line.
 
 Current high-priority risks:
 
@@ -59,6 +61,10 @@ Current high-priority risks:
 * Gold/EXP/shop price balance should be checked after route expansion.
 * Chapter 4 LV30/LV34 pacing, rank-12 gear economy, and boss reinforcement pressure need a real playtest from a Chapter 3 clear save.
 * Frost Watchtower attrition, beacon pulse pressure, warden phase pacing, elevator usefulness, and Sky Emblem strength need a real Chapter 4 playtest.
+* Existing routes and dungeons are often too short and too wall-corridor-heavy to create a convincing journey through a world.
+* The game still lacks a major multi-service city and a whole-world map; current safe bases remain much smaller than the intended urban destination.
+* New weapon profiles, quick-slot UX, interior population, and settlement dialogue variation need hands-on browser playtesting after this pass.
+* Later bosses need more movement checks such as piercing attacks, multi-wave patterns, and wide-area pressure so level grinding alone is not the dominant answer.
 
 Next verification target:
 
@@ -86,6 +92,32 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-21: Playtest-response combat, dungeon population, and quick-slot pass
+
+Goal: turn direct playtest feedback into immediate improvements while resetting the roadmap toward action depth, meaningful geography, a major city, and a world map.
+
+Implemented:
+
+* Revised active design/planning documents around action depth, weapon viability, dungeon-local population, believable geography, varied town dialogue, configurable item access, boss patterns, and a future major city.
+* Added 13 weapon attack profiles with distinct cooldown, reach, arc width, power, lunge, knockback, color, and inventory description.
+* Changed active-attack damage so route/position multipliers apply before enemy defense; intended sidegrades now remain functional against high-defense targets.
+* Fixed interior spawn accounting: exterior/other-floor monsters no longer consume dungeon population, interior spawn radii are tighter, and each floor receives its own rapid population pass.
+* Replaced the fixed herb/bomb/ward dock with three configurable slots supporting all six consumables, keyboard/click use, Q/E selection, inventory assignment, and save migration.
+* Added settlement-specific dialogue pools for seven safe locations, producing distinct local life, service, route, and danger lines.
+* Preserved and incorporated the user's uncommitted higher late-enemy stats and additional Frost Frontier path openings.
+
+Verification:
+
+* VM smoke coverage now checks quick-slot HTML, assignment/use/cycling/save persistence, attack-profile speed/reach/lunge differences, interior-local population, exterior pruning, and non-repeating town dialogue.
+* `scripts/verify-game-smoke.js` passes with 13,401 reachable tiles.
+* Real-browser QA was attempted through the available in-app browser, but its local runtime could not initialize under the current Windows sandbox. Visual quick-slot fit remains a manual QA item.
+
+Known risks / next work:
+
+* Weapon profile power and the user's stronger late-game enemy stats need hands-on balance testing together.
+* Bosses still need piercing, delayed multi-wave, and persistent-zone attacks to make movement skill matter more than level.
+* The next map expansion should establish mountain/highland/coast geography and a true major city, accompanied by a whole-world map rather than more wall corridors.
 
 ### 2026-06-20: Frost Watchtower multi-floor dungeon
 

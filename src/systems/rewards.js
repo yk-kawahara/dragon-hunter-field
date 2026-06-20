@@ -179,7 +179,38 @@
     player.ownedArmors = normalizeRankInventory(player.ownedArmors, player.armor, armorNames.length);
     player.ownedShields = normalizeRankInventory(player.ownedShields, player.shield, shieldNames.length);
     normalizeAccessoryInventory(player);
+    normalizeQuickItems(player);
     return player;
+  }
+
+  function normalizeQuickItems(player) {
+    const quick = [];
+    for (const id of Array.isArray(player.quickItems) ? player.quickItems : []) {
+      if (itemOrder.includes(id) && !quick.includes(id)) quick.push(id);
+      if (quick.length >= 3) break;
+    }
+    for (const id of ["potion", "bomb", "ward", ...itemOrder]) {
+      if (quick.length >= 3) break;
+      if (!quick.includes(id)) quick.push(id);
+    }
+    player.quickItems = quick;
+    player.activeQuickSlot = clamp(Math.floor(Number(player.activeQuickSlot) || 0), 0, quick.length - 1);
+    player.selectedItem = quick[player.activeQuickSlot] || "potion";
+    return quick;
+  }
+
+  function setQuickItem(player, item, slot) {
+    normalizeQuickItems(player);
+    if (!itemOrder.includes(item)) return false;
+    const target = clamp(Math.floor(Number(slot) || 0), 0, player.quickItems.length - 1);
+    const existing = player.quickItems.indexOf(item);
+    if (existing >= 0 && existing !== target) {
+      player.quickItems[existing] = player.quickItems[target];
+    }
+    player.quickItems[target] = item;
+    player.activeQuickSlot = target;
+    player.selectedItem = item;
+    return true;
   }
 
   function addOwnedWeapon(player, rank) {
@@ -765,6 +796,15 @@
     if (player.selectedItem === "warp") useWarp(context);
   }
 
+  function useQuickItem(context, slot) {
+    const { player } = requireItemContext(context);
+    normalizeQuickItems(player);
+    const target = clamp(Math.floor(Number(slot) || 0), 0, player.quickItems.length - 1);
+    player.activeQuickSlot = target;
+    player.selectedItem = player.quickItems[target];
+    useSelectedItem(context);
+  }
+
   function usePotion(context) {
     const { player, say, burst } = requireItemContext(context);
     if (player.hp <= 0) return;
@@ -902,15 +942,18 @@
   function selectItem(context, item) {
     const { player } = requireItemContext(context);
     if (!itemOrder.includes(item)) return;
+    normalizeQuickItems(player);
+    const slot = player.quickItems.indexOf(item);
+    if (slot >= 0) player.activeQuickSlot = slot;
     player.selectedItem = item;
   }
 
   function cycleItem(context, step) {
     const { player, say } = requireItemContext(context);
-    const index = itemOrder.indexOf(player.selectedItem);
-    player.selectedItem = itemOrder[(index + step + itemOrder.length) % itemOrder.length];
-    const names = { potion: "薬", tonic: "活力薬", bomb: "火瓶", ward: "護符", elixir: "霊薬", warp: "帰還鈴" };
-    say(`${names[player.selectedItem]}を選んだ`, 900);
+    normalizeQuickItems(player);
+    player.activeQuickSlot = (player.activeQuickSlot + step + player.quickItems.length) % player.quickItems.length;
+    player.selectedItem = player.quickItems[player.activeQuickSlot];
+    say(`短縮${player.activeQuickSlot + 1}: ${itemNames[player.selectedItem]}を選んだ`, 900);
   }
 
   function selectedItemCount(context) {
@@ -922,6 +965,8 @@
     rewardIds,
     savedIdSet,
     normalizeInventory,
+    normalizeQuickItems,
+    setQuickItem,
     addOwnedWeapon,
     addOwnedArmor,
     addOwnedShield,
@@ -937,6 +982,7 @@
     grantDiscoveryReward,
     gainFoundItem,
     useSelectedItem,
+    useQuickItem,
     usePotion,
     useTonic,
     useBomb,

@@ -44,6 +44,23 @@ Core mechanics:
 * Growth comes from levels, gold, equipment, items, accessories, and exploration rewards.
 * The Red Dragon route is the current Chapter 1 endpoint, not the final world endpoint.
 
+## Playtest-derived design truth: adventure and action depth
+
+The June 2026 playtest confirmed that the simple contact-combat foundation is enjoyable, but also exposed where simplicity becomes thinness.
+
+Required direction:
+
+* Contact remains the source of ordinary combat, but weapons must change attack rhythm: quick thrusts, wide sweeps, long magical reach, heavy breaks, and mobile lunges.
+* Boss difficulty should increasingly depend on reading and evading piercing lines, multi-wave spreads, persistent zones, and phase combinations, not only level and defense checks.
+* Progression weapons may be replaced, but sidegrade weapons must retain a tactical reason to equip them.
+* A dungeon is a local encounter space. Its enemy budget, spawn distance, and pressure must not be stolen by enemies outside its walls.
+* Adventure volume is measured by distinct places and decisions, not corridor length. Repeated stone-wall lanes do not count as meaningful volume.
+* The overworld should evolve toward believable geography: mountain chains, highlands, valleys, coasts, islands, roads, rivers, and settlements arranged as a world rather than one rectangular maze.
+* At least one major city should become a dense service hub with multiple shops, specialists, residents, rumors, and optional activities.
+* NPCs in the same settlement should not all repeat one line. Dialogue should reveal local life, geography, services, danger, or changing story state.
+* All consumable types should be eligible for player-selected quick slots. The field UI must not imply that only three of the six item types matter.
+* A whole-world map is a future navigation requirement as the geography expands.
+
 ## Chapter 1 role
 
 The current village -> Guardian -> Red Dragon route is **Chapter 1 scale**.
@@ -88,6 +105,7 @@ Density rule:
 * Large open regions need visible landmarks every short walk: camp remains, ruined stones, fields, flower patches, shrines, warning signs, caches, or NPC pockets.
 * Landmarks should usually pair with a small gameplay reason: chest, discovery reward, shortcut hint, recovery clue, route warning, or enemy pressure.
 * Empty terrain is acceptable only when it creates a deliberate feeling of danger, distance, or relief.
+* A longer route should cross distinct terrain beats or route decisions; simply extending a wall corridor is not acceptable adventure volume.
 
 ## Growth curve
 
@@ -237,6 +255,11 @@ Current direction:
 * `深層灯の護符` is earned in the Black Market Catacombs after defeating the Crypt Warden. It reduces slow movement loss and strengthens herb healing, trading broad resistance for longer recovery-based expeditions.
 * `天駆けの徽章` is earned at the top of Frost Watchtower after defeating its warden. It lengthens dash distance and shortens dash recovery, changing traversal and escape options rather than only adding defense.
 * Accessory ownership and accessory effects are separate: an owned but unequipped accessory must never grant its active effect.
+* Weapon identity includes attack behavior as well as ATK and route multipliers. Inventory text should describe reach, speed, arc, or impact so an older sidegrade can remain a deliberate choice.
+* The field item dock consists of player-configurable quick slots. Any consumable in `itemOrder` can be assigned, selected, and used from those slots.
+* Current weapon profiles now cover fast thrust, wide sweep, rapid slash, long piercing reach, heavy break, and mobile lunge styles. Future weapons must extend these decisions rather than returning to stat-only tiers.
+* The three field quick slots accept all six current consumables and persist across save/load.
+* Interior spawn budgets are region-local: exterior enemies and other floors do not make a dungeon appear empty.
 
 Future direction:
 

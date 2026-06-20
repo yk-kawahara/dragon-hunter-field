@@ -44,6 +44,8 @@ function assertScriptOrder() {
   const html = fs.readFileSync("index.html", "utf8");
   const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((match) => match[1]);
   assert(JSON.stringify(scripts) === JSON.stringify(SCRIPT_ORDER), "index.html script order drifted");
+  assert((html.match(/data-quick-slot=/g) || []).length === 3, "field UI should expose three configurable quick slots");
+  assert(!/data-item=/.test(html), "field UI should not hard-code a fixed subset of item types");
 }
 
 function installBrowserStubs() {
@@ -208,6 +210,8 @@ function createRuntime() {
     spawnMonster: (type, x, y) => spawn.spawnMonster(contexts.spawn(), type, x, y),
     spawnIfClear: (type, x, y) => spawn.spawnIfClear(contexts.spawn(), type, x, y),
     currentRegion: () => spawn.currentRegion(contexts.spawn()),
+    updateRegionSpawns: (dt) => spawn.updateRegionSpawns(contexts.spawn(), dt),
+    countRegionMonsters: (region) => spawn.countRegionMonsters(contexts.spawn(), region),
     areaDangerText: (region) => spawn.areaDangerText(contexts.spawn(), region),
     guardianReady: () => spawn.guardianReady(contexts.spawn()),
     wardenReady: () => spawn.wardenReady(contexts.spawn()),
@@ -232,10 +236,14 @@ function createRuntime() {
     saveGame: () => save.saveGame(contexts.save()),
     loadGame: () => save.loadGame(contexts.save()),
     useSelectedItem: () => rewards.useSelectedItem(contexts.reward()),
+    useQuickItem: (slot) => rewards.useQuickItem(contexts.reward(), slot),
+    cycleItem: (step) => rewards.cycleItem(contexts.reward(), step),
+    performAttack: () => actions.performAttack(contexts.action()),
     openInventory: () => ui.openInventory(contexts.ui()),
     closeInventory: () => ui.closeInventory(contexts.ui()),
     moveInventory: (dx, dy) => ui.moveInventory(contexts.ui(), dx, dy),
     confirmInventory: () => ui.confirmInventory(contexts.ui()),
+    assignInventoryQuickSlot: (slot) => ui.assignInventoryQuickSlot(contexts.ui(), slot),
     sellInventorySelection: () => ui.sellInventorySelection(contexts.ui()),
     openShop: (title, rows) => ui.openShop(contexts.ui(), title, rows),
     closeShop: () => ui.closeShop(contexts.ui()),
@@ -348,6 +356,9 @@ function assertSaveLoadAndEquipment() {
   player.tonics = 3;
   player.elixirs = 2;
   player.warps = 1;
+  player.quickItems = ["elixir", "tonic", "warp"];
+  player.activeQuickSlot = 1;
+  player.selectedItem = "tonic";
   player.scales = 2;
   player.sealCrest = true;
   player.hunterCharm = true;
@@ -430,6 +441,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
+  assert(JSON.stringify(restored.player.quickItems) === JSON.stringify(["elixir", "tonic", "warp"]) && restored.player.activeQuickSlot === 1 && restored.player.selectedItem === "tonic", `quick item assignments should persist: ${JSON.stringify({ quickItems: restored.player.quickItems, active: restored.player.activeQuickSlot, selected: restored.player.selectedItem })}`);
   const baseline = createRuntime();
   baseline.player.armor = restored.player.armor;
   baseline.player.weapon = restored.player.weapon;
@@ -514,6 +526,20 @@ function assertInventoryManagement() {
   player.shield = 0;
   player.gold = 10;
   runtime.refreshDerivedStats();
+
+  state.inventoryTab = "items";
+  state.inventoryIndex = 1;
+  player.tonics = 2;
+  runtime.openInventory();
+  runtime.assignInventoryQuickSlot(2);
+  assert(player.quickItems[2] === "tonic" && player.activeQuickSlot === 2, "inventory should assign any item to a chosen quick slot");
+  runtime.closeInventory();
+  const tonicBeforeQuickUse = player.tonics;
+  player.stamina = 0;
+  runtime.useQuickItem(2);
+  assert(player.tonics === tonicBeforeQuickUse - 1 && player.stamina === player.staminaMax, "quick slot should immediately use its assigned item");
+  runtime.cycleItem(-1);
+  assert(player.activeQuickSlot === 1 && player.selectedItem === player.quickItems[1], "Q/E item cycling should move between configured quick slots");
 
   runtime.openInventory();
   assert(state.inventoryOpen, "inventory should open");
@@ -871,6 +897,34 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.frostBeacon), "frost beacon monster definition should exist");
   assert(Boolean(d.monsterTypes.towerWarden), "frost tower warden monster definition should exist");
   assert(Boolean(d.monsterTypes.frostDragon), "frost dragon monster definition should exist");
+  assert(d.weaponAttackProfiles.length === d.weaponNames.length, "every weapon should define an attack profile");
+  assert(d.weaponAttackProfiles[1].cooldown < d.weaponAttackProfiles[11].cooldown && d.weaponAttackProfiles[8].range > d.weaponAttackProfiles[2].range, "weapon profiles should create visible speed and reach tradeoffs");
+
+  const attackStyle = createRuntime();
+  attackStyle.player.x = 30 * d.TILE;
+  attackStyle.player.y = 40 * d.TILE;
+  attackStyle.player.dir = "right";
+  attackStyle.player.weapon = 1;
+  const attackStartX = attackStyle.player.x;
+  attackStyle.runtime.performAttack();
+  assert(attackStyle.player.attackCooldown === d.weaponAttackProfiles[1].cooldown && attackStyle.player.x > attackStartX, "spear attack should use its quick lunging profile");
+
+  const interiorSpawn = createRuntime();
+  interiorSpawn.player.level = 30;
+  interiorSpawn.player.x = 96 * d.TILE;
+  interiorSpawn.player.y = 25 * d.TILE;
+  interiorSpawn.runtime.spawnMonster("slime", 86 * d.TILE, 25 * d.TILE);
+  assert(interiorSpawn.runtime.currentRegion() === "frostTower1", "interior spawn test should begin on Frost Watchtower floor one");
+  interiorSpawn.runtime.updateRegionSpawns(1000);
+  assert(!interiorSpawn.state.monsters.some((monster) => monster.type === "slime"), "exterior monsters should be pruned when they would consume an interior spawn budget");
+  assert(interiorSpawn.runtime.countRegionMonsters("frostTower1") >= 6, "interior should rapidly populate with monsters from its own floor");
+
+  const marketDialogue = createRuntime();
+  const marketPeople = marketDialogue.state.npcs.filter((npc) => npc.type === "villager" && npc.y > 128 * d.TILE && npc.x < 48 * d.TILE);
+  marketDialogue.runtime.handleNpc(marketPeople[0]);
+  const firstMarketLine = marketDialogue.state.message;
+  marketDialogue.runtime.handleNpc(marketPeople[marketPeople.length - 1]);
+  assert(firstMarketLine !== marketDialogue.state.message, "residents in the same town should not all repeat one generic line");
 
   player.x = 47 * d.TILE;
   player.y = 130 * d.TILE;

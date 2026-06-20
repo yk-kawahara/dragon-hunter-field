@@ -14,6 +14,7 @@
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponAttackProfiles,
     armorTraits,
     weaponCosts,
     armorCosts,
@@ -48,6 +49,7 @@
     equippedAccessoryIds,
     equipAccessory,
     itemField,
+    setQuickItem,
   } = rewardHelpers;
 
   const itemDetails = {
@@ -95,6 +97,7 @@
       items: "道具",
       weapons: "武器",
       armors: "防具",
+      shields: "盾",
       accessories: "装飾",
     }[tab] || "道具";
   }
@@ -303,7 +306,7 @@
         type: "weapon",
         id: rank,
         name: weaponNames[rank],
-        detail: `${weaponTraits[rank]} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - attackWithoutCombo)})`,
+        detail: `${weaponAttackProfiles[rank]?.style || weaponTraits[rank]} / ${weaponTraits[rank]} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - attackWithoutCombo)})`,
         equipped: player.weapon === rank,
         sell: weaponSellValues[rank],
         currentValue: playerAttack(),
@@ -400,8 +403,9 @@
       return;
     }
     if (row.type === "item") {
-      player.selectedItem = row.id;
-      useSelectedItem?.();
+      const slot = Number.isFinite(player.activeQuickSlot) ? player.activeQuickSlot : 0;
+      setQuickItem(player, row.id, slot);
+      say(`${row.name}を短縮${slot + 1}に登録した`);
       return;
     }
     if (row.type === "weapon") {
@@ -429,6 +433,15 @@
         say(`${row.name}を装備した`);
       }
     }
+  }
+
+  function assignInventoryQuickSlot(context, slot) {
+    const { state, player, say } = requireUiStatusContext(context);
+    if (!state.inventoryOpen || state.inventoryTab !== "items") return;
+    const row = selectedInventoryRow(context);
+    if (!row || row.type !== "item") return;
+    setQuickItem(player, row.id, slot);
+    say(`${row.name}を短縮${Number(slot) + 1}に登録した`);
   }
 
   function sellInventorySelection(context) {
@@ -582,7 +595,7 @@
       {
         title: "装備",
         lines: [
-          `${weaponNames[player.weapon]} ${weaponTraits[player.weapon]} ATK ${baseAttack}+${weaponBonus}=${baseAttack + weaponBonus}`,
+          `${weaponNames[player.weapon]} ${weaponAttackProfiles[player.weapon]?.style || weaponTraits[player.weapon]} ATK ${baseAttack}+${weaponBonus}=${baseAttack + weaponBonus}`,
           `${armorNames[player.armor]} ${armorTraits[player.armor]} DEF ${baseDefense}+${armorBonus}=${baseDefense + armorBonus}`,
           `戦闘中: ATK ${playerAttack()} / DEF ${playerDefense()}`,
           `盾 ${shieldNames[player.shield]} 正面${shieldCut}%軽減 刻印:${shieldRuneName}`,
@@ -660,13 +673,18 @@
     ui.exp.textContent = `${player.xp}/${player.xpNext}`;
     ui.weapon.textContent = `${weaponNames[player.weapon] || "竜"} +${weaponAttack[player.weapon] || 0}`;
     ui.armor.textContent = `${armorNames[player.armor] || "竜"} +${armorDefense[player.armor] || 0}`;
-    ui.potion.textContent = String(player.potions);
-    ui.bomb.textContent = String(player.bombs);
-    ui.ward.textContent = String(player.wards);
     ui.combo.textContent = player.combo > 0 ? `${player.combo}` : "0";
     ui.scale.textContent = player.sealCrest ? `${player.scales}/3 紋` : `${player.scales}/3`;
+    const shortNames = { potion: "薬", tonic: "活", bomb: "爆", ward: "護", elixir: "霊", warp: "帰" };
     for (const button of ui.items) {
-      button.classList.toggle("is-selected", button.dataset.item === player.selectedItem);
+      const slot = Number(button.dataset.quickSlot || 0);
+      const item = player.quickItems?.[slot] || ["potion", "bomb", "ward"][slot];
+      const name = button.querySelector?.(".quick-name");
+      const count = button.querySelector?.(".quick-count");
+      if (name) name.textContent = shortNames[item] || "?";
+      if (count) count.textContent = String(player[itemField(item)] || 0);
+      button.classList.toggle("is-selected", slot === player.activeQuickSlot);
+      button.setAttribute?.("aria-label", `短縮${slot + 1}: ${itemNames[item] || item}`);
     }
     updateZone(context);
   }
@@ -681,6 +699,7 @@
     toggleInventory,
     moveInventory,
     confirmInventory,
+    assignInventoryQuickSlot,
     sellInventorySelection,
     openShop,
     closeShop,

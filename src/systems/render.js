@@ -41,6 +41,7 @@
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponAttackProfiles,
     armorTraits,
     weaponAttack,
     armorDefense,
@@ -402,7 +403,10 @@ function drawInventoryOverlay() {
 
   ctx.fillStyle = "#8dd7ff";
   ctx.font = "7px monospace";
-  ctx.fillText("←→カテゴリ  ↑↓選択  Enter:使う/装備  S:売る  Esc:閉じる", x + 7, y + h - 7);
+  const help = state.inventoryTab === "items"
+    ? "←→分類 ↑↓選択 Enter:現在枠へ登録 1-3:枠指定 S:売る"
+    : "←→分類  ↑↓選択  Enter:装備  S:売る  Esc:閉じる";
+  ctx.fillText(help, x + 7, y + h - 7);
 }
 
 function inventoryRenderRows(tab) {
@@ -414,7 +418,7 @@ function inventoryRenderRows(tab) {
   if (tab === "items") {
     return itemOrder.map((id) => ({
       name: itemNames[id] || id,
-      detail: `${itemRenderDetails[id] || ""} x${playerItemCount(id)}`,
+      detail: `${itemRenderDetails[id] || ""} x${playerItemCount(id)}${player.quickItems?.includes(id) ? ` 短縮${player.quickItems.indexOf(id) + 1}` : ""}`,
       sell: itemSellValues[id] || 0,
     }));
   }
@@ -422,7 +426,7 @@ function inventoryRenderRows(tab) {
     const owned = Array.isArray(player.ownedWeapons) ? player.ownedWeapons : [player.weapon || 0];
     return owned.map((rank) => ({
       name: weaponNames[rank] || `武器${rank}`,
-      detail: `${weaponTraits[rank] || ""} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - currentAttack)})`,
+      detail: `${weaponAttackProfiles[rank]?.style || weaponTraits[rank] || ""} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - currentAttack)})`,
       sell: weaponSellValues[rank] || 0,
       equipped: player.weapon === rank,
     }));

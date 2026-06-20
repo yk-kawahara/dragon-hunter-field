@@ -13,13 +13,10 @@ const ui = {
   exp: document.getElementById("expText"),
   weapon: document.getElementById("weaponText"),
   armor: document.getElementById("armorText"),
-  potion: document.getElementById("potionText"),
-  bomb: document.getElementById("bombText"),
-  ward: document.getElementById("wardText"),
   combo: document.getElementById("comboText"),
   scale: document.getElementById("scaleText"),
   zone: document.getElementById("zoneText"),
-  items: Array.from(document.querySelectorAll("[data-item]")),
+  items: Array.from(document.querySelectorAll("[data-quick-slot]")),
 };
 
 const startUi = {
@@ -350,6 +347,7 @@ const contexts = contextHelpers.createContextFactory({
   contextAction,
   dash,
   useSelectedItem,
+  useQuickItem,
   cycleItem,
   resetGame,
   interact,
@@ -360,6 +358,7 @@ const contexts = contextHelpers.createContextFactory({
   moveInventory,
   confirmInventory,
   sellInventorySelection,
+  assignInventoryQuickSlot,
   closeShop,
   moveShop,
   confirmShop,
@@ -824,6 +823,10 @@ function useSelectedItem() {
   return rewardHelpers.useSelectedItem(contexts.reward());
 }
 
+function useQuickItem(slot) {
+  return rewardHelpers.useQuickItem(contexts.reward(), slot);
+}
+
 function usePotion() {
   return rewardHelpers.usePotion(contexts.reward());
 }
@@ -868,6 +871,10 @@ function confirmInventory() {
 
 function sellInventorySelection() {
   return uiHelpers.sellInventorySelection(contexts.ui());
+}
+
+function assignInventoryQuickSlot(slot) {
+  return uiHelpers.assignInventoryQuickSlot(contexts.ui(), slot);
 }
 
 function closeShop() {

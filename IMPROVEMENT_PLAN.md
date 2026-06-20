@@ -31,7 +31,44 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 ## Next development order
 
-### 0. Latest completed player-facing pass
+### 0. Playtest-driven priority reset (2026-06-21)
+
+The latest hands-on playtest is authoritative player feedback. The game is already enjoyable, but its next quality jump is not another short wall dungeon.
+
+Immediate work order:
+
+1. Fix dungeon-local population so exterior enemies cannot consume an interior's spawn budget; use tighter interior spawn radii and region-aware counting/pruning.
+2. Add weapon attack profiles so quick, thrust, sweep, reach, and heavy weapons feel different in the player's hands and dead sidegrades regain a purpose.
+3. Replace the fixed herb/bomb/ward dock with three configurable quick slots supporting all consumables and save migration.
+4. Expand boss action patterns with piercing lines, delayed multi-wave spreads, persistent hazards, and phase combinations that demand movement.
+5. Build the next world region as geography rather than corridors: mountain chain, highland, valley/coast route choices, and longer distinct travel beats.
+6. Add a major city with multiple shops, specialists, upgrades, residents, rumors, and optional reasons to revisit.
+7. Add person/location/progression-specific NPC dialogue and a whole-world map view.
+
+Acceptance rules from the playtest:
+
+* Interior enemy pressure is measured only from the current interior region.
+* Every weapon family exposes a visible attack-style difference, not only a damage number.
+* All six current consumables can be assigned to any of three quick slots.
+* New route length must include distinct terrain, encounters, landmarks, or decisions every short interval.
+* A future city pass must deliver several services and dialogue identities in one coherent place.
+
+Completed in this playtest-response pass:
+
+* Dungeon spawning now counts and prunes by interior region, uses tighter interior radii, and rapidly fills the current floor without exterior enemies consuming its budget.
+* Every weapon now has an attack profile covering cooldown, reach, width, power, lunge, knockback, and visual identity; route multipliers now apply before enemy defense so correct sidegrades genuinely penetrate their intended targets.
+* The fixed three-item dock is now three configurable quick slots. All six consumables can be assigned from `もちもの`, used with `1/2/3` or click, cycled with `Q/E`, and preserved through save/load.
+* Inventory/status text now names attack styles and quick-slot assignments.
+* Villagers and guards now draw from settlement-specific dialogue pools across the village, frontier camp, Ash Hamlet, Moon Camp, Black Market, Black Fort, and Frost Haven.
+* Preserved the user's higher late-game enemy-stat tuning and Frost Frontier route openings as the new balance baseline.
+
+Next player-facing implementation target:
+
+* Add boss pattern depth first: telegraphed piercing lanes, delayed multi-wave volleys, and persistent arena zones.
+* Then deliver a geography expansion pack built around a mountain range and highland basin, with several routes and a major city rather than another rectangular corridor extension.
+* Add a whole-world map view alongside the mountain/highland expansion so the new continental structure is readable.
+
+### 1. Latest completed player-facing pass
 
 Completed in the latest pass:
 
@@ -143,7 +180,7 @@ Next high-value content direction:
 * Rebalance Chapter 3 gold/EXP after manual playtesting the new shop, wagon travel, premium items, and Obsidian Golem route.
 * Continue shield balance after manual playtesting: shield prices, front-reduction strength, and whether heavy shields should trade off movement.
 
-### 1. Baseline verification checkpoint
+### 2. Baseline verification checkpoint
 
 Before major new content, verify the current game still behaves correctly.
 
@@ -166,7 +203,7 @@ Focus:
 
 If browser QA is unavailable, record the limitation in `DEVELOPMENT_LOG.md` and proceed only with high-confidence VM-verifiable work.
 
-### 2. Map size expansion follow-up
+### 3. Map size expansion follow-up
 
 Goal: build on the current `120x160` overworld without creating empty terrain.
 
@@ -187,7 +224,7 @@ Acceptance:
 * Important objects are reachable.
 * Existing Chapter 1 flow remains playable.
 
-### 3. New region content pass
+### 4. New region content pass
 
 Use expanded space to create named routes, not more grass.
 
@@ -220,7 +257,7 @@ Chapter-sized content-pack acceptance:
 * 3 or more meaningful rewards, including at least one equipment or accessory choice.
 * Guidance, save/load, reachability, and smoke coverage delivered in the same pass.
 
-### 4. Inventory and equipment depth pass
+### 5. Inventory and equipment depth pass
 
 Current inventory exists; next work should make choices matter.
 
@@ -235,7 +272,7 @@ Add:
 
 Design question: **What route am I preparing for?**
 
-### 5. Full route balance pass
+### 6. Full route balance pass
 
 After content expansion, rebalance the game as a playable route.
 

@@ -110,6 +110,17 @@ Expand the game into a larger RPG while preserving density and purpose:
 * Functional readability beats decoration.
 * The player should quickly understand where to heal, buy gear/items, get guidance, exit to danger, and check equipment effects.
 
+### Playtest-driven quality bar
+
+* Preserve contact combat, but increase action depth through weapon-specific reach, speed, movement, arcs, boss patterns, and readable evasion demands.
+* A weapon is not acceptable as a mere lower number. Sidegrades need a distinct attack profile or route purpose that remains useful after stronger gear appears.
+* Dungeon population must be local to the dungeon. Enemies behind unrelated exterior walls must not consume the dungeon's active spawn budget.
+* Avoid short box mazes and repeated wall corridors. New geography should read as mountains, highlands, coasts, islands, valleys, rivers, roads, ruins, or settlements with memorable silhouettes.
+* Future world expansion should include at least one major city with multiple services and distinct residents, not only small recovery camps.
+* NPC dialogue should vary by person, location, and progression where practical. Repeated generic lines across a town are a visible quality defect.
+* The quick-access UI must represent the real item system. Players should be able to assign owned consumable types to shortcuts instead of seeing a permanently fixed subset.
+* Add a readable whole-world map before geography grows beyond what route text can communicate.
+
 ## Verification
 
 After meaningful code/content/map/save/UI changes, run as much as possible:

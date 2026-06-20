@@ -217,6 +217,21 @@
   const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣", "黒曜の槌", "霜砕きの剣"];
   const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧", "白銀の外套"];
   const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し", "凍土特効"];
+  const weaponAttackProfiles = [
+    { style: "小振り", cooldown: 205, range: 0.9, width: 0.9, power: 0.92, lunge: 0, knockback: 5, color: "#f8fbff" },
+    { style: "高速突き", cooldown: 155, range: 1.35, width: 0.58, power: 0.8, lunge: 4, knockback: 5, color: "#fff2a6" },
+    { style: "大薙ぎ", cooldown: 285, range: 0.92, width: 1.65, power: 1.12, lunge: 0, knockback: 9, color: "#f2c7a6" },
+    { style: "高速連斬", cooldown: 135, range: 1, width: 0.82, power: 0.76, lunge: 3, knockback: 4, color: "#ffffff" },
+    { style: "均衡斬", cooldown: 215, range: 1.08, width: 1.05, power: 1.05, lunge: 1, knockback: 7, color: "#d7e2ea" },
+    { style: "長槍突進", cooldown: 170, range: 1.62, width: 0.64, power: 0.94, lunge: 6, knockback: 7, color: "#8dd7ff" },
+    { style: "火輪薙ぎ", cooldown: 245, range: 1.08, width: 1.55, power: 1.12, lunge: 1, knockback: 9, color: "#ff8a3d" },
+    { style: "竜牙踏込", cooldown: 205, range: 1.34, width: 1, power: 1.14, lunge: 5, knockback: 10, color: "#ffef8a" },
+    { style: "星光貫通", cooldown: 300, range: 2.05, width: 0.68, power: 1.1, lunge: 0, knockback: 6, color: "#b990ff" },
+    { style: "月影連斬", cooldown: 165, range: 1.3, width: 0.9, power: 0.96, lunge: 6, knockback: 7, color: "#e36dff" },
+    { style: "黒陽大円斬", cooldown: 235, range: 1.42, width: 1.38, power: 1.17, lunge: 2, knockback: 11, color: "#7b80d8" },
+    { style: "重装粉砕", cooldown: 390, range: 1.08, width: 1.62, power: 1.55, lunge: 0, knockback: 18, color: "#aab0c8" },
+    { style: "霜刃滑走", cooldown: 190, range: 1.48, width: 1.45, power: 1.12, lunge: 5, knockback: 12, color: "#b9f4ff" },
+  ];
   const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御", "凍結軽減"];
   const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 7400, 9600, 12800, 18500];
   const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34, 40];
@@ -508,8 +523,8 @@
     smugglerCaptain: {
       name: "密輸隊長",
       hp: 980,
-      atk: 84,
-      def: 48,
+      atk: 144,
+      def: 68,
       speed: 30 * WORLD_SCALE,
       xp: 520,
       gold: 420,
@@ -521,7 +536,7 @@
     regenSentinel: {
       name: "再生洞の守護者",
       hp: 2100,
-      atk: 126,
+      atk: 146,
       def: 88,
       speed: 19 * WORLD_SCALE,
       xp: 1450,
@@ -534,7 +549,7 @@
     mistLancer: {
       name: "霧槍兵",
       hp: 620,
-      atk: 96,
+      atk: 116,
       def: 58,
       speed: 27 * WORLD_SCALE,
       xp: 520,
@@ -546,7 +561,7 @@
     mistKeeper: {
       name: "霧灯の守",
       hp: 2400,
-      atk: 132,
+      atk: 152,
       def: 92,
       speed: 21 * WORLD_SCALE,
       xp: 1600,
@@ -558,8 +573,8 @@
     },
     vaultLeech: {
       name: "吸命鬼",
-      hp: 220,
-      atk: 112,
+      hp: 320,
+      atk: 142,
       def: 52,
       speed: 35 * WORLD_SCALE,
       xp: 210,
@@ -572,7 +587,7 @@
       name: "地下墓所の番人",
       hp: 2900,
       atk: 142,
-      def: 105,
+      def: 155,
       speed: 24 * WORLD_SCALE,
       xp: 1900,
       gold: 1100,
@@ -584,7 +599,7 @@
     frostMoth: {
       name: "氷晶蛾",
       hp: 340,
-      atk: 145,
+      atk: 191,
       def: 70,
       speed: 31 * WORLD_SCALE,
       xp: 320,
@@ -597,8 +612,8 @@
     frostBeast: {
       name: "霜牙獣",
       hp: 520,
-      atk: 162,
-      def: 96,
+      atk: 182,
+      def: 146,
       speed: 30 * WORLD_SCALE,
       xp: 420,
       gold: 145,
@@ -609,7 +624,7 @@
     frostGolem: {
       name: "氷窟巨人",
       hp: 4200,
-      atk: 172,
+      atk: 242,
       def: 150,
       speed: 17 * WORLD_SCALE,
       xp: 3100,
@@ -622,7 +637,7 @@
     frostBeacon: {
       name: "凍気灯",
       hp: 620,
-      atk: 132,
+      atk: 182,
       def: 92,
       speed: 0,
       xp: 460,
@@ -634,7 +649,7 @@
     towerWarden: {
       name: "霜見の塔守",
       hp: 5100,
-      atk: 178,
+      atk: 241,
       def: 148,
       speed: 21 * WORLD_SCALE,
       xp: 3900,
@@ -750,8 +765,8 @@
     frostDragon: {
       name: "霜冠竜",
       hp: 7600,
-      atk: 182,
-      def: 158,
+      atk: 255,
+      def: 200,
       speed: 24 * WORLD_SCALE,
       xp: 6000,
       gold: 3200,
@@ -825,6 +840,7 @@
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponAttackProfiles,
     armorTraits,
     weaponCosts,
     weaponAttack,
