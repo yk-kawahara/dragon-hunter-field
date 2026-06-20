@@ -256,6 +256,7 @@
     if (type === "smith") return "鍛冶屋";
     if (type === "healer") return "薬師";
     if (type === "frontier") return "補給隊";
+    if (type === "frostSmith") return "盾刻師";
     if (type === "merchant") return "商人";
     if (type === "guide") return "案内人";
     if (type === "guard") return "衛兵";

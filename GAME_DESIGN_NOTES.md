@@ -222,6 +222,11 @@ Current direction:
 * `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` prepare for Void Wraith / Black Sun Dragon pressure.
 * Frost Haven is the fifth remote equipment hub and sells `霜砕きの剣`, `白銀の外套`, and `霜鏡盾` for the Chapter 4 route.
 * `霜心の護符` is earned after defeating the Frost Golem. It reduces frost contact/projectile pressure, slow, and stamina loss, and adds stamina capacity.
+* Frost Haven has a unique shield-engraving service. One active engraving changes how an equipped shield plays:
+  * `城壁の刻印` deepens frontal contact reduction.
+  * `疾走の刻印` improves movement and dash economy while carrying a shield.
+  * `反撃の刻印` converts frontal contact into a defense-scaled counterattack and unlocks after Frost Golem.
+* Re-engraving costs gold, giving late-game wealth a repeatable strategic use instead of making Frost Haven another copy of earlier shops.
 * Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
 * Accessory pairing is now part of route preparation: e.g. movement bell + resistance charm, or large regeneration + route resistance.
 * `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave after defeating the Regen Sentinel.
@@ -253,6 +258,7 @@ Current structure:
 * The southern ice route is more dangerous and leads through Ice Cave to Frost Golem and `霜心の護符`.
 * Frost Crown Citadel requires the Frost Golem victory, frost-seal discovery, and LV34 before the Frost Crown Dragon can be challenged.
 * The chapter's gear loop is explicit: buy frost weapon/armor/shield at Frost Haven, earn the Frost Heart accessory in Ice Cave, then use both against the final citadel pressure.
+* The shield artisan creates a second preparation axis: safer frontal survival, faster expedition travel, or active counter damage.
 * Chapter 4 concludes only after defeating Frost Crown Dragon and reporting to the village elder.
 
 Next design weakness:

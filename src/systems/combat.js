@@ -47,15 +47,17 @@
     const { player } = requireCombatContext(context);
     const armorMoveBonus = player.armor >= 1 ? 4 * WORLD_SCALE : 0;
     const trailMoveBonus = activeAccessory(player, "trail", "trailCharm") ? 5 * WORLD_SCALE : 0;
+    const shieldRuneMoveBonus = player.shield > 0 && player.shieldRune === "stride" ? 6 * WORLD_SCALE : 0;
     const slowPenalty = player.slow > 0 ? (activeAccessory(player, "frost", "frostCharm") ? 0.9 : activeAccessory(player, "deepLamp", "deepLampCharm") ? 0.86 : 0.72) : 1;
-    return (player.speed + armorMoveBonus + trailMoveBonus) * slowPenalty;
+    return (player.speed + armorMoveBonus + trailMoveBonus + shieldRuneMoveBonus) * slowPenalty;
   }
 
   function dashCost(context) {
     const { player } = requireCombatContext(context);
     const armorDiscount = player.armor >= 1 ? 6 : 0;
     const trailDiscount = activeAccessory(player, "trail", "trailCharm") ? 8 : 0;
-    return Math.max(18, DASH_COST - armorDiscount - trailDiscount);
+    const shieldRuneDiscount = player.shield > 0 && player.shieldRune === "stride" ? 6 : 0;
+    return Math.max(18, DASH_COST - armorDiscount - trailDiscount - shieldRuneDiscount);
   }
 
   function weaponDamageMultiplier(context, monster, pDot, mDot) {
@@ -99,6 +101,7 @@
     if (source === "contact" && pDot > 0.42 && player.shield > 0) {
       const shieldMult = shieldGuard[player.shield] || 1;
       mult *= shieldMult;
+      if (player.shieldRune === "bastion") mult *= 0.82;
       if (monster?.type === "shieldSoldier" && pDot > 0.58) mult *= 0.86;
     }
     if (activeAccessory(player, "aegis", "aegisCharm") && (source === "fire" || source === "projectile")) mult *= 0.82;
@@ -110,6 +113,12 @@
     if (activeAccessory(player, "deepLamp", "deepLampCharm") && (monster?.type === "vaultLeech" || monster?.type === "cryptWarden")) mult *= 0.7;
     if (activeAccessory(player, "frost", "frostCharm") && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.68;
     return mult;
+  }
+
+  function shieldRuneCounterDamage(context, pDot) {
+    const { player } = requireCombatContext(context);
+    if (player.shield <= 0 || player.shieldRune !== "counter" || pDot <= 0.42) return 0;
+    return Math.max(3, Math.floor(playerDefense(context) * 0.24));
   }
 
   function refreshDerivedStats(context) {
@@ -144,6 +153,7 @@
     dashCost,
     weaponDamageMultiplier,
     armorDamageMultiplier,
+    shieldRuneCounterDamage,
     refreshDerivedStats,
     regenRate,
   };

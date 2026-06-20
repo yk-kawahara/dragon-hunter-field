@@ -35,6 +35,11 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 Completed in the latest pass:
 
+* Added Frost Haven shield engraving as the town's first unique service instead of another duplicated equipment shop.
+* Added three mutually exclusive shield builds: `城壁の刻印` for deeper frontal defense, `疾走の刻印` for traversal/dash efficiency, and post-Frost-Golem `反撃の刻印` for defense-scaled contact retaliation.
+* Added a visible shield artisan NPC, selectable engraving menu, late-game gold costs, inventory/status descriptions, save/load/reset migration, and VM effect verification.
+* Fixed Frost Haven and Frost Frontier zone labels so the new chapter is no longer mislabeled as the village or Black Sun Castle.
+
 * Added Chapter 4 Frost Frontier / `霜原` as a chapter-sized regional pack beyond the Chapter 3 report.
 * Expanded the fixed map from `120x144` to `120x160` with a dense frozen frontier, a main-road approach, a dangerous Ice Cave branch, and Frost Crown Citadel.
 * Added Frost Haven / `白銀宿` as a new safe town with recovery, wagon travel, NPC life, premium expedition supplies, and selectable frost weapon/armor/shield stock.
@@ -119,7 +124,7 @@ Previously completed:
 Next high-value content direction:
 
 * Manually balance the complete Chapter 4 loop from a Chapter 3 clear save: LV30/LV34 pacing, gold income versus rank-12 gear, Ice Cave retreat pressure, Frost Heart value, and Frost Crown Dragon reinforcement timing.
-* Give Frost Haven a distinct long-term service identity such as shield reforging or frost-accessory crafting; its current shop is functional but still overlaps earlier equipment hubs.
+* Manually tune Frost Haven shield engraving costs and effect strength against real Chapter 4 damage, traversal, and gold income.
 * Add a structurally distinct multi-floor tower, flooded cave, or castle interior as the next large destination instead of immediately extending the overworld again.
 * Deepen Black Market into a city hub with distinctive NPCs, stalls, optional errands, and late-route shop/reward reasons.
 * Continue turning optional routes into multi-step expeditions: approach danger, named guardian, route-specific enemy behavior, and reward that changes survivability.

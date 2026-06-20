@@ -18,6 +18,7 @@
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     itemOrder,
+    shieldRuneOrder,
   } = definitions;
 
   const {
@@ -52,6 +53,7 @@
         weapon: player.weapon,
         armor: player.armor,
         shield: player.shield,
+        shieldRune: player.shieldRune,
         ownedWeapons: player.ownedWeapons,
         ownedArmors: player.ownedArmors,
         ownedShields: player.ownedShields,
@@ -131,6 +133,7 @@
       player.bombs ??= 1;
       player.wards ??= 0;
       player.shield ??= 0;
+      player.shieldRune = shieldRuneOrder.includes(player.shieldRune) ? player.shieldRune : "";
       player.ownedShields ??= [player.shield || 0];
       player.tonics ??= 0;
       player.elixirs ??= 0;
@@ -227,6 +230,7 @@
       weapon: 0,
       armor: 0,
       shield: 0,
+      shieldRune: "",
       ownedWeapons: [0],
       ownedArmors: [0],
       ownedShields: [0],

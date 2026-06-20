@@ -214,6 +214,24 @@
   const shieldCosts = [0, 120, 520, 1700, 6600, 26200, 32000];
   const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48, 0.42];
   const shieldSellValues = shieldCosts.map((cost) => Math.floor(cost * 0.45));
+  const shieldRuneOrder = ["bastion", "stride", "counter"];
+  const shieldRuneData = {
+    bastion: {
+      name: "城壁の刻印",
+      trait: "盾の正面接触ダメージをさらに18%軽減",
+      cost: 5200,
+    },
+    stride: {
+      name: "疾走の刻印",
+      trait: "盾装備中は移動速度上昇・回避消費-6",
+      cost: 6200,
+    },
+    counter: {
+      name: "反撃の刻印",
+      trait: "正面接触時に防御力の24%で反撃",
+      cost: 7800,
+    },
+  };
   const itemOrder = ["potion", "tonic", "bomb", "ward", "elixir", "warp"];
   const itemNames = {
     tonic: "活力薬",
@@ -771,6 +789,8 @@
     shieldCosts,
     shieldGuard,
     shieldSellValues,
+    shieldRuneOrder,
+    shieldRuneData,
     itemOrder,
     itemNames,
     itemSellValues,

@@ -102,6 +102,7 @@
       weapon: 0,
       armor: 0,
       shield: 0,
+      shieldRune: "",
       ownedWeapons: [0],
       ownedArmors: [0],
       ownedShields: [0],

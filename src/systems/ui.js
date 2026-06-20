@@ -26,6 +26,7 @@
     shieldCosts,
     shieldGuard,
     shieldSellValues,
+    shieldRuneData,
     itemOrder,
     itemNames,
     itemSellValues,
@@ -190,6 +191,27 @@
       say(`${row.name}へ移動した`);
       return;
     }
+    if (row.type === "shieldRune") {
+      if (player.shield <= 0) {
+        say("盾を装備してから刻印を選ぼう");
+        return;
+      }
+      if (player.shieldRune === row.id) {
+        say(`${row.name}は既に刻まれている`);
+        return;
+      }
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      player.shieldRune = row.id;
+      for (const candidate of state.shopRows) {
+        if (candidate.type === "shieldRune") candidate.owned = candidate.id === row.id;
+      }
+      say(`${row.name}を盾へ刻んだ`);
+      return;
+    }
     if (row.type === "weapon") {
       if (player.ownedWeapons.includes(row.id)) {
         say(`${row.name}は既に持っている`);
@@ -303,7 +325,7 @@
         type: "shield",
         id: rank,
         name: shieldNames[rank],
-        detail: `${shieldTraits[rank]} 正面${Math.round((1 - (shieldGuard[rank] || 1)) * 100)}%軽減`,
+        detail: `${shieldTraits[rank]} 正面${Math.round((1 - (shieldGuard[rank] || 1)) * 100)}%軽減${player.shield === rank && player.shieldRune ? ` 刻印:${shieldRuneData[player.shieldRune]?.name || "なし"}` : ""}`,
         equipped: player.shield === rank,
         sell: shieldSellValues[rank],
       }));
@@ -551,6 +573,7 @@
     const weaponBonus = weaponAttack[player.weapon] || 0;
     const armorBonus = armorDefense[player.armor] || 0;
     const shieldCut = Math.round((1 - (shieldGuard[player.shield] || 1)) * 100);
+    const shieldRuneName = player.shieldRune ? shieldRuneData[player.shieldRune]?.name || "不明" : "なし";
     const equippedAccessories = equippedAccessoryIds(player)
       .map((id) => accessoryData[id]?.name || id)
       .join(" / ") || "なし";
@@ -562,7 +585,7 @@
           `${weaponNames[player.weapon]} ${weaponTraits[player.weapon]} ATK ${baseAttack}+${weaponBonus}=${baseAttack + weaponBonus}`,
           `${armorNames[player.armor]} ${armorTraits[player.armor]} DEF ${baseDefense}+${armorBonus}=${baseDefense + armorBonus}`,
           `戦闘中: ATK ${playerAttack()} / DEF ${playerDefense()}`,
-          `${shieldNames[player.shield]} ${shieldTraits[player.shield]} 正面${shieldCut}%軽減`,
+          `盾 ${shieldNames[player.shield]} 正面${shieldCut}%軽減 刻印:${shieldRuneName}`,
           `装飾 ${equippedAccessories}`,
           nextUpgradeText(context),
         ],
@@ -605,7 +628,10 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
-    if (inTown(player.x, player.y)) name = (tx >= 20 && tx <= 48 && ty >= 129 && ty <= 136) ? "黒市" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    if (inTown(player.x, player.y)) name = (tx >= 12 && tx <= 34 && ty >= 150 && ty <= 156) ? "白銀宿" : (tx >= 20 && tx <= 48 && ty >= 129 && ty <= 136) ? "黒市" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if (ty >= 144 && tx >= 90) name = "霜冠城";
+    else if (ty >= 150 && tx >= 48 && tx <= 70) name = "氷窟";
+    else if (ty >= 144) name = "霜原";
     else if (tx >= 62 && tx <= 84 && ty >= 116 && ty <= 126) name = "霧灯の祠";
     else if (tx >= 24 && tx <= 58 && ty >= 120 && ty <= 127) name = "再生洞窟";
     else if (tx >= 18 && tx <= 23 && ty >= 95 && ty <= 128) name = "密輸道";

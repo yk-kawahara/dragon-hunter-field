@@ -63,7 +63,7 @@ The current village -> Guardian -> Red Dragon route is **Chapter 1 scale**, not 
 
 Expand the game into a larger RPG while preserving density and purpose:
 
-* Expand the map size definition beyond the current `120x144` overworld.
+* Expand the map size definition beyond the current `120x160` overworld when new regions justify it.
 * Do not create large empty terrain.
 * Add named regions, remote towns, dungeons, roads, bridges, caves, towers, castles, mines, ruins, and frontier bases.
 * Add monsters with behavior differences, not only stat/color changes.

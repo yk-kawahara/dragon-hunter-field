@@ -36,6 +36,7 @@
     shieldTraits,
     shieldCosts,
     shieldGuard,
+    shieldRuneData,
     itemNames,
     itemSellValues,
     accessoryData,
@@ -122,6 +123,20 @@
       cost,
       available,
       lockedReason,
+    };
+  }
+
+  function shieldRuneRow(id, player, available = true, lockedReason = "") {
+    const rune = shieldRuneData[id];
+    return {
+      type: "shieldRune",
+      id,
+      name: rune?.name || id,
+      detail: rune?.trait || "",
+      cost: rune?.cost || 0,
+      available,
+      lockedReason,
+      owned: player.shieldRune === id,
     };
   }
 
@@ -256,6 +271,17 @@
         itemRow("tonic", 4, 190 + player.level * 10),
         itemRow("bomb", 4, 165 + player.level * 12),
         itemRow("ward", 5, 180 + player.level * 12),
+      ]);
+      return;
+    }
+
+    if (npc.type === "frostSmith") {
+      const hasShield = player.shield > 0;
+      const shieldReason = hasShield ? "" : "盾を装備せよ";
+      openShop(context, "白銀宿の盾刻工房", [
+        shieldRuneRow("bastion", player, hasShield, shieldReason),
+        shieldRuneRow("stride", player, hasShield, shieldReason),
+        shieldRuneRow("counter", player, hasShield && state.frostGolemDefeated, hasShield ? "氷窟巨人を倒せ" : shieldReason),
       ]);
       return;
     }

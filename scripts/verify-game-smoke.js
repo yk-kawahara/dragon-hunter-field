@@ -185,6 +185,7 @@ function createRuntime() {
     isBlockedTile: (tile, actor) => map.isBlockedTile(contexts.map(), tile, actor),
     inTownTile: (tx, ty) => map.inTownTile(contexts.map(), tx, ty),
     inTown: (x, y) => map.inTown(contexts.map(), x, y),
+    distanceFromVillage: () => 0,
     tileInGate: (tx, ty) => map.tileInGate(contexts.map(), tx, ty),
     isPassableRect: (actor, x, y) => map.isPassableRect(contexts.map(), actor, x, y),
     moveActor: (actor, dx, dy) => playerHelpers.moveActor(contexts.player(), actor, dx, dy),
@@ -198,6 +199,7 @@ function createRuntime() {
     refreshDerivedStats: () => combat.refreshDerivedStats(contexts.combat()),
     weaponDamageMultiplier: (monster, pDot, mDot) => combat.weaponDamageMultiplier(contexts.combat(), monster, pDot, mDot),
     armorDamageMultiplier: (monster, pDot, source) => combat.armorDamageMultiplier(contexts.combat(), monster, pDot, source),
+    shieldRuneCounterDamage: (pDot) => combat.shieldRuneCounterDamage(contexts.combat(), pDot),
     grantMonsterDefeatDrops: (monster) => rewards.grantMonsterDefeatDrops(contexts.reward(), monster),
     grantChestReward: (reward) => rewards.grantChestReward(contexts.reward(), reward),
     grantDiscoveryReward: (discovery, x, y) => rewards.grantDiscoveryReward(contexts.reward(), discovery, x, y),
@@ -318,10 +320,11 @@ function assertMapReachability() {
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
   assert(d.MAP_W === 120 && d.MAP_H === 160, "expanded map should be 120x160");
-  assert(state.npcs.length === 56, "expected 56 NPCs after Frost Haven population expansion");
+  assert(state.npcs.length === 57, "expected 57 NPCs after Frost Haven shield artisan expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "merchant"), "black market merchant should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "porter"), "porter NPCs should load from WORLD_OBJECTS");
+  assert(state.npcs.some((entry) => entry.type === "frostSmith"), "Frost Haven shield artisan should load from WORLD_OBJECTS");
   return { reachableTiles: seen.size, npcs: state.npcs.map((entry) => entry.type) };
 }
 
@@ -330,6 +333,7 @@ function assertSaveLoadAndEquipment() {
   player.weapon = 3;
   player.armor = 3;
   player.shield = 2;
+  player.shieldRune = "stride";
   player.ownedWeapons = [0, 1, 2, 3];
   player.ownedArmors = [0, 1, 2, 3];
   player.ownedShields = [0, 1, 2];
@@ -396,6 +400,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.weapon === 3, "weapon rank should persist");
   assert(restored.player.armor === 3, "armor rank should persist");
   assert(restored.player.shield === 2, "shield rank should persist");
+  assert(restored.player.shieldRune === "stride", "shield rune should persist");
   assert(restored.player.regenCharm, "regen charm should persist");
   assert(restored.player.greaterRegenCharm, "greater regen charm should persist");
   assert(restored.player.trailCharm, "trail charm should persist");
@@ -1039,6 +1044,15 @@ function assertExpandedWorldContent() {
   assert(runtime.inTownTile(98, 132), "black fort should be a safe-zone tile");
   assert(runtime.inTownTile(35, 135), "black market should be a safe-zone tile");
   assert(runtime.inTownTile(24, 154), "Frost Haven should be a safe-zone tile");
+  runtime.ui.zone = { textContent: "" };
+  player.x = 24 * d.TILE;
+  player.y = 154 * d.TILE;
+  globalThis.DRAGON_HUNTER_UI.updateZone(contexts.ui());
+  assert(runtime.ui.zone.textContent === "白銀宿", "Frost Haven should have its own visible zone name");
+  player.x = 42 * d.TILE;
+  player.y = 147 * d.TILE;
+  globalThis.DRAGON_HUNTER_UI.updateZone(contexts.ui());
+  assert(runtime.ui.zone.textContent === "霜原", "Frost Frontier should not be mislabeled as Black Sun Castle");
   player.hp = 5;
   player.x = 24 * d.TILE;
   player.y = 154 * d.TILE;
@@ -1124,6 +1138,32 @@ function assertExpandedWorldContent() {
   buyShopRow(runtime, state, (row) => row.type === "armor" && row.id === 12, "Frost Haven armor should be selectable");
   buyShopRow(runtime, state, (row) => row.type === "shield" && row.id === 6, "Frost Haven shield should be selectable");
   assert(player.ownedWeapons.includes(12) && player.ownedArmors.includes(12) && player.ownedShields.includes(6), "Frost Haven should sell complete frost-route gear");
+
+  const frostSmith = state.npcs.find((entry) => entry.type === "frostSmith");
+  assert(frostSmith, "Frost Haven shield artisan should exist");
+  player.shield = 6;
+  player.gold = d.shieldRuneData.bastion.cost + d.shieldRuneData.stride.cost + d.shieldRuneData.counter.cost;
+  runtime.closeShop();
+  openNpcShop(runtime, state, frostSmith);
+  const lockedCounter = state.shopRows.find((row) => row.type === "shieldRune" && row.id === "counter");
+  assert(lockedCounter && lockedCounter.available === false, "counter rune should be locked before Frost Golem defeat");
+  buyShopRow(runtime, state, (row) => row.type === "shieldRune" && row.id === "bastion", "bastion rune should be selectable");
+  const bastionFront = runtime.armorDamageMultiplier({ type: "frostBeast" }, 0.8, "contact");
+  player.shieldRune = "";
+  const plainFront = runtime.armorDamageMultiplier({ type: "frostBeast" }, 0.8, "contact");
+  assert(bastionFront < plainFront, "bastion rune should further reduce frontal contact damage");
+  runtime.closeShop();
+  openNpcShop(runtime, state, frostSmith);
+  buyShopRow(runtime, state, (row) => row.type === "shieldRune" && row.id === "stride", "stride rune should be selectable");
+  const strideSpeed = runtime.playerMoveSpeed();
+  const strideDash = runtime.dashCost();
+  player.shieldRune = "";
+  assert(strideSpeed > runtime.playerMoveSpeed() && strideDash < runtime.dashCost(), "stride rune should improve shield traversal tempo");
+  state.frostGolemDefeated = true;
+  runtime.closeShop();
+  openNpcShop(runtime, state, frostSmith);
+  buyShopRow(runtime, state, (row) => row.type === "shieldRune" && row.id === "counter", "counter rune should unlock after Frost Golem defeat");
+  assert(runtime.shieldRuneCounterDamage(0.8) > 0 && runtime.shieldRuneCounterDamage(-0.2) === 0, "counter rune should retaliate only on frontal contact");
 
   const porter = state.npcs.find((entry) => entry.type === "porter");
   assert(porter, "porter NPC should exist for base travel");

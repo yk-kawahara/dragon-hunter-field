@@ -47,6 +47,7 @@ Current project status:
 * Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
 * Frost Frontier + Frost Haven + Ice Cave + Frost Crown Citadel form a complete Chapter 4 route after the Chapter 3 report.
 * Frost Moth, Frost Beast, Frost Golem, frost equipment, Frost Heart Charm, and Frost Crown Dragon add a higher-difficulty frozen expedition arc.
+* Frost Haven now has a unique shield-engraving service with defensive, traversal, and counterattack build choices.
 
 Current high-priority risks:
 
@@ -83,6 +84,34 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-20: Frost Haven shield-engraving pass
+
+Goal: make Frost Haven mechanically distinct and give late-game gold and shields a new contact-combat decision.
+
+Implemented:
+
+* Added a visible `盾刻師` NPC and selectable shield-engraving service in Frost Haven.
+* Added `城壁の刻印` for additional frontal contact reduction, `疾走の刻印` for movement/dash efficiency, and `反撃の刻印` for defense-scaled frontal retaliation.
+* Locked the counter engraving behind Frost Golem defeat so Ice Cave progression changes what the town can do.
+* Added engraving costs as a late-game gold sink; only one engraving can be active and changing builds costs gold.
+* Added engraving status to shield inventory rows and the equipment panel.
+* Added save/load/new-game handling and old-save validation for the selected engraving.
+* Fixed zone naming so Frost Haven, Frost Frontier, Ice Cave, and Frost Crown Citadel display their actual region names.
+* Preserved the pre-existing local one-tile Frost Frontier terrain opening instead of reverting the user's map edit.
+
+Verification:
+
+* Syntax checks passed for all 24 JavaScript files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed.
+* VM checks cover artisan placement/reachability, lock state before Frost Golem, all three purchases, frontal reduction, movement/dash changes, counter direction, save/load persistence, and Frost region labels.
+* `git diff --check` passed with expected LF-to-CRLF conversion warnings only.
+
+Known risks:
+
+* Real-browser overlay fit and hands-on combat feel remain unverified; the browser runtime was retried in this pass and still failed to start with Windows sandbox error `CreateProcessAsUserW failed: 5`.
+* Engraving costs and effect strength need manual Chapter 4 playtesting against current gold income and Frost Crown Dragon pressure.
+
 
 ### 2026-06-20: Chapter 4 Frost Frontier expansion
 

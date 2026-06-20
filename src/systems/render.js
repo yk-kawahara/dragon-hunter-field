@@ -347,7 +347,7 @@ function drawShopOverlay() {
     ctx.fillText(selectedRow.available === false ? (selectedRow.lockedReason || selectedRow.detail || "") : (selectedRow.detail || ""), x + 7, y + h - 17, w - 14);
   }
   ctx.fillStyle = "#8dd7ff";
-  ctx.fillText("↑↓選択  Enter:買う  Esc/S:閉じる", x + 7, y + h - 7);
+  ctx.fillText(selectedRow?.type === "shieldRune" ? "↑↓選択  Enter:刻む  Esc/S:閉じる" : "↑↓選択  Enter:買う  Esc/S:閉じる", x + 7, y + h - 7);
 }
 
 function drawInventoryOverlay() {
@@ -1463,6 +1463,7 @@ function npcColor(type) {
   if (type === "smith") return "#d14f2b";
   if (type === "healer") return "#40c6ff";
   if (type === "frontier") return "#9ad16f";
+  if (type === "frostSmith") return "#79d8ff";
   if (type === "merchant") return "#ffd166";
   if (type === "porter") return "#d7e2ea";
   if (type === "guide") return "#b990ff";

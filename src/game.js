@@ -330,6 +330,7 @@ const contexts = contextHelpers.createContextFactory({
   dashCost,
   weaponDamageMultiplier,
   armorDamageMultiplier,
+  shieldRuneCounterDamage,
   regenRate,
   refreshDerivedStats,
   say,
@@ -499,6 +500,10 @@ function armorDamageMultiplier(monster, pDot, source = "contact") {
   return combatHelpers.armorDamageMultiplier(contexts.combat(), monster, pDot, source);
 }
 
+function shieldRuneCounterDamage(pDot) {
+  return combatHelpers.shieldRuneCounterDamage(contexts.combat(), pDot);
+}
+
 function refreshDerivedStats() {
   return combatHelpers.refreshDerivedStats(contexts.combat());
 }
@@ -629,6 +634,11 @@ function resolveContact(monster) {
   if (player.guard > 0) hurt = Math.floor(hurt * 0.35);
 
   monster.hp -= hit;
+  const runeCounter = shieldRuneCounterDamage(pDot);
+  if (runeCounter > 0) {
+    monster.hp -= runeCounter;
+    addFloater(monster.x + monster.w / 2, monster.y - 7, `反${runeCounter}`, "#8dd7ff");
+  }
   monster.hurt = 120;
   addFloater(monster.x + monster.w / 2, monster.y, crit ? `${hit}!` : String(hit), crit ? "#ffd166" : "#ffffff");
   addSlash(monster.x + monster.w / 2, monster.y + monster.h / 2, player.dir, crit ? "#ffd166" : "#f8fbff");
