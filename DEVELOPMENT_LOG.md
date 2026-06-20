@@ -48,6 +48,7 @@ Current project status:
 * Frost Frontier + Frost Haven + Ice Cave + Frost Crown Citadel form a complete Chapter 4 route after the Chapter 3 report.
 * Frost Moth, Frost Beast, Frost Golem, frost equipment, Frost Heart Charm, and Frost Crown Dragon add a higher-difficulty frozen expedition arc.
 * Frost Haven now has a unique shield-engraving service with defensive, traversal, and counterattack build choices.
+* Frost Watchtower adds a two-floor Chapter 4 side dungeon with Frost Beacon aura hazards, a named warden, a persistent elevator shortcut, and the dash-focused Sky Emblem reward.
 
 Current high-priority risks:
 
@@ -57,6 +58,7 @@ Current high-priority risks:
 * Future map expansion must avoid empty terrain and preserve reachability; the new 120x160 space needs more hand-authored content density.
 * Gold/EXP/shop price balance should be checked after route expansion.
 * Chapter 4 LV30/LV34 pacing, rank-12 gear economy, and boss reinforcement pressure need a real playtest from a Chapter 3 clear save.
+* Frost Watchtower attrition, beacon pulse pressure, warden phase pacing, elevator usefulness, and Sky Emblem strength need a real Chapter 4 playtest.
 
 Next verification target:
 
@@ -84,6 +86,32 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-20: Frost Watchtower multi-floor dungeon
+
+Goal: add a structurally distinct optional expedition that increases Chapter 4 volume and rewards mastery with both a new movement build and a permanent return shortcut.
+
+Implemented:
+
+* Added `霜見塔` as two fixed, hand-editable interior floors with an overworld entrance, inter-floor stairs, floor-specific spawn identity, supplies, discoveries, and a guarded reliquary.
+* Added an elevator activated from the far side; its discovery persists and allows direct future travel from Frost Frontier to floor two.
+* Added `凍気灯`, a stationary aura enemy that drains stamina and slows nearby players, plus frost-equipment mitigation.
+* Added the LV32 `霜見の塔守`; below 55% HP it accelerates and activates three arena beacons.
+* Added `天駆けの徽章`, which extends dash distance and shortens dash cooldown while equipped.
+* Added save/load/reset fields, guidance, UI labels, rendering, projectile/contact handling, reward locks, and extensive VM checks.
+* Corrected map-preview generation so both PNG and SVG are built from the fully assembled map including `TERRAIN_DETAILS`.
+
+Verification:
+
+* Syntax checks passed for all JavaScript under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed, including tower portal traversal, floor regions, reachability, elevator lock/unlock, enemy behavior, boss phase/defeat, reward guard, Sky Emblem effect, and save/load persistence.
+* `git diff --check` passed with expected line-ending warnings only.
+* `docs/world-map-preview.png` and `docs/world-map-preview.svg` were regenerated from the actual assembled `120x160` map and visually inspected.
+
+Known risks:
+
+* Real-browser QA remains unavailable because the Windows browser sandbox fails with `CreateProcessAsUserW failed: 5`.
+* Tower combat density, beacon aura strength, LV32 timing, and Sky Emblem feel still need hands-on Chapter 4 balance testing.
 
 ### 2026-06-20: Frost Haven shield-engraving pass
 

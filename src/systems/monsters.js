@@ -4,6 +4,7 @@
   const definitions = globalThis.DRAGON_HUNTER_DEFINITIONS || {};
   const WORLD_SCALE = definitions.WORLD_SCALE || 1;
   const worldPx = (value) => value * WORLD_SCALE;
+  const TILE = definitions.TILE || worldPx(16);
 
   const mathHelpers = globalThis.DRAGON_HUNTER_MATH;
   if (!mathHelpers) {
@@ -182,6 +183,7 @@
       moveActor,
       spawnIfClear,
       shootProjectile,
+      addFloater,
       addRing,
       say,
     } = requireMonsterContext(context);
@@ -245,6 +247,16 @@
         say("墓守が吸命鬼を呼び起こした!", 2400);
       }
 
+      if (monster.type === "towerWarden" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {
+        monster.summoned = true;
+        monster.speed += worldPx(6);
+        spawnIfClear("frostBeacon", 109 * TILE, 27 * TILE);
+        spawnIfClear("frostBeacon", 116 * TILE, 27 * TILE);
+        spawnIfClear("frostBeacon", 112 * TILE, 25 * TILE);
+        addRing(c.x, c.y, "#d9f7ff", worldPx(42));
+        say("霜見の塔守が三つの凍気灯を起動した!", 2600);
+      }
+
       if ((monster.type === "boar" || monster.type === "mistLancer" || monster.type === "frostBeast") && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < worldPx(monster.type === "frostBeast" ? 132 : monster.type === "mistLancer" ? 118 : 92)) {
         monster.chargeVector = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
         monster.windup = monster.type === "frostBeast" ? 640 : monster.type === "mistLancer" ? 520 : 360;
@@ -261,6 +273,19 @@
         if (!monster.summonAnnounced) {
           monster.summonAnnounced = true;
           say("召喚士が仲間を呼んだ!", 1700);
+        }
+      }
+
+      if (monster.type === "frostBeacon" && monster.summonCooldown <= 0 && dist < worldPx(118)) {
+        const frostGuard = player.armor === 12 || activeAccessory(player, "frost", "frostCharm");
+        player.slow = Math.max(player.slow, frostGuard ? 420 : 1050);
+        player.stamina = Math.max(0, player.stamina - (frostGuard ? 5 : 15));
+        monster.summonCooldown = 2100;
+        addRing(c.x, c.y, "#9de8ff", worldPx(34));
+        addFloater(player.x + player.w / 2, player.y - worldPx(7), "凍気", "#b9f4ff");
+        if (!monster.summonAnnounced) {
+          monster.summonAnnounced = true;
+          say("凍気灯が冷気を放つ。先に壊せ!", 1500);
         }
       }
 
@@ -448,10 +473,10 @@
       player.stamina = Math.max(0, player.stamina - (lampGuard ? 5 : 18));
       monster.hp = Math.min(monster.hpMax, monster.hp + (lampGuard ? 5 : 18));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "吸命", "#d78ab7");
-    } else if (monster.type === "frostMoth" || monster.type === "frostBeast" || monster.type === "frostGolem" || monster.type === "frostDragon") {
+    } else if (monster.type === "frostMoth" || monster.type === "frostBeast" || monster.type === "frostGolem" || monster.type === "towerWarden" || monster.type === "frostDragon") {
       const frostGuard = player.armor === 12 || activeAccessory(player, "frost", "frostCharm");
-      const baseSlow = monster.type === "frostDragon" ? 2100 : monster.type === "frostGolem" ? 1650 : monster.type === "frostBeast" ? 1300 : 1050;
-      const baseStamina = monster.type === "frostDragon" ? 28 : monster.type === "frostGolem" ? 22 : monster.type === "frostBeast" ? 18 : 14;
+      const baseSlow = monster.type === "frostDragon" ? 2100 : monster.type === "towerWarden" ? 1750 : monster.type === "frostGolem" ? 1650 : monster.type === "frostBeast" ? 1300 : 1050;
+      const baseStamina = monster.type === "frostDragon" ? 28 : monster.type === "towerWarden" ? 24 : monster.type === "frostGolem" ? 22 : monster.type === "frostBeast" ? 18 : 14;
       player.slow = Math.max(player.slow, Math.round(baseSlow * (frostGuard ? 0.45 : 1)));
       player.stamina = Math.max(0, player.stamina - (frostGuard ? Math.ceil(baseStamina * 0.35) : baseStamina));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "凍", "#b9f4ff");
@@ -537,6 +562,14 @@
       player.wards = Math.min(9, player.wards + 2);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#8dd7ff", 58);
       say("氷窟巨人を倒した。奥の霜心の護符に近づける!", 4800);
+    } else if (monster.type === "towerWarden") {
+      state.towerWardenDefeated = true;
+      state.spawnedTowerWarden = true;
+      player.gold += 1700;
+      player.tonics = Math.min(9, (player.tonics || 0) + 2);
+      player.warps = Math.min(9, (player.warps || 0) + 1);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#d9f7ff", 62);
+      say("霜見の塔守を倒した。最上階の遺物庫が開いた!", 5000);
     } else if (monster.type === "obsidianGolem") {
       state.obsidianGolemDefeated = true;
       state.spawnedObsidianGolem = true;
@@ -600,7 +633,7 @@
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
       say("南東の道番を越え、守りの護石を得た!", 4200);
-    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "frostGolem"].includes(monster.type)) {
+    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "frostGolem", "towerWarden"].includes(monster.type)) {
       state.guardianDefeated = true;
       player.sealCrest = true;
       player.scales = Math.min(3, player.scales + 1);

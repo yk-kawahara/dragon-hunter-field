@@ -42,6 +42,12 @@
   const DUNGEON_PORTALS = [
     { id: "black-market-catacomb-entry", name: "黒市地下墓所", x: 47, y: 130, toX: 83, toY: 2, prompt: "入る: 黒市地下墓所" },
     { id: "black-market-catacomb-exit", name: "黒市", x: 82, y: 2, toX: 47, toY: 131, prompt: "戻る: 黒市" },
+    { id: "frost-tower-entry", name: "霜見塔・一階", x: 43, y: 148, toX: 89, toY: 19, prompt: "入る: 霜見塔" },
+    { id: "frost-tower-exit", name: "霜原", x: 89, y: 19, toX: 43, toY: 149, prompt: "戻る: 霜原" },
+    { id: "frost-tower-up", name: "霜見塔・二階", x: 101, y: 31, toX: 105, toY: 19, prompt: "上る: 霜見塔二階" },
+    { id: "frost-tower-down", name: "霜見塔・一階", x: 105, y: 19, toX: 101, toY: 31, prompt: "下りる: 霜見塔一階" },
+    { id: "frost-tower-lift-exit", name: "霜原", x: 117, y: 31, toX: 46, toY: 149, prompt: "昇降機: 霜原へ" },
+    { id: "frost-tower-lift-entry", name: "霜見塔・二階", x: 46, y: 148, toX: 117, toY: 31, prompt: "昇降機: 霜見塔二階へ", unlock: "frostTowerLift" },
   ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
@@ -94,6 +100,8 @@
     { id: "frost-haven-supply", x: 30, y: 153, reward: "frostSupply" },
     { id: "frost-core-reliquary", x: 68, y: 155, reward: "frostCharm" },
     { id: "frost-citadel-cache", x: 114, y: 156, reward: "frostSupply" },
+    { id: "frost-tower-supply", x: 95, y: 27, reward: "towerExpeditionSupply" },
+    { id: "frost-tower-reliquary", x: 115, y: 29, reward: "skyCharm" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
@@ -130,6 +138,9 @@
     { id: "frost-road-waystone", x: 24, y: 148, kind: "frostHint" },
     { id: "frost-cave-warning", x: 54, y: 153, kind: "frostHint" },
     { id: "frost-seal", x: 103, y: 154, kind: "frostSeal" },
+    { id: "frost-tower-map", x: 96, y: 23, kind: "frostTowerHint" },
+    { id: "frost-tower-warning", x: 111, y: 25, kind: "frostTowerHint" },
+    { id: "frost-tower-lift", x: 114, y: 31, kind: "frostTowerLift" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
@@ -152,6 +163,8 @@
   const CRYPT_WARDEN_REQUIREMENTS = { level: 22 };
   const FROST_GOLEM_SITE = { x: 64, y: 155 };
   const FROST_GOLEM_REQUIREMENTS = { level: 30 };
+  const FROST_TOWER_WARDEN_SITE = { x: 112, y: 27 };
+  const FROST_TOWER_WARDEN_REQUIREMENTS = { level: 32 };
   const FROST_DRAGON_SITE = { x: 108, y: 156 };
   const CHAPTER4_REQUIREMENTS = { level: 34 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
@@ -175,6 +188,8 @@
     frost: { danger: 9, maxBonus: 11, pool: ["frostMoth", "frostBeast", "shieldSoldier", "voidWraith", "mistLancer"] },
     frostCave: { danger: 9, maxBonus: 12, pool: ["frostBeast", "frostMoth", "vaultLeech", "shieldSoldier", "summoner"] },
     frostCitadel: { danger: 10, maxBonus: 13, pool: ["frostMoth", "frostBeast", "summoner", "shieldSoldier", "voidWraith", "eclipseMage"] },
+    frostTower1: { danger: 9, maxBonus: 11, pool: ["frostBeacon", "shieldSoldier", "frostMoth", "mistLancer"] },
+    frostTower2: { danger: 10, maxBonus: 13, pool: ["frostBeacon", "frostBeast", "frostMoth", "shieldSoldier", "summoner"] },
   };
 
   const TILE_GRASS = 0;
@@ -249,7 +264,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -322,6 +337,12 @@
       trait: "氷弾・凍結・スタミナ低下を軽減",
       sell: 0,
       flag: "frostCharm",
+    },
+    sky: {
+      name: "天駆けの徽章",
+      trait: "回避距離+40%・再使用時間短縮",
+      sell: 0,
+      flag: "skyCharm",
     },
   };
 
@@ -598,6 +619,31 @@
       midboss: true,
       drop: 1,
     },
+    frostBeacon: {
+      name: "凍気灯",
+      hp: 620,
+      atk: 132,
+      def: 92,
+      speed: 0,
+      xp: 460,
+      gold: 165,
+      color: "#9de8ff",
+      shadow: "#315d7a",
+      drop: 0.42,
+    },
+    towerWarden: {
+      name: "霜見の塔守",
+      hp: 5100,
+      atk: 178,
+      def: 148,
+      speed: 21 * WORLD_SCALE,
+      xp: 3900,
+      gold: 1900,
+      color: "#d8f7ff",
+      shadow: "#405d7a",
+      midboss: true,
+      drop: 1,
+    },
     dragonling: {
       name: "小竜",
       hp: 158,
@@ -756,6 +802,8 @@
     CRYPT_WARDEN_REQUIREMENTS,
     FROST_GOLEM_SITE,
     FROST_GOLEM_REQUIREMENTS,
+    FROST_TOWER_WARDEN_SITE,
+    FROST_TOWER_WARDEN_REQUIREMENTS,
     FROST_DRAGON_SITE,
     CHAPTER4_REQUIREMENTS,
     BOSS_REQUIREMENTS,

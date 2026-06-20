@@ -35,6 +35,13 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 Completed in the latest pass:
 
+* Added Frost Watchtower / `霜見塔` as a substantial optional two-floor Chapter 4 dungeon instead of expanding the overworld again.
+* Added explicit entrance, inter-floor stairs, a far-side elevator shortcut, floor-specific regions, dense enemy pressure, expedition supplies, route records, and a guarded reliquary.
+* Added Frost Beacon / `凍気灯`, a stationary aura hazard that repeatedly slows and drains stamina, creating target-priority pressure distinct from ordinary pursuit enemies.
+* Added the LV32 Frost Watchtower Warden, whose second phase activates three fixed beacons and accelerates the fight.
+* Added `天駆けの徽章`, an optional two-slot accessory choice that extends dash distance and shortens dash cooldown.
+* Added save/load/reset migration, objective and travel guidance, region rendering, reward locks, portal-aware reachability, combat behavior checks, and map preview generation from the fully assembled terrain.
+
 * Added Frost Haven shield engraving as the town's first unique service instead of another duplicated equipment shop.
 * Added three mutually exclusive shield builds: `城壁の刻印` for deeper frontal defense, `疾走の刻印` for traversal/dash efficiency, and post-Frost-Golem `反撃の刻印` for defense-scaled contact retaliation.
 * Added a visible shield artisan NPC, selectable engraving menu, late-game gold costs, inventory/status descriptions, save/load/reset migration, and VM effect verification.
@@ -125,12 +132,12 @@ Next high-value content direction:
 
 * Manually balance the complete Chapter 4 loop from a Chapter 3 clear save: LV30/LV34 pacing, gold income versus rank-12 gear, Ice Cave retreat pressure, Frost Heart value, and Frost Crown Dragon reinforcement timing.
 * Manually tune Frost Haven shield engraving costs and effect strength against real Chapter 4 damage, traversal, and gold income.
-* Add a structurally distinct multi-floor tower, flooded cave, or castle interior as the next large destination instead of immediately extending the overworld again.
+* Manually playtest Frost Watchtower from Frost Haven: floor-one attrition, beacon pulse strength, warden phase readability, retreat pressure, elevator value, and Sky Emblem build value.
 * Deepen Black Market into a city hub with distinctive NPCs, stalls, optional errands, and late-route shop/reward reasons.
 * Continue turning optional routes into multi-step expeditions: approach danger, named guardian, route-specific enemy behavior, and reward that changes survivability.
 * Continue deepening the existing `120x160` overworld before another size jump: reduce wall-maze feel, add natural landmarks, and create side paths with reward reasons.
 * Continue the density pass region by region: every long open stretch should gain either a landmark, route choice, warning, small reward, or distinct enemy pocket.
-* Add a second interior with a different structure from the Catacombs, preferably a multi-floor tower, flooded cave, or castle wing with a shortcut that opens from the far side.
+* Add the next interior with a structure different from both Catacombs and Frost Watchtower, preferably a flooded cave or castle wing linked to a lived-in town objective.
 * Add another behaviorally distinct enemy, preferably heavy-guard pressure or elite patrols, so the long expedition does not rely only on stats.
 * Expand `旅メモ` / route-label presentation into a richer rumor log if progression continues to grow.
 * Rebalance Chapter 3 gold/EXP after manual playtesting the new shop, wagon travel, premium items, and Obsidian Golem route.

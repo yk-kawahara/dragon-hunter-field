@@ -76,7 +76,7 @@
     if (player.weapon === 9 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "moonShade" || monster.type === "mistLancer" || monster.type === "mistKeeper")) mult += 0.95;
     if (player.weapon === 10 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "eclipseMage")) mult += 1.25;
     if (player.weapon === 11 && (monster.type === "obsidianGolem" || monster.type === "obsidianCrawler" || monster.type === "trapFlower" || monster.type === "voidDragon" || monster.type === "voidWraith")) mult += 1.45;
-    if (player.weapon === 12 && (monster.type === "frostMoth" || monster.type === "frostBeast" || monster.type === "frostGolem" || monster.type === "frostDragon")) mult += 1.55;
+    if (player.weapon === 12 && (monster.type === "frostMoth" || monster.type === "frostBeast" || monster.type === "frostGolem" || monster.type === "frostBeacon" || monster.type === "towerWarden" || monster.type === "frostDragon")) mult += 1.55;
     if (monster.type === "shieldSoldier") {
       if (behind) mult += 0.75;
       else if (flanking) mult += 0.35;
@@ -97,7 +97,7 @@
     if (player.armor === 9 && (monster?.type === "eclipseMage" || monster?.type === "eclipseDragon" || source === "eclipse" || source === "magic" || source === "projectile")) mult *= 0.48;
     if (player.armor === 10 && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void" || source === "eclipse" || source === "projectile")) mult *= 0.42;
     if (player.armor === 11 && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || monster?.type === "trapFlower" || monster?.type === "voidDragon" || source === "obsidian" || source === "void" || source === "trap" || source === "projectile" || source === "contact")) mult *= 0.36;
-    if (player.armor === 12 && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.34;
+    if (player.armor === 12 && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostBeacon" || monster?.type === "towerWarden" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.34;
     if (source === "contact" && pDot > 0.42 && player.shield > 0) {
       const shieldMult = shieldGuard[player.shield] || 1;
       mult *= shieldMult;
@@ -111,7 +111,7 @@
     if (activeAccessory(player, "void", "voidCharm") && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void")) mult *= 0.7;
     if (activeAccessory(player, "obsidian", "obsidianCharm") && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || source === "obsidian" || (source === "contact" && pDot > 0.3))) mult *= 0.68;
     if (activeAccessory(player, "deepLamp", "deepLampCharm") && (monster?.type === "vaultLeech" || monster?.type === "cryptWarden")) mult *= 0.7;
-    if (activeAccessory(player, "frost", "frostCharm") && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.68;
+    if (activeAccessory(player, "frost", "frostCharm") && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostBeacon" || monster?.type === "towerWarden" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.68;
     return mult;
   }
 

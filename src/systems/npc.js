@@ -295,6 +295,7 @@
     if (npc.type === "guide") {
       if (npc.y > 144 * TILE) {
         if (!state.frostGolemDefeated) say("案内人「本道は霜冠城、南の氷窟は危険だが霜心の護符が眠る」", 4200);
+        else if (!state.towerWardenDefeated) say("案内人「白銀宿の東に霜見塔がある。二階の塔守はLV32向けだ」", 4200);
         else if (!state.discoveries.has("frost-seal")) say("案内人「霜冠城の中庭で封印碑を探せ。氷窟巨人の核が道を開く」", 4200);
         else say(`案内人「霜冠竜へ挑むならLV${CHAPTER4_REQUIREMENTS.level}と白銀装備を整えろ」`, 4200);
       } else if (state.chapter2Reported && !state.cryptWardenDefeated) {
@@ -311,7 +312,9 @@
 
     if (npc.type === "villager" || npc.type === "guard") {
       if (npc.y > 144 * TILE) {
-        say(npc.type === "guard" ? "白銀衛兵「北の本道は速い。南の氷窟道は危険だが遺物がある」" : "宿の住人「凍える前に戻っておいで。ここなら何度でも休める」", 3800);
+        if (npc.type === "guard") say("白銀衛兵「北の本道は速い。南の氷窟道は危険だが遺物がある」", 3800);
+        else if (npc.x < 24 * TILE) say("宿の住人「東の霜見塔には古い昇降機がある。上で動かせるらしい」", 3800);
+        else say("宿の住人「凍える前に戻っておいで。ここなら何度でも休める」", 3800);
       } else if (npc.y > 128 * TILE) {
         if (npc.x > 44 * TILE && !state.cryptWardenDefeated) {
           say("衛兵「この先の地下口は墓所だ。吸命鬼に囲まれたら入口まで退け」", 3800);

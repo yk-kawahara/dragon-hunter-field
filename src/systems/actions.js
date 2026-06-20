@@ -183,9 +183,10 @@
   }
 
   function nearestPortal(context) {
-    const { player } = requireActionContext(context);
+    const { state, player } = requireActionContext(context);
     const pc = centerOf(player);
     for (const portal of DUNGEON_PORTALS || []) {
+      if (portal.unlock === "frostTowerLift" && !state.discoveries.has("frost-tower-lift")) continue;
       const px = (portal.x + 0.5) * TILE;
       const py = (portal.y + 0.5) * TILE;
       if (Math.hypot(pc.x - px, pc.y - py) < worldPx(22)) return portal;
@@ -237,6 +238,10 @@
     }
     if (chest.id === "frost-core-reliquary" && !state.frostGolemDefeated) {
       say("氷窟巨人を倒さないと霜心の遺物庫は開かない", 2200);
+      return;
+    }
+    if (chest.id === "frost-tower-reliquary" && !state.towerWardenDefeated) {
+      say("霜見の塔守を倒さないと最上階の遺物庫は開かない", 2200);
       return;
     }
     state.chests.add(chest.id);

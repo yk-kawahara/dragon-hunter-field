@@ -472,7 +472,16 @@ function drawWorldAtmosphere(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
 
-  if (ty >= 144) {
+  if (tx >= 88 && tx <= 118 && ty >= 18 && ty <= 32) {
+    ctx.fillStyle = "rgba(42, 74, 96, 0.38)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 14; i += 1) {
+      const x = (i * 31 + Math.floor(time / 140)) % W;
+      const y = (i * 19 + Math.floor(time / 210)) % VIEW_H;
+      ctx.fillStyle = i % 3 ? "#d9f7ff" : "#9de8ff";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (ty >= 144) {
     ctx.fillStyle = "rgba(190, 232, 248, 0.22)";
     ctx.fillRect(0, 0, W, VIEW_H);
     for (let i = 0; i < 18; i += 1) {
@@ -1712,6 +1721,34 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#d78ab7";
     ctx.fillRect(sx + 18, sy + 3, 2, 14);
     ctx.fillRect(sx + 16, sy + 2 + pulse, 6, 2);
+  } else if (monster.type === "frostBeacon") {
+    const pulse = Math.floor(monster.age / 150) % 2;
+    ctx.fillStyle = "rgba(157, 232, 255, 0.32)";
+    ctx.fillRect(sx - 3 - pulse, sy - 2 - pulse, 20 + pulse * 2, 19 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 3, sy + 9, 9, 5);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 5, sy + 2, 5, 11);
+    ctx.fillRect(sx + 3, sy + 5, 9, 5);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(sx + 6, sy + 4, 3, 5);
+    ctx.fillStyle = "#315d7a";
+    ctx.fillRect(sx + 5, sy + 13, 5, 2);
+  } else if (monster.type === "towerWarden") {
+    const pulse = Math.floor(monster.age / 130) % 2;
+    ctx.fillStyle = "rgba(217, 247, 255, 0.25)";
+    ctx.fillRect(sx - 4 - pulse, sy - 2 - pulse, 27 + pulse * 2, 24 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 7, 18, 13);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 12, 16);
+    ctx.fillRect(sx + 1, sy + 8, 18, 8);
+    ctx.fillStyle = "#315d7a";
+    ctx.fillRect(sx + 6, sy + 6, 3, 2);
+    ctx.fillRect(sx + 12, sy + 6, 3, 2);
+    ctx.fillStyle = "#9de8ff";
+    ctx.fillRect(sx + 18, sy + 2 + pulse, 3, 16);
+    ctx.fillRect(sx + 16, sy + 1 + pulse, 7, 3);
   } else if (monster.type === "shieldSoldier") {
     const guardX = monster.dir === "left" ? sx + 1 : monster.dir === "right" ? sx + 8 : sx + 3;
     const guardY = monster.dir === "up" ? sy + 1 : sy + 5;
@@ -2047,7 +2084,7 @@ function drawEffects(cam) {
 function drawScreenGrade(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
-  const inCave = (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) || (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14);
+  const inCave = (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) || (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) || (tx >= 88 && tx <= 118 && ty >= 18 && ty <= 32);
   const gradient = ctx.createLinearGradient(0, 0, 0, VIEW_H);
   gradient.addColorStop(0, inCave ? "rgba(35, 10, 8, 0.18)" : "rgba(255, 244, 192, 0.08)");
   gradient.addColorStop(0.52, "rgba(0, 0, 0, 0)");

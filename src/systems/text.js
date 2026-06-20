@@ -107,6 +107,9 @@
     if (hpRate < 0.35) return "危険: 帰還鈴か最寄りの拠点で立て直そう";
     const stage = gameStage(context);
     const region = currentRegion();
+    if (region === "frostTower2" && !state.towerWardenDefeated) return "凍気灯を先に壊し、最上階の塔守を倒そう";
+    if (region === "frostTower2") return "最上階の遺物庫と昇降機を調べよう";
+    if (region === "frostTower1") return "補給庫を探し、南東の階段から二階へ";
     if (region === "frostCave" && !state.frostGolemDefeated && player.level < FROST_GOLEM_REQUIREMENTS.level) return `氷窟巨人にはLV${FROST_GOLEM_REQUIREMENTS.level}ほど欲しい`;
     if (region === "frostCave" && !state.frostGolemDefeated) return "氷窟巨人を倒せば霜心の護符に届く";
     if (region === "frostCave") return "霜心の護符を装備し、霜冠城へ戻ろう";

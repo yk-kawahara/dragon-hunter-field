@@ -141,6 +141,7 @@ Most important growth feeling: **reversal of power**.
 | Frost Frontier / 霜原 | Chapter 4 expedition region beyond Black Sun Castle. Its main road is faster, while the southern ice route is denser and leads to the chapter countermeasure reward. |
 | Frost Haven / 白銀宿 | Chapter 4 safe hub: full recovery, wagon travel, premium supplies, and selectable frost weapon/armor/shield stock. It moves the safe radius into the frozen frontier. |
 | Ice Cave / 氷窟 | Chapter 4 branch dungeon with Frost Moth ranged pressure, Frost Beast charges, Frost Golem, and the Frost Heart reliquary. |
+| Frost Watchtower / 霜見塔 | Optional two-floor Chapter 4 interior. The first floor tests supply management, the second combines frost auras and a named warden, and the far-side elevator permanently shortens repeat expeditions. |
 | Frost Crown Citadel / 霜冠城 | Chapter 4 final route: seal discovery, highest regional spawn pressure, final supplies, and Frost Crown Dragon arena. |
 | Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
 
@@ -168,6 +169,8 @@ Most important growth feeling: **reversal of power**.
 | Frost Moth / 氷晶蛾 | Chapter 4 flying caster. Fast frost shots apply slow and stamina loss, making frost resistance and projectile positioning matter. |
 | Frost Beast / 霜牙獣 | Chapter 4 charger with a long readable windup and a forceful lunge. The intended answer is to sidestep or take the safer road rather than absorb the charge. |
 | Frost Golem / 氷窟巨人 | Required LV30 Chapter 4 midboss. Its heavy frost pressure gates the Frost Heart reliquary and turns the southern ice route into an earned preparation expedition. |
+| Frost Beacon / 凍気灯 | Stationary tower hazard that repeatedly drains stamina and slows nearby players. It changes target priority and rewards frost preparation instead of merely adding another pursuer. |
+| Frost Watchtower Warden / 霜見の塔守 | Optional LV32 midboss. At half health it accelerates and activates three fixed Frost Beacons, turning the arena from a duel into a target-priority test. |
 | Dragonling | Late stronger enemy; signals dragon-route danger. |
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
@@ -232,6 +235,7 @@ Current direction:
 * `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave after defeating the Regen Sentinel.
 * `霧灯の護符` is an optional route-preparation accessory found in the Mist Shrine after defeating the Mist Keeper. It reduces trap, summon, and magic pressure, making dangerous side routes and late ruins more survivable.
 * `深層灯の護符` is earned in the Black Market Catacombs after defeating the Crypt Warden. It reduces slow movement loss and strengthens herb healing, trading broad resistance for longer recovery-based expeditions.
+* `天駆けの徽章` is earned at the top of Frost Watchtower after defeating its warden. It lengthens dash distance and shortens dash recovery, changing traversal and escape options rather than only adding defense.
 * Accessory ownership and accessory effects are separate: an owned but unequipped accessory must never grant its active effect.
 
 Future direction:
@@ -264,7 +268,18 @@ Current structure:
 Next design weakness:
 
 * Chapter 4 needs manual balance testing from a real Chapter 3 clear save: gold availability, LV30/LV34 timing, Frost Haven purchase choices, Ice Cave retreat distance, and Frost Crown Dragon reinforcement pacing.
-* The next large content pack should add a structurally distinct interior map or multi-floor destination instead of extending the overworld south again immediately.
+* Frost Watchtower now supplies the first multi-floor destination; the next large destination should use a different structure such as a flooded cave, castle wing, or town-linked quest route.
+
+## Latest design truth: Frost Watchtower
+
+Frost Watchtower is the optional Chapter 4 mastery route rather than another mandatory checklist gate.
+
+* It is a two-floor fixed interior embedded in hand-editable world data and reached from Frost Frontier.
+* Floor one offers expedition supplies and route records; floor two raises pressure with stationary Frost Beacons and the Frost Watchtower Warden.
+* Defeating the warden opens the reliquary, but the reward remains optional for completing Chapter 4.
+* Activating the far-side elevator creates a persistent shortcut from the frontier directly to floor two. The reward is therefore both stronger traversal and a permanently shorter return route.
+* `天駆けの徽章` supports a mobile build: it extends dash distance and reduces dash cooldown, pairing naturally with regeneration or frost resistance in the two accessory slots.
+* Future interiors should preserve the same expedition shape: readable retreat point, escalating floor identity, behavior climax, persistent shortcut, and a reward that changes travel or survival decisions.
 
 ## Latest design truth: selectable shops and Chapter 3 long expedition
 

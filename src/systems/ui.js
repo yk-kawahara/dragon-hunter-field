@@ -534,15 +534,15 @@
     if (!state.frostGolemDefeated) {
       return [
         `白銀宿の東、氷窟へ LV${player.level}/30`,
+        state.towerWardenDefeated ? "霜見塔の昇降機は開通済み" : "霜原の霜見塔はLV32の寄り道",
         "霜牙獣の突進は予兆中に横へ",
-        "白銀宿で凍土装備を購入できる",
       ];
     }
     if (!state.frostDragonDefeated) {
       return [
         `霜冠城の封印碑とLV${player.level}/34`,
         "霜心の護符は氷弾と凍結を軽減",
-        "本道と南の危険路を選べる",
+        state.towerWardenDefeated ? "天駆けの徽章で竜の氷弾を回避" : "霜見塔の塔守はLV32の寄り道",
       ];
     }
     if (!state.chapter4Reported) {
@@ -629,6 +629,8 @@
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
     if (inTown(player.x, player.y)) name = (tx >= 12 && tx <= 34 && ty >= 150 && ty <= 156) ? "白銀宿" : (tx >= 20 && tx <= 48 && ty >= 129 && ty <= 136) ? "黒市" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if (tx >= 104 && tx <= 118 && ty >= 18 && ty <= 32) name = "霜見塔二階";
+    else if (tx >= 88 && tx <= 102 && ty >= 18 && ty <= 32) name = "霜見塔一階";
     else if (ty >= 144 && tx >= 90) name = "霜冠城";
     else if (ty >= 150 && tx >= 48 && tx <= 70) name = "氷窟";
     else if (ty >= 144) name = "霜原";

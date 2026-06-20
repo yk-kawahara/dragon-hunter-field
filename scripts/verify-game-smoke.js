@@ -191,6 +191,7 @@ function createRuntime() {
     moveActor: (actor, dx, dy) => playerHelpers.moveActor(contexts.player(), actor, dx, dy),
     facingVector: () => playerHelpers.facingVector(contexts.player()),
     updateHealCircle: () => playerHelpers.updateHealCircle(contexts.player()),
+    dash: () => playerHelpers.dash(contexts.player()),
     playerAttack: () => combat.playerAttack(contexts.combat()),
     playerDefense: () => combat.playerDefense(contexts.combat()),
     playerMoveSpeed: () => combat.playerMoveSpeed(contexts.combat()),
@@ -316,6 +317,12 @@ function assertMapReachability() {
     ["frost-cave", d.FROST_GOLEM_SITE.x, d.FROST_GOLEM_SITE.y],
     ["frost-seal", 103, 154],
     ["frostDragon", d.FROST_DRAGON_SITE.x, d.FROST_DRAGON_SITE.y],
+    ["frost-tower-entry", 43, 148],
+    ["frost-tower-supply", 95, 27],
+    ["frost-tower-stairs", 101, 31],
+    ["frost-tower-warden", d.FROST_TOWER_WARDEN_SITE.x, d.FROST_TOWER_WARDEN_SITE.y],
+    ["frost-tower-reliquary", 115, 29],
+    ["frost-tower-lift", 114, 31],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
@@ -355,7 +362,8 @@ function assertSaveLoadAndEquipment() {
   player.obsidianCharm = true;
   player.deepLampCharm = true;
   player.frostCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost"];
+  player.skyCharm = true;
+  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky"];
   player.equippedAccessory = "trail";
   player.equippedAccessories = ["trail", "greaterRegen"];
   state.chests.add("town-cache");
@@ -379,6 +387,8 @@ function assertSaveLoadAndEquipment() {
   state.spawnedCryptWarden = true;
   state.frostGolemDefeated = true;
   state.spawnedFrostGolem = true;
+  state.towerWardenDefeated = true;
+  state.spawnedTowerWarden = true;
   state.frostDragonDefeated = true;
   state.spawnedFrostDragon = true;
   state.eclipseDragonDefeated = true;
@@ -412,10 +422,11 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.obsidianCharm, "obsidian charm should persist");
   assert(restored.player.deepLampCharm, "deep lamp charm should persist");
   assert(restored.player.frostCharm, "frost charm should persist");
+  assert(restored.player.skyCharm, "sky charm should persist");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost") && restored.player.ownedAccessories.includes("sky"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
@@ -435,6 +446,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.mistKeeperDefeated, "mist keeper defeat flag should persist");
   assert(restored.state.cryptWardenDefeated, "crypt warden defeat flag should persist");
   assert(restored.state.frostGolemDefeated, "frost golem defeat flag should persist");
+  assert(restored.state.towerWardenDefeated, "frost tower warden defeat flag should persist");
   assert(restored.state.frostDragonDefeated && restored.state.chapter4Reported, "chapter 4 flags should persist");
   assert(restored.state.eclipseDragonDefeated && restored.state.chapter2Reported, "chapter 2 flags should persist");
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
@@ -856,6 +868,8 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.frostMoth), "frost moth monster definition should exist");
   assert(Boolean(d.monsterTypes.frostBeast), "frost beast monster definition should exist");
   assert(Boolean(d.monsterTypes.frostGolem), "frost golem monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostBeacon), "frost beacon monster definition should exist");
+  assert(Boolean(d.monsterTypes.towerWarden), "frost tower warden monster definition should exist");
   assert(Boolean(d.monsterTypes.frostDragon), "frost dragon monster definition should exist");
 
   player.x = 47 * d.TILE;
@@ -865,6 +879,26 @@ function assertExpandedWorldContent() {
   runtime.traversePortal(catacombPortal);
   assert(Math.floor(player.x / d.TILE) === 83 && Math.floor(player.y / d.TILE) === 2, "catacomb portal should move the player into the interior");
   assert(runtime.currentRegion() === "undercity", "catacomb interior should use undercity region");
+  player.x = 43 * d.TILE;
+  player.y = 148 * d.TILE;
+  const towerEntry = runtime.nearestPortal();
+  assert(towerEntry?.id === "frost-tower-entry", "Frost Frontier should expose the Frost Watchtower entrance");
+  runtime.traversePortal(towerEntry);
+  assert(runtime.currentRegion() === "frostTower1", "Frost Watchtower first floor should use its own region");
+  player.x = 101 * d.TILE;
+  player.y = 31 * d.TILE;
+  const towerStairs = runtime.nearestPortal();
+  assert(towerStairs?.id === "frost-tower-up", "first-floor stairs should lead upward");
+  runtime.traversePortal(towerStairs);
+  assert(runtime.currentRegion() === "frostTower2", "Frost Watchtower second floor should use its own region");
+  player.x = 46 * d.TILE;
+  player.y = 148 * d.TILE;
+  assert(runtime.nearestPortal() === null, "tower lift should remain unavailable before activation");
+  state.discoveries.add("frost-tower-lift");
+  const towerLift = runtime.nearestPortal();
+  assert(towerLift?.id === "frost-tower-lift-entry", "activated tower lift should be usable from Frost Frontier");
+  runtime.traversePortal(towerLift);
+  assert(runtime.currentRegion() === "frostTower2", "tower lift should shortcut directly to the second floor");
   player.x = 24 * d.TILE;
   player.y = 148 * d.TILE;
   assert(runtime.currentRegion() === "frost", "Frost Haven approach should use frost region");
@@ -960,9 +994,40 @@ function assertExpandedWorldContent() {
   const frostPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frost");
   const frostCavePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostCave");
   const frostCitadelPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostCitadel");
+  const frostTowerPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostTower2");
   assert(frostPool.includes("frostMoth") && frostPool.includes("frostBeast"), "frost field should use its new enemy family");
   assert(frostCavePool.includes("frostBeast") && frostCavePool.includes("vaultLeech"), "ice cave should mix charge and drain pressure");
   assert(frostCitadelPool.includes("frostMoth") && frostCitadelPool.includes("summoner"), "frost citadel should mix ice projectiles and summons");
+  assert(frostTowerPool.includes("frostBeacon") && frostTowerPool.includes("frostBeast"), "frost tower should mix aura hazards and charge pressure");
+
+  state.monsters = [];
+  state.chapter3Reported = true;
+  player.level = d.FROST_TOWER_WARDEN_REQUIREMENTS.level;
+  player.x = d.FROST_TOWER_WARDEN_SITE.x * d.TILE;
+  player.y = d.FROST_TOWER_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  const towerWarden = state.monsters.find((monster) => monster.type === "towerWarden");
+  assert(towerWarden, "Frost Watchtower should spawn its named warden encounter");
+  towerWarden.hp = towerWarden.hpMax * 0.5;
+  runtime.updateMonsters(16);
+  assert(towerWarden.summoned && state.monsters.some((monster) => monster.type === "frostBeacon"), "tower warden should activate frost beacons below half HP");
+  towerWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.towerWardenDefeated, "tower warden defeat should persist in state");
+
+  state.monsters = [];
+  player.armor = 0;
+  player.equippedAccessories = [];
+  player.stamina = player.staminaMax;
+  player.slow = 0;
+  player.x = 110 * d.TILE;
+  player.y = 27 * d.TILE;
+  runtime.spawnMonster("frostBeacon", player.x + d.TILE, player.y);
+  const beacon = state.monsters.find((monster) => monster.type === "frostBeacon");
+  beacon.summonCooldown = 0;
+  const staminaBeforeBeacon = player.stamina;
+  runtime.updateMonsters(16);
+  assert(player.stamina < staminaBeforeBeacon && player.slow > 0, "frost beacon should pulse stamina and slow pressure at close range");
   player.level = 20;
   const eclipsePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "eclipse");
   assert(eclipsePool.includes("eclipseMage") && eclipsePool.includes("moonShade") && eclipsePool.includes("summoner") && eclipsePool.includes("trapFlower"), "eclipse spawn pool should include eclipse mage, moon shade, summoner, and trap flowers");
@@ -1255,6 +1320,15 @@ function assertExpandedWorldContent() {
   guardedFrostChest.runtime.openChest(frostChest);
   assert(guardedFrostChest.state.chests.has("frost-core-reliquary") && guardedFrostChest.player.ownedAccessories.includes("frost"), "frost reliquary should open after Frost Golem defeat");
 
+  const towerChest = d.TREASURE_CHESTS.find((chest) => chest.id === "frost-tower-reliquary");
+  assert(towerChest, "frost tower reliquary should exist");
+  const guardedTowerChest = createRuntime();
+  guardedTowerChest.runtime.openChest(towerChest);
+  assert(!guardedTowerChest.state.chests.has("frost-tower-reliquary") && !guardedTowerChest.player.ownedAccessories.includes("sky"), "tower reliquary should stay locked until Tower Warden defeat");
+  guardedTowerChest.state.towerWardenDefeated = true;
+  guardedTowerChest.runtime.openChest(towerChest);
+  assert(guardedTowerChest.state.chests.has("frost-tower-reliquary") && guardedTowerChest.player.ownedAccessories.includes("sky"), "tower reliquary should grant the sky accessory after Tower Warden defeat");
+
   const regenBefore = reward.runtime.regenRate();
   reward.runtime.grantChestReward("greaterRegen");
   globalThis.DRAGON_HUNTER_REWARDS.equipAccessory(reward.player, "greaterRegen");
@@ -1291,6 +1365,31 @@ function assertExpandedWorldContent() {
   assert(reward.player.elixirs >= 5 && reward.player.warps >= 5, "frost supply should extend the new region expedition");
   reward.runtime.grantChestReward("frostCharm");
   assert(reward.player.ownedAccessories.includes("frost"), "ice cave reliquary should grant the frost accessory");
+  reward.runtime.grantChestReward("towerExpeditionSupply");
+  assert(reward.player.tonics >= 9 && reward.player.warps >= 6, "frost tower supply should support the two-floor expedition");
+  reward.runtime.grantChestReward("skyCharm");
+  assert(reward.player.ownedAccessories.includes("sky"), "frost tower reliquary should grant the sky accessory");
+
+  const normalDash = createRuntime();
+  normalDash.player.x = 24 * d.TILE;
+  normalDash.player.y = 148 * d.TILE;
+  normalDash.player.dir = "right";
+  normalDash.player.stamina = normalDash.player.staminaMax;
+  const normalDashStart = normalDash.player.x;
+  normalDash.runtime.dash();
+  const normalDashDistance = normalDash.player.x - normalDashStart;
+  const skyDash = createRuntime();
+  skyDash.player.x = 24 * d.TILE;
+  skyDash.player.y = 148 * d.TILE;
+  skyDash.player.dir = "right";
+  skyDash.player.skyCharm = true;
+  skyDash.player.ownedAccessories = ["sky"];
+  skyDash.player.equippedAccessory = "sky";
+  skyDash.player.equippedAccessories = ["sky"];
+  skyDash.player.stamina = skyDash.player.staminaMax;
+  const skyDashStart = skyDash.player.x;
+  skyDash.runtime.dash();
+  assert(skyDash.player.x - skyDashStart > normalDashDistance && skyDash.player.dashCooldown < normalDash.player.dashCooldown, "sky accessory should extend dash distance and shorten cooldown");
   reward.player.armor = 0;
   reward.player.equippedAccessories = ["frost"];
   reward.player.equippedAccessory = "frost";

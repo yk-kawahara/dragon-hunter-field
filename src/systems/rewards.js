@@ -166,7 +166,7 @@
     }
     const desired = equippedAccessoryIds(player).filter((id) => owned.has(id));
     if (desired.length <= 0) {
-      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "mist", "deepLamp", "frost", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
+      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "mist", "deepLamp", "frost", "sky", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
     }
     setEquippedAccessories(player, desired);
   }
@@ -286,7 +286,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -494,6 +494,23 @@
       say("氷窟の遺物庫から霜心の護符を得た");
       return true;
     }
+    if (reward === "towerExpeditionSupply") {
+      player.gold += 920;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.wards = Math.min(9, player.wards + 3);
+      say("霜見塔の補給庫から登頂用の物資を得た");
+      return true;
+    }
+    if (reward === "skyCharm") {
+      player.gold += 1800;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 2);
+      grantAccessory(context, "sky", "天駆けの徽章を得た。装備すると回避距離と再使用速度が伸びる");
+      say("霜見塔の最上階で天駆けの徽章を得た");
+      return true;
+    }
     if (reward === "shieldSupply") {
       player.gold += 520;
       grantShieldAtLeast(context, 3, "星盾を手に入れた。盾兵や魔法道を正面から受けやすい");
@@ -644,6 +661,21 @@
       player.wards = Math.min(9, player.wards + 3);
       burst(x, y, "#d9f7ff", 26);
       say("霜冠の封印碑を読んだ。氷窟巨人を倒せば霜冠竜への道が開く");
+      return;
+    }
+    if (discovery.kind === "frostTowerHint") {
+      player.gold += 260;
+      addItem(player, "tonic", 1);
+      player.wards = Math.min(9, player.wards + 1);
+      burst(x, y, "#9de8ff", 20);
+      say("塔の記録: 凍気灯を先に壊し、二階の塔守へ進め");
+      return;
+    }
+    if (discovery.kind === "frostTowerLift") {
+      player.stamina = player.staminaMax;
+      addItem(player, "warp", 1);
+      burst(x, y, "#d9f7ff", 24);
+      say("霜見塔の昇降機を起動した。霜原から二階へ直行できる");
       return;
     }
     if (discovery.kind === "routeHint") {

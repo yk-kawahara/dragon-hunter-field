@@ -81,6 +81,7 @@
         obsidianCharm: player.obsidianCharm,
         deepLampCharm: player.deepLampCharm,
         frostCharm: player.frostCharm,
+        skyCharm: player.skyCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -100,6 +101,8 @@
       cryptWardenDefeated: state.cryptWardenDefeated,
       spawnedFrostGolem: state.spawnedFrostGolem,
       frostGolemDefeated: state.frostGolemDefeated,
+      spawnedTowerWarden: state.spawnedTowerWarden,
+      towerWardenDefeated: state.towerWardenDefeated,
       spawnedFrostDragon: state.spawnedFrostDragon,
       frostDragonDefeated: state.frostDragonDefeated,
       spawnedEclipseDragon: state.spawnedEclipseDragon,
@@ -151,6 +154,7 @@
       player.obsidianCharm = Boolean(player.obsidianCharm);
       player.deepLampCharm = Boolean(player.deepLampCharm);
       player.frostCharm = Boolean(player.frostCharm);
+      player.skyCharm = Boolean(player.skyCharm);
       normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
@@ -172,6 +176,7 @@
       state.mistKeeperDefeated = Boolean(data.mistKeeperDefeated);
       state.cryptWardenDefeated = Boolean(data.cryptWardenDefeated);
       state.frostGolemDefeated = Boolean(data.frostGolemDefeated);
+      state.towerWardenDefeated = Boolean(data.towerWardenDefeated);
       state.frostDragonDefeated = Boolean(data.frostDragonDefeated);
       state.eclipseDragonDefeated = Boolean(data.eclipseDragonDefeated);
       state.voidDragonDefeated = Boolean(data.voidDragonDefeated);
@@ -185,6 +190,7 @@
       state.spawnedMistKeeper = state.mistKeeperDefeated ? Boolean(data.spawnedMistKeeper) : false;
       state.spawnedCryptWarden = state.cryptWardenDefeated ? Boolean(data.spawnedCryptWarden) : false;
       state.spawnedFrostGolem = state.frostGolemDefeated ? Boolean(data.spawnedFrostGolem) : false;
+      state.spawnedTowerWarden = state.towerWardenDefeated ? Boolean(data.spawnedTowerWarden) : false;
       state.spawnedFrostDragon = state.frostDragonDefeated ? Boolean(data.spawnedFrostDragon) : false;
       state.spawnedEclipseDragon = state.eclipseDragonDefeated ? Boolean(data.spawnedEclipseDragon) : false;
       state.spawnedVoidDragon = state.voidDragonDefeated ? Boolean(data.spawnedVoidDragon) : false;
@@ -257,6 +263,7 @@
       obsidianCharm: false,
       deepLampCharm: false,
       frostCharm: false,
+      skyCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,
@@ -298,6 +305,8 @@
     state.cryptWardenDefeated = false;
     state.spawnedFrostGolem = false;
     state.frostGolemDefeated = false;
+    state.spawnedTowerWarden = false;
+    state.towerWardenDefeated = false;
     state.spawnedFrostDragon = false;
     state.frostDragonDefeated = false;
     state.spawnedEclipseDragon = false;

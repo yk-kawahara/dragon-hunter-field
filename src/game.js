@@ -187,6 +187,7 @@ function respawnAtVillage() {
   if (!state.mistKeeperDefeated) state.spawnedMistKeeper = false;
   if (!state.cryptWardenDefeated) state.spawnedCryptWarden = false;
   if (!state.frostGolemDefeated) state.spawnedFrostGolem = false;
+  if (!state.towerWardenDefeated) state.spawnedTowerWarden = false;
   if (!state.frostDragonDefeated) state.spawnedFrostDragon = false;
   if (!state.eclipseDragonDefeated) state.spawnedEclipseDragon = false;
   if (!state.voidDragonDefeated) state.spawnedVoidDragon = false;
