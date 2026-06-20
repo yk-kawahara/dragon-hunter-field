@@ -254,6 +254,27 @@
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
   ];
 
+  const FROST_GATE_ROW = "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT+++++++TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT";
+
+  const CHAPTER4_EXPANSION = [
+    "T.............................................................................+++++++..................................T",
+    "T.TTTTTTTT..........................~~~~~~~~~.................................+++++++..................................T",
+    "T.TTTTTTTT........=======...........~~~~~~~~~.=======.........................+++++++..................................T",
+    "T.TT..............=======...........~~~~~~~~~.=======.........................+++++++..................................T",
+    "T.TT..............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++......T",
+    "T.TT....................+...........~~~~~~~~~.............+.............................................+..............T",
+    "T.TTTTTTTT.._______________________.~~~~~~~~~.............+.............TTTTTTT.........................+..............T",
+    "T.TTTTTTTT..__^^^^^^^_____^^^^^^^__.~~~~~~~~~.....########C############.TTTTTTT.............###########++++##########..T",
+    "T.TTTTTTTT..__^^^^^^^_____^^^^^^^__.~~~~~~~~~.....########+############.TTTTTTT.********....###########++++##########..T",
+    "T.TTTTTTTT.._______________________.~~~~~~~~~.....+#______+_____+____##.TTTTTTT.********....##_____________________##..T",
+    "T.TTTTTTTT.._______________________.~~~~~~~~~.....+#______+_____+____##.TTTTTTT.********....+#_____________________##..T",
+    "T.TTTTTTTT.._______________________.~~~~~~~~~.....+#+++++++++++++++++##.TTTTTTT.............+#+++++++++++++++++++++##..T",
+    "T.TTTTTTTT..________++++++++++++++++++++++++++++++##______+_____+____##++++++++++++++++++++++#_____________________##..T",
+    "T.TTTTTTTT..........................~~~~~~~~~.....##______+_____+____##.TTTTTTT.............##_____________________##..T",
+    "T...................................~~~~~~~~~.....#####################.....................#########################..T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+  ];
+
   const TERRAIN_DETAILS = [
     { id: "grassland-camp", x: 20, y: 33, rows: ["....==....", "..****.."] },
     { id: "river-fork-farm", x: 22, y: 50, rows: ["..==..***.."] },
@@ -315,7 +336,9 @@
     ECLIPSE_GATE_ROW,
     ...CHAPTER2_EXPANSION.slice(0, -1),
     VOID_GATE_ROW,
-    ...CHAPTER3_EXPANSION,
+    ...CHAPTER3_EXPANSION.slice(0, -1),
+    FROST_GATE_ROW,
+    ...CHAPTER4_EXPANSION,
   ]);
 
   const WORLD_OBJECTS = [
@@ -368,11 +391,18 @@
     { type: "npc", npcType: "guard", x: 109, y: 117, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "guard", x: 90, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
     { type: "npc", npcType: "villager", x: 105, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 24, y: 153, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "porter", x: 16, y: 154, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 31, y: 151, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 33, y: 154, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 13, y: 150, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 19, y: 151, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 29, y: 154, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
   ];
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {
     width: 120,
-    height: 144,
+    height: 160,
     rows: WORLD_MAP,
     objects: WORLD_OBJECTS,
   };

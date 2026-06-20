@@ -8,7 +8,7 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 
 Current focus:
 
-* Continue expanding the map beyond the new `120x144` overworld without creating empty space.
+* Deepen the new `120x160` overworld without creating empty space.
 * Preserve content density, regional purpose, and survival-range expansion.
 * Treat village -> Guardian -> Red Dragon as Chapter 1, not final scope.
 * Add meaningful volume: larger maps, remote towns, dungeons, varied monsters, equipment tiers, inventory decisions, and side routes.
@@ -34,6 +34,15 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 ### 0. Latest completed player-facing pass
 
 Completed in the latest pass:
+
+* Added Chapter 4 Frost Frontier / `霜原` as a chapter-sized regional pack beyond the Chapter 3 report.
+* Expanded the fixed map from `120x144` to `120x160` with a dense frozen frontier, a main-road approach, a dangerous Ice Cave branch, and Frost Crown Citadel.
+* Added Frost Haven / `白銀宿` as a new safe town with recovery, wagon travel, NPC life, premium expedition supplies, and selectable frost weapon/armor/shield stock.
+* Added Frost Moth and Frost Beast as behaviorally distinct regular enemies: ranged frost slow/stamina pressure and a long-telegraph charge.
+* Added Frost Golem as a required LV30 branch-dungeon midboss and `霜心の護符` as its survival-range reward.
+* Added Frost Crown Dragon as the LV34 Chapter 4 major boss with enrage, five-way frost shots, and mixed ranged/charging reinforcements.
+* Added Chapter 4 objectives, guidance, discoveries, one-time rewards, elder report, save/load/reset migration, rendering, reachability checks, and VM story-flow coverage.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` at `120x160`.
 
 * Added Black Market Catacombs / `黒市地下墓所` as the first compact interior-style dungeon reached through an explicit entrance/exit pair.
 * Replaced unused upper-map forest space with a dense stone-floor dungeon containing connected rooms, alternative pockets, supplies, a readable retreat point, and a guarded reliquary.
@@ -109,12 +118,12 @@ Previously completed:
 
 Next high-value content direction:
 
-* Build the next expansion as a **chapter-sized regional pack**, not a sequence of isolated caches: one new safe town, at least two route choices, one interior dungeon, one named midboss, one major boss, and equipment/reward decisions that support the whole expedition.
-* Prefer a new northern or eastern frontier beyond the current Chapter 3 footprint so Chapter 4 begins from a moved safe radius rather than sending the player back through old roads.
-* Give the next town a distinct service identity such as accessory crafting, shield reforging, or route contracts, rather than duplicating existing shops.
+* Manually balance the complete Chapter 4 loop from a Chapter 3 clear save: LV30/LV34 pacing, gold income versus rank-12 gear, Ice Cave retreat pressure, Frost Heart value, and Frost Crown Dragon reinforcement timing.
+* Give Frost Haven a distinct long-term service identity such as shield reforging or frost-accessory crafting; its current shop is functional but still overlaps earlier equipment hubs.
+* Add a structurally distinct multi-floor tower, flooded cave, or castle interior as the next large destination instead of immediately extending the overworld again.
 * Deepen Black Market into a city hub with distinctive NPCs, stalls, optional errands, and late-route shop/reward reasons.
 * Continue turning optional routes into multi-step expeditions: approach danger, named guardian, route-specific enemy behavior, and reward that changes survivability.
-* Continue deepening the existing `120x144` overworld before another size jump: reduce wall-maze feel, add natural landmarks, and create side paths with reward reasons.
+* Continue deepening the existing `120x160` overworld before another size jump: reduce wall-maze feel, add natural landmarks, and create side paths with reward reasons.
 * Continue the density pass region by region: every long open stretch should gain either a landmark, route choice, warning, small reward, or distinct enemy pocket.
 * Add a second interior with a different structure from the Catacombs, preferably a multi-floor tower, flooded cave, or castle wing with a shortcut that opens from the far side.
 * Add another behaviorally distinct enemy, preferably heavy-guard pressure or elite patrols, so the long expedition does not rely only on stats.
@@ -147,7 +156,7 @@ If browser QA is unavailable, record the limitation in `DEVELOPMENT_LOG.md` and 
 
 ### 2. Map size expansion follow-up
 
-Goal: build on the current `120x144` overworld without creating empty terrain.
+Goal: build on the current `120x160` overworld without creating empty terrain.
 
 Implementation direction:
 
@@ -233,7 +242,7 @@ Check:
 
 ### Map scope
 
-* Short-term: deepen the current `120x144` world with dense landmarks, rewards, and route goals.
+* Short-term: deepen the current `120x160` world with dense landmarks, rewards, and route goals.
 * Mid-term: add map files for dungeons/interiors such as caves, towers, castles, mines, and towns.
 * Long-term: make playable scope at least 10x Chapter 1 through larger `world.js`, additional map files, or both.
 * Continue hand-authored fixed map data; do not return to random terrain.
@@ -269,6 +278,7 @@ Current:
 * Ash hamlet now sells `星見の杖` / `星織りの衣` after the Ash Knight.
 * Moon Camp now sells/grants `月蝕の刃`, `月蝕の外套`, and `月蝕の指輪` for the Chapter 2 boss route.
 * Black Fort now sells/grants `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` for the Chapter 3 boss route.
+* Frost Haven now sells `霜砕きの剣`, `白銀の外套`, and `霜鏡盾`; Ice Cave awards `霜心の護符` for the Chapter 4 boss route.
 * Inventory and HUD now show ATK/DEF values and comparison deltas.
 * The western smuggler road adds an early-risk shortcut toward Black Market.
 * Black Market north regeneration cave adds an optional side dungeon and `大再生の指輪`.

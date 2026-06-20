@@ -61,6 +61,7 @@
     if (point.unlock === "elderReported") return Boolean(state.elderReported || state.chapter2Reported || state.chapter3Reported);
     if (point.unlock === "ashKnightDefeated") return Boolean(state.ashKnightDefeated || state.chapter2Reported || state.chapter3Reported);
     if (point.unlock === "chapter2Reported") return Boolean(state.chapter2Reported || state.chapter3Reported);
+    if (point.unlock === "chapter3Reported") return Boolean(state.chapter3Reported || state.chapter4Reported);
     if (point.unlock === "blackMarket") return Boolean(state.chapter2Reported && (state.chests?.has?.("black-fort-armory") || state.obsidianGolemDefeated || state.chapter3Reported));
     return false;
   }
@@ -165,7 +166,7 @@
     }
     const desired = equippedAccessoryIds(player).filter((id) => owned.has(id));
     if (desired.length <= 0) {
-      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "mist", "deepLamp", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
+      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "mist", "deepLamp", "frost", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
     }
     setEquippedAccessories(player, desired);
   }
@@ -285,7 +286,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -475,6 +476,24 @@
       say("地下墓所の遺物庫から深層灯の護符を得た");
       return true;
     }
+    if (reward === "frostSupply") {
+      player.gold += 1100;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.potions = Math.min(9, player.potions + 3);
+      player.wards = Math.min(9, player.wards + 2);
+      say("霜境の補給箱から凍土遠征の物資を得た");
+      return true;
+    }
+    if (reward === "frostCharm") {
+      player.gold += 1600;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      grantAccessory(context, "frost", "霜心の護符を得た。装備すると氷弾・凍結・スタミナ低下を軽くする");
+      say("氷窟の遺物庫から霜心の護符を得た");
+      return true;
+    }
     if (reward === "shieldSupply") {
       player.gold += 520;
       grantShieldAtLeast(context, 3, "星盾を手に入れた。盾兵や魔法道を正面から受けやすい");
@@ -608,6 +627,23 @@
       addItem(player, "warp", 1);
       burst(x, y, "#d7b26d", 20);
       say("墓碑: 吸命鬼は接触で力を奪う。薬草と帰還鈴を残して墓守へ挑め");
+      return;
+    }
+    if (discovery.kind === "frostHint") {
+      player.gold += 320;
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
+      burst(x, y, "#b9f4ff", 20);
+      say("霜境の道標: 氷窟の巨人を倒し、霜心の護符を持って霜冠城へ進め");
+      return;
+    }
+    if (discovery.kind === "frostSeal") {
+      player.gold += 760;
+      player.stamina = player.staminaMax;
+      addItem(player, "elixir", 1);
+      player.wards = Math.min(9, player.wards + 3);
+      burst(x, y, "#d9f7ff", 26);
+      say("霜冠の封印碑を読んだ。氷窟巨人を倒せば霜冠竜への道が開く");
       return;
     }
     if (discovery.kind === "routeHint") {

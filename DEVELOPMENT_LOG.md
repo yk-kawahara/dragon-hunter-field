@@ -25,7 +25,7 @@ Current project status:
 * Core design: survival-range expansion.
 * Code structure is split across `src/data`, `src/core`, and `src/systems`.
 * Fixed hand-editable world map lives in `src/data/maps/world.js`.
-* Current map size is `120x144`; future work should deepen the expanded world while preserving density, purpose, and reachability.
+* Current map size is `120x160`; future work should deepen the expanded world while preserving density, purpose, and reachability.
 * Real `もちもの` inventory exists with item, weapon, armor, and accessory handling.
 * Accessories are moving from permanent passive flags into equipment choices.
 * Southwest mine + southwest frontier camp are the first concrete volume-expansion pilot.
@@ -45,14 +45,17 @@ Current project status:
 * A density pass has added hand-authored small terrain landmarks, extra caches, discovery points, and more NPCs around remote bases to reduce sparse walking.
 * Shops now use selectable buy menus instead of fixed-order auto-buying.
 * Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
+* Frost Frontier + Frost Haven + Ice Cave + Frost Crown Citadel form a complete Chapter 4 route after the Chapter 3 report.
+* Frost Moth, Frost Beast, Frost Golem, frost equipment, Frost Heart Charm, and Frost Crown Dragon add a higher-difficulty frozen expedition arc.
 
 Current high-priority risks:
 
 * Full real-browser desktop/mobile play QA is still needed.
 * Full fresh-save manual playthrough to elder report is still needed.
 * Mobile UI and inventory overlay need real-browser confirmation.
-* Future map expansion must avoid empty terrain and preserve reachability; the new 120x144 space needs more hand-authored content density.
+* Future map expansion must avoid empty terrain and preserve reachability; the new 120x160 space needs more hand-authored content density.
 * Gold/EXP/shop price balance should be checked after route expansion.
+* Chapter 4 LV30/LV34 pacing, rank-12 gear economy, and boss reinforcement pressure need a real playtest from a Chapter 3 clear save.
 
 Next verification target:
 
@@ -80,6 +83,36 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-20: Chapter 4 Frost Frontier expansion
+
+Goal: add a full post-Chapter-3 survival-range arc with a moved safe radius, route choice, new behavior pressure, a preparation dungeon, and a major boss rather than another isolated reward pocket.
+
+Implemented:
+
+* Expanded the hand-authored fixed world from `120x144` to `120x160` with Frost Frontier, Frost Haven, Ice Cave, and Frost Crown Citadel.
+* Added Frost Haven as a true remote safe town with recovery circle, wagon travel, merchant, guide, guards, residents, props, and premium expedition stock.
+* Added two route profiles: a faster northern road to the citadel and a denser southern Ice Cave route that earns the chapter resistance accessory.
+* Added Frost Moth ranged slow/stamina pressure and Frost Beast telegraphed charges.
+* Added the LV30 Frost Golem midboss, guarded Frost Heart reliquary, frost supplies, route discoveries, and frost seal.
+* Added rank-12 frost weapon/armor, rank-6 shield, and `霜心の護符` equipment preparation.
+* Added the LV34 Frost Crown Dragon with enrage, five-way frost shots, and Frost Moth/Frost Beast reinforcements.
+* Added Chapter 4 objective/guidance text, elder report, clear presentation, save/load/reset fields, map rendering/atmosphere, and region-aware enemy density.
+
+Verification:
+
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` at `120x160`; the new town, road, cave, river crossings, and citadel are visible in the preview.
+* `scripts/verify-game-smoke.js` passed after adding reachability, regional spawn, town safety/heal, selectable shop, reward lock, accessory mitigation, save/load, boss behavior, and complete Chapter 4 report-flow checks.
+* VM behavior checks confirmed Frost Moth projectiles, Frost Beast charge telegraph, Frost Dragon enrage spread, and mixed reinforcements.
+* Syntax checks passed for all 24 JavaScript files under `src/` and `scripts/`.
+* `git diff --check` passed; only the repository's expected LF-to-CRLF conversion warnings were reported.
+
+Known risks:
+
+* Real-browser interactive QA is unavailable in the current Windows sandbox because browser startup fails with `CreateProcessAsUserW failed: 5`.
+* A real Chapter 3-clear playtest is still needed for LV30/LV34 timing, gold versus frost gear prices, Ice Cave retreat feel, and Frost Crown Dragon balance.
+* Frost Haven's services are useful but should gain a more distinct crafting/reforging identity in a later content pass.
+
 
 ### 2026-06-20: Black Market Catacombs interior-dungeon pass
 

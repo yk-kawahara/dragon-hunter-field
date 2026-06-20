@@ -316,7 +316,7 @@
       detail: `${accessoryData[id]?.trait || ""} ${equippedIds.includes(id) ? `装備中 ${equippedIds.indexOf(id) + 1}/2` : "未装備"}`,
       equipped: equippedIds.includes(id),
       sell: 0,
-      currentValue: id === "regen" || id === "greaterRegen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "mist" ? "罠/召喚耐性" : id === "deepLamp" ? "鈍足軽減/薬草+" : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
+      currentValue: id === "regen" || id === "greaterRegen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "mist" ? "罠/召喚耐性" : id === "deepLamp" ? "鈍足軽減/薬草+" : id === "frost" ? "凍結/氷弾耐性" : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
     }));
   }
 
@@ -507,6 +507,27 @@
         "黒市で最終装備を選ぶ",
         "黒陽城の地雷花は距離を取る",
         "黒陽竜撃破後は長老へ報告",
+      ];
+    }
+    if (!state.frostGolemDefeated) {
+      return [
+        `白銀宿の東、氷窟へ LV${player.level}/30`,
+        "霜牙獣の突進は予兆中に横へ",
+        "白銀宿で凍土装備を購入できる",
+      ];
+    }
+    if (!state.frostDragonDefeated) {
+      return [
+        `霜冠城の封印碑とLV${player.level}/34`,
+        "霜心の護符は氷弾と凍結を軽減",
+        "本道と南の危険路を選べる",
+      ];
+    }
+    if (!state.chapter4Reported) {
+      return [
+        "霜冠竜撃破を長老へ報告",
+        "白銀宿の馬車で村へ戻れる",
+        "第4章の遠征記録を完成させる",
       ];
     }
     return [

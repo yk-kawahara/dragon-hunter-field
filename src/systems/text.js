@@ -17,11 +17,13 @@
     ASH_KNIGHT_REQUIREMENTS,
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
+    CHAPTER4_REQUIREMENTS,
     OBSIDIAN_GOLEM_REQUIREMENTS,
     SMUGGLER_CAPTAIN_REQUIREMENTS,
     REGEN_SENTINEL_REQUIREMENTS,
     MIST_KEEPER_REQUIREMENTS,
     CRYPT_WARDEN_REQUIREMENTS,
+    FROST_GOLEM_REQUIREMENTS,
     weaponNames,
     weaponCosts,
     armorCosts,
@@ -37,6 +39,13 @@
   function objectiveText(context) {
     const { state, player } = requireTextContext(context);
     const stage = gameStage(context);
+    if (stage === "chapter4cleared") return "第4章CLEAR: 霜冠竜を封じた";
+    if (stage === "chapter4report") return "目的: 長老へ霜冠竜討伐を報告";
+    if (stage === "frostDragon") return "目的: 霜冠竜を倒す";
+    if (stage === "frostReady") return "目的: 霜冠城の奥へ進む";
+    if (stage === "frostSeal") return "目的: 霜冠城の封印碑を探す";
+    if (stage === "frostGolem") return "目的: 氷窟巨人を倒す";
+    if (stage === "frostRoute") return `目的: 白銀宿と氷窟へ LV${FROST_GOLEM_REQUIREMENTS.level}`;
     if (stage === "chapter3cleared") return "第3章CLEAR: 黒陽竜を封じた";
     if (stage === "chapter3report") return "目的: 長老へ黒陽竜討伐を報告";
     if (stage === "void") return "目的: 黒陽竜を倒す";
@@ -67,10 +76,16 @@
   function guidanceText(context) {
     const { state, player, inTown, currentRegion, areaDangerText } = requireTextContext(context);
     if (inTown(player.x, player.y)) {
+      if (state.chapter4Victory) return "霜冠竜討伐を長老へ報告";
       if (state.chapter3Victory) return "黒陽竜討伐を長老へ報告";
       if (state.chapter2Victory) return "月蝕竜討伐を長老へ報告";
       if (player.hp < player.hpMax) return "回復陣か薬師で立て直そう";
       const cost = nextUpgradeCost(context);
+      if (state.chapter3Reported && !state.frostGolemDefeated && player.level < FROST_GOLEM_REQUIREMENTS.level) return `氷窟巨人にはLV${FROST_GOLEM_REQUIREMENTS.level}が要る`;
+      if (state.chapter3Reported && !state.frostGolemDefeated) return "白銀宿の東、氷窟巨人を倒そう";
+      if (state.chapter3Reported && !state.discoveries.has("frost-seal")) return "霜冠城の中庭で封印碑を探そう";
+      if (state.chapter3Reported && player.level < CHAPTER4_REQUIREMENTS.level) return `霜冠竜にはLV${CHAPTER4_REQUIREMENTS.level}が要る`;
+      if (state.chapter3Reported) return "白銀宿で凍土装備を整えよう";
       if (state.chapter2Reported && !state.discoveries.has("void-seal")) return "黒門砦の南西で黒陽碑を探す";
       if (state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門砦の武具箱で黒陽装備を得よう";
       if (state.chapter2Reported && !state.cryptWardenDefeated && player.level >= CRYPT_WARDEN_REQUIREMENTS.level) return "黒市の地下入口から墓所の番人へ挑める";
@@ -92,6 +107,14 @@
     if (hpRate < 0.35) return "危険: 帰還鈴か最寄りの拠点で立て直そう";
     const stage = gameStage(context);
     const region = currentRegion();
+    if (region === "frostCave" && !state.frostGolemDefeated && player.level < FROST_GOLEM_REQUIREMENTS.level) return `氷窟巨人にはLV${FROST_GOLEM_REQUIREMENTS.level}ほど欲しい`;
+    if (region === "frostCave" && !state.frostGolemDefeated) return "氷窟巨人を倒せば霜心の護符に届く";
+    if (region === "frostCave") return "霜心の護符を装備し、霜冠城へ戻ろう";
+    if (region === "frostCitadel" && !state.discoveries.has("frost-seal")) return "霜冠城の中庭で封印碑を探そう";
+    if (region === "frostCitadel" && !state.frostGolemDefeated) return "先に南西の氷窟巨人を倒そう";
+    if (region === "frostCitadel" && player.level < CHAPTER4_REQUIREMENTS.level) return `霜冠竜にはLV${CHAPTER4_REQUIREMENTS.level}ほど欲しい`;
+    if (region === "frostCitadel") return "霜冠竜の氷弾は白銀装備と霜心で軽くなる";
+    if (region === "frost") return "白銀宿で回復し、本道か南の氷窟道を選ぼう";
     if (region === "undercity" && !state.chapter2Reported) return "黒市地下墓所は終盤級。無理なら入口へ戻ろう";
     if (region === "undercity" && !state.cryptWardenDefeated && player.level < CRYPT_WARDEN_REQUIREMENTS.level) return `墓所の番人にはLV${CRYPT_WARDEN_REQUIREMENTS.level}ほど欲しい`;
     if (region === "undercity" && !state.cryptWardenDefeated) return "吸命鬼を避け、最奥の墓所番人を倒そう";
@@ -136,7 +159,13 @@
 
   function gameStage(context) {
     const { state, player, canChallengeDragon, guardianReady } = requireTextContext(context);
-    if (state.chapter3Reported) return "chapter3cleared";
+    if (state.chapter4Reported) return "chapter4cleared";
+    if (state.chapter4Victory || (state.frostDragonDefeated && !state.chapter4Reported)) return "chapter4report";
+    if (state.spawnedFrostDragon) return "frostDragon";
+    if (state.spawnedFrostGolem) return "frostGolem";
+    if (state.chapter3Reported && state.frostGolemDefeated && state.discoveries.has("frost-seal") && player.level >= CHAPTER4_REQUIREMENTS.level) return "frostReady";
+    if (state.chapter3Reported && state.frostGolemDefeated && !state.discoveries.has("frost-seal")) return "frostSeal";
+    if (state.chapter3Reported) return "frostRoute";
     if (state.chapter3Victory || (state.voidDragonDefeated && !state.chapter3Reported)) return "chapter3report";
     if (state.spawnedVoidDragon) return "void";
     if (state.spawnedObsidianGolem) return "obsidian";
@@ -184,6 +213,13 @@
       void: "黒陽竜戦",
       chapter3report: "第3章報告",
       chapter3cleared: "第3章クリア",
+      frostRoute: "霜境遠征",
+      frostGolem: "氷窟巨人戦",
+      frostSeal: "霜冠封印",
+      frostReady: "霜冠城",
+      frostDragon: "霜冠竜戦",
+      chapter4report: "第4章報告",
+      chapter4cleared: "第4章クリア",
     };
     return names[stage] || "旅";
   }

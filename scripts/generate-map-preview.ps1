@@ -48,6 +48,8 @@ if ($rows.Count -eq 0) {
   $chapter2Rows = Get-MapRows "CHAPTER2_EXPANSION"
   $voidGateRow = Get-MapRow "VOID_GATE_ROW"
   $chapter3Rows = Get-MapRows "CHAPTER3_EXPANSION"
+  $frostGateRow = Get-MapRow "FROST_GATE_ROW"
+  $chapter4Rows = Get-MapRows "CHAPTER4_EXPANSION"
   if ($baseRows.Count -gt 0 -and $baseRows.Count -eq $eastRows.Count) {
     $rows = New-Object System.Collections.Generic.List[string]
     for ($i = 0; $i -lt $baseRows.Count; $i += 1) {
@@ -73,8 +75,18 @@ if ($rows.Count -eq 0) {
             $rows.Add($chapter2Rows[$i])
           }
           $rows.Add($voidGateRow)
-          foreach ($row in $chapter3Rows) {
-            $rows.Add($row)
+          if ($frostGateRow.Length -gt 0 -and $chapter4Rows.Count -gt 0) {
+            for ($i = 0; $i -lt $chapter3Rows.Count - 1; $i += 1) {
+              $rows.Add($chapter3Rows[$i])
+            }
+            $rows.Add($frostGateRow)
+            foreach ($row in $chapter4Rows) {
+              $rows.Add($row)
+            }
+          } else {
+            foreach ($row in $chapter3Rows) {
+              $rows.Add($row)
+            }
           }
         } else {
           foreach ($row in $chapter2Rows) {

@@ -235,6 +235,10 @@
       say("地下墓所の番人を倒さないと遺物庫は開かない", 2200);
       return;
     }
+    if (chest.id === "frost-core-reliquary" && !state.frostGolemDefeated) {
+      say("氷窟巨人を倒さないと霜心の遺物庫は開かない", 2200);
+      return;
+    }
     state.chests.add(chest.id);
     const cx = (chest.x + 0.5) * TILE;
     const cy = (chest.y + 0.5) * TILE;

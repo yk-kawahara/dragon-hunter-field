@@ -23,6 +23,7 @@
     ASH_KNIGHT_REQUIREMENTS,
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
+    CHAPTER4_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -164,13 +165,20 @@
   function handleNpc(context, npc) {
     const { state, player, say, guardianReady } = requireNpcContext(context);
     if (npc.type === "elder") {
-      if (state.voidDragonDefeated && !state.chapter3Reported) {
+      if (state.frostDragonDefeated && !state.chapter4Reported) {
+        state.chapter4Reported = true;
+        state.chapter4Victory = false;
+        state.clearPanelOpen = true;
+        say("長老「霜冠竜を越えたか。第4章の遠征は新たな国への道となる」", 5800);
+      } else if (state.chapter4Reported) {
+        say("長老「霜境のさらに先にも、人の灯は続いている」", 4400);
+      } else if (state.voidDragonDefeated && !state.chapter3Reported) {
         state.chapter3Reported = true;
         state.chapter3Victory = false;
         state.clearPanelOpen = true;
         say("長老「黒陽竜まで封じたか。第3章の遠征は伝説になる」", 5600);
       } else if (state.chapter3Reported) {
-        say("長老「黒陽の先にあるものは、まだ誰も知らぬ」", 4200);
+        say(`長老「黒陽城の南門から霜境へ。氷窟巨人と封印碑、LV${CHAPTER4_REQUIREMENTS.level}が鍵だ」`, 4800);
       } else if (state.eclipseDragonDefeated && !state.chapter2Reported) {
         state.chapter2Reported = true;
         state.chapter2Victory = false;
@@ -259,7 +267,11 @@
     }
 
     if (npc.type === "guide") {
-      if (state.chapter2Reported && !state.cryptWardenDefeated) {
+      if (npc.y > 144 * TILE) {
+        if (!state.frostGolemDefeated) say("案内人「本道は霜冠城、南の氷窟は危険だが霜心の護符が眠る」", 4200);
+        else if (!state.discoveries.has("frost-seal")) say("案内人「霜冠城の中庭で封印碑を探せ。氷窟巨人の核が道を開く」", 4200);
+        else say(`案内人「霜冠竜へ挑むならLV${CHAPTER4_REQUIREMENTS.level}と白銀装備を整えろ」`, 4200);
+      } else if (state.chapter2Reported && !state.cryptWardenDefeated) {
         say("案内人「黒市東端の地下口は古い墓所へ続く。LV22以上、帰還鈴を持って入れ」", 4400);
       } else if (!state.obsidianGolemDefeated) {
         say(`案内人「黒市の東、黒曜洞に巨人がいる。LV24以上と黒門砦の装備が欲しい」`, 4200);
@@ -272,7 +284,9 @@
     }
 
     if (npc.type === "villager" || npc.type === "guard") {
-      if (npc.y > 128 * TILE) {
+      if (npc.y > 144 * TILE) {
+        say(npc.type === "guard" ? "白銀衛兵「北の本道は速い。南の氷窟道は危険だが遺物がある」" : "宿の住人「凍える前に戻っておいで。ここなら何度でも休める」", 3800);
+      } else if (npc.y > 128 * TILE) {
         if (npc.x > 44 * TILE && !state.cryptWardenDefeated) {
           say("衛兵「この先の地下口は墓所だ。吸命鬼に囲まれたら入口まで退け」", 3800);
         } else {
@@ -294,6 +308,20 @@
         player.stamina = player.staminaMax;
         player.guard = Math.max(player.guard, npc.y > 128 * TILE ? 1500 : npc.y > 110 * TILE ? 1200 : npc.x > 90 * TILE ? 900 : 700);
         say("拠点で休んだ。遠征を続けられる");
+        return;
+      }
+      if (npc.y > 144 * TILE) {
+        openShop(context, "白銀宿の工房", [
+          weaponRow(12, state.chapter3Reported, "第3章を報告せよ"),
+          armorRow(12, state.chapter3Reported, "第3章を報告せよ"),
+          shieldRow(6, state.chapter3Reported, "第3章を報告せよ"),
+          itemRow("potion", 5, 150 + player.level * 12),
+          itemRow("tonic", 4, 180 + player.level * 10),
+          itemRow("elixir", 2, 360 + player.level * 14),
+          itemRow("warp", 2, 300 + player.level * 12),
+          itemRow("bomb", 4, 190 + player.level * 12),
+          itemRow("ward", 5, 210 + player.level * 12),
+        ]);
         return;
       }
       if (npc.y > 128 * TILE) {

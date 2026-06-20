@@ -9,7 +9,7 @@
   const HUD_H = H - VIEW_H;
   const TILE = BASE_TILE * WORLD_SCALE;
   const MAP_W = 120;
-  const MAP_H = 144;
+  const MAP_H = 160;
   const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const SAFE_ZONES = [
@@ -19,6 +19,7 @@
     { id: "moon-camp", name: "月見砦", x1: 94, y1: 113, x2: 110, y2: 118, outerX1: 93, outerY1: 112, outerX2: 111, outerY2: 119 },
     { id: "black-market", name: "黒市", x1: 20, y1: 129, x2: 48, y2: 136, outerX1: 19, outerY1: 128, outerX2: 49, outerY2: 137 },
     { id: "black-fort", name: "黒門砦", x1: 88, y1: 129, x2: 106, y2: 134, outerX1: 87, outerY1: 128, outerX2: 107, outerY2: 135 },
+    { id: "frost-haven", name: "白銀宿", x1: 12, y1: 150, x2: 34, y2: 156, outerX1: 11, outerY1: 149, outerX2: 35, outerY2: 157 },
   ];
   const HEAL_POINTS = [
     { ...HEAL_CIRCLE, id: "village-circle", name: "村の回復陣" },
@@ -27,6 +28,7 @@
     { x: 102, y: 116, id: "moon-camp-circle", name: "月見砦の回復陣" },
     { x: 35, y: 135, id: "black-market-circle", name: "黒市の回復陣" },
     { x: 98, y: 132, id: "black-fort-circle", name: "黒門砦の回復陣" },
+    { x: 24, y: 154, id: "frost-haven-circle", name: "白銀宿の回復陣" },
   ];
   const TRAVEL_POINTS = [
     { id: "village", name: "村", x: 10, y: 48, cost: 0, unlock: "always" },
@@ -35,6 +37,7 @@
     { id: "moon-camp", name: "月見砦", x: 102, y: 116, cost: 170, unlock: "ashKnightDefeated" },
     { id: "black-fort", name: "黒門砦", x: 98, y: 132, cost: 260, unlock: "chapter2Reported" },
     { id: "black-market", name: "黒市", x: 35, y: 135, cost: 320, unlock: "blackMarket" },
+    { id: "frost-haven", name: "白銀宿", x: 24, y: 154, cost: 420, unlock: "chapter3Reported" },
   ];
   const DUNGEON_PORTALS = [
     { id: "black-market-catacomb-entry", name: "黒市地下墓所", x: 47, y: 130, toX: 83, toY: 2, prompt: "入る: 黒市地下墓所" },
@@ -88,6 +91,9 @@
     { id: "black-sun-cache", x: 76, y: 140, reward: "voidSupply" },
     { id: "undercity-supply", x: 91, y: 7, reward: "cryptSupply" },
     { id: "undercity-reliquary", x: 117, y: 13, reward: "deepLamp" },
+    { id: "frost-haven-supply", x: 30, y: 153, reward: "frostSupply" },
+    { id: "frost-core-reliquary", x: 68, y: 155, reward: "frostCharm" },
+    { id: "frost-citadel-cache", x: 114, y: 156, reward: "frostSupply" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
@@ -121,6 +127,9 @@
     { id: "black-sun-ditch-marker", x: 66, y: 136, kind: "shortcutHint" },
     { id: "black-sun-trap-note", x: 75, y: 139, kind: "trapHint" },
     { id: "undercity-inscription", x: 101, y: 10, kind: "cryptHint" },
+    { id: "frost-road-waystone", x: 24, y: 148, kind: "frostHint" },
+    { id: "frost-cave-warning", x: 54, y: 153, kind: "frostHint" },
+    { id: "frost-seal", x: 103, y: 154, kind: "frostSeal" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
@@ -141,6 +150,10 @@
   const MIST_KEEPER_REQUIREMENTS = { level: 18 };
   const CRYPT_WARDEN_SITE = { x: 116, y: 12 };
   const CRYPT_WARDEN_REQUIREMENTS = { level: 22 };
+  const FROST_GOLEM_SITE = { x: 64, y: 155 };
+  const FROST_GOLEM_REQUIREMENTS = { level: 30 };
+  const FROST_DRAGON_SITE = { x: 108, y: 156 };
+  const CHAPTER4_REQUIREMENTS = { level: 34 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -159,6 +172,9 @@
     void: { danger: 8, maxBonus: 10, pool: ["shieldSoldier", "summoner", "trapFlower", "voidWraith", "eclipseMage", "moonShade", "dragonling"] },
     mistShrine: { danger: 8, maxBonus: 9, pool: ["mistLancer", "summoner", "trapFlower", "moonShade", "bubbler", "shieldSoldier"] },
     undercity: { danger: 8, maxBonus: 10, pool: ["vaultLeech", "shieldSoldier", "summoner", "trapFlower", "eclipseMage", "mistLancer"] },
+    frost: { danger: 9, maxBonus: 11, pool: ["frostMoth", "frostBeast", "shieldSoldier", "voidWraith", "mistLancer"] },
+    frostCave: { danger: 9, maxBonus: 12, pool: ["frostBeast", "frostMoth", "vaultLeech", "shieldSoldier", "summoner"] },
+    frostCitadel: { danger: 10, maxBonus: 13, pool: ["frostMoth", "frostBeast", "summoner", "shieldSoldier", "voidWraith", "eclipseMage"] },
   };
 
   const TILE_GRASS = 0;
@@ -183,20 +199,20 @@
   const ATTACK_WIDTH = 20 * WORLD_SCALE;
   const DASH_COST = 34;
 
-  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣", "黒曜の槌"];
-  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧"];
-  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し"];
-  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御"];
-  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 7400, 9600, 12800];
-  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34];
-  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 6200, 12200, 15200];
-  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42];
+  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣", "黒曜の槌", "霜砕きの剣"];
+  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧", "白銀の外套"];
+  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し", "凍土特効"];
+  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御", "凍結軽減"];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 7400, 9600, 12800, 18500];
+  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34, 40];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 6200, 12200, 15200, 21500];
+  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42, 50];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
-  const shieldNames = ["なし", "木盾", "鉄盾", "星盾", "黒陽盾", "黒曜大盾"];
-  const shieldTraits = ["盾なし", "正面接触を少し軽減", "正面接触を軽減", "魔法敵にも構えやすい", "黒陽領の正面圧を軽減", "重いが正面戦闘に強い"];
-  const shieldCosts = [0, 120, 520, 1700, 6600, 26200];
-  const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48];
+  const shieldNames = ["なし", "木盾", "鉄盾", "星盾", "黒陽盾", "黒曜大盾", "霜鏡盾"];
+  const shieldTraits = ["盾なし", "正面接触を少し軽減", "正面接触を軽減", "魔法敵にも構えやすい", "黒陽領の正面圧を軽減", "重いが正面戦闘に強い", "凍土の正面圧を軽減"];
+  const shieldCosts = [0, 120, 520, 1700, 6600, 26200, 32000];
+  const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48, 0.42];
   const shieldSellValues = shieldCosts.map((cost) => Math.floor(cost * 0.45));
   const itemOrder = ["potion", "tonic", "bomb", "ward", "elixir", "warp"];
   const itemNames = {
@@ -215,7 +231,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -282,6 +298,12 @@
       trait: "鈍足を軽減・薬草回復を強化",
       sell: 0,
       flag: "deepLampCharm",
+    },
+    frost: {
+      name: "霜心の護符",
+      trait: "氷弾・凍結・スタミナ低下を軽減",
+      sell: 0,
+      flag: "frostCharm",
     },
   };
 
@@ -520,6 +542,44 @@
       midboss: true,
       drop: 0.9,
     },
+    frostMoth: {
+      name: "氷晶蛾",
+      hp: 340,
+      atk: 145,
+      def: 70,
+      speed: 31 * WORLD_SCALE,
+      xp: 320,
+      gold: 105,
+      color: "#b9f4ff",
+      shadow: "#315d7a",
+      drop: 0.3,
+      flying: true,
+    },
+    frostBeast: {
+      name: "霜牙獣",
+      hp: 520,
+      atk: 162,
+      def: 96,
+      speed: 30 * WORLD_SCALE,
+      xp: 420,
+      gold: 145,
+      color: "#d7e8ef",
+      shadow: "#42596a",
+      drop: 0.34,
+    },
+    frostGolem: {
+      name: "氷窟巨人",
+      hp: 4200,
+      atk: 172,
+      def: 150,
+      speed: 17 * WORLD_SCALE,
+      xp: 3100,
+      gold: 1500,
+      color: "#8dd7ff",
+      shadow: "#1c4966",
+      midboss: true,
+      drop: 1,
+    },
     dragonling: {
       name: "小竜",
       hp: 158,
@@ -623,6 +683,19 @@
       boss: true,
       drop: 1,
     },
+    frostDragon: {
+      name: "霜冠竜",
+      hp: 7600,
+      atk: 182,
+      def: 158,
+      speed: 24 * WORLD_SCALE,
+      xp: 6000,
+      gold: 3200,
+      color: "#d9f7ff",
+      shadow: "#315d7a",
+      boss: true,
+      drop: 1,
+    },
   };
 
   globalThis.DRAGON_HUNTER_DEFINITIONS = {
@@ -663,6 +736,10 @@
     MIST_KEEPER_REQUIREMENTS,
     CRYPT_WARDEN_SITE,
     CRYPT_WARDEN_REQUIREMENTS,
+    FROST_GOLEM_SITE,
+    FROST_GOLEM_REQUIREMENTS,
+    FROST_DRAGON_SITE,
+    CHAPTER4_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,

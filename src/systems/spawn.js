@@ -36,6 +36,10 @@
     MIST_KEEPER_REQUIREMENTS,
     CRYPT_WARDEN_SITE,
     CRYPT_WARDEN_REQUIREMENTS,
+    FROST_GOLEM_SITE,
+    FROST_GOLEM_REQUIREMENTS,
+    FROST_DRAGON_SITE,
+    CHAPTER4_REQUIREMENTS,
     monsterTypes,
   } = definitions;
 
@@ -143,6 +147,9 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     if (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) return "undercity";
+    if (ty >= 144 && tx >= 90) return "frostCitadel";
+    if (ty >= 150 && tx >= 48 && tx <= 70) return "frostCave";
+    if (ty >= 144) return "frost";
     if (tx >= 62 && tx <= 84 && ty >= 116 && ty <= 126) return "mistShrine";
     if (tx >= 24 && tx <= 58 && ty >= 120 && ty <= 127) return "regenCave";
     if (tx >= 18 && tx <= 23 && ty >= 95 && ty <= 128) return "smuggler";
@@ -177,6 +184,7 @@
       if (region === "regenCave") return ["bubbler", "wisp", "trapFlower"];
       if (region === "mistShrine") return ["bubbler", "wisp", "trapFlower"];
       if (region === "undercity") return ["shieldSoldier", "wisp", "vaultLeech"];
+      if (region === "frost" || region === "frostCave" || region === "frostCitadel") return ["frostMoth", "frostBeast", "shieldSoldier"];
       const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => !["dragonling", "wisp", "summoner", "trapFlower", "sorcerer", "moonShade", "eclipseMage", "voidWraith", "obsidianCrawler", "shieldSoldier", "mistLancer", "mistKeeper"].includes(type));
       return safePool.length ? safePool : ["bat", "boar"];
     }
@@ -205,6 +213,8 @@
     if (lv >= 26 && region === "void") pool.push("voidWraith", "voidWraith");
     if (lv >= 22 && region === "obsidian") pool.push("obsidianCrawler", "voidWraith");
     if (lv >= 24 && region === "obsidian") pool.push("obsidianCrawler", "obsidianCrawler");
+    if (lv >= 28 && (region === "frost" || region === "frostCave" || region === "frostCitadel")) pool.push("frostMoth", "frostBeast");
+    if (lv >= 32 && region === "frostCitadel") pool.push("frostMoth", "summoner");
     return pool;
   }
 
@@ -241,7 +251,7 @@
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : 6;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -301,6 +311,9 @@
   }
 
   function areaDangerText(region) {
+    if (region === "frostCitadel") return "霜冠城: 第4章の最奥";
+    if (region === "frostCave") return "氷窟: 巨人と吸命の巣";
+    if (region === "frost") return "霜原: 白銀宿より先は凍結地帯";
     if (region === "undercity") return "黒市地下墓所: 吸命鬼と墓守の領域";
     if (region === "obsidian") return "黒曜洞: 黒市の外は巨人の縄張り";
     if (region === "void") return "黒陽領: 第3章の高難度地帯";
@@ -386,6 +399,22 @@
       && player.level >= CRYPT_WARDEN_REQUIREMENTS.level;
   }
 
+  function frostGolemReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.frostGolemDefeated
+      && state.chapter3Reported
+      && player.level >= FROST_GOLEM_REQUIREMENTS.level;
+  }
+
+  function frostDragonReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.frostDragonDefeated
+      && state.chapter3Reported
+      && state.frostGolemDefeated
+      && state.discoveries.has("frost-seal")
+      && player.level >= CHAPTER4_REQUIREMENTS.level;
+  }
+
   function playerNearGuardianSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -466,6 +495,22 @@
     return Math.hypot(pc.x - cx, pc.y - cy) < worldPx(98);
   }
 
+  function playerNearFrostGolemSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const gx = (FROST_GOLEM_SITE.x + 0.5) * TILE;
+    const gy = (FROST_GOLEM_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - gx, pc.y - gy) < worldPx(104);
+  }
+
+  function playerNearFrostDragonSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const dx = (FROST_DRAGON_SITE.x + 0.5) * TILE;
+    const dy = (FROST_DRAGON_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - dx, pc.y - dy) < worldPx(112);
+  }
+
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver) return;
@@ -500,6 +545,12 @@
     if (state.spawnedCryptWarden && !state.cryptWardenDefeated && !hasLiveMonster(context, "cryptWarden")) {
       state.spawnedCryptWarden = false;
     }
+    if (state.spawnedFrostGolem && !state.frostGolemDefeated && !hasLiveMonster(context, "frostGolem")) {
+      state.spawnedFrostGolem = false;
+    }
+    if (state.spawnedFrostDragon && !state.frostDragonDefeated && !hasLiveMonster(context, "frostDragon")) {
+      state.spawnedFrostDragon = false;
+    }
 
     if (smugglerCaptainReady(context) && !state.spawnedSmugglerCaptain && playerNearSmugglerCaptainSite(context)) {
       state.spawnedSmugglerCaptain = true;
@@ -523,6 +574,18 @@
       state.spawnedCryptWarden = true;
       spawnMonster(context, "cryptWarden", CRYPT_WARDEN_SITE.x * TILE, CRYPT_WARDEN_SITE.y * TILE);
       say("地下墓所の番人が吸命鬼を呼び起こした!", 3200);
+    }
+
+    if (frostGolemReady(context) && !state.spawnedFrostGolem && playerNearFrostGolemSite(context)) {
+      state.spawnedFrostGolem = true;
+      spawnMonster(context, "frostGolem", FROST_GOLEM_SITE.x * TILE, FROST_GOLEM_SITE.y * TILE);
+      say("氷窟の奥で氷窟巨人が目覚めた!", 3200);
+    }
+
+    if (frostDragonReady(context) && !state.spawnedFrostDragon && playerNearFrostDragonSite(context)) {
+      state.spawnedFrostDragon = true;
+      spawnMonster(context, "frostDragon", FROST_DRAGON_SITE.x * TILE, FROST_DRAGON_SITE.y * TILE);
+      say("霜冠城の奥で霜冠竜が目覚めた!", 3600);
     }
 
     if (ashKnightReady(context) && !state.spawnedAshKnight && playerNearAshKnightSite(context)) {
@@ -586,6 +649,8 @@
     regenSentinelReady,
     mistKeeperReady,
     cryptWardenReady,
+    frostGolemReady,
+    frostDragonReady,
     hasLiveMonster,
     playerNearGuardianSite,
     playerNearWardenSite,
@@ -597,6 +662,8 @@
     playerNearRegenSentinelSite,
     playerNearMistKeeperSite,
     playerNearCryptWardenSite,
+    playerNearFrostGolemSite,
+    playerNearFrostDragonSite,
     updateStoryEvents,
   };
 })();

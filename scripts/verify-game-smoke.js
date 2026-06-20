@@ -310,11 +310,15 @@ function assertMapReachability() {
     ["voidDragon", d.VOID_DRAGON_SITE.x, d.VOID_DRAGON_SITE.y],
     ["black-market-catacomb-entry", 47, 130],
     ["cryptWarden", d.CRYPT_WARDEN_SITE.x, d.CRYPT_WARDEN_SITE.y],
+    ["frost-haven", 24, 154],
+    ["frost-cave", d.FROST_GOLEM_SITE.x, d.FROST_GOLEM_SITE.y],
+    ["frost-seal", 103, 154],
+    ["frostDragon", d.FROST_DRAGON_SITE.x, d.FROST_DRAGON_SITE.y],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
-  assert(d.MAP_W === 120 && d.MAP_H === 144, "expanded map should be 120x144");
-  assert(state.npcs.length === 49, "expected 49 NPCs after base population, city, wagon, and density expansion");
+  assert(d.MAP_W === 120 && d.MAP_H === 160, "expanded map should be 120x160");
+  assert(state.npcs.length === 56, "expected 56 NPCs after Frost Haven population expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "merchant"), "black market merchant should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "porter"), "porter NPCs should load from WORLD_OBJECTS");
@@ -346,7 +350,8 @@ function assertSaveLoadAndEquipment() {
   player.voidCharm = true;
   player.obsidianCharm = true;
   player.deepLampCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp"];
+  player.frostCharm = true;
+  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost"];
   player.equippedAccessory = "trail";
   player.equippedAccessories = ["trail", "greaterRegen"];
   state.chests.add("town-cache");
@@ -368,6 +373,10 @@ function assertSaveLoadAndEquipment() {
   state.spawnedMistKeeper = true;
   state.cryptWardenDefeated = true;
   state.spawnedCryptWarden = true;
+  state.frostGolemDefeated = true;
+  state.spawnedFrostGolem = true;
+  state.frostDragonDefeated = true;
+  state.spawnedFrostDragon = true;
   state.eclipseDragonDefeated = true;
   state.spawnedEclipseDragon = true;
   state.chapter2Reported = true;
@@ -376,6 +385,7 @@ function assertSaveLoadAndEquipment() {
   state.obsidianGolemDefeated = true;
   state.spawnedObsidianGolem = true;
   state.chapter3Reported = true;
+  state.chapter4Reported = true;
   state.bossDefeated = true;
   state.spawnedBoss = true;
   state.elderReported = true;
@@ -396,10 +406,11 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.voidCharm, "void charm should persist");
   assert(restored.player.obsidianCharm, "obsidian charm should persist");
   assert(restored.player.deepLampCharm, "deep lamp charm should persist");
+  assert(restored.player.frostCharm, "frost charm should persist");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
@@ -418,6 +429,8 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.regenSentinelDefeated, "regen sentinel defeat flag should persist");
   assert(restored.state.mistKeeperDefeated, "mist keeper defeat flag should persist");
   assert(restored.state.cryptWardenDefeated, "crypt warden defeat flag should persist");
+  assert(restored.state.frostGolemDefeated, "frost golem defeat flag should persist");
+  assert(restored.state.frostDragonDefeated && restored.state.chapter4Reported, "chapter 4 flags should persist");
   assert(restored.state.eclipseDragonDefeated && restored.state.chapter2Reported, "chapter 2 flags should persist");
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.obsidianGolemDefeated, "obsidian golem defeat flag should persist");
@@ -683,7 +696,34 @@ function assertStoryClearFlow() {
   assert(state.voidDragonDefeated && state.chapter3Victory, "Void Dragon defeat should set chapter 3 victory");
   runtime.handleNpc(elder);
   assert(state.chapter3Reported, "Elder report should complete chapter 3 clear state");
-  return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported, chapter2Reported: state.chapter2Reported, chapter3Reported: state.chapter3Reported };
+
+  player.level = d.FROST_GOLEM_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.FROST_GOLEM_SITE.x * d.TILE;
+  player.y = d.FROST_GOLEM_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedFrostGolem, "Frost Golem should spawn after chapter 3 report and level gate");
+  const frostGolem = state.monsters.find((monster) => monster.type === "frostGolem");
+  assert(frostGolem, "Frost Golem monster should exist");
+  frostGolem.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.frostGolemDefeated, "Frost Golem defeat should unlock the frost citadel route");
+
+  state.discoveries.add("frost-seal");
+  player.level = d.CHAPTER4_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.FROST_DRAGON_SITE.x * d.TILE;
+  player.y = d.FROST_DRAGON_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedFrostDragon, "Frost Dragon should spawn after chapter 4 requirements");
+  const frostDragon = state.monsters.find((monster) => monster.type === "frostDragon");
+  assert(frostDragon, "Frost Dragon monster should exist");
+  frostDragon.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.frostDragonDefeated && state.chapter4Victory, "Frost Dragon defeat should set chapter 4 victory");
+  runtime.handleNpc(elder);
+  assert(state.chapter4Reported, "Elder report should complete chapter 4 clear state");
+  return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported, chapter2Reported: state.chapter2Reported, chapter3Reported: state.chapter3Reported, chapter4Reported: state.chapter4Reported };
 }
 
 function assertMineContent() {
@@ -808,6 +848,10 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.mistKeeper), "mist keeper monster definition should exist");
   assert(Boolean(d.monsterTypes.vaultLeech), "vault leech monster definition should exist");
   assert(Boolean(d.monsterTypes.cryptWarden), "crypt warden monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostMoth), "frost moth monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostBeast), "frost beast monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostGolem), "frost golem monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostDragon), "frost dragon monster definition should exist");
 
   player.x = 47 * d.TILE;
   player.y = 130 * d.TILE;
@@ -816,6 +860,15 @@ function assertExpandedWorldContent() {
   runtime.traversePortal(catacombPortal);
   assert(Math.floor(player.x / d.TILE) === 83 && Math.floor(player.y / d.TILE) === 2, "catacomb portal should move the player into the interior");
   assert(runtime.currentRegion() === "undercity", "catacomb interior should use undercity region");
+  player.x = 24 * d.TILE;
+  player.y = 148 * d.TILE;
+  assert(runtime.currentRegion() === "frost", "Frost Haven approach should use frost region");
+  player.x = 64 * d.TILE;
+  player.y = 155 * d.TILE;
+  assert(runtime.currentRegion() === "frostCave", "ice cave should use frost cave region");
+  player.x = 108 * d.TILE;
+  player.y = 156 * d.TILE;
+  assert(runtime.currentRegion() === "frostCitadel", "Frost Crown Citadel should use frost citadel region");
 
   player.x = 20 * d.TILE;
   player.y = 100 * d.TILE;
@@ -898,6 +951,13 @@ function assertExpandedWorldContent() {
   runtime.updateMonsters(16);
   assert(state.cryptWardenDefeated, "crypt warden defeat should persist in state");
   state.monsters = [];
+  player.level = d.CHAPTER4_REQUIREMENTS.level;
+  const frostPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frost");
+  const frostCavePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostCave");
+  const frostCitadelPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostCitadel");
+  assert(frostPool.includes("frostMoth") && frostPool.includes("frostBeast"), "frost field should use its new enemy family");
+  assert(frostCavePool.includes("frostBeast") && frostCavePool.includes("vaultLeech"), "ice cave should mix charge and drain pressure");
+  assert(frostCitadelPool.includes("frostMoth") && frostCitadelPool.includes("summoner"), "frost citadel should mix ice projectiles and summons");
   player.level = 20;
   const eclipsePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "eclipse");
   assert(eclipsePool.includes("eclipseMage") && eclipsePool.includes("moonShade") && eclipsePool.includes("summoner") && eclipsePool.includes("trapFlower"), "eclipse spawn pool should include eclipse mage, moon shade, summoner, and trap flowers");
@@ -944,10 +1004,47 @@ function assertExpandedWorldContent() {
   assert(!state.monsters.some((monster) => monster.type === "trapFlower"), "trap flower should be removed after exploding");
   state.gameOver = false;
 
+  state.monsters = [];
+  state.projectiles = [];
+  player.x = 82 * d.TILE;
+  player.y = 148 * d.TILE;
+  runtime.spawnMonster("frostMoth", player.x + d.TILE * 2, player.y);
+  const frostMoth = state.monsters.find((monster) => monster.type === "frostMoth");
+  frostMoth.fireCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.source === "frostMoth"), "frost moth should fire freezing projectiles from range");
+
+  state.monsters = [];
+  state.projectiles = [];
+  runtime.spawnMonster("frostBeast", player.x + d.TILE * 2, player.y);
+  const frostBeast = state.monsters.find((monster) => monster.type === "frostBeast");
+  frostBeast.chargeCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(frostBeast.windup > 0, "frost beast should telegraph its long charge");
+
+  state.monsters = [];
+  player.x = 104 * d.TILE;
+  player.y = 156 * d.TILE;
+  runtime.spawnMonster("frostDragon", 108 * d.TILE, 156 * d.TILE);
+  const behaviorFrostDragon = state.monsters.find((monster) => monster.type === "frostDragon");
+  behaviorFrostDragon.hp = behaviorFrostDragon.hpMax * 0.4;
+  runtime.updateMonsters(16);
+  assert(behaviorFrostDragon.enraged && behaviorFrostDragon.summoned, "frost dragon should enrage and call frost reinforcements below half HP");
+  assert(state.monsters.some((monster) => monster.type === "frostMoth") && state.monsters.some((monster) => monster.type === "frostBeast"), "frost dragon should summon both frost enemy behaviors");
+  state.monsters = [];
+  state.projectiles = [];
+
   assert(runtime.inTownTile(102, 58), "ash hamlet should be a safe-zone tile");
   assert(runtime.inTownTile(102, 116), "moon camp should be a safe-zone tile");
   assert(runtime.inTownTile(98, 132), "black fort should be a safe-zone tile");
   assert(runtime.inTownTile(35, 135), "black market should be a safe-zone tile");
+  assert(runtime.inTownTile(24, 154), "Frost Haven should be a safe-zone tile");
+  player.hp = 5;
+  player.x = 24 * d.TILE;
+  player.y = 154 * d.TILE;
+  runtime.updateHealCircle();
+  assert(player.hp === player.hpMax, "Frost Haven heal circle should fully heal");
+  state.healCooldown = 0;
   player.hp = 5;
   player.x = 102 * d.TILE;
   player.y = 58 * d.TILE;
@@ -1014,6 +1111,19 @@ function assertExpandedWorldContent() {
   buyShopRow(runtime, state, (row) => row.type === "item" && row.id === "elixir", "black market should sell elixir supplies");
   buyShopRow(runtime, state, (row) => row.type === "item" && row.id === "warp", "black market should sell return bells");
   assert(player.elixirs >= 2 && player.warps >= 2, "black market premium items should enter inventory");
+
+  const frostFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.y > 144 * d.TILE);
+  assert(frostFrontier, "Frost Haven frontier NPC should exist");
+  state.chapter3Reported = true;
+  player.hp = player.hpMax;
+  player.stamina = player.staminaMax;
+  player.gold = d.weaponCosts[12] + d.armorCosts[12] + d.shieldCosts[6] + 2000;
+  runtime.closeShop();
+  openNpcShop(runtime, state, frostFrontier);
+  buyShopRow(runtime, state, (row) => row.type === "weapon" && row.id === 12, "Frost Haven weapon should be selectable");
+  buyShopRow(runtime, state, (row) => row.type === "armor" && row.id === 12, "Frost Haven armor should be selectable");
+  buyShopRow(runtime, state, (row) => row.type === "shield" && row.id === 6, "Frost Haven shield should be selectable");
+  assert(player.ownedWeapons.includes(12) && player.ownedArmors.includes(12) && player.ownedShields.includes(6), "Frost Haven should sell complete frost-route gear");
 
   const porter = state.npcs.find((entry) => entry.type === "porter");
   assert(porter, "porter NPC should exist for base travel");
@@ -1096,6 +1206,15 @@ function assertExpandedWorldContent() {
   guardedCryptChest.runtime.openChest(cryptChest);
   assert(guardedCryptChest.state.chests.has("undercity-reliquary") && guardedCryptChest.player.ownedAccessories.includes("deepLamp"), "catacomb reliquary should open after Crypt Warden defeat");
 
+  const frostChest = d.TREASURE_CHESTS.find((chest) => chest.id === "frost-core-reliquary");
+  assert(frostChest, "frost core reliquary should exist");
+  const guardedFrostChest = createRuntime();
+  guardedFrostChest.runtime.openChest(frostChest);
+  assert(!guardedFrostChest.state.chests.has("frost-core-reliquary") && !guardedFrostChest.player.ownedAccessories.includes("frost"), "frost reliquary should stay locked until Frost Golem defeat");
+  guardedFrostChest.state.frostGolemDefeated = true;
+  guardedFrostChest.runtime.openChest(frostChest);
+  assert(guardedFrostChest.state.chests.has("frost-core-reliquary") && guardedFrostChest.player.ownedAccessories.includes("frost"), "frost reliquary should open after Frost Golem defeat");
+
   const regenBefore = reward.runtime.regenRate();
   reward.runtime.grantChestReward("greaterRegen");
   globalThis.DRAGON_HUNTER_REWARDS.equipAccessory(reward.player, "greaterRegen");
@@ -1128,6 +1247,18 @@ function assertExpandedWorldContent() {
   const hpBeforeLampPotion = reward.player.hp;
   reward.runtime.useSelectedItem();
   assert(reward.player.hp - hpBeforeLampPotion > 30 + reward.player.level * 6, "deep lamp should strengthen herb healing");
+  reward.runtime.grantChestReward("frostSupply");
+  assert(reward.player.elixirs >= 5 && reward.player.warps >= 5, "frost supply should extend the new region expedition");
+  reward.runtime.grantChestReward("frostCharm");
+  assert(reward.player.ownedAccessories.includes("frost"), "ice cave reliquary should grant the frost accessory");
+  reward.player.armor = 0;
+  reward.player.equippedAccessories = ["frost"];
+  reward.player.equippedAccessory = "frost";
+  const frostGuardedDamage = reward.runtime.armorDamageMultiplier({ type: "frostMoth" }, 0.2, "frost");
+  reward.player.equippedAccessories = [];
+  reward.player.equippedAccessory = "";
+  const frostUnguardedDamage = reward.runtime.armorDamageMultiplier({ type: "frostMoth" }, 0.2, "frost");
+  assert(frostGuardedDamage < frostUnguardedDamage, "frost charm should reduce frost-route damage when equipped");
   reward.runtime.grantChestReward("shieldGear");
   assert(reward.player.ownedShields.includes(3), "shieldGear chest should grant a route shield");
   reward.runtime.grantChestReward("blackShieldSupply");
@@ -1140,7 +1271,7 @@ function assertExpandedWorldContent() {
   assert(reward.player.warps >= 5 && reward.player.tonics >= 6 && reward.player.wards >= 9, "route, shortcut, and cave hints should provide travel supplies");
   reward.runtime.grantChestReward("blackMarketSupply");
   assert(reward.player.potions >= 4 && reward.player.bombs >= 3 && reward.player.wards >= 9 && reward.player.warps >= 3, "blackMarketSupply chest should add deep-route supplies");
-  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", undercityRegion: "undercity", obsidianRegion: "obsidian", voidRegion: "void", blackSunGear: true };
+  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", undercityRegion: "undercity", obsidianRegion: "obsidian", voidRegion: "void", frostRegion: "frost", blackSunGear: true, frostGear: true };
 }
 
 function assertScriptLoadSmoke() {

@@ -67,7 +67,7 @@ Future work should grow the game into a larger RPG.
 
 Long-term direction:
 
-* Keep expanding the editable world beyond the current `120x144` overworld definition.
+* Keep expanding the editable world beyond the current `120x160` overworld definition.
 * Use hand-authored map data or additional hand-authored map files.
 * Add multiple regional arcs, not just one long walk from the starting village.
 * Add towns, frontier bases, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
@@ -138,6 +138,10 @@ Most important growth feeling: **reversal of power**.
 | Regeneration Cave | Optional side dungeon north of Black Market. Its Greater Regeneration Ring is a major survival-range reward, so it is guarded by the Regen Sentinel rather than being a free pickup. |
 | Mist Shrine | Optional shrine route beyond the Black Market north side path. It adds a second side-dungeon layer after Regeneration Cave, mixing trap, summon, magic, and charge pressure before awarding the Mist Charm. |
 | Black Market Catacombs / 黒市地下墓所 | Compact interior dungeon entered from Black Market. Its enclosed rooms combine life-drain contact pressure, shields, summons, and a named warden before awarding a route-extending accessory. |
+| Frost Frontier / 霜原 | Chapter 4 expedition region beyond Black Sun Castle. Its main road is faster, while the southern ice route is denser and leads to the chapter countermeasure reward. |
+| Frost Haven / 白銀宿 | Chapter 4 safe hub: full recovery, wagon travel, premium supplies, and selectable frost weapon/armor/shield stock. It moves the safe radius into the frozen frontier. |
+| Ice Cave / 氷窟 | Chapter 4 branch dungeon with Frost Moth ranged pressure, Frost Beast charges, Frost Golem, and the Frost Heart reliquary. |
+| Frost Crown Citadel / 霜冠城 | Chapter 4 final route: seal discovery, highest regional spawn pressure, final supplies, and Frost Crown Dragon arena. |
 | Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
 
 ## Enemy roles
@@ -161,6 +165,9 @@ Most important growth feeling: **reversal of power**.
 | Mist Keeper | Named shrine midboss after Regen Sentinel + LV18. It uses midboss magic pressure and gates the Mist Charm so the extra route feels like a real expedition, not a free cache. |
 | Vault Leech / 吸命鬼 | Catacomb contact enemy. Successful contact drains stamina, slows the player, and restores its own HP, rewarding clean positioning and timely retreat. |
 | Crypt Warden / 地下墓所の番人 | Optional LV22 midboss after Chapter 2 report. It fires grave magic and calls Vault Leeches at half HP, turning the final chamber into a priority and resource check. |
+| Frost Moth / 氷晶蛾 | Chapter 4 flying caster. Fast frost shots apply slow and stamina loss, making frost resistance and projectile positioning matter. |
+| Frost Beast / 霜牙獣 | Chapter 4 charger with a long readable windup and a forceful lunge. The intended answer is to sidestep or take the safer road rather than absorb the charge. |
+| Frost Golem / 氷窟巨人 | Required LV30 Chapter 4 midboss. Its heavy frost pressure gates the Frost Heart reliquary and turns the southern ice route into an earned preparation expedition. |
 | Dragonling | Late stronger enemy; signals dragon-route danger. |
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
@@ -168,6 +175,7 @@ Most important growth feeling: **reversal of power**.
 | Red Dragon | Chapter 1 final boss: enrage, spread shots, summons, preparation check. |
 | Eclipse Dragon / 月蝕竜 | Chapter 2 major boss after Red Dragon report, Ash Knight, moon relic, eclipse seal, and level 20; enrages into wider magic shots and summons late enemies. |
 | Black Sun Dragon / 黒陽竜 | Chapter 3 major boss after Chapter 2 report, Eclipse Castle cache, Black Fort armory, Black Sun seal, and level 26; uses heavy void projectiles, wider enraged spreads, and summons. |
+| Frost Crown Dragon / 霜冠竜 | Chapter 4 major boss after Chapter 3 report, Frost Golem, frost seal, and level 34. It enrages into five-way frost spreads and summons both ranged and charging reinforcements. |
 
 Enemies should differ by gameplay, not only appearance or stats.
 
@@ -212,6 +220,8 @@ Current direction:
 * Moon Camp is the third remote equipment hub and sells/grants eclipse preparation after the player reaches the Chapter 2 route.
 * Black Fort is the fourth remote equipment hub and sells/grants Black Sun preparation after the player reaches the Chapter 3 route.
 * `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` prepare for Void Wraith / Black Sun Dragon pressure.
+* Frost Haven is the fifth remote equipment hub and sells `霜砕きの剣`, `白銀の外套`, and `霜鏡盾` for the Chapter 4 route.
+* `霜心の護符` is earned after defeating the Frost Golem. It reduces frost contact/projectile pressure, slow, and stamina loss, and adds stamina capacity.
 * Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
 * Accessory pairing is now part of route preparation: e.g. movement bell + resistance charm, or large regeneration + route resistance.
 * `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave after defeating the Regen Sentinel.
@@ -230,6 +240,25 @@ Future direction:
 Equipment should alter survivability, exploration range, route preparation, or contact-combat incentives, not only numbers.
 
 ## UI, feedback, and visual direction
+
+## Latest design truth: Chapter 4 Frost Frontier
+
+Chapter 4 is a complete survival-range arc added beyond the reported Chapter 3 route.
+
+Current structure:
+
+* The fixed overworld is `120x160`; the new 16-row frontier is intentionally dense rather than empty map padding.
+* Frost Haven is the new safe anchor. It offers full recovery, premium stock, wagon travel, guidance, and visible town life.
+* The northern road is the clearer and faster approach to Frost Crown Citadel.
+* The southern ice route is more dangerous and leads through Ice Cave to Frost Golem and `霜心の護符`.
+* Frost Crown Citadel requires the Frost Golem victory, frost-seal discovery, and LV34 before the Frost Crown Dragon can be challenged.
+* The chapter's gear loop is explicit: buy frost weapon/armor/shield at Frost Haven, earn the Frost Heart accessory in Ice Cave, then use both against the final citadel pressure.
+* Chapter 4 concludes only after defeating Frost Crown Dragon and reporting to the village elder.
+
+Next design weakness:
+
+* Chapter 4 needs manual balance testing from a real Chapter 3 clear save: gold availability, LV30/LV34 timing, Frost Haven purchase choices, Ice Cave retreat distance, and Frost Crown Dragon reinforcement pacing.
+* The next large content pack should add a structurally distinct interior map or multi-floor destination instead of extending the overworld south again immediately.
 
 ## Latest design truth: selectable shops and Chapter 3 long expedition
 
@@ -301,7 +330,7 @@ A content pass is weak if it only adds empty walking space, cosmetic terrain, st
 
 ## Latest Design Truth: Dense Routes, Shields, and Landmarks
 
-The next content direction is to deepen the current `120x144` overworld before expanding map size again.
+The next content direction is to deepen the current `120x160` overworld before expanding map size again.
 
 Current design additions:
 
@@ -322,4 +351,4 @@ Current design additions:
 * The latest density pass added fixed terrain-detail overlays, additional supply caches, route hints, camp remains, shrine markers, thorn fields, and more remote-base NPCs. Continue using these small hand-authored landmarks to reduce sparse walking without bloating map size.
 * Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
 * `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.
-* Current `120x144` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and shortcut-like terrain before another size jump.
+* Current `120x160` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and shortcut-like terrain before another size jump.

@@ -119,7 +119,7 @@
       ));
     }
 
-    say(monster.type === "voidDragon" ? "黒陽竜は城の奥へ戻った" : monster.type === "eclipseDragon" ? "月蝕竜は城の奥へ戻った" : monster.boss ? "赤竜は洞窟の奥へ戻った" : "強敵は縄張りへ戻った", 2200);
+    say(monster.type === "frostDragon" ? "霜冠竜は城の奥へ戻った" : monster.type === "voidDragon" ? "黒陽竜は城の奥へ戻った" : monster.type === "eclipseDragon" ? "月蝕竜は城の奥へ戻った" : monster.boss ? "赤竜は洞窟の奥へ戻った" : "強敵は縄張りへ戻った", 2200);
   }
 
   function handleLeash(context, monster) {
@@ -208,17 +208,21 @@
 
       if (monster.boss && !monster.enraged && monster.hp <= monster.hpMax * 0.5) {
         monster.enraged = true;
-        monster.speed += worldPx(monster.type === "voidDragon" ? 11 : monster.type === "eclipseDragon" ? 9 : 6);
-        monster.atk += monster.type === "voidDragon" ? 12 : monster.type === "eclipseDragon" ? 8 : 4;
+        monster.speed += worldPx(monster.type === "frostDragon" ? 12 : monster.type === "voidDragon" ? 11 : monster.type === "eclipseDragon" ? 9 : 6);
+        monster.atk += monster.type === "frostDragon" ? 14 : monster.type === "voidDragon" ? 12 : monster.type === "eclipseDragon" ? 8 : 4;
         monster.fireCooldown = 120;
         state.shake = Math.max(state.shake, 260);
         addRing(c.x, c.y, monster.type === "voidDragon" ? "#d8d8ff" : monster.type === "eclipseDragon" ? "#e36dff" : "#ff543d", worldPx(48));
-        say(monster.type === "voidDragon" ? "黒陽竜が黒い太陽を背負った!" : monster.type === "eclipseDragon" ? "月蝕竜が月の魔力をまとった!" : "赤竜が怒り狂う!", 2600);
+        say(monster.type === "frostDragon" ? "霜冠竜が吹雪をまとった!" : monster.type === "voidDragon" ? "黒陽竜が黒い太陽を背負った!" : monster.type === "eclipseDragon" ? "月蝕竜が月の魔力をまとった!" : "赤竜が怒り狂う!", 2600);
       }
 
       if (monster.boss && monster.enraged && !monster.summoned && monster.hp <= monster.hpMax * 0.42) {
         monster.summoned = true;
-        if (monster.type === "voidDragon") {
+        if (monster.type === "frostDragon") {
+          spawnIfClear("frostMoth", monster.x - worldPx(42), monster.y - worldPx(32));
+          spawnIfClear("frostBeast", monster.x + worldPx(42), monster.y - worldPx(32));
+          say("霜冠竜が氷晶蛾と霜牙獣を呼んだ!", 2600);
+        } else if (monster.type === "voidDragon") {
           spawnIfClear("voidWraith", monster.x - worldPx(42), monster.y + worldPx(32));
           spawnIfClear("eclipseMage", monster.x + worldPx(42), monster.y + worldPx(28));
           say("黒陽竜が影と術師を呼び寄せた!", 2500);
@@ -241,11 +245,11 @@
         say("墓守が吸命鬼を呼び起こした!", 2400);
       }
 
-      if ((monster.type === "boar" || monster.type === "mistLancer") && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < worldPx(monster.type === "mistLancer" ? 118 : 92)) {
+      if ((monster.type === "boar" || monster.type === "mistLancer" || monster.type === "frostBeast") && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < worldPx(monster.type === "frostBeast" ? 132 : monster.type === "mistLancer" ? 118 : 92)) {
         monster.chargeVector = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
-        monster.windup = monster.type === "mistLancer" ? 520 : 360;
-        monster.chargeCooldown = monster.type === "mistLancer" ? 2300 : 1700;
-        addRing(c.x, c.y, monster.type === "mistLancer" ? "#9fd6c7" : "#ff8a3d", worldPx(monster.type === "mistLancer" ? 20 : 15));
+        monster.windup = monster.type === "frostBeast" ? 640 : monster.type === "mistLancer" ? 520 : 360;
+        monster.chargeCooldown = monster.type === "frostBeast" ? 2700 : monster.type === "mistLancer" ? 2300 : 1700;
+        addRing(c.x, c.y, monster.type === "frostBeast" ? "#b9f4ff" : monster.type === "mistLancer" ? "#9fd6c7" : "#ff8a3d", worldPx(monster.type === "frostBeast" ? 23 : monster.type === "mistLancer" ? 20 : 15));
       }
 
       if (monster.type === "summoner" && monster.summonCooldown <= 0 && dist < worldPx(185) && state.monsters.length < 18) {
@@ -276,8 +280,14 @@
         }
       }
 
-      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "voidWraith" || monster.type === "obsidianCrawler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "voidDragon" ? 225 : monster.type === "eclipseDragon" ? 205 : monster.type === "obsidianGolem" ? 185 : monster.boss ? 180 : monster.midboss ? 150 : monster.type === "bubbler" ? 145 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 185 : monster.type === "eclipseMage" ? 180 : monster.type === "summoner" ? 170 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
-        if (monster.type === "voidDragon" && monster.enraged) {
+      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "frostMoth" || monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "voidWraith" || monster.type === "obsidianCrawler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "frostDragon" ? 235 : monster.type === "voidDragon" ? 225 : monster.type === "eclipseDragon" ? 205 : monster.type === "obsidianGolem" ? 185 : monster.boss ? 180 : monster.midboss ? 150 : monster.type === "frostMoth" ? 195 : monster.type === "bubbler" ? 145 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 185 : monster.type === "eclipseMage" ? 180 : monster.type === "summoner" ? 170 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
+        if (monster.type === "frostDragon" && monster.enraged) {
+          shootProjectile(monster, playerCenter, -0.6);
+          shootProjectile(monster, playerCenter, -0.3);
+          shootProjectile(monster, playerCenter, 0);
+          shootProjectile(monster, playerCenter, 0.3);
+          shootProjectile(monster, playerCenter, 0.6);
+        } else if (monster.type === "voidDragon" && monster.enraged) {
           shootProjectile(monster, playerCenter, -0.52);
           shootProjectile(monster, playerCenter, -0.26);
           shootProjectile(monster, playerCenter, 0);
@@ -295,7 +305,7 @@
         } else {
           shootProjectile(monster, playerCenter);
         }
-        monster.fireCooldown = monster.type === "voidDragon" ? rand(660, 1040) : monster.type === "eclipseDragon" ? rand(760, 1180) : monster.type === "obsidianGolem" ? rand(920, 1450) : monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? rand(760, 1280) : monster.type === "eclipseMage" ? rand(820, 1320) : monster.type === "summoner" ? rand(1100, 1700) : monster.type === "sorcerer" || monster.type === "moonShade" ? rand(900, 1450) : rand(1300, 2100);
+        monster.fireCooldown = monster.type === "frostDragon" ? rand(600, 980) : monster.type === "voidDragon" ? rand(660, 1040) : monster.type === "eclipseDragon" ? rand(760, 1180) : monster.type === "obsidianGolem" ? rand(920, 1450) : monster.boss ? rand(850, 1400) : monster.midboss ? rand(1050, 1700) : monster.type === "frostMoth" ? rand(720, 1160) : monster.type === "bubbler" ? rand(1050, 1650) : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? rand(760, 1280) : monster.type === "eclipseMage" ? rand(820, 1320) : monster.type === "summoner" ? rand(1100, 1700) : monster.type === "sorcerer" || monster.type === "moonShade" ? rand(900, 1450) : rand(1300, 2100);
       }
 
       if (monster.type === "trapFlower") {
@@ -438,6 +448,13 @@
       player.stamina = Math.max(0, player.stamina - (lampGuard ? 5 : 18));
       monster.hp = Math.min(monster.hpMax, monster.hp + (lampGuard ? 5 : 18));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "吸命", "#d78ab7");
+    } else if (monster.type === "frostMoth" || monster.type === "frostBeast" || monster.type === "frostGolem" || monster.type === "frostDragon") {
+      const frostGuard = player.armor === 12 || activeAccessory(player, "frost", "frostCharm");
+      const baseSlow = monster.type === "frostDragon" ? 2100 : monster.type === "frostGolem" ? 1650 : monster.type === "frostBeast" ? 1300 : 1050;
+      const baseStamina = monster.type === "frostDragon" ? 28 : monster.type === "frostGolem" ? 22 : monster.type === "frostBeast" ? 18 : 14;
+      player.slow = Math.max(player.slow, Math.round(baseSlow * (frostGuard ? 0.45 : 1)));
+      player.stamina = Math.max(0, player.stamina - (frostGuard ? Math.ceil(baseStamina * 0.35) : baseStamina));
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "凍", "#b9f4ff");
     } else if (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "mistKeeper" || monster.type === "cryptWarden" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "obsidianCrawler" || monster.type === "obsidianGolem") {
       const eclipseGuard = player.armor === 9 || activeAccessory(player, "eclipse", "eclipseCharm");
       const voidGuard = player.armor === 10 || activeAccessory(player, "void", "voidCharm");
@@ -484,7 +501,16 @@
 
     grantMonsterDefeatDrops(monster);
 
-    if (monster.type === "voidDragon") {
+    if (monster.type === "frostDragon") {
+      state.frostDragonDefeated = true;
+      state.chapter4Victory = true;
+      state.spawnedFrostDragon = true;
+      player.wards = Math.min(9, player.wards + 5);
+      player.elixirs = Math.min(9, (player.elixirs || 0) + 2);
+      player.warps = Math.min(9, (player.warps || 0) + 1);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#d9f7ff", 68);
+      say("霜冠竜を封じた! 長老へ第4章の報告をしよう", 5800);
+    } else if (monster.type === "voidDragon") {
       state.voidDragonDefeated = true;
       state.chapter3Victory = true;
       state.spawnedVoidDragon = true;
@@ -502,6 +528,15 @@
       player.potions = Math.min(9, player.potions + 3);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#e36dff", 58);
       say("月蝕竜を封じた! 月見砦か村の長老へ報告しよう", 5200);
+    } else if (monster.type === "frostGolem") {
+      state.frostGolemDefeated = true;
+      state.spawnedFrostGolem = true;
+      player.gold += 1400;
+      player.potions = Math.min(9, player.potions + 3);
+      player.tonics = Math.min(9, (player.tonics || 0) + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#8dd7ff", 58);
+      say("氷窟巨人を倒した。奥の霜心の護符に近づける!", 4800);
     } else if (monster.type === "obsidianGolem") {
       state.obsidianGolemDefeated = true;
       state.spawnedObsidianGolem = true;
@@ -565,7 +600,7 @@
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
       say("南東の道番を越え、守りの護石を得た!", 4200);
-    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden"].includes(monster.type)) {
+    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "frostGolem"].includes(monster.type)) {
       state.guardianDefeated = true;
       player.sealCrest = true;
       player.scales = Math.min(3, player.scales + 1);
@@ -575,7 +610,7 @@
       say("封印の紋章を手に入れた!", 4200);
     }
 
-    if (monster.boss && monster.type !== "eclipseDragon" && monster.type !== "voidDragon") {
+    if (monster.boss && monster.type !== "eclipseDragon" && monster.type !== "voidDragon" && monster.type !== "frostDragon") {
       state.bossDefeated = true;
       state.victory = true;
       state.elderReported = false;
