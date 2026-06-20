@@ -216,6 +216,8 @@ function createRuntime() {
     handleCave: () => npc.handleCave(contexts.npc()),
     canChallengeDragon: () => npc.canChallengeDragon(contexts.npc()),
     nearestChest: () => actions.nearestChest(contexts.action()),
+    nearestPortal: () => actions.nearestPortal(contexts.action()),
+    traversePortal: (portal) => actions.traversePortal(contexts.action(), portal),
     openChest: (chest) => actions.openChest(contexts.action(), chest),
     nearestDiscovery: () => actions.nearestDiscovery(contexts.action()),
     searchGround: () => actions.searchGround(contexts.action()),
@@ -273,6 +275,14 @@ function assertMapReachability() {
         queue.push([nx, ny]);
       }
     }
+    for (const portal of d.DUNGEON_PORTALS || []) {
+      if (portal.x !== x || portal.y !== y) continue;
+      const key = `${portal.toX},${portal.toY}`;
+      if (!seen.has(key) && passable(portal.toX, portal.toY)) {
+        seen.add(key);
+        queue.push([portal.toX, portal.toY]);
+      }
+    }
   }
   const goals = [
     ...d.TREASURE_CHESTS.map((chest) => [`chest:${chest.id}`, chest.x, chest.y]),
@@ -298,6 +308,8 @@ function assertMapReachability() {
     ["black-gate-shield-cache", 73, 134],
     ["void-seal", 82, 138],
     ["voidDragon", d.VOID_DRAGON_SITE.x, d.VOID_DRAGON_SITE.y],
+    ["black-market-catacomb-entry", 47, 130],
+    ["cryptWarden", d.CRYPT_WARDEN_SITE.x, d.CRYPT_WARDEN_SITE.y],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
@@ -329,10 +341,12 @@ function assertSaveLoadAndEquipment() {
   player.trailCharm = true;
   player.aegisCharm = true;
   player.mineCharm = true;
+  player.mistCharm = true;
   player.eclipseCharm = true;
   player.voidCharm = true;
   player.obsidianCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
+  player.deepLampCharm = true;
+  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp"];
   player.equippedAccessory = "trail";
   player.equippedAccessories = ["trail", "greaterRegen"];
   state.chests.add("town-cache");
@@ -350,6 +364,10 @@ function assertSaveLoadAndEquipment() {
   state.spawnedSmugglerCaptain = true;
   state.regenSentinelDefeated = true;
   state.spawnedRegenSentinel = true;
+  state.mistKeeperDefeated = true;
+  state.spawnedMistKeeper = true;
+  state.cryptWardenDefeated = true;
+  state.spawnedCryptWarden = true;
   state.eclipseDragonDefeated = true;
   state.spawnedEclipseDragon = true;
   state.chapter2Reported = true;
@@ -373,13 +391,15 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.trailCharm, "trail charm should persist");
   assert(restored.player.aegisCharm, "aegis charm should persist");
   assert(restored.player.mineCharm, "mine charm should persist");
+  assert(restored.player.mistCharm, "mist charm should persist");
   assert(restored.player.eclipseCharm, "eclipse charm should persist");
   assert(restored.player.voidCharm, "void charm should persist");
   assert(restored.player.obsidianCharm, "obsidian charm should persist");
+  assert(restored.player.deepLampCharm, "deep lamp charm should persist");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
@@ -396,6 +416,8 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
   assert(restored.state.smugglerCaptainDefeated, "smuggler captain defeat flag should persist");
   assert(restored.state.regenSentinelDefeated, "regen sentinel defeat flag should persist");
+  assert(restored.state.mistKeeperDefeated, "mist keeper defeat flag should persist");
+  assert(restored.state.cryptWardenDefeated, "crypt warden defeat flag should persist");
   assert(restored.state.eclipseDragonDefeated && restored.state.chapter2Reported, "chapter 2 flags should persist");
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.obsidianGolemDefeated, "obsidian golem defeat flag should persist");
@@ -556,6 +578,19 @@ function assertStoryClearFlow() {
   runtime.updateMonsters(16);
   assert(state.regenSentinelDefeated, "Regen Sentinel defeat should persist in state");
   assert(!state.guardianDefeated, "Regen Sentinel defeat should not count as Guardian defeat");
+
+  player.level = d.MIST_KEEPER_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.MIST_KEEPER_SITE.x * d.TILE;
+  player.y = d.MIST_KEEPER_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedMistKeeper, "Mist Keeper should spawn inside the mist shrine");
+  const mistKeeper = state.monsters.find((monster) => monster.type === "mistKeeper");
+  assert(mistKeeper, "Mist Keeper monster should exist");
+  mistKeeper.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.mistKeeperDefeated, "Mist Keeper defeat should persist in state");
+  assert(!state.guardianDefeated, "Mist Keeper defeat should not count as Guardian defeat");
 
   player.level = 3;
   player.scales = 2;
@@ -769,6 +804,18 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.trapFlower), "trap flower monster definition should exist");
   assert(Boolean(d.monsterTypes.smugglerCaptain), "smuggler captain monster definition should exist");
   assert(Boolean(d.monsterTypes.regenSentinel), "regen sentinel monster definition should exist");
+  assert(Boolean(d.monsterTypes.mistLancer), "mist lancer monster definition should exist");
+  assert(Boolean(d.monsterTypes.mistKeeper), "mist keeper monster definition should exist");
+  assert(Boolean(d.monsterTypes.vaultLeech), "vault leech monster definition should exist");
+  assert(Boolean(d.monsterTypes.cryptWarden), "crypt warden monster definition should exist");
+
+  player.x = 47 * d.TILE;
+  player.y = 130 * d.TILE;
+  const catacombPortal = runtime.nearestPortal();
+  assert(catacombPortal?.id === "black-market-catacomb-entry", "black market should expose the catacomb entrance portal");
+  runtime.traversePortal(catacombPortal);
+  assert(Math.floor(player.x / d.TILE) === 83 && Math.floor(player.y / d.TILE) === 2, "catacomb portal should move the player into the interior");
+  assert(runtime.currentRegion() === "undercity", "catacomb interior should use undercity region");
 
   player.x = 20 * d.TILE;
   player.y = 100 * d.TILE;
@@ -776,6 +823,9 @@ function assertExpandedWorldContent() {
   player.x = 54 * d.TILE;
   player.y = 124 * d.TILE;
   assert(runtime.currentRegion() === "regenCave", "black market north dungeon should use regen cave region");
+  player.x = 72 * d.TILE;
+  player.y = 122 * d.TILE;
+  assert(runtime.currentRegion() === "mistShrine", "mist shrine should use its own region");
   player.x = 90 * d.TILE;
   player.y = 60 * d.TILE;
   assert(runtime.currentRegion() === "ash", "expanded east road should use ash region");
@@ -824,6 +874,29 @@ function assertExpandedWorldContent() {
   player.y = d.REGEN_SENTINEL_SITE.y * d.TILE;
   runtime.updateStoryEvents();
   assert(state.monsters.some((monster) => monster.type === "regenSentinel"), "greater regen cave should spawn its guardian encounter");
+  state.monsters = [];
+  state.regenSentinelDefeated = true;
+  state.spawnedRegenSentinel = true;
+  player.level = d.MIST_KEEPER_REQUIREMENTS.level;
+  player.x = d.MIST_KEEPER_SITE.x * d.TILE;
+  player.y = d.MIST_KEEPER_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.monsters.some((monster) => monster.type === "mistKeeper"), "mist shrine should spawn its guardian encounter after regeneration cave");
+  state.monsters = [];
+  const mistPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "mistShrine");
+  assert(mistPool.includes("mistLancer") && mistPool.includes("summoner") && mistPool.includes("trapFlower"), "mist shrine spawn pool should include mist lancers, summoners, and trap flowers");
+  player.level = d.CRYPT_WARDEN_REQUIREMENTS.level;
+  const cryptPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "undercity");
+  assert(cryptPool.includes("vaultLeech") && cryptPool.includes("shieldSoldier") && cryptPool.includes("summoner"), "catacomb spawn pool should mix life drain, frontal guard, and summoning pressure");
+  state.chapter2Reported = true;
+  player.x = d.CRYPT_WARDEN_SITE.x * d.TILE;
+  player.y = d.CRYPT_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  const cryptWarden = state.monsters.find((monster) => monster.type === "cryptWarden");
+  assert(cryptWarden, "catacomb should spawn its named warden encounter after chapter 2 report");
+  cryptWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.cryptWardenDefeated, "crypt warden defeat should persist in state");
   state.monsters = [];
   player.level = 20;
   const eclipsePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "eclipse");
@@ -1005,11 +1078,56 @@ function assertExpandedWorldContent() {
   guardedChest.runtime.openChest(regenChest);
   assert(guardedChest.state.chests.has("regen-cave-ring") && guardedChest.player.ownedAccessories.includes("greaterRegen"), "greater regen chest should open after Regen Sentinel defeat");
 
+  const mistChest = d.TREASURE_CHESTS.find((chest) => chest.id === "mist-shrine-cache");
+  assert(mistChest, "mist shrine accessory chest should exist");
+  const guardedMistChest = createRuntime();
+  guardedMistChest.runtime.openChest(mistChest);
+  assert(!guardedMistChest.state.chests.has("mist-shrine-cache") && !guardedMistChest.player.ownedAccessories.includes("mist"), "mist shrine cache should stay locked until Mist Keeper is defeated");
+  guardedMistChest.state.mistKeeperDefeated = true;
+  guardedMistChest.runtime.openChest(mistChest);
+  assert(guardedMistChest.state.chests.has("mist-shrine-cache") && guardedMistChest.player.ownedAccessories.includes("mist"), "mist shrine cache should open after Mist Keeper defeat");
+
+  const cryptChest = d.TREASURE_CHESTS.find((chest) => chest.id === "undercity-reliquary");
+  assert(cryptChest, "catacomb reliquary should exist");
+  const guardedCryptChest = createRuntime();
+  guardedCryptChest.runtime.openChest(cryptChest);
+  assert(!guardedCryptChest.state.chests.has("undercity-reliquary") && !guardedCryptChest.player.ownedAccessories.includes("deepLamp"), "catacomb reliquary should stay locked until Crypt Warden defeat");
+  guardedCryptChest.state.cryptWardenDefeated = true;
+  guardedCryptChest.runtime.openChest(cryptChest);
+  assert(guardedCryptChest.state.chests.has("undercity-reliquary") && guardedCryptChest.player.ownedAccessories.includes("deepLamp"), "catacomb reliquary should open after Crypt Warden defeat");
+
   const regenBefore = reward.runtime.regenRate();
   reward.runtime.grantChestReward("greaterRegen");
   globalThis.DRAGON_HUNTER_REWARDS.equipAccessory(reward.player, "greaterRegen");
   reward.runtime.refreshDerivedStats();
   assert(reward.player.ownedAccessories.includes("greaterRegen") && reward.runtime.regenRate() > regenBefore && reward.player.warps >= 3, "greaterRegen chest should grant the large regen accessory and return supplies");
+  reward.runtime.grantChestReward("mistSupply");
+  assert(reward.player.tonics >= 5 && reward.player.warps >= 4 && reward.player.bombs >= 6, "mist shrine supply should add route-extension supplies");
+  reward.runtime.grantChestReward("mistCharm");
+  assert(reward.player.ownedAccessories.includes("mist") && reward.player.warps >= 5, "mist shrine cache should grant the mist accessory");
+  reward.runtime.grantChestReward("cryptSupply");
+  assert(reward.player.elixirs >= 4 && reward.player.tonics >= 7, "catacomb supply should support a long interior expedition");
+  reward.runtime.grantChestReward("deepLamp");
+  assert(reward.player.ownedAccessories.includes("deepLamp"), "catacomb reliquary should grant the deep lamp accessory");
+  reward.player.equippedAccessories = ["deepLamp"];
+  reward.player.equippedAccessory = "deepLamp";
+  reward.runtime.refreshDerivedStats();
+  reward.player.slow = 1000;
+  const lampSlowSpeed = reward.runtime.playerMoveSpeed();
+  reward.player.equippedAccessories = [];
+  reward.player.equippedAccessory = "";
+  reward.runtime.refreshDerivedStats();
+  const normalSlowSpeed = reward.runtime.playerMoveSpeed();
+  assert(lampSlowSpeed > normalSlowSpeed, "deep lamp should reduce slow movement penalty");
+  reward.player.equippedAccessories = ["deepLamp"];
+  reward.player.equippedAccessory = "deepLamp";
+  reward.player.hpMax = 500;
+  reward.player.hp = 1;
+  reward.player.potions = 1;
+  reward.player.selectedItem = "potion";
+  const hpBeforeLampPotion = reward.player.hp;
+  reward.runtime.useSelectedItem();
+  assert(reward.player.hp - hpBeforeLampPotion > 30 + reward.player.level * 6, "deep lamp should strengthen herb healing");
   reward.runtime.grantChestReward("shieldGear");
   assert(reward.player.ownedShields.includes(3), "shieldGear chest should grant a route shield");
   reward.runtime.grantChestReward("blackShieldSupply");
@@ -1018,10 +1136,11 @@ function assertExpandedWorldContent() {
   reward.runtime.grantDiscoveryReward({ id: "test-shortcut-hint", kind: "shortcutHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-smuggler-hint", kind: "smugglerHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-greater-regen-hint", kind: "greaterRegenHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-mist-hint", kind: "mistHint" }, 0, 0);
   assert(reward.player.warps >= 5 && reward.player.tonics >= 6 && reward.player.wards >= 9, "route, shortcut, and cave hints should provide travel supplies");
   reward.runtime.grantChestReward("blackMarketSupply");
   assert(reward.player.potions >= 4 && reward.player.bombs >= 3 && reward.player.wards >= 9 && reward.player.warps >= 3, "blackMarketSupply chest should add deep-route supplies");
-  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", obsidianRegion: "obsidian", voidRegion: "void", blackSunGear: true };
+  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", undercityRegion: "undercity", obsidianRegion: "obsidian", voidRegion: "void", blackSunGear: true };
 }
 
 function assertScriptLoadSmoke() {

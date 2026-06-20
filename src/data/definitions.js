@@ -36,6 +36,10 @@
     { id: "black-fort", name: "黒門砦", x: 98, y: 132, cost: 260, unlock: "chapter2Reported" },
     { id: "black-market", name: "黒市", x: 35, y: 135, cost: 320, unlock: "blackMarket" },
   ];
+  const DUNGEON_PORTALS = [
+    { id: "black-market-catacomb-entry", name: "黒市地下墓所", x: 47, y: 130, toX: 83, toY: 2, prompt: "入る: 黒市地下墓所" },
+    { id: "black-market-catacomb-exit", name: "黒市", x: 82, y: 2, toX: 47, toY: 131, prompt: "戻る: 黒市" },
+  ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
     { name: "東門", x: 18, y: 48, w: 1, h: 3, axis: "y" },
@@ -64,6 +68,8 @@
     { id: "moon-west-camp-cache", x: 76, y: 103, reward: "moonSupply" },
     { id: "moon-camp-armory", x: 106, y: 116, reward: "eclipseGear" },
     { id: "regen-side-cache", x: 34, y: 125, reward: "smugglerSupply" },
+    { id: "mist-shrine-cache", x: 68, y: 123, reward: "mistCharm" },
+    { id: "mist-shrine-supply", x: 77, y: 121, reward: "mistSupply" },
     { id: "eclipse-approach-cache", x: 71, y: 123, reward: "trapSupply" },
     { id: "eclipse-side-cache", x: 80, y: 126, reward: "summonerSupply" },
     { id: "eclipse-castle-cache", x: 86, y: 124, reward: "eclipseSupply" },
@@ -80,6 +86,8 @@
     { id: "black-sun-ditch-cache", x: 66, y: 136, reward: "trapSupply" },
     { id: "black-sun-thorn-cache", x: 79, y: 139, reward: "trapSupply" },
     { id: "black-sun-cache", x: 76, y: 140, reward: "voidSupply" },
+    { id: "undercity-supply", x: 91, y: 7, reward: "cryptSupply" },
+    { id: "undercity-reliquary", x: 117, y: 13, reward: "deepLamp" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
@@ -106,10 +114,13 @@
     { id: "smuggler-ambush-note", x: 22, y: 116, kind: "smugglerHint" },
     { id: "regen-cave-note", x: 32, y: 121, kind: "greaterRegenHint" },
     { id: "regen-side-note", x: 34, y: 123, kind: "greaterRegenHint" },
+    { id: "mist-shrine-tablet", x: 68, y: 122, kind: "mistHint" },
+    { id: "mist-shrine-warning", x: 76, y: 121, kind: "trapHint" },
     { id: "eclipse-approach-warning", x: 71, y: 122, kind: "trapHint" },
     { id: "broken-gate-marker", x: 74, y: 136, kind: "shortcutHint" },
     { id: "black-sun-ditch-marker", x: 66, y: 136, kind: "shortcutHint" },
     { id: "black-sun-trap-note", x: 75, y: 139, kind: "trapHint" },
+    { id: "undercity-inscription", x: 101, y: 10, kind: "cryptHint" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
@@ -126,6 +137,10 @@
   const SMUGGLER_CAPTAIN_REQUIREMENTS = { level: 8 };
   const REGEN_SENTINEL_SITE = { x: 43, y: 124 };
   const REGEN_SENTINEL_REQUIREMENTS = { level: 16 };
+  const MIST_KEEPER_SITE = { x: 72, y: 122 };
+  const MIST_KEEPER_REQUIREMENTS = { level: 18 };
+  const CRYPT_WARDEN_SITE = { x: 116, y: 12 };
+  const CRYPT_WARDEN_REQUIREMENTS = { level: 22 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -142,6 +157,8 @@
     regenCave: { danger: 8, maxBonus: 9, pool: ["bubbler", "trapFlower", "summoner", "obsidianCrawler", "shieldSoldier", "moonShade"] },
     obsidian: { danger: 8, maxBonus: 9, pool: ["shieldSoldier", "obsidianCrawler", "summoner", "trapFlower", "voidWraith", "eclipseMage", "dragonling"] },
     void: { danger: 8, maxBonus: 10, pool: ["shieldSoldier", "summoner", "trapFlower", "voidWraith", "eclipseMage", "moonShade", "dragonling"] },
+    mistShrine: { danger: 8, maxBonus: 9, pool: ["mistLancer", "summoner", "trapFlower", "moonShade", "bubbler", "shieldSoldier"] },
+    undercity: { danger: 8, maxBonus: 10, pool: ["vaultLeech", "shieldSoldier", "summoner", "trapFlower", "eclipseMage", "mistLancer"] },
   };
 
   const TILE_GRASS = 0;
@@ -198,7 +215,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -236,6 +253,12 @@
       sell: 120,
       flag: "mineCharm",
     },
+    mist: {
+      name: "霧灯の護符",
+      trait: "罠・召喚・魔法圧を軽減",
+      sell: 0,
+      flag: "mistCharm",
+    },
     eclipse: {
       name: "月蝕の指輪",
       trait: "月蝕魔法を軽減",
@@ -253,6 +276,12 @@
       trait: "正面接触と黒曜衝撃を軽減",
       sell: 0,
       flag: "obsidianCharm",
+    },
+    deepLamp: {
+      name: "深層灯の護符",
+      trait: "鈍足を軽減・薬草回復を強化",
+      sell: 0,
+      flag: "deepLampCharm",
     },
   };
 
@@ -441,6 +470,56 @@
       midboss: true,
       drop: 0.8,
     },
+    mistLancer: {
+      name: "霧槍兵",
+      hp: 620,
+      atk: 96,
+      def: 58,
+      speed: 27 * WORLD_SCALE,
+      xp: 520,
+      gold: 210,
+      color: "#9fd6c7",
+      shadow: "#264a4a",
+      drop: 0.22,
+    },
+    mistKeeper: {
+      name: "霧灯の守",
+      hp: 2400,
+      atk: 132,
+      def: 92,
+      speed: 21 * WORLD_SCALE,
+      xp: 1600,
+      gold: 900,
+      color: "#b7f4dc",
+      shadow: "#24564b",
+      midboss: true,
+      drop: 0.85,
+    },
+    vaultLeech: {
+      name: "吸命鬼",
+      hp: 220,
+      atk: 112,
+      def: 52,
+      speed: 35 * WORLD_SCALE,
+      xp: 210,
+      gold: 68,
+      color: "#8f4f78",
+      shadow: "#2d1027",
+      drop: 0.28,
+    },
+    cryptWarden: {
+      name: "地下墓所の番人",
+      hp: 2900,
+      atk: 142,
+      def: 105,
+      speed: 24 * WORLD_SCALE,
+      xp: 1900,
+      gold: 1100,
+      color: "#d7b26d",
+      shadow: "#49351f",
+      midboss: true,
+      drop: 0.9,
+    },
     dragonling: {
       name: "小竜",
       hp: 158,
@@ -561,6 +640,7 @@
     SAFE_ZONES,
     HEAL_POINTS,
     TRAVEL_POINTS,
+    DUNGEON_PORTALS,
     TOWN_GATES,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
@@ -579,6 +659,10 @@
     SMUGGLER_CAPTAIN_REQUIREMENTS,
     REGEN_SENTINEL_SITE,
     REGEN_SENTINEL_REQUIREMENTS,
+    MIST_KEEPER_SITE,
+    MIST_KEEPER_REQUIREMENTS,
+    CRYPT_WARDEN_SITE,
+    CRYPT_WARDEN_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,

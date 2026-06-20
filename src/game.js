@@ -182,6 +182,10 @@ function respawnAtVillage() {
   if (!state.guardianDefeated) state.spawnedGuardian = false;
   if (!state.wardenDefeated) state.spawnedWarden = false;
   if (!state.ashKnightDefeated) state.spawnedAshKnight = false;
+  if (!state.smugglerCaptainDefeated) state.spawnedSmugglerCaptain = false;
+  if (!state.regenSentinelDefeated) state.spawnedRegenSentinel = false;
+  if (!state.mistKeeperDefeated) state.spawnedMistKeeper = false;
+  if (!state.cryptWardenDefeated) state.spawnedCryptWarden = false;
   if (!state.eclipseDragonDefeated) state.spawnedEclipseDragon = false;
   if (!state.voidDragonDefeated) state.spawnedVoidDragon = false;
   if (!state.obsidianGolemDefeated) state.spawnedObsidianGolem = false;
@@ -310,6 +314,7 @@ const contexts = contextHelpers.createContextFactory({
   canChallengeDragon,
   guardianReady,
   nearestNpc,
+  nearestPortal,
   nearestChest,
   nearestDiscovery,
   playerNearCave,
@@ -753,6 +758,10 @@ function interact() {
 }
 function nearestChest() {
   return actionHelpers.nearestChest(contexts.action());
+}
+
+function nearestPortal() {
+  return actionHelpers.nearestPortal(contexts.action());
 }
 function openChest(chest) {
   return actionHelpers.openChest(contexts.action(), chest);

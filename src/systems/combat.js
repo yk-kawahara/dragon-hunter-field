@@ -22,7 +22,7 @@
   }
 
   function activeAccessory(player, id, legacyFlag) {
-    if (Array.isArray(player.equippedAccessories) && player.equippedAccessories.length > 0) {
+    if (Array.isArray(player.equippedAccessories)) {
       return player.equippedAccessories.includes(id);
     }
     if (player.equippedAccessory) return player.equippedAccessory === id;
@@ -47,7 +47,7 @@
     const { player } = requireCombatContext(context);
     const armorMoveBonus = player.armor >= 1 ? 4 * WORLD_SCALE : 0;
     const trailMoveBonus = activeAccessory(player, "trail", "trailCharm") ? 5 * WORLD_SCALE : 0;
-    const slowPenalty = player.slow > 0 ? 0.72 : 1;
+    const slowPenalty = player.slow > 0 ? (activeAccessory(player, "deepLamp", "deepLampCharm") ? 0.86 : 0.72) : 1;
     return (player.speed + armorMoveBonus + trailMoveBonus) * slowPenalty;
   }
 
@@ -70,8 +70,8 @@
     if (player.weapon === 5 && (monster.type === "bubbler" || monster.type === "slime")) mult += 0.85;
     if (player.weapon === 6 && (monster.type === "wisp" || monster.type === "dragonling" || monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "trapFlower")) mult += 0.55;
     if (player.weapon === 7 && (monster.boss || monster.type === "dragonling" || monster.type === "ashKnight")) mult += 0.6;
-    if (player.weapon === 8 && (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "ashKnight" || monster.midboss)) mult += 0.75;
-    if (player.weapon === 9 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "moonShade")) mult += 0.95;
+    if (player.weapon === 8 && (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "ashKnight" || monster.type === "mistLancer" || monster.type === "mistKeeper" || monster.midboss)) mult += 0.75;
+    if (player.weapon === 9 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "moonShade" || monster.type === "mistLancer" || monster.type === "mistKeeper")) mult += 0.95;
     if (player.weapon === 10 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "eclipseMage")) mult += 1.25;
     if (player.weapon === 11 && (monster.type === "obsidianGolem" || monster.type === "obsidianCrawler" || monster.type === "trapFlower" || monster.type === "voidDragon" || monster.type === "voidWraith")) mult += 1.45;
     if (monster.type === "shieldSoldier") {
@@ -101,9 +101,11 @@
     }
     if (activeAccessory(player, "aegis", "aegisCharm") && (source === "fire" || source === "projectile")) mult *= 0.82;
     if (activeAccessory(player, "mine", "mineCharm") && (monster?.type === "bubbler" || monster?.type === "trapFlower" || source === "bubble" || source === "trap")) mult *= 0.72;
+    if (activeAccessory(player, "mist", "mistCharm") && (monster?.type === "mistLancer" || monster?.type === "mistKeeper" || monster?.type === "summoner" || monster?.type === "trapFlower" || source === "magic" || source === "trap" || source === "projectile")) mult *= 0.74;
     if (activeAccessory(player, "eclipse", "eclipseCharm") && (monster?.type === "eclipseMage" || monster?.type === "eclipseDragon" || source === "eclipse" || source === "magic")) mult *= 0.76;
     if (activeAccessory(player, "void", "voidCharm") && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void")) mult *= 0.7;
     if (activeAccessory(player, "obsidian", "obsidianCharm") && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || source === "obsidian" || (source === "contact" && pDot > 0.3))) mult *= 0.68;
+    if (activeAccessory(player, "deepLamp", "deepLampCharm") && (monster?.type === "vaultLeech" || monster?.type === "cryptWarden")) mult *= 0.7;
     return mult;
   }
 
@@ -112,9 +114,11 @@
     player.staminaMax = 100
       + (activeAccessory(player, "hunter", "hunterCharm") ? 15 : 0)
       + (activeAccessory(player, "trail", "trailCharm") ? 10 : 0)
+      + (activeAccessory(player, "mist", "mistCharm") ? 8 : 0)
       + (activeAccessory(player, "eclipse", "eclipseCharm") ? 8 : 0)
       + (activeAccessory(player, "void", "voidCharm") ? 12 : 0)
       + (activeAccessory(player, "obsidian", "obsidianCharm") ? 8 : 0);
+    if (activeAccessory(player, "deepLamp", "deepLampCharm")) player.staminaMax += 6;
     player.stamina = Math.min(player.stamina, player.staminaMax);
   }
 

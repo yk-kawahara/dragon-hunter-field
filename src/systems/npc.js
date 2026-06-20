@@ -259,7 +259,9 @@
     }
 
     if (npc.type === "guide") {
-      if (!state.obsidianGolemDefeated) {
+      if (state.chapter2Reported && !state.cryptWardenDefeated) {
+        say("案内人「黒市東端の地下口は古い墓所へ続く。LV22以上、帰還鈴を持って入れ」", 4400);
+      } else if (!state.obsidianGolemDefeated) {
         say(`案内人「黒市の東、黒曜洞に巨人がいる。LV24以上と黒門砦の装備が欲しい」`, 4200);
       } else if (!state.voidDragonDefeated) {
         say(`案内人「黒曜の備えがあれば、黒陽城の奥まで踏み込める」`, 3600);
@@ -271,7 +273,11 @@
 
     if (npc.type === "villager" || npc.type === "guard") {
       if (npc.y > 128 * TILE) {
-        say(npc.type === "guard" ? "衛兵「黒市の外は黒陽の影が濃い。門の外で油断するな」" : "住人「ここまで来た旅人は少ない。物資を整えていきな」", 3600);
+        if (npc.x > 44 * TILE && !state.cryptWardenDefeated) {
+          say("衛兵「この先の地下口は墓所だ。吸命鬼に囲まれたら入口まで退け」", 3800);
+        } else {
+          say(npc.type === "guard" ? "衛兵「黒市の外は黒陽の影が濃い。門の外で油断するな」" : "住人「ここまで来た旅人は少ない。物資を整えていきな」", 3600);
+        }
       } else if (npc.y > 110 * TILE) {
         say("旅人「月見砦から先は戻る判断が命を分ける」", 3200);
       } else if (npc.x > 90 * TILE) {

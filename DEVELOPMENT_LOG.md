@@ -39,6 +39,7 @@ Current project status:
 * Void Wraith, Black Sun gear, Void Charm, and Black Sun Dragon add a harder post-Chapter-2 major boss arc.
 * Black Market is now a Chapter 3 second town with recovery, selectable shop stock, guide/guards/villagers, and supplies.
 * Obsidian Cave + Obsidian Crawler + Obsidian Golem add a Chapter 3 branch dungeon and midboss before the Black Sun Dragon route.
+* Black Market Catacombs add the first portal-linked compact interior dungeon, with Vault Leech pressure, Crypt Warden, and Deep Lamp Charm progression.
 * Western Smuggler Road now has Smuggler Captain, extra supply caches, and route guidance so the early Black Market shortcut has a danger climax and reward reason.
 * Black Market north regeneration cave now has Regen Sentinel guarding the Greater Regeneration Ring, turning the strongest sustain accessory into an earned side-dungeon reward.
 * A density pass has added hand-authored small terrain landmarks, extra caches, discovery points, and more NPCs around remote bases to reduce sparse walking.
@@ -79,6 +80,62 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-20: Black Market Catacombs interior-dungeon pass
+
+Goal: add a substantial playable expedition with its own entrance, terrain, enemy behavior, midboss, reward, and retreat decision rather than another isolated map pickup.
+
+Implemented:
+
+* Converted unused enclosed upper-map terrain into `黒市地下墓所`, a dense stone-floor interior entered from Black Market and exited through the same stair route.
+* Added portal interaction, prompts, projectile cleanup, temporary entry protection, and portal-aware map reachability.
+* Added `吸命鬼`, which drains stamina, slows, and heals itself on contact.
+* Added `地下墓所の番人`, a LV22 optional midboss after Chapter 2 report that fires grave magic and summons two leeches below half HP.
+* Added a guarded reliquary, supply cache, grave inscription, Black Market guide/guard hints, catacomb lighting/props, and distinct dark atmosphere.
+* Added `深層灯の護符`: slow movement penalty is reduced and herb healing is strengthened while equipped.
+* Fixed an existing equipment-choice regression where owned legacy accessory flags could remain active after all accessories were unequipped.
+* Added save/load/reset persistence for the new boss and accessory.
+
+Verification:
+
+* JavaScript syntax checks passed for all `src/` and `scripts/` JavaScript files.
+* `scripts/verify-game-smoke.js` passed.
+* Smoke coverage now verifies portal traversal, portal-aware dungeon reachability, region/spawn identity, boss spawn/defeat, guarded reliquary behavior, Deep Lamp effects, and save/load persistence.
+* `docs/world-map-preview.png` and `docs/world-map-preview.svg` were regenerated and visually inspected; the first preview exposed grass-like interior flooring, which was corrected to stone floor.
+
+Known risks:
+
+* Real-browser QA could not be started because the available browser runtime failed to launch under the Windows sandbox (`CreateProcessAsUserW failed: 5`).
+* Crypt Warden, Vault Leech, and Deep Lamp values still need fresh-save manual balance testing.
+* The next volume pass should be chapter-sized: a new safe town, multiple routes, a different interior structure, and a major boss rather than another single optional pocket.
+
+### 2026-06-18: Mist Shrine side-dungeon volume pass
+
+Goal: increase playable volume with a new optional expedition layer instead of only adding planning text or empty map space.
+
+Implemented:
+
+* Added the Mist Shrine as a Black Market north side route beyond the regeneration cave.
+* Added Mist Lancer, a windup-and-lunge enemy that asks the player to sidestep rather than tank direct contact.
+* Added Mist Keeper as a named LV18 midboss gated behind Regen Sentinel defeat.
+* Added `霧灯の護符`, which reduces trap, summon, and magic pressure when equipped.
+* Added shrine supply chest, shrine hint discoveries, guarded accessory chest behavior, region guidance, zone naming, accessory UI copy, and visible field marker coloring.
+* Added save/load/reset support for Mist Charm and Mist Keeper flags.
+* Added a hand-authored shrine court terrain overlay and regenerated `docs/world-map-preview.png` / `docs/world-map-preview.svg`.
+
+Verification:
+
+* `node --check` passed for changed source files and `scripts/verify-game-smoke.js`.
+* `node scripts/verify-game-smoke.js` passed using the bundled Node runtime.
+* `git diff --check` passed with CRLF line-ending warnings only.
+* The smoke test caught an initial terrain reachability regression around an existing Eclipse side cache; the shrine terrain was adjusted and the test then passed.
+* Map preview was regenerated and visually inspected.
+
+Known risks:
+
+* Real browser/manual play QA was not performed in this pass.
+* Mist Keeper and Mist Lancer balance needs fresh-save playtesting against current Black Market / Chapter 2-3 progression.
+* The world still needs larger-volume content such as interior dungeons, richer town districts, and more multi-step regional arcs.
 
 ### 2026-06-18: World density pass
 

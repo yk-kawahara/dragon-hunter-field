@@ -14,6 +14,7 @@
   const {
     TILE,
     WORLD_SCALE,
+    DUNGEON_PORTALS,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     TILE_GRASS,
@@ -71,7 +72,7 @@
       performAttack(context);
       return;
     }
-    if (nearestNpc() || nearestChest(context) || playerNearCave()) {
+    if (nearestNpc() || nearestPortal(context) || nearestChest(context) || playerNearCave()) {
       interact(context);
       return;
     }
@@ -161,6 +162,12 @@
       return;
     }
 
+    const portal = nearestPortal(context);
+    if (portal) {
+      traversePortal(context, portal);
+      return;
+    }
+
     const chest = nearestChest(context);
     if (chest) {
       openChest(context, chest);
@@ -173,6 +180,32 @@
     }
 
     searchGround(context);
+  }
+
+  function nearestPortal(context) {
+    const { player } = requireActionContext(context);
+    const pc = centerOf(player);
+    for (const portal of DUNGEON_PORTALS || []) {
+      const px = (portal.x + 0.5) * TILE;
+      const py = (portal.y + 0.5) * TILE;
+      if (Math.hypot(pc.x - px, pc.y - py) < worldPx(22)) return portal;
+    }
+    return null;
+  }
+
+  function traversePortal(context, portal) {
+    const { state, player, say, addRing, burst } = requireActionContext(context);
+    state.monsters = state.monsters.filter((monster) => monster.boss || monster.midboss);
+    state.projectiles = [];
+    state.regionSpawnTimer = 0;
+    state.spawnTimer = 0;
+    player.x = Math.floor((portal.toX + 0.5) * TILE - player.w / 2);
+    player.y = Math.floor((portal.toY + 0.5) * TILE - player.h / 2);
+    player.invuln = Math.max(player.invuln, 900);
+    player.slow = 0;
+    addRing(player.x + player.w / 2, player.y + player.h / 2, "#d7b26d", worldPx(34));
+    burst(player.x + player.w / 2, player.y + player.h / 2, "#d7b26d", 18);
+    say(`${portal.name}へ移動した`, 1800);
   }
 
   function nearestChest(context) {
@@ -192,6 +225,14 @@
     if (state.chests.has(chest.id)) return;
     if (chest.id === "regen-cave-ring" && !state.regenSentinelDefeated) {
       say("再生洞の守護者を倒さないと宝箱に近づけない", 2200);
+      return;
+    }
+    if (chest.id === "mist-shrine-cache" && !state.mistKeeperDefeated) {
+      say("霧灯の守を倒さないと奥の護符に近づけない", 2200);
+      return;
+    }
+    if (chest.id === "undercity-reliquary" && !state.cryptWardenDefeated) {
+      say("地下墓所の番人を倒さないと遺物庫は開かない", 2200);
       return;
     }
     state.chests.add(chest.id);
@@ -258,6 +299,8 @@
     performAttack,
     hitMonster,
     interact,
+    nearestPortal,
+    traversePortal,
     nearestChest,
     openChest,
     searchGround,

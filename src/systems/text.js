@@ -20,6 +20,8 @@
     OBSIDIAN_GOLEM_REQUIREMENTS,
     SMUGGLER_CAPTAIN_REQUIREMENTS,
     REGEN_SENTINEL_REQUIREMENTS,
+    MIST_KEEPER_REQUIREMENTS,
+    CRYPT_WARDEN_REQUIREMENTS,
     weaponNames,
     weaponCosts,
     armorCosts,
@@ -71,6 +73,7 @@
       const cost = nextUpgradeCost(context);
       if (state.chapter2Reported && !state.discoveries.has("void-seal")) return "黒門砦の南西で黒陽碑を探す";
       if (state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門砦の武具箱で黒陽装備を得よう";
+      if (state.chapter2Reported && !state.cryptWardenDefeated && player.level >= CRYPT_WARDEN_REQUIREMENTS.level) return "黒市の地下入口から墓所の番人へ挑める";
       if (state.chapter2Reported && !state.obsidianGolemDefeated && player.level < OBSIDIAN_GOLEM_REQUIREMENTS.level) return `黒曜洞の巨人にはLV${OBSIDIAN_GOLEM_REQUIREMENTS.level}が要る`;
       if (state.chapter2Reported && !state.obsidianGolemDefeated) return "黒市の東、黒曜洞の巨人を倒そう";
       if (state.chapter2Reported && player.level < CHAPTER3_REQUIREMENTS.level) return `第3章大ボスにはLV${CHAPTER3_REQUIREMENTS.level}が要る`;
@@ -86,9 +89,17 @@
       return "遠くへ進み、危なくなったら戻ろう";
     }
     const hpRate = player.hp / player.hpMax;
-    if (hpRate < 0.35) return "??: ????????????";
+    if (hpRate < 0.35) return "危険: 帰還鈴か最寄りの拠点で立て直そう";
     const stage = gameStage(context);
     const region = currentRegion();
+    if (region === "undercity" && !state.chapter2Reported) return "黒市地下墓所は終盤級。無理なら入口へ戻ろう";
+    if (region === "undercity" && !state.cryptWardenDefeated && player.level < CRYPT_WARDEN_REQUIREMENTS.level) return `墓所の番人にはLV${CRYPT_WARDEN_REQUIREMENTS.level}ほど欲しい`;
+    if (region === "undercity" && !state.cryptWardenDefeated) return "吸命鬼を避け、最奥の墓所番人を倒そう";
+    if (region === "undercity") return "深層灯の護符は鈍足と薬草運用を改善する";
+    if (region === "mistShrine" && !state.regenSentinelDefeated) return "再生洞の守護者を倒すと霧灯の祠へ進める";
+    if (region === "mistShrine" && !state.mistKeeperDefeated && player.level < MIST_KEEPER_REQUIREMENTS.level) return `霧灯の守にはLV${MIST_KEEPER_REQUIREMENTS.level}ほど欲しい`;
+    if (region === "mistShrine" && !state.mistKeeperDefeated) return "霧灯の守を倒して護符を取ろう";
+    if (region === "mistShrine") return "霧灯の護符は罠・召喚・魔法圧を軽くする";
     if (region === "regenCave" && !state.regenSentinelDefeated && player.level < REGEN_SENTINEL_REQUIREMENTS.level) return `再生洞の守護者にはLV${REGEN_SENTINEL_REQUIREMENTS.level}ほど欲しい`;
     if (region === "regenCave" && !state.regenSentinelDefeated) return "再生洞の守護者を倒せば大再生の指輪に近づける";
     if (region === "regenCave") return "大再生の指輪で遠征が伸びる。帰還鈴で拠点へ戻ろう";
@@ -181,6 +192,7 @@
     const {
       player,
       nearestNpc,
+      nearestPortal,
       nearestChest,
       nearestDiscovery,
       playerNearCave,
@@ -190,6 +202,8 @@
     const npc = nearestNpc();
     if (npc?.type === "porter") return "話す: 馬車";
     if (npc) return `話す: ${npcRoleName(npc.type)}`;
+    const portal = nearestPortal();
+    if (portal) return portal.prompt || `移動: ${portal.name}`;
     const chest = nearestChest();
     if (chest) return "調べる: 宝箱";
     if (nearestDiscovery()) return "調べる: 気になる場所";

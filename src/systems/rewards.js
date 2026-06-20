@@ -126,6 +126,7 @@
   }
 
   function accessoryActive(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories)) return player.equippedAccessories.includes(id);
     const equipped = equippedAccessoryIds(player);
     if (equipped.length > 0) return equipped.includes(id);
     return Boolean(player[legacyFlag]);
@@ -164,7 +165,7 @@
     }
     const desired = equippedAccessoryIds(player).filter((id) => owned.has(id));
     if (desired.length <= 0) {
-      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
+      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "mist", "deepLamp", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
     }
     setEquippedAccessories(player, desired);
   }
@@ -284,7 +285,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -439,6 +440,41 @@
       say("黒市北の再生洞窟で大再生の指輪と遠征物資を得た");
       return true;
     }
+    if (reward === "mistCharm") {
+      player.gold += 980;
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      grantAccessory(context, "mist", "霧灯の護符を見つけた。装備すると罠・召喚・魔法圧を軽くする");
+      say("霧灯の祠で護符と遠征物資を得た");
+      return true;
+    }
+    if (reward === "mistSupply") {
+      player.gold += 620;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      say("霧灯の祠の補給箱から遠征物資を得た");
+      return true;
+    }
+    if (reward === "cryptSupply") {
+      player.gold += 780;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.potions = Math.min(9, player.potions + 3);
+      say("地下墓所の補給庫から長期遠征用の物資を得た");
+      return true;
+    }
+    if (reward === "deepLamp") {
+      player.gold += 1200;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      grantAccessory(context, "deepLamp", "深層灯の護符を得た。装備すると鈍足を軽くし、薬草回復が強くなる");
+      say("地下墓所の遺物庫から深層灯の護符を得た");
+      return true;
+    }
     if (reward === "shieldSupply") {
       player.gold += 520;
       grantShieldAtLeast(context, 3, "星盾を手に入れた。盾兵や魔法道を正面から受けやすい");
@@ -558,6 +594,22 @@
       say("石碑: 地雷花は近づくと爆ぜる。先に斬るか広く避けろ");
       return;
     }
+    if (discovery.kind === "mistHint") {
+      player.gold += 200;
+      addItem(player, "ward", 1);
+      addItem(player, "tonic", 1);
+      burst(x, y, "#9fd6c7", 18);
+      say("霧灯の碑文: 召喚と罠をしのぎ、守を倒せば護符に届く");
+      return;
+    }
+    if (discovery.kind === "cryptHint") {
+      player.gold += 260;
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
+      burst(x, y, "#d7b26d", 20);
+      say("墓碑: 吸命鬼は接触で力を奪う。薬草と帰還鈴を残して墓守へ挑め");
+      return;
+    }
     if (discovery.kind === "routeHint") {
       player.gold += 120;
       addItem(player, "tonic", 1);
@@ -657,7 +709,8 @@
       return;
     }
     player.potions -= 1;
-    player.hp = Math.min(player.hpMax, player.hp + 30 + player.level * 6);
+    const deepLampBonus = accessoryActive(player, "deepLamp", "deepLampCharm") ? 18 + player.level * 2 : 0;
+    player.hp = Math.min(player.hpMax, player.hp + 30 + player.level * 6 + deepLampBonus);
     burst(player.x + player.w / 2, player.y + player.h / 2, "#74ff8f", 10);
     say("薬を使った");
   }

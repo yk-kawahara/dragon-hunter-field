@@ -316,7 +316,7 @@
       detail: `${accessoryData[id]?.trait || ""} ${equippedIds.includes(id) ? `装備中 ${equippedIds.indexOf(id) + 1}/2` : "未装備"}`,
       equipped: equippedIds.includes(id),
       sell: 0,
-      currentValue: id === "regen" || id === "greaterRegen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
+      currentValue: id === "regen" || id === "greaterRegen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "mist" ? "罠/召喚耐性" : id === "deepLamp" ? "鈍足軽減/薬草+" : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
     }));
   }
 
@@ -481,6 +481,20 @@
         "地雷花は近づく前に斬る",
       ];
     }
+    if (state.regenSentinelDefeated && !state.mistKeeperDefeated) {
+      return [
+        "黒市北東の霧灯の祠へ",
+        "霧槍兵は突進前に横へ抜ける",
+        "護符は罠と召喚の圧を軽くする",
+      ];
+    }
+    if (!state.cryptWardenDefeated) {
+      return [
+        `黒市東端の地下入口へ LV${player.level}/22`,
+        "吸命鬼は接触で回復しスタミナを奪う",
+        "墓守の先に深層灯の護符",
+      ];
+    }
     if (!state.obsidianGolemDefeated) {
       return [
         "黒市東の黒曜洞窟へ",
@@ -571,6 +585,7 @@
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
     if (inTown(player.x, player.y)) name = (tx >= 20 && tx <= 48 && ty >= 129 && ty <= 136) ? "黒市" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if (tx >= 62 && tx <= 84 && ty >= 116 && ty <= 126) name = "霧灯の祠";
     else if (tx >= 24 && tx <= 58 && ty >= 120 && ty <= 127) name = "再生洞窟";
     else if (tx >= 18 && tx <= 23 && ty >= 95 && ty <= 128) name = "密輸道";
     else if (ty >= 128 && tx <= 58) name = "黒曜洞";

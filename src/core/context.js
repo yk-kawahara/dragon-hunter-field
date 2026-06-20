@@ -55,6 +55,7 @@
           canChallengeDragon: r.canChallengeDragon,
           guardianReady: r.guardianReady,
           nearestNpc: r.nearestNpc,
+          nearestPortal: r.nearestPortal,
           nearestChest: r.nearestChest,
           nearestDiscovery: r.nearestDiscovery,
           playerNearCave: r.playerNearCave,

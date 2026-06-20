@@ -230,6 +230,7 @@ function draw(context) {
 
   drawWorld(cam);
   drawWorldAtmosphere(cam);
+  drawCatacombDetails(cam);
   drawFieldDetails(cam);
   drawTownDetails(cam);
   drawFrontierCampDetails(cam);
@@ -464,7 +465,16 @@ function drawWorldAtmosphere(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
 
-  if (ty >= 128 && tx <= 58) {
+  if (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) {
+    ctx.fillStyle = "rgba(18, 9, 14, 0.46)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 12; i += 1) {
+      const x = (i * 29 + Math.floor(time / 180)) % W;
+      const y = (i * 17 + Math.floor(time / 240)) % VIEW_H;
+      ctx.fillStyle = i % 3 ? "#d7b26d" : "#d78ab7";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (ty >= 128 && tx <= 58) {
     ctx.fillStyle = "rgba(16, 14, 20, 0.28)";
     ctx.fillRect(0, 0, W, VIEW_H);
     for (let i = 0; i < 16; i += 1) {
@@ -510,6 +520,17 @@ function drawWorldAtmosphere(cam) {
       ctx.fillRect(x, y, 1, 1);
     }
   }
+}
+
+function drawCatacombDetails(cam) {
+  const tx = worldTileX(player.x + player.w / 2);
+  const ty = worldTileY(player.y + player.h / 2);
+  if (tx < 80 || tx > 119 || ty < 1 || ty > 14) return;
+  drawLamp(85 * TILE - cam.x, 2 * TILE - cam.y);
+  drawLamp(101 * TILE - cam.x, 6 * TILE - cam.y);
+  drawLamp(114 * TILE - cam.x, 11 * TILE - cam.y);
+  drawCrates(90 * TILE - cam.x, 7 * TILE - cam.y);
+  drawSign(99 * TILE - cam.x, 10 * TILE - cam.y);
 }
 
 function drawTownDetails(cam) {
@@ -1079,14 +1100,14 @@ function drawDiscoveries(cam) {
       ctx.fillRect(sx + 6, sy + 3, 4, 4);
       ctx.fillRect(sx + 7, sy + 8, 2, 5);
       if (!found) drawGlint(sx + 11, sy + 4, "#ff5e9f");
-    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint") {
+    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint" || discovery.kind === "mistHint" || discovery.kind === "cryptHint") {
       ctx.fillStyle = found ? "#604622" : "#7b4b25";
       ctx.fillRect(sx + 5, sy + 5, 7, 8);
-      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : "#ffd166";
+      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : "#ffd166";
       ctx.fillRect(sx + 3, sy + 4, 10, 3);
       ctx.fillStyle = "#2a1d12";
       ctx.fillRect(sx + 8, sy + 8, 2, 6);
-      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : "#ffd166");
+      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : "#ffd166");
     }
   }
 }
@@ -1565,6 +1586,39 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(sx + 11, sy + 1 - pulse, 3, 3);
     ctx.fillRect(sx + 13, sy + 6, 2, 2);
+  } else if (monster.type === "vaultLeech") {
+    const pulse = Math.floor(monster.age / 130) % 2;
+    ctx.fillStyle = "rgba(215, 138, 183, 0.24)";
+    ctx.fillRect(sx - 1 - pulse, sy + 2 - pulse, 15 + pulse * 2, 12 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 7, 12, 6);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 2, 8, 10);
+    ctx.fillRect(sx + 1, sy + 6, 12, 5);
+    ctx.fillStyle = "#fff2ff";
+    ctx.fillRect(sx + 4, sy + 5, 2, 2);
+    ctx.fillRect(sx + 9, sy + 5, 2, 2);
+    ctx.fillStyle = "#ffef8a";
+    ctx.fillRect(sx + 5, sy + 10, 2, 3);
+    ctx.fillRect(sx + 9, sy + 10, 2, 3);
+  } else if (monster.type === "cryptWarden") {
+    const pulse = Math.floor(monster.age / 150) % 2;
+    ctx.fillStyle = "rgba(215, 178, 109, 0.24)";
+    ctx.fillRect(sx - 3 - pulse, sy - pulse, 25 + pulse * 2, 21 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 7, 17, 13);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 11, 15);
+    ctx.fillRect(sx + 1, sy + 8, 17, 8);
+    ctx.fillStyle = "#fff2a6";
+    ctx.fillRect(sx + 6, sy + 5, 2, 2);
+    ctx.fillRect(sx + 12, sy + 5, 2, 2);
+    ctx.fillStyle = "#49351f";
+    ctx.fillRect(sx + 4, sy + 17, 5, 3);
+    ctx.fillRect(sx + 11, sy + 17, 5, 3);
+    ctx.fillStyle = "#d78ab7";
+    ctx.fillRect(sx + 18, sy + 3, 2, 14);
+    ctx.fillRect(sx + 16, sy + 2 + pulse, 6, 2);
   } else if (monster.type === "shieldSoldier") {
     const guardX = monster.dir === "left" ? sx + 1 : monster.dir === "right" ? sx + 8 : sx + 3;
     const guardY = monster.dir === "up" ? sy + 1 : sy + 5;
@@ -1869,7 +1923,7 @@ function drawEffects(cam) {
 function drawScreenGrade(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
-  const inCave = tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19;
+  const inCave = (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) || (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14);
   const gradient = ctx.createLinearGradient(0, 0, 0, VIEW_H);
   gradient.addColorStop(0, inCave ? "rgba(35, 10, 8, 0.18)" : "rgba(255, 244, 192, 0.08)");
   gradient.addColorStop(0.52, "rgba(0, 0, 0, 0)");

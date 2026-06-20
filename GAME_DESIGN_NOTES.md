@@ -136,6 +136,8 @@ Most important growth feeling: **reversal of power**.
 | Black Sun Castle / 黒陽城 | Chapter 3 high-danger route: void pressure, Black Sun seal, final cache, and the Black Sun Dragon arena. |
 | Western Smuggler Road | Dangerous early-access shortcut toward Black Market. It can be entered before the player is ready, contains named pressure from the Smuggler Captain, and rewards risk with route supplies. |
 | Regeneration Cave | Optional side dungeon north of Black Market. Its Greater Regeneration Ring is a major survival-range reward, so it is guarded by the Regen Sentinel rather than being a free pickup. |
+| Mist Shrine | Optional shrine route beyond the Black Market north side path. It adds a second side-dungeon layer after Regeneration Cave, mixing trap, summon, magic, and charge pressure before awarding the Mist Charm. |
+| Black Market Catacombs / 黒市地下墓所 | Compact interior dungeon entered from Black Market. Its enclosed rooms combine life-drain contact pressure, shields, summons, and a named warden before awarding a route-extending accessory. |
 | Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
 
 ## Enemy roles
@@ -155,6 +157,10 @@ Most important growth feeling: **reversal of power**.
 | Trap Flower / 地雷花 | Area-denial trap enemy for Moon Ruins / Eclipse / Obsidian / Black Sun routes. It stays still, warns briefly, then explodes for HP/stamina/slow pressure. The intended answer is to cut it before entering, route around it, or prepare wards/return bells for risky shortcuts. |
 | Smuggler Captain | Named shortcut midboss on the western smuggler road. It turns the early Black Market route into a real risk/reward challenge and makes the shortcut feel like a dangerous place rather than empty bypass terrain. |
 | Regen Sentinel | Named side-dungeon guardian in the regeneration cave. It gates the Greater Regeneration Ring so the strongest sustain reward feels earned through preparation and survival. |
+| Mist Lancer | Shrine enemy that winds up, then lunges. It asks the player to read the warning ring and sidestep rather than tank straight contact. |
+| Mist Keeper | Named shrine midboss after Regen Sentinel + LV18. It uses midboss magic pressure and gates the Mist Charm so the extra route feels like a real expedition, not a free cache. |
+| Vault Leech / 吸命鬼 | Catacomb contact enemy. Successful contact drains stamina, slows the player, and restores its own HP, rewarding clean positioning and timely retreat. |
+| Crypt Warden / 地下墓所の番人 | Optional LV22 midboss after Chapter 2 report. It fires grave magic and calls Vault Leeches at half HP, turning the final chamber into a priority and resource check. |
 | Dragonling | Late stronger enemy; signals dragon-route danger. |
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
@@ -209,6 +215,9 @@ Current direction:
 * Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
 * Accessory pairing is now part of route preparation: e.g. movement bell + resistance charm, or large regeneration + route resistance.
 * `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave after defeating the Regen Sentinel.
+* `霧灯の護符` is an optional route-preparation accessory found in the Mist Shrine after defeating the Mist Keeper. It reduces trap, summon, and magic pressure, making dangerous side routes and late ruins more survivable.
+* `深層灯の護符` is earned in the Black Market Catacombs after defeating the Crypt Warden. It reduces slow movement loss and strengthens herb healing, trading broad resistance for longer recovery-based expeditions.
+* Accessory ownership and accessory effects are separate: an owned but unequipped accessory must never grant its active effect.
 
 Future direction:
 
@@ -309,6 +318,7 @@ Current design additions:
 * Trap Flowers are now part of late-route identity. They should mark dangerous shortcuts, ruined courtyards, and narrow castle approaches where route choice matters. Their warning time should remain readable enough that attentive players can react.
 * The western smuggler road now has a named Smuggler Captain encounter and smuggler supply caches. Future route work should keep optional shortcuts dangerous but rewarding, not merely faster.
 * The regeneration cave now has the Regen Sentinel as a required guardian for the Greater Regeneration Ring. Future major survival-range rewards should be tied to a clear danger climax.
+* The Mist Shrine now extends the Black Market north side route with another optional midboss, Mist Lancer patrols, shrine supplies, and the Mist Charm. Future volume passes should prefer this pattern: side route -> distinctive pressure -> named guardian -> reward that changes route survival.
 * The latest density pass added fixed terrain-detail overlays, additional supply caches, route hints, camp remains, shrine markers, thorn fields, and more remote-base NPCs. Continue using these small hand-authored landmarks to reduce sparse walking without bloating map size.
 * Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
 * `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.

@@ -10,7 +10,7 @@
   //   T forest / tree wall
   //   # stone wall / ridge
   //   ^ roof
-  //   _ village floor
+  //   _ village / interior stone floor
   //   C cave entrance
   //   * flowers
   //   = harvest field
@@ -91,20 +91,20 @@
 
   const EAST_EXPANSION = [
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
-    "+.................T.TTTT.TTTT.TTTT.TTTTT",
-    "+..................TTTT.TTTT.TTTT.TTTT.T",
-    "+.................TTTT.TTTT.TTTT.TTTT.TT",
-    "+.................TTT.TTTT.TTTT.TTTT.TTT",
-    "+.................TT.TTTT.TTTT.TTTT.TTTT",
-    "+.###..##.........T.TTTT.TTTT.TTTT.TTTTT",
-    "+.###..##..........TTTT.TTTT.TTTT.TTTT.T",
-    "+.##....#.........TTTT.TTTT.TTTT.TTTT.TT",
-    "+.##....#.........TTT.TTTT.TTTT.TTTT.TTT",
-    "+.###..##.........TT.TTTT.TTTT.TTTT.TTTT",
-    "+.###++##.........T.TTTT.TTTT.TTTT.TTTTT",
-    "+.###++##..........TTTT.TTTT.TTTT.TTTT.T",
-    "+.................TTTT.TTTT.TTTT.TTTT.TT",
-    "+.................TTT.TTTT.TTTT.TTTT.TTT",
+    "T######################################T",
+    "T#C+++++++____#______+++++++__________#T",
+    "T#+++++++____#______+#####+++_________#T",
+    "T#+++####++++#______+#___#++++________#T",
+    "T#+++#__#++++++++++++#___#+++++_______#T",
+    "T#+++#__######+++++++#___#+++++_______#T",
+    "T#+++____#____#+++++++___#++####++____#T",
+    "T#+++____#____#+++++++___#++#__#++____#T",
+    "T###++++#____#####++++++#++#__#++_____#T",
+    "T#__#++++#________++++++++++#__#++____#T",
+    "T#__#++++######____++++++####__#++____#T",
+    "T#__++++++++++#____++++++++++++#++____#T",
+    "T#__++++++++++#____+++++########++____#T",
+    "T######################################T",
     "++++++++++++++....TT.TTTT.TTTT.TTTT.TTTT",
     "++++++++++++++....T.TTTT.TTTT.TTTT.TTTTT",
     "++++++++++++++.....TTTT.TTTT.TTTT.TTTT.T",
@@ -266,6 +266,18 @@
     { id: "regen-cave-garden", x: 78, y: 104, rows: ["..****.."] },
     { id: "regen-side-supply", x: 34, y: 122, rows: ["..==.."] },
     { id: "regen-moss-field", x: 58, y: 122, rows: ["..****.."] },
+    { id: "mist-shrine-court", x: 64, y: 118, rows: [
+      "....######++++######....",
+      "..##....++++++++....##..",
+      "..#..**..++++..**..#....",
+      "..#....++++++++....#....",
+      "..#....++++++++....#....",
+      "..#..++++++++++..#......",
+      "..#..**..++++..**..#....",
+      "..##....++++++++....##..",
+      "....######++++++++++....",
+    ] },
+    { id: "black-market-catacomb-door", x: 47, y: 130, rows: ["C"] },
     { id: "black-sun-thorn-field", x: 60, y: 136, rows: ["..****.."] },
     { id: "black-sun-muster-ground", x: 68, y: 136, rows: ["..==.."] },
     { id: "black-sun-bone-yard", x: 110, y: 136, rows: ["..**.."] },

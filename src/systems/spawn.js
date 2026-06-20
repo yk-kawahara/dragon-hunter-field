@@ -32,6 +32,10 @@
     SMUGGLER_CAPTAIN_REQUIREMENTS,
     REGEN_SENTINEL_SITE,
     REGEN_SENTINEL_REQUIREMENTS,
+    MIST_KEEPER_SITE,
+    MIST_KEEPER_REQUIREMENTS,
+    CRYPT_WARDEN_SITE,
+    CRYPT_WARDEN_REQUIREMENTS,
     monsterTypes,
   } = definitions;
 
@@ -138,6 +142,8 @@
     const { player } = requireSpawnContext(context);
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
+    if (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) return "undercity";
+    if (tx >= 62 && tx <= 84 && ty >= 116 && ty <= 126) return "mistShrine";
     if (tx >= 24 && tx <= 58 && ty >= 120 && ty <= 127) return "regenCave";
     if (tx >= 18 && tx <= 23 && ty >= 95 && ty <= 128) return "smuggler";
     if (ty >= 128 && tx <= 58) return "obsidian";
@@ -169,7 +175,9 @@
     if (lv <= 1) {
       if (region === "smuggler") return ["boar", "wisp", "shieldSoldier"];
       if (region === "regenCave") return ["bubbler", "wisp", "trapFlower"];
-      const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => !["dragonling", "wisp", "summoner", "trapFlower", "sorcerer", "moonShade", "eclipseMage", "voidWraith", "obsidianCrawler", "shieldSoldier"].includes(type));
+      if (region === "mistShrine") return ["bubbler", "wisp", "trapFlower"];
+      if (region === "undercity") return ["shieldSoldier", "wisp", "vaultLeech"];
+      const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => !["dragonling", "wisp", "summoner", "trapFlower", "sorcerer", "moonShade", "eclipseMage", "voidWraith", "obsidianCrawler", "shieldSoldier", "mistLancer", "mistKeeper"].includes(type));
       return safePool.length ? safePool : ["bat", "boar"];
     }
     if (lv >= 3 && region === "grassland") pool.push("boar");
@@ -177,7 +185,7 @@
     if (lv >= 3 && region === "mine") pool.push("dragonling");
     if (lv >= 8 && (region === "ash" || region === "tower" || region === "moon")) pool.push("sorcerer");
     if (lv >= 12 && region === "moon") pool.push("moonShade");
-    if (lv < 14 && (region === "smuggler" || region === "regenCave")) {
+    if (lv < 14 && (region === "smuggler" || region === "regenCave" || region === "undercity")) {
       const earlyDanger = pool.filter((type) => type !== "summoner" && type !== "obsidianCrawler" && type !== "moonShade");
       earlyDanger.push("boar", "wisp");
       return earlyDanger;
@@ -233,7 +241,7 @@
     const region = currentRegion(context);
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "obsidian" ? 12 : region === "void" ? 13 : 6;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -293,9 +301,11 @@
   }
 
   function areaDangerText(region) {
+    if (region === "undercity") return "黒市地下墓所: 吸命鬼と墓守の領域";
     if (region === "obsidian") return "黒曜洞: 黒市の外は巨人の縄張り";
     if (region === "void") return "黒陽領: 第3章の高難度地帯";
     if (region === "eclipse") return "月蝕城: 第2章の最奥";
+    if (region === "mistShrine") return "霧灯の祠: 罠と召喚が濃い寄り道";
     if (region === "regenCave") return "再生洞窟: 大再生の指輪を守る危険地帯";
     if (region === "smuggler") return "密輸道: 黒市へ抜ける危険な近道";
     if (region === "moon") return "月影廃墟: 古塔の先の危険地帯";
@@ -362,6 +372,20 @@
     return !state.regenSentinelDefeated && player.level >= REGEN_SENTINEL_REQUIREMENTS.level;
   }
 
+  function mistKeeperReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.mistKeeperDefeated
+      && state.regenSentinelDefeated
+      && player.level >= MIST_KEEPER_REQUIREMENTS.level;
+  }
+
+  function cryptWardenReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.cryptWardenDefeated
+      && state.chapter2Reported
+      && player.level >= CRYPT_WARDEN_REQUIREMENTS.level;
+  }
+
   function playerNearGuardianSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -426,6 +450,22 @@
     return Math.hypot(pc.x - rx, pc.y - ry) < worldPx(98);
   }
 
+  function playerNearMistKeeperSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const mx = (MIST_KEEPER_SITE.x + 0.5) * TILE;
+    const my = (MIST_KEEPER_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - mx, pc.y - my) < worldPx(98);
+  }
+
+  function playerNearCryptWardenSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const cx = (CRYPT_WARDEN_SITE.x + 0.5) * TILE;
+    const cy = (CRYPT_WARDEN_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - cx, pc.y - cy) < worldPx(98);
+  }
+
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver) return;
@@ -454,6 +494,12 @@
     if (state.spawnedRegenSentinel && !state.regenSentinelDefeated && !hasLiveMonster(context, "regenSentinel")) {
       state.spawnedRegenSentinel = false;
     }
+    if (state.spawnedMistKeeper && !state.mistKeeperDefeated && !hasLiveMonster(context, "mistKeeper")) {
+      state.spawnedMistKeeper = false;
+    }
+    if (state.spawnedCryptWarden && !state.cryptWardenDefeated && !hasLiveMonster(context, "cryptWarden")) {
+      state.spawnedCryptWarden = false;
+    }
 
     if (smugglerCaptainReady(context) && !state.spawnedSmugglerCaptain && playerNearSmugglerCaptainSite(context)) {
       state.spawnedSmugglerCaptain = true;
@@ -465,6 +511,18 @@
       state.spawnedRegenSentinel = true;
       spawnMonster(context, "regenSentinel", REGEN_SENTINEL_SITE.x * TILE, REGEN_SENTINEL_SITE.y * TILE);
       say("再生洞の守護者が指輪を守っている!", 3000);
+    }
+
+    if (mistKeeperReady(context) && !state.spawnedMistKeeper && playerNearMistKeeperSite(context)) {
+      state.spawnedMistKeeper = true;
+      spawnMonster(context, "mistKeeper", MIST_KEEPER_SITE.x * TILE, MIST_KEEPER_SITE.y * TILE);
+      say("霧灯の守が祠の奥に立ちはだかった!", 3000);
+    }
+
+    if (cryptWardenReady(context) && !state.spawnedCryptWarden && playerNearCryptWardenSite(context)) {
+      state.spawnedCryptWarden = true;
+      spawnMonster(context, "cryptWarden", CRYPT_WARDEN_SITE.x * TILE, CRYPT_WARDEN_SITE.y * TILE);
+      say("地下墓所の番人が吸命鬼を呼び起こした!", 3200);
     }
 
     if (ashKnightReady(context) && !state.spawnedAshKnight && playerNearAshKnightSite(context)) {
@@ -526,6 +584,8 @@
     obsidianGolemReady,
     smugglerCaptainReady,
     regenSentinelReady,
+    mistKeeperReady,
+    cryptWardenReady,
     hasLiveMonster,
     playerNearGuardianSite,
     playerNearWardenSite,
@@ -535,6 +595,8 @@
     playerNearObsidianGolemSite,
     playerNearSmugglerCaptainSite,
     playerNearRegenSentinelSite,
+    playerNearMistKeeperSite,
+    playerNearCryptWardenSite,
     updateStoryEvents,
   };
 })();

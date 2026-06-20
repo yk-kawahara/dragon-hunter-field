@@ -73,9 +73,11 @@
         trailCharm: player.trailCharm,
         aegisCharm: player.aegisCharm,
         mineCharm: player.mineCharm,
+        mistCharm: player.mistCharm,
         eclipseCharm: player.eclipseCharm,
         voidCharm: player.voidCharm,
         obsidianCharm: player.obsidianCharm,
+        deepLampCharm: player.deepLampCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -89,6 +91,10 @@
       smugglerCaptainDefeated: state.smugglerCaptainDefeated,
       spawnedRegenSentinel: state.spawnedRegenSentinel,
       regenSentinelDefeated: state.regenSentinelDefeated,
+      spawnedMistKeeper: state.spawnedMistKeeper,
+      mistKeeperDefeated: state.mistKeeperDefeated,
+      spawnedCryptWarden: state.spawnedCryptWarden,
+      cryptWardenDefeated: state.cryptWardenDefeated,
       spawnedEclipseDragon: state.spawnedEclipseDragon,
       eclipseDragonDefeated: state.eclipseDragonDefeated,
       spawnedVoidDragon: state.spawnedVoidDragon,
@@ -129,9 +135,11 @@
       player.trailCharm = Boolean(player.trailCharm);
       player.aegisCharm = Boolean(player.aegisCharm);
       player.mineCharm = Boolean(player.mineCharm);
+      player.mistCharm = Boolean(player.mistCharm);
       player.eclipseCharm = Boolean(player.eclipseCharm);
       player.voidCharm = Boolean(player.voidCharm);
       player.obsidianCharm = Boolean(player.obsidianCharm);
+      player.deepLampCharm = Boolean(player.deepLampCharm);
       normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
@@ -150,6 +158,8 @@
       state.ashKnightDefeated = Boolean(data.ashKnightDefeated);
       state.smugglerCaptainDefeated = Boolean(data.smugglerCaptainDefeated);
       state.regenSentinelDefeated = Boolean(data.regenSentinelDefeated);
+      state.mistKeeperDefeated = Boolean(data.mistKeeperDefeated);
+      state.cryptWardenDefeated = Boolean(data.cryptWardenDefeated);
       state.eclipseDragonDefeated = Boolean(data.eclipseDragonDefeated);
       state.voidDragonDefeated = Boolean(data.voidDragonDefeated);
       state.obsidianGolemDefeated = Boolean(data.obsidianGolemDefeated);
@@ -159,6 +169,8 @@
       state.spawnedAshKnight = state.ashKnightDefeated ? Boolean(data.spawnedAshKnight) : false;
       state.spawnedSmugglerCaptain = state.smugglerCaptainDefeated ? Boolean(data.spawnedSmugglerCaptain) : false;
       state.spawnedRegenSentinel = state.regenSentinelDefeated ? Boolean(data.spawnedRegenSentinel) : false;
+      state.spawnedMistKeeper = state.mistKeeperDefeated ? Boolean(data.spawnedMistKeeper) : false;
+      state.spawnedCryptWarden = state.cryptWardenDefeated ? Boolean(data.spawnedCryptWarden) : false;
       state.spawnedEclipseDragon = state.eclipseDragonDefeated ? Boolean(data.spawnedEclipseDragon) : false;
       state.spawnedVoidDragon = state.voidDragonDefeated ? Boolean(data.spawnedVoidDragon) : false;
       state.spawnedObsidianGolem = state.obsidianGolemDefeated ? Boolean(data.spawnedObsidianGolem) : false;
@@ -221,9 +233,11 @@
       trailCharm: false,
       aegisCharm: false,
       mineCharm: false,
+      mistCharm: false,
       eclipseCharm: false,
       voidCharm: false,
       obsidianCharm: false,
+      deepLampCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,
@@ -259,6 +273,10 @@
     state.smugglerCaptainDefeated = false;
     state.spawnedRegenSentinel = false;
     state.regenSentinelDefeated = false;
+    state.spawnedMistKeeper = false;
+    state.mistKeeperDefeated = false;
+    state.spawnedCryptWarden = false;
+    state.cryptWardenDefeated = false;
     state.spawnedEclipseDragon = false;
     state.eclipseDragonDefeated = false;
     state.spawnedVoidDragon = false;

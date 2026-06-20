@@ -35,6 +35,21 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 Completed in the latest pass:
 
+* Added Black Market Catacombs / `黒市地下墓所` as the first compact interior-style dungeon reached through an explicit entrance/exit pair.
+* Replaced unused upper-map forest space with a dense stone-floor dungeon containing connected rooms, alternative pockets, supplies, a readable retreat point, and a guarded reliquary.
+* Added Vault Leech / `吸命鬼`, whose contact drains stamina, slows the player, and restores its HP.
+* Added Crypt Warden / `地下墓所の番人`, a LV22 optional midboss after Chapter 2 report that uses magic pressure and summons Vault Leeches at half HP.
+* Added Deep Lamp Charm / `深層灯の護符`, which reduces slow movement loss and strengthens herb healing.
+* Added Black Market NPC guidance, dungeon atmosphere/props, portal prompts, reward locks, save/load/reset coverage, and portal-aware reachability verification.
+* Fixed accessory effect ownership so unequipped accessories no longer remain active through legacy ownership flags.
+
+* Added the Mist Shrine as a second optional side-dungeon layer beyond the Black Market north regeneration route.
+* Added Mist Lancer, a shrine patrol enemy with a readable windup and lunge, so the route changes movement decisions rather than only enemy stats.
+* Added Mist Keeper, a named LV18 midboss after Regen Sentinel, to gate the Mist Charm and make the shrine reward feel earned.
+* Added Mist Charm / `霧灯の護符`, shrine supplies, and shrine discoveries that reduce trap, summon, and magic pressure and extend late-route survivability.
+* Added save/load/reset coverage and VM smoke checks for Mist Keeper state, Mist Charm persistence, guarded shrine chest behavior, region detection, spawn pool, and reward handling.
+* Added a hand-authored shrine court terrain overlay and regenerated `docs/world-map-preview.png` / `docs/world-map-preview.svg`.
+
 * Added fixed terrain-detail overlays in `src/data/maps/world.js` so small landmarks can be hand-authored without changing map size.
 * Added camp remains, shrine markers, thorn fields, old stalls, moss fields, and muster grounds across sparse grassland, river fork, smuggler road, regeneration cave, and Black Sun approaches.
 * Added seven additional treasure caches across early, mid, and late routes so optional exploration has more rewards.
@@ -94,10 +109,14 @@ Previously completed:
 
 Next high-value content direction:
 
+* Build the next expansion as a **chapter-sized regional pack**, not a sequence of isolated caches: one new safe town, at least two route choices, one interior dungeon, one named midboss, one major boss, and equipment/reward decisions that support the whole expedition.
+* Prefer a new northern or eastern frontier beyond the current Chapter 3 footprint so Chapter 4 begins from a moved safe radius rather than sending the player back through old roads.
+* Give the next town a distinct service identity such as accessory crafting, shield reforging, or route contracts, rather than duplicating existing shops.
+* Deepen Black Market into a city hub with distinctive NPCs, stalls, optional errands, and late-route shop/reward reasons.
+* Continue turning optional routes into multi-step expeditions: approach danger, named guardian, route-specific enemy behavior, and reward that changes survivability.
 * Continue deepening the existing `120x144` overworld before another size jump: reduce wall-maze feel, add natural landmarks, and create side paths with reward reasons.
 * Continue the density pass region by region: every long open stretch should gain either a landmark, route choice, warning, small reward, or distinct enemy pocket.
-* Make Black Market feel more like a city with more NPC conversations, stalls, alleys, small discoveries, and optional errands.
-* Add at least one more interior-style dungeon or castle segment beyond the overworld-only route.
+* Add a second interior with a different structure from the Catacombs, preferably a multi-floor tower, flooded cave, or castle wing with a shortcut that opens from the far side.
 * Add another behaviorally distinct enemy, preferably heavy-guard pressure or elite patrols, so the long expedition does not rely only on stats.
 * Expand `旅メモ` / route-label presentation into a richer rumor log if progression continues to grow.
 * Rebalance Chapter 3 gold/EXP after manual playtesting the new shop, wagon travel, premium items, and Obsidian Golem route.
@@ -169,6 +188,16 @@ Each new region should include at least three:
 * Survival-range reward.
 * Safe base, shortcut, or restock point.
 * Dungeon/tower/cave/castle/ruin entrance.
+
+Chapter-sized content-pack acceptance:
+
+* 1 new safe hub that moves the recovery/restock radius.
+* 2-3 readable route choices with different danger/reward profiles.
+* 1 compact interior dungeon with a retreat decision and persistent reward.
+* 2 behaviorally distinct regular enemies.
+* 1 named midboss and 1 major boss.
+* 3 or more meaningful rewards, including at least one equipment or accessory choice.
+* Guidance, save/load, reachability, and smoke coverage delivered in the same pass.
 
 ### 4. Inventory and equipment depth pass
 
