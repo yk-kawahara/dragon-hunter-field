@@ -413,3 +413,15 @@ The overworld is now large enough to read as a journey across landmasses rather 
 * Major travel should offer readable choices: safer coast road, central mountain pass, dangerous ridge shortcut, or island detour.
 * Sea is intentional negative space that makes the landforms legible; walkable land must remain dense with routes, enemies, landmarks, rewards, or bases.
 * The next content pass should turn the new geography into a complete regional arc with local enemy behaviors, a dungeon, a named midboss, equipment decisions, and a major destination.
+
+### Cartographic quality standard
+
+The raw tile layout and the readable whole-world map have separate responsibilities.
+
+* Gameplay terrain keeps the real collision map, portals, interiors, settlements, and rewards.
+* `WORLD_LANDMASSES` defines editable polygon coastlines for the western continent, 蒼風島, and southern islands.
+* Broad legacy path blocks are naturalized into grassland, then replaced by named curved roads connecting actual destinations.
+* Embedded catacomb/tower floors are hidden on the whole-world map and replaced with regional terrain or compact landmark symbols.
+* Towns, forts, caves, towers, and castles should appear as recognizable cartographic landmarks rather than full room layouts.
+* A region is acceptable only when its silhouette, biome, route choices, and major destination can be understood without reading coordinates.
+* 蒼風島 now has a lighthouse loop, west-coast route, mountain pass, east-river road, ridge shortcut, southern cape loop, and inland lake. Future content should assign distinct danger/reward identities to these routes.

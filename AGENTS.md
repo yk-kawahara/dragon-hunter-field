@@ -80,6 +80,8 @@ Expand the game into a larger RPG while preserving density and purpose:
 * Continue using human-editable fixed map data.
 * Do not return to random/noise terrain generation.
 * Prefer named fixed geography features (ridges, rivers, roads, districts, and landmarks) over long straight bands or repeated rectangular wall corridors. Organic shapes may be assembled from explicit editable points/stamps, but must remain deterministic and human-authored.
+* Continental coastlines belong in the editable `WORLD_LANDMASSES` polygons. Do not recreate rectangular map borders or brush-stroke "sausage islands."
+* The whole-world map is cartographic, not a raw debug dump. Embedded interior floors must be represented as mountain, town, cave, tower, or castle landmarks instead of exposing their room mazes at overworld scale.
 * Major routes should usually offer a readable main road plus at least one safer/longer or riskier/rewarding alternative when space allows.
 * If map dimensions change, update map size definitions and dependent placement intentionally.
 * After terrain edits, regenerate:

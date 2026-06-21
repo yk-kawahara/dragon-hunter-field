@@ -9,6 +9,7 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 Current focus:
 
 * Deepen the new `192x224` continental overworld without creating empty walkable space.
+* Preserve the organic coastline polygons and cartographic overview; never expose embedded interior mazes on the whole-world map.
 * Treat the western continent, 蒼風島, and southern cape/islands as distinct geographic and progression units.
 * Preserve content density, regional purpose, and survival-range expansion.
 * Treat village -> Guardian -> Red Dragon as Chapter 1, not final scope.
@@ -73,7 +74,7 @@ Completed in this playtest-response pass:
 Next player-facing implementation target:
 
 * Playtest the new boss patterns and tune warning time, shield counterplay, minimum damage, and arena density.
-* Populate 蒼風島 as a full expedition arc: local behavior enemies, route-specific rewards, one interior dungeon, a named midboss, and a major destination beyond 南風岬砦.
+* Populate 蒼風島 as a full expedition arc across its lighthouse loop, west coast, mountain pass, river road, ridge shortcut, lake route, and southern cape: local behavior enemies, route-specific rewards, one interior dungeon, a named midboss, and a major destination beyond 南風岬砦.
 * Turn Black Market City from a larger district into a true multi-service capital with specialist shops, upgrade activities, local errands, and progression-sensitive residents.
 
 ### 1. Latest completed player-facing pass

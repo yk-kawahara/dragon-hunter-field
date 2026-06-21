@@ -297,6 +297,25 @@ function worldMapTileColor(tile) {
   return "#3b914d";
 }
 
+const worldOverviewRows = globalThis.DRAGON_HUNTER_WORLD_MAP?.overviewRows;
+const worldOverviewTileByChar = {
+  ".": TILE_GRASS,
+  "+": TILE_PATH,
+  "~": TILE_WATER,
+  T: TILE_TREE,
+  "#": TILE_WALL,
+  "^": TILE_ROOF,
+  _: TILE_FLOOR,
+  C: TILE_CAVE,
+  "*": TILE_FLOWER,
+  "=": TILE_FIELD,
+};
+
+function worldOverviewTileAt(tx, ty) {
+  const character = worldOverviewRows?.[ty]?.[tx];
+  return worldOverviewTileByChar[character] ?? tileAt(tx, ty);
+}
+
 function drawWorldMapMarker(mapX, mapY, scale, tx, ty, color, size = 3) {
   const x = Math.round(mapX + tx * scale);
   const y = Math.round(mapY + ty * scale);
@@ -327,7 +346,7 @@ function drawWorldMapOverlay() {
 
   for (let ty = 0; ty < MAP_H; ty += 1) {
     for (let tx = 0; tx < MAP_W; tx += 1) {
-      ctx.fillStyle = worldMapTileColor(tileAt(tx, ty));
+      ctx.fillStyle = worldMapTileColor(worldOverviewTileAt(tx, ty));
       ctx.fillRect(mapX + tx * mapScale, mapY + ty * mapScale, mapScale + 0.35, mapScale + 0.35);
     }
   }

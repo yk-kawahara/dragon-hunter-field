@@ -67,6 +67,7 @@ function writePng(file, width, height, pixels) {
   ]));
 }
 
+const previewRows = data.overviewRows || data.rows;
 const imageWidth = data.width * tileSize;
 const imageHeight = data.height * tileSize;
 const pixels = Buffer.alloc(imageWidth * imageHeight * 3);
@@ -85,7 +86,7 @@ function paintTile(tx, ty, fill) {
 
 let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${imageWidth}" height="${imageHeight}" viewBox="0 0 ${imageWidth} ${imageHeight}">\n`;
 for (let y = 0; y < data.height; y += 1) {
-  const row = data.rows[y];
+  const row = previewRows[y];
   if (typeof row !== "string" || row.length !== data.width) {
     throw new Error(`WORLD_MAP row ${y} must be ${data.width} characters`);
   }
@@ -95,12 +96,6 @@ for (let y = 0; y < data.height; y += 1) {
     paintTile(x, y, fill);
     svg += `<rect x="${x * tileSize}" y="${y * tileSize}" width="${tileSize}" height="${tileSize}" fill="${fill}"/>\n`;
   }
-}
-
-for (const object of data.objects || []) {
-  const fill = object.type === "npc" ? "#ffd166" : "#ffffff";
-  paintTile(object.x, object.y, fill);
-  svg += `<rect x="${object.x * tileSize}" y="${object.y * tileSize}" width="${tileSize}" height="${tileSize}" fill="${fill}" stroke="#111" stroke-width="1"/>\n`;
 }
 
 svg += "</svg>\n";

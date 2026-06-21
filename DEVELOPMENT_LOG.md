@@ -57,6 +57,7 @@ Current project status:
 * Black Market is now Black Market City: a larger multi-district safe zone with streets, buildings, several entrances, and eight additional residents/guards.
 * 蒼風島 adds a second major landmass with a mountain spine, lighthouse coast, river valley, terraces, multiple crossing routes, 蒼風港, and 南風岬砦.
 * Southern capes and island routes add bridges, a causeway, shrine island, caches, and a second long-range direction beyond the western chapter corridor.
+* The world now uses editable polygon coastlines, naturalized curved roads, and a cartographic overview layer that hides embedded interior mazes behind readable terrain/landmark symbols.
 
 Current high-priority risks:
 
@@ -98,6 +99,34 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-22: Organic continent and cartographic world-map pass
+
+Goal: correct the artificial, rough appearance of the 192x224 expansion and make the world read like a broad RPG continent/island map rather than a collection of rectangular corridors and exposed room layouts.
+
+Implemented:
+
+* Replaced brush-stroke landmass construction with four explicit human-editable coastline polygons: western continent, 蒼風島, shrine island, and middle sea isle.
+* Cut the old rectangular western-map boundary into bays, capes, and irregular coasts while preserving all existing gameplay coordinates and portals.
+* Naturalized oversized legacy path blocks into open terrain, then redrew named curved roads for the village, north forest, dragon cave, southwest camp, river fork, highlands, frost frontier, and ferry routes.
+* Broke old horizontal chapter seams into valleys, fragmented woods, and mountain passes instead of continuous artificial wall bands.
+* Expanded 蒼風島 route structure with a lighthouse loop, west-coast road, mountain pass, east-river road, ridge shortcut, inland lake, south-cape loop, and cross-island route.
+* Added `overviewRows`, a cartographic layer used by the in-game whole-world map and generated previews. Embedded catacomb/watchtower floors are replaced by mountains, while towns, forts, caves, towers, and castles use compact landmark symbols.
+* Removed NPC dots from the generated cartographic preview so geography and route structure remain readable.
+* Moved one Frost Haven resident off the new windbreak forest and opened a frost-waystone plaza so dash/traversal behavior remains valid.
+
+Verification:
+
+* All treasure, discovery, NPC, boss, dungeon, port, town, and Chapter 1-4 reachability checks pass after coastline changes.
+* `scripts/verify-game-smoke.js` passes with 23,986 reachable tiles and validates the full-size overview plus hidden embedded catacomb layout.
+* `docs/world-map-preview.png` and `.svg` were regenerated and inspected at original resolution; continent silhouettes, seas, mountain systems, route loops, settlements, and southern islands are now visually distinct.
+* In-app browser QA was attempted, but the isolated browser environment refused both the reachable localhost server and direct `file:` navigation. The generated preview remains the visual verification artifact for this pass.
+
+Known risks / next work:
+
+* Manual field-scale travel timing and mobile browser rendering still need hands-on QA.
+* Several legacy western encounter spaces remain physically rectangular at local gameplay scale even though the whole-world map now represents them cleanly. Future passes should reshape them one region at a time without returning to corridor mazes.
+* 蒼風島 now has strong geography but still needs unique route populations, rewards, an interior dungeon, and a chapter boss arc.
 
 ### 2026-06-21: Continental world expansion pass
 
