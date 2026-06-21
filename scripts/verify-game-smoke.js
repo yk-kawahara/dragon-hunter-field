@@ -331,11 +331,18 @@ function assertMapReachability() {
     ["frost-tower-warden", d.FROST_TOWER_WARDEN_SITE.x, d.FROST_TOWER_WARDEN_SITE.y],
     ["frost-tower-reliquary", 115, 29],
     ["frost-tower-lift", 114, 31],
+    ["east-harbor", 150, 85],
+    ["east-lighthouse", 150, 48],
+    ["east-ridge", 168, 105],
+    ["southwind-outpost", 168, 169],
+    ["south-island-shrine", 57, 209],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
-  assert(d.MAP_W === 120 && d.MAP_H === 160, "expanded map should be 120x160");
-  assert(state.npcs.length === 65, "expected 65 NPCs after Black Market city expansion");
+  assert(d.MAP_W === 192 && d.MAP_H === 224, "continent map should be 192x224");
+  assert(state.npcs.length === 84, "expected 84 NPCs after island towns expansion");
+  const blockedNpcs = state.npcs.filter((npc) => !passable(Math.floor(npc.x / d.TILE), Math.floor(npc.y / d.TILE)));
+  assert(blockedNpcs.length === 0, `NPCs must stand on reachable terrain: ${JSON.stringify(blockedNpcs.map((npc) => ({ type: npc.type, x: Math.floor(npc.x / d.TILE), y: Math.floor(npc.y / d.TILE) })))}`);
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "merchant"), "black market merchant should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "porter"), "porter NPCs should load from WORLD_OBJECTS");
@@ -981,6 +988,17 @@ function assertExpandedWorldContent() {
   player.level = 14;
   const highlandPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "highland");
   assert(highlandPool.includes("shieldSoldier") && highlandPool.includes("sorcerer") && highlandPool.includes("boar"), "highland routes should mix frontal guards, magic, and chargers");
+  player.x = 150 * d.TILE;
+  player.y = 60 * d.TILE;
+  assert(runtime.currentRegion() === "windCoast", "east island north coast should use windCoast region");
+  const windCoastPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "windCoast");
+  assert(windCoastPool.includes("mistLancer") && windCoastPool.includes("frostMoth"), "wind coast should mix lunges and ranged pressure");
+  player.x = 165 * d.TILE;
+  player.y = 105 * d.TILE;
+  assert(runtime.currentRegion() === "eastHighland", "east island interior should use eastHighland region");
+  player.x = 58 * d.TILE;
+  player.y = 209 * d.TILE;
+  assert(runtime.currentRegion() === "southIsles", "southern archipelago should use southIsles region");
   player.x = d.ASH_KNIGHT_SITE.x * d.TILE;
   player.y = d.ASH_KNIGHT_SITE.y * d.TILE;
   assert(runtime.currentRegion() === "tower", "old tower should use tower region");
@@ -1194,7 +1212,14 @@ function assertExpandedWorldContent() {
   assert(runtime.inTownTile(98, 132), "black fort should be a safe-zone tile");
   assert(runtime.inTownTile(35, 135), "black market should be a safe-zone tile");
   assert(runtime.inTownTile(20, 140) && runtime.inTownTile(47, 137), "expanded Black Market city districts should remain safe");
+  assert(runtime.inTownTile(150, 85) && runtime.inTownTile(168, 169), "east island harbor and cape outpost should be safe zones");
   assert(runtime.inTownTile(24, 154), "Frost Haven should be a safe-zone tile");
+  player.x = 116 * d.TILE;
+  player.y = 65 * d.TILE;
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "western-ferry"));
+  assert(Math.floor(player.x / d.TILE) === 139 && Math.floor(player.y / d.TILE) === 87, "western ferry should reach the east island harbor");
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "east-ferry"));
+  assert(Math.floor(player.x / d.TILE) === 116 && Math.floor(player.y / d.TILE) === 65, "east ferry should return to the western continent");
   runtime.ui.zone = { textContent: "" };
   player.x = 24 * d.TILE;
   player.y = 154 * d.TILE;

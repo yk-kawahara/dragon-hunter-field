@@ -247,6 +247,8 @@ function draw(context) {
   drawBlackMarketDetails(cam);
   drawBlackFortDetails(cam);
   drawFrostHavenDetails(cam);
+  drawEastHarborDetails(cam);
+  drawSouthwindOutpostDetails(cam);
   drawVillageRoleMarkers(cam);
   drawTravelMarkers(cam);
   drawHealCircle(cam);
@@ -351,7 +353,7 @@ function drawWorldMapOverlay() {
   const infoX = 105;
   const regionNames = {
     grassland: "始まりの草原", north: "北森", east: "東の森", mine: "廃鉱山", cave: "竜洞",
-    ash: "灰の街道", highland: "天脊高原", tower: "古塔", moon: "月影廃墟", eclipse: "月蝕城",
+    ash: "灰の街道", highland: "天脊高原", windCoast: "蒼風海岸", eastHighland: "蒼風島高原", southIsles: "南岬群島", tower: "古塔", moon: "月影廃墟", eclipse: "月蝕城",
     obsidian: "黒曜地帯", void: "黒陽城", undercity: "地下墓所", frost: "霜原",
     frostCave: "氷窟", frostCitadel: "霜冠城", frostTower1: "霜見塔一階", frostTower2: "霜見塔二階",
   };
@@ -367,9 +369,9 @@ function drawWorldMapOverlay() {
   ctx.fillStyle = "#ffffff";
   ctx.fillText("□ 現在地", infoX, 79);
   ctx.fillStyle = "#d7e2ea";
-  ctx.fillText("北: 竜洞 / 東: 灰道", infoX, 96);
-  ctx.fillText("南: 月影 / 黒陽城", infoX, 107);
-  ctx.fillText("最南端: 霜原・霜冠城", infoX, 118);
+  ctx.fillText("西方: 村 / 灰道 / 黒市", infoX, 96);
+  ctx.fillText("東海: 蒼風島 / 海岸高原", infoX, 107);
+  ctx.fillText("南方: 霜原 / 岬群島", infoX, 118);
   ctx.fillStyle = "#8dd7ff";
   ctx.fillText("P / Esc: 閉じる", infoX, 132);
 }
@@ -749,6 +751,31 @@ function drawBlackFortDetails(cam) {
   drawRoleMarker(98 * TILE - cam.x, 131 * TILE - cam.y, "回", "#6de4ff");
   drawRoleMarker(104 * TILE - cam.x, 131 * TILE - cam.y, "黒", "#d8d8ff");
   drawSign(93 * TILE - cam.x, 133 * TILE - cam.y);
+}
+
+function drawEastHarborDetails(cam) {
+  drawTent(142 * TILE - cam.x, 83 * TILE - cam.y, "#55c7a0");
+  drawTent(156 * TILE - cam.x, 83 * TILE - cam.y, "#8dd7ff");
+  drawCrates(140 * TILE - cam.x, 89 * TILE - cam.y);
+  drawCrates(158 * TILE - cam.x, 89 * TILE - cam.y);
+  drawCampfire(151 * TILE - cam.x, 89 * TILE - cam.y);
+  drawLamp(138 * TILE - cam.x, 86 * TILE - cam.y);
+  drawLamp(160 * TILE - cam.x, 86 * TILE - cam.y);
+  drawRoleMarker(150 * TILE - cam.x, 84 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(155 * TILE - cam.x, 83 * TILE - cam.y, "商", "#ffd166");
+  drawRoleMarker(139 * TILE - cam.x, 86 * TILE - cam.y, "船", "#8dd7ff");
+}
+
+function drawSouthwindOutpostDetails(cam) {
+  drawTent(162 * TILE - cam.x, 166 * TILE - cam.y, "#d9704c");
+  drawTent(173 * TILE - cam.x, 166 * TILE - cam.y, "#5f668f");
+  drawCrates(160 * TILE - cam.x, 172 * TILE - cam.y);
+  drawCrates(175 * TILE - cam.x, 172 * TILE - cam.y);
+  drawCampfire(168 * TILE - cam.x, 171 * TILE - cam.y);
+  drawLamp(160 * TILE - cam.x, 168 * TILE - cam.y);
+  drawLamp(176 * TILE - cam.x, 168 * TILE - cam.y);
+  drawRoleMarker(168 * TILE - cam.x, 168 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(173 * TILE - cam.x, 169 * TILE - cam.y, "?", "#fff2a6");
 }
 
 function drawCampBoundary(cam) {

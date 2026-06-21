@@ -25,7 +25,7 @@ Current project status:
 * Core design: survival-range expansion.
 * Code structure is split across `src/data`, `src/core`, and `src/systems`.
 * Fixed hand-editable world map lives in `src/data/maps/world.js`.
-* Current map size is `120x160`; future work should deepen the expanded world while preserving density, purpose, and reachability.
+* Current map size is `192x224`; it now reads as a western continent, sea channel, 蒼風島, and southern cape/islands rather than one rectangular route stack.
 * Real `もちもの` inventory exists with item, weapon, armor, and accessory handling.
 * Accessories are moving from permanent passive flags into equipment choices.
 * Southwest mine + southwest frontier camp are the first concrete volume-expansion pilot.
@@ -55,13 +55,15 @@ Current project status:
 * A live whole-world map can be opened with `P` or the command panel; it reflects fixed terrain and marks the player, bases, and major bosses.
 * Skyspine Highlands replaces a large straight/corridor section with mountain ridges, a meandering river, three crossing routes, route rewards, and a distinct enemy mix.
 * Black Market is now Black Market City: a larger multi-district safe zone with streets, buildings, several entrances, and eight additional residents/guards.
+* 蒼風島 adds a second major landmass with a mountain spine, lighthouse coast, river valley, terraces, multiple crossing routes, 蒼風港, and 南風岬砦.
+* Southern capes and island routes add bridges, a causeway, shrine island, caches, and a second long-range direction beyond the western chapter corridor.
 
 Current high-priority risks:
 
 * Full real-browser desktop/mobile play QA is still needed.
 * Full fresh-save manual playthrough to elder report is still needed.
 * Mobile UI and inventory overlay need real-browser confirmation.
-* Future map expansion must avoid empty terrain and preserve reachability; the new 120x160 space needs more hand-authored content density.
+* Future map expansion must avoid empty terrain and preserve reachability; the new `192x224` space now needs a complete eastern-island enemy/reward/dungeon arc rather than another size increase.
 * Gold/EXP/shop price balance should be checked after route expansion.
 * Chapter 4 LV30/LV34 pacing, rank-12 gear economy, and boss reinforcement pressure need a real playtest from a Chapter 3 clear save.
 * Frost Watchtower attrition, beacon pulse pressure, warden phase pacing, elevator usefulness, and Sky Emblem strength need a real Chapter 4 playtest.
@@ -96,6 +98,34 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-21: Continental world expansion pass
+
+Goal: replace the impression of a rectangular corridor collection with a world whose continent, island, sea, mountain, river, coast, and settlements are readable at a glance.
+
+Implemented:
+
+* Expanded the fixed hand-editable overworld from `120x160` to `192x224`, increasing total map area by approximately 2.24 times while preserving all western-continent coordinates.
+* Added a broad sea channel, 蒼風島, a western south cape, middle isle, shrine island, and southern cape routes.
+* Built 蒼風島 around a north lighthouse coast, central mountain spine, western terraces, river valley, eastern coast road, ridge shortcut, southern heath, and multiple route choices.
+* Added 蒼風港 and 南風岬砦 as safe recovery/restock/travel anchors with healer/merchant/porter/frontier roles, guards, guides, residents, props, and settlement-specific dialogue.
+* Added ferry traversal between the continents, new travel points, seven one-time chests, six discoveries, regional guidance, and whole-world-map labels.
+* Added `windCoast`, `eastHighland`, and `southIsles` spawn regions so the new land is populated by increasingly dangerous mixed-behavior enemies instead of remaining empty scenery.
+* Added automated validation that every NPC stands on passable terrain, then fixed six western/eastern NPCs that had been placed on roofs or walls.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg` from the assembled `192x224` world and visually confirmed the continent/island silhouettes.
+
+Verification:
+
+* Syntax checks passed for all 24 JavaScript files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed with 26,689 reachable tiles, 84 reachable NPCs, new-region spawn checks, safe-zone checks, ferry round trip, important destination reachability, save/load, inventory, and Chapter 1-4 story flow.
+* The generated map preview was inspected at original resolution and confirms readable landmasses, coastlines, mountain spine, river routes, ports, and southern islands.
+* In-app browser QA could not start because the local browser integration lacked required sandbox metadata. Field-scale visual balance and manual travel times remain unverified in this environment.
+
+Known risks / next work:
+
+* 蒼風島 is geographically complete but not yet a complete chapter. It needs unique local enemies, an interior dungeon, named midboss, region equipment, and a major destination/boss.
+* Enemy density, ferry timing, shop value, and route duration on the new island need a real post-Chapter-3 playtest.
+* Several legacy western interiors still retain rectangular wall-maze silhouettes; future terrain passes should reshape them without undoing the new continental structure.
 
 ### 2026-06-21: Boss action, world map, and Skyspine geography pass
 

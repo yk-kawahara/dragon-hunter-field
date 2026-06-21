@@ -161,6 +161,10 @@
   function regionAtPosition(x, y) {
     const tx = Math.floor(x / TILE);
     const ty = Math.floor(y / TILE);
+    if (tx >= 132 && ty < 80) return "windCoast";
+    if (tx >= 132 && ty < 154) return "eastHighland";
+    if (tx >= 132) return "windCoast";
+    if (ty >= 160) return "southIsles";
     if (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) return "undercity";
     if (tx >= 88 && tx <= 102 && ty >= 18 && ty <= 32) return "frostTower1";
     if (tx >= 104 && tx <= 118 && ty >= 18 && ty <= 32) return "frostTower2";
@@ -355,6 +359,9 @@
 
   function areaDangerText(region) {
     if (region === "frostTower2") return "霜見塔二階: 凍気灯と塔守の領域";
+    if (region === "eastHighland") return "蒼風島内陸: 山越えの強敵地帯";
+    if (region === "windCoast") return "蒼風海岸: 港から離れるほど危険";
+    if (region === "southIsles") return "南岬群島: 退路の長い海辺の遠征";
     if (region === "frostTower1") return "霜見塔一階: 退路を確かめて登れ";
     if (region === "frostCitadel") return "霜冠城: 第4章の最奥";
     if (region === "frostCave") return "氷窟: 巨人と吸命の巣";

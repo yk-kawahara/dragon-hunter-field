@@ -666,7 +666,11 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
-    if (inTown(player.x, player.y)) name = (tx >= 12 && tx <= 34 && ty >= 150 && ty <= 156) ? "白銀宿" : (tx >= 15 && tx <= 49 && ty >= 128 && ty <= 142) ? "黒市都" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    if (inTown(player.x, player.y)) name = (tx >= 137 && tx <= 160 && ty >= 79 && ty <= 94) ? "蒼風港" : (tx >= 160 && tx <= 176 && ty >= 165 && ty <= 173) ? "南風岬砦" : (tx >= 12 && tx <= 34 && ty >= 150 && ty <= 156) ? "白銀宿" : (tx >= 15 && tx <= 49 && ty >= 128 && ty <= 142) ? "黒市都" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    else if (tx >= 132 && ty < 80) name = "蒼風島北岸";
+    else if (tx >= 132 && ty < 154) name = "蒼風島高原";
+    else if (tx >= 132) name = "蒼風島南岸";
+    else if (ty >= 160) name = "南岬群島";
     else if (tx >= 104 && tx <= 118 && ty >= 18 && ty <= 32) name = "霜見塔二階";
     else if (tx >= 88 && tx <= 102 && ty >= 18 && ty <= 32) name = "霜見塔一階";
     else if (ty >= 144 && tx >= 90) name = "霜冠城";

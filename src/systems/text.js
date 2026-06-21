@@ -107,6 +107,9 @@
     if (hpRate < 0.35) return "危険: 帰還鈴か最寄りの拠点で立て直そう";
     const stage = gameStage(context);
     const region = currentRegion();
+    if (region === "windCoast") return "蒼風港を足場に、灯台道か南の海岸道を選ぼう";
+    if (region === "eastHighland") return "中央峠は近くて危険。西海岸道なら退路を取りやすい";
+    if (region === "southIsles") return "南風岬砦で補給し、小島の橋と古い祠を巡ろう";
     if (region === "frostTower2" && !state.towerWardenDefeated) return "凍気灯を先に壊し、最上階の塔守を倒そう";
     if (region === "frostTower2") return "最上階の遺物庫と昇降機を調べよう";
     if (region === "frostTower1") return "補給庫を探し、南東の階段から二階へ";

@@ -96,6 +96,13 @@
       "白銀衛兵「霜冠城へは本道、氷窟へは南道。準備で道を選べ」",
       "盾刻師の弟子「刻印は盾を替えても残る。戦い方で彫り直すんだ」",
     ],
+    island: [
+      "港の船員「西の大陸が霞む日は、中央峠に嵐が来る」",
+      "島の衛兵「海岸道は長いが退路が広い。峠は近いが盾兵と突進獣が待つ」",
+      "高原商人「山向こうの南風岬まで行くなら帰還鈴を残しておけ」",
+      "漁師「南の小島には古い祠がある。橋を渡るなら術師を先に倒せ」",
+      "旅人「蒼風港の灯が見える範囲と、岬砦の灯が見える範囲は別の生存圏だ」",
+    ],
   };
 
   const worldPx = (value) => value * WORLD_SCALE;
@@ -346,7 +353,10 @@
     }
 
     if (npc.type === "guide") {
-      if (npc.y > 144 * TILE) {
+      if (npc.x > 132 * TILE) {
+        if (npc.y > 154 * TILE) say("案内人「北は蒼風港、南西の橋は群島祠、東は海岸の強敵地帯だ」", 4200);
+        else say("案内人「北道は灯台、中央は峠、南道は岬砦。峠が最短だが最も危険だ」", 4200);
+      } else if (npc.y > 144 * TILE) {
         if (!state.frostGolemDefeated) say("案内人「本道は霜冠城、南の氷窟は危険だが霜心の護符が眠る」", 4200);
         else if (!state.towerWardenDefeated) say("案内人「白銀宿の東に霜見塔がある。二階の塔守はLV32向けだ」", 4200);
         else if (!state.discoveries.has("frost-seal")) say("案内人「霜冠城の中庭で封印碑を探せ。氷窟巨人の核が道を開く」", 4200);
@@ -364,7 +374,9 @@
     }
 
     if (npc.type === "villager" || npc.type === "guard") {
-      if (npc.y > 144 * TILE) {
+      if (npc.x > 132 * TILE) {
+        say(localDialogue(npc, townDialogue.island), 4000);
+      } else if (npc.y > 144 * TILE) {
         say(localDialogue(npc, townDialogue.frost), 3800);
       } else if (npc.y > 128 * TILE) {
         if (npc.x > 44 * TILE && !state.cryptWardenDefeated) {
