@@ -354,6 +354,7 @@ const contexts = contextHelpers.createContextFactory({
   searchGround,
   showStats,
   toggleInventory,
+  toggleWorldMap,
   closeInventory,
   moveInventory,
   confirmInventory,
@@ -605,8 +606,8 @@ function updateMonsters(dt) {
 }
 
 // Projectile facade --------------------------------------------------------
-function shootProjectile(monster, target, angleOffset = 0) {
-  return projectileHelpers.shootProjectile(contexts.projectile(), monster, target, angleOffset);
+function shootProjectile(monster, target, angleOffset = 0, options = {}) {
+  return projectileHelpers.shootProjectile(contexts.projectile(), monster, target, angleOffset, options);
 }
 
 function updateProjectiles(dt) {
@@ -857,6 +858,10 @@ function toggleInventory() {
   return uiHelpers.toggleInventory(contexts.ui());
 }
 
+function toggleWorldMap() {
+  return uiHelpers.toggleWorldMap(contexts.ui());
+}
+
 function closeInventory() {
   return uiHelpers.closeInventory(contexts.ui());
 }
@@ -1036,7 +1041,7 @@ function loop(now) {
   const dt = Math.min(40, now - state.last);
   state.last = now;
 
-  if (!state.gameOver) {
+  if (!state.gameOver && !state.worldMapOpen) {
     updatePlayer(dt);
     updateStoryEvents();
     updateRegionSpawns(dt);

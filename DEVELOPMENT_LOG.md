@@ -51,6 +51,10 @@ Current project status:
 * Frost Watchtower adds a two-floor Chapter 4 side dungeon with Frost Beacon aura hazards, a named warden, a persistent elevator shortcut, and the dash-focused Sky Emblem reward.
 * All weapons now have distinct attack profiles, the field UI has three configurable all-item quick slots, and interior enemy density is isolated from exterior spawn budgets.
 * Settlement NPC dialogue now varies by location and resident instead of repeating one generic line.
+* Major bosses now use telegraphed piercing attacks, delayed multi-wave patterns, or persistent arena zones in addition to their previous spreads and summons.
+* A live whole-world map can be opened with `P` or the command panel; it reflects fixed terrain and marks the player, bases, and major bosses.
+* Skyspine Highlands replaces a large straight/corridor section with mountain ridges, a meandering river, three crossing routes, route rewards, and a distinct enemy mix.
+* Black Market is now Black Market City: a larger multi-district safe zone with streets, buildings, several entrances, and eight additional residents/guards.
 
 Current high-priority risks:
 
@@ -62,9 +66,9 @@ Current high-priority risks:
 * Chapter 4 LV30/LV34 pacing, rank-12 gear economy, and boss reinforcement pressure need a real playtest from a Chapter 3 clear save.
 * Frost Watchtower attrition, beacon pulse pressure, warden phase pacing, elevator usefulness, and Sky Emblem strength need a real Chapter 4 playtest.
 * Existing routes and dungeons are often too short and too wall-corridor-heavy to create a convincing journey through a world.
-* The game still lacks a major multi-service city and a whole-world map; current safe bases remain much smaller than the intended urban destination.
+* Black Market City now provides the physical urban footprint and whole-world navigation, but specialist shops, optional city activities, and progression-sensitive urban services still need expansion.
 * New weapon profiles, quick-slot UX, interior population, and settlement dialogue variation need hands-on browser playtesting after this pass.
-* Later bosses need more movement checks such as piercing attacks, multi-wave patterns, and wide-area pressure so level grinding alone is not the dominant answer.
+* New boss movement checks need hands-on balance testing so warnings are readable and defense/level cannot trivialize every pattern.
 
 Next verification target:
 
@@ -92,6 +96,36 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-21: Boss action, world map, and Skyspine geography pass
+
+Goal: respond to playtest feedback with more skill-based bosses and transform the central overworld from straight wall corridors into a memorable mountain journey.
+
+Implemented:
+
+* Added boss attack infrastructure for telegraphed lines/zones, piercing and wall-piercing shots, delayed waves, and persistent damaging fields.
+* Red Dragon now aims a piercing fire lane; Eclipse Dragon uses rotating delayed volleys; Black Sun Dragon marks persistent void zones; Frost Crown Dragon alternates piercing ice lances and multi-wave blizzards.
+* Added a live whole-world map opened with `P` or the command panel. It reads current fixed terrain and marks current position, safe bases, and major bosses while pausing field simulation.
+* Added fixed, human-editable geography feature data for named ridges, rivers, and roads. It remains deterministic and can be changed by editing polyline points in `src/data/maps/world.js`.
+* Rebuilt the Skyspine crossing with two mountain ridges, a meandering river, a main road, a longer valley road, and a dangerous ridge shortcut.
+* Added the `highland` region with shield soldiers, chargers, sorcerers, wisps, and dragonlings, plus three new caches/discoveries on alternate routes.
+* Expanded Black Market into Black Market City: a 35x15 safe urban district with central avenues, building blocks, multiple approaches, props, and eight additional residents/guards.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* Syntax checks passed for all changed JavaScript files.
+* `scripts/verify-game-smoke.js` passed with 12,938 reachable tiles and all NPCs, bosses, portals, treasures, and discoveries reachable.
+* Smoke coverage verifies boss telegraph/piercing/persistent behavior, world-map state exclusivity, highland region composition, and expanded Black Market safety.
+* `git diff --check` passed except expected CRLF conversion warnings.
+* In-app browser visual QA could not initialize because the local browser integration lacked required sandbox metadata. The generated map preview was inspected directly and confirms the central world now reads as a mountain/river region rather than parallel rectangular corridors.
+
+Known risks / next work:
+
+* Boss warning timing, persistent-zone damage cadence, and shield counterplay need hands-on playtesting.
+* The new three-route highland crossing needs manual traversal to tune enemy density and compare route travel times.
+* Black Market City has the physical scale and population of a city, but still needs more specialist services and optional urban activities.
+* The northern Chapter 1 landmass and some southern castles still retain rectangular edges; the next geography pass should add coast/island structure and terrain-led castle approaches.
 
 ### 2026-06-21: Playtest-response combat, dungeon population, and quick-slot pass
 

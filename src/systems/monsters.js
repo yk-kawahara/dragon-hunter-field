@@ -95,6 +95,12 @@
     monster.hurt = 0;
     monster.contactTimer = 0;
     monster.fireCooldown = 700;
+    monster.patternCooldown = 1800;
+    monster.patternState = "idle";
+    monster.patternWindup = 0;
+    monster.patternWaveCooldown = 0;
+    monster.patternWaves = 0;
+    monster.patternTargets = [];
     monster.summonCooldown = monster.type === "summoner" ? 1500 : 0;
     monster.summonAnnounced = false;
     monster.trapTimer = 0;
@@ -175,6 +181,121 @@
     monster.hp = 0;
   }
 
+  function startBossPattern(context, monster, playerCenter) {
+    const { state, addRing, say } = requireMonsterContext(context);
+    const c = centerOf(monster);
+    monster.patternAim = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
+    monster.patternState = "windup";
+    monster.patternIndex = (monster.patternIndex || 0) + 1;
+    monster.fireCooldown = Math.max(monster.fireCooldown, 1100);
+
+    if (monster.type === "voidDragon") {
+      monster.patternKind = "voidZones";
+      monster.patternWindup = 920;
+      monster.patternWaves = 3;
+      monster.patternTargets = [
+        { x: playerCenter.x, y: playerCenter.y },
+        { x: playerCenter.x + worldPx(34), y: playerCenter.y - worldPx(22) },
+        { x: playerCenter.x - worldPx(34), y: playerCenter.y + worldPx(22) },
+      ];
+      for (const target of monster.patternTargets) {
+        state.telegraphs.push({ kind: "zone", x: target.x, y: target.y, radius: worldPx(15), color: "#b990ff", life: 920, max: 920 });
+      }
+      say("黒陽竜が足元に虚無を刻む!", 1500);
+      return;
+    }
+
+    const frostBurst = monster.type === "frostDragon" && monster.patternIndex % 2 === 0;
+    monster.patternKind = frostBurst ? "frostBurst" : monster.type === "frostDragon" ? "frostLance" : monster.type === "eclipseDragon" ? "eclipseWaves" : "fireLance";
+    monster.patternWindup = monster.type === "frostDragon" ? 720 : monster.type === "eclipseDragon" ? 820 : 760;
+    monster.patternWaves = frostBurst ? 4 : monster.type === "eclipseDragon" ? 3 : monster.type === "frostDragon" ? 2 : 1;
+    state.telegraphs.push({
+      kind: "line",
+      x: c.x,
+      y: c.y,
+      dx: monster.patternAim.x,
+      dy: monster.patternAim.y,
+      length: worldPx(300),
+      width: worldPx(frostBurst ? 8 : 12),
+      color: monster.type === "frostDragon" ? "#b9f4ff" : monster.type === "eclipseDragon" ? "#f06dff" : "#ff7a4a",
+      life: monster.patternWindup,
+      max: monster.patternWindup,
+    });
+    addRing(c.x, c.y, monster.type === "frostDragon" ? "#b9f4ff" : monster.type === "eclipseDragon" ? "#f06dff" : "#ff7a4a", worldPx(38));
+    say(frostBurst ? "霜冠竜が多段吹雪を放つ!" : monster.type === "frostDragon" ? "霜冠竜が貫通氷槍を狙う!" : monster.type === "eclipseDragon" ? "月蝕竜が三連月光を構える!" : "赤竜が貫通火炎を狙う!", 1500);
+  }
+
+  function finishBossPattern(monster) {
+    monster.patternState = "idle";
+    monster.patternCooldown = monster.enraged ? 2300 : 3200;
+    monster.patternWaveCooldown = 0;
+    monster.patternTargets = [];
+  }
+
+  function fireBossPatternWave(context, monster) {
+    const { shootProjectile, addRing } = requireMonsterContext(context);
+    const c = centerOf(monster);
+    const target = {
+      x: c.x + monster.patternAim.x * worldPx(420),
+      y: c.y + monster.patternAim.y * worldPx(420),
+    };
+    const wave = monster.patternWaves;
+
+    if (monster.patternKind === "voidZones") {
+      const zoneIndex = 3 - wave;
+      const zone = monster.patternTargets?.[zoneIndex] || target;
+      shootProjectile(monster, zone, 0, { stationary: true, persistent: true, radius: 15, damageMultiplier: 0.58, life: 3200, color: "#7f69d9", pattern: "voidZone" });
+      addRing(zone.x, zone.y, "#b990ff", worldPx(22));
+    } else if (monster.patternKind === "eclipseWaves") {
+      const rotation = (4 - wave) * 0.11;
+      for (const offset of [-0.46, -0.16, 0.16, 0.46]) {
+        shootProjectile(monster, target, offset + rotation, { speedMultiplier: 1.32, damageMultiplier: 0.78, life: 2100, pattern: "eclipseWave" });
+      }
+    } else if (monster.patternKind === "frostBurst") {
+      const rotation = (5 - wave) * 0.09;
+      for (const offset of [-0.58, -0.29, 0, 0.29, 0.58]) {
+        shootProjectile(monster, target, offset + rotation, { speedMultiplier: 1.38, damageMultiplier: 0.72, life: 2200, pattern: "frostBurst" });
+      }
+    } else {
+      const frost = monster.patternKind === "frostLance";
+      const offset = frost && wave === 1 ? 0.12 : 0;
+      shootProjectile(monster, target, offset, {
+        speedMultiplier: frost ? 2.05 : 1.85,
+        damageMultiplier: frost ? 1.08 : 1.18,
+        radius: frost ? 6 : 5,
+        life: 2500,
+        piercing: true,
+        wallPiercing: true,
+        color: frost ? "#d9f7ff" : "#ff7a4a",
+        pattern: frost ? "frostLance" : "fireLance",
+      });
+    }
+
+    monster.patternWaves -= 1;
+    if (monster.patternWaves <= 0) finishBossPattern(monster);
+    else {
+      monster.patternState = "waves";
+      monster.patternWaveCooldown = monster.patternKind === "voidZones" ? 380 : 220;
+    }
+  }
+
+  function updateBossPattern(context, monster, playerCenter, dist) {
+    if (!monster.boss) return false;
+    if (monster.patternState === "idle" && monster.patternCooldown <= 0 && dist < worldPx(245)) {
+      startBossPattern(context, monster, playerCenter);
+      return true;
+    }
+    if (monster.patternState === "windup") {
+      if (monster.patternWindup <= 0) fireBossPatternWave(context, monster);
+      return true;
+    }
+    if (monster.patternState === "waves") {
+      if (monster.patternWaveCooldown <= 0) fireBossPatternWave(context, monster);
+      return true;
+    }
+    return false;
+  }
+
   function updateMonsters(context, dt) {
     const {
       state,
@@ -195,6 +316,9 @@
       monster.hurt = Math.max(0, monster.hurt - dt);
       monster.contactTimer = Math.max(0, monster.contactTimer - dt);
       monster.fireCooldown = Math.max(0, monster.fireCooldown - dt);
+      monster.patternCooldown = Math.max(0, (monster.patternCooldown || 0) - dt);
+      monster.patternWindup = Math.max(0, (monster.patternWindup || 0) - dt);
+      monster.patternWaveCooldown = Math.max(0, (monster.patternWaveCooldown || 0) - dt);
       monster.summonCooldown = Math.max(0, (monster.summonCooldown || 0) - dt);
       monster.trapTimer = Math.max(0, (monster.trapTimer || 0) - dt);
       monster.windup = Math.max(0, monster.windup - dt);
@@ -305,7 +429,9 @@
         }
       }
 
-      if ((monster.type === "wisp" || monster.type === "bubbler" || monster.type === "frostMoth" || monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "voidWraith" || monster.type === "obsidianCrawler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "frostDragon" ? 235 : monster.type === "voidDragon" ? 225 : monster.type === "eclipseDragon" ? 205 : monster.type === "obsidianGolem" ? 185 : monster.boss ? 180 : monster.midboss ? 150 : monster.type === "frostMoth" ? 195 : monster.type === "bubbler" ? 145 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 185 : monster.type === "eclipseMage" ? 180 : monster.type === "summoner" ? 170 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
+      const bossPatternActive = updateBossPattern(context, monster, playerCenter, dist);
+
+      if (!bossPatternActive && (monster.type === "wisp" || monster.type === "bubbler" || monster.type === "frostMoth" || monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "eclipseMage" || monster.type === "voidWraith" || monster.type === "obsidianCrawler" || monster.boss || monster.midboss) && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "frostDragon" ? 235 : monster.type === "voidDragon" ? 225 : monster.type === "eclipseDragon" ? 205 : monster.type === "obsidianGolem" ? 185 : monster.boss ? 180 : monster.midboss ? 150 : monster.type === "frostMoth" ? 195 : monster.type === "bubbler" ? 145 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 185 : monster.type === "eclipseMage" ? 180 : monster.type === "summoner" ? 170 : monster.type === "sorcerer" || monster.type === "moonShade" ? 165 : 130)) {
         if (monster.type === "frostDragon" && monster.enraged) {
           shootProjectile(monster, playerCenter, -0.6);
           shootProjectile(monster, playerCenter, -0.3);
@@ -334,6 +460,9 @@
       }
 
       if (monster.type === "trapFlower") {
+        vx = 0;
+        vy = 0;
+      } else if (monster.patternState === "windup") {
         vx = 0;
         vy = 0;
       } else if (monster.windup > 0) {

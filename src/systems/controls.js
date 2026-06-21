@@ -29,6 +29,7 @@
       "searchGround",
       "showStats",
       "toggleInventory",
+      "toggleWorldMap",
       "closeInventory",
       "moveInventory",
       "confirmInventory",
@@ -49,12 +50,13 @@
   }
 
   function command(context, name) {
-    const { interact, searchGround, useSelectedItem, showStats, saveGame } = requireControlsContext(context);
+    const { interact, searchGround, useSelectedItem, showStats, saveGame, toggleWorldMap } = requireControlsContext(context);
     if (name === "talk") interact();
     if (name === "search") searchGround();
     if (name === "items") useSelectedItem();
     if (name === "stats") showStats();
     if (name === "save") saveGame();
+    if (name === "map") toggleWorldMap();
   }
 
   function bindControls(context) {
@@ -69,6 +71,7 @@
       resetGame,
       selectItem,
       toggleInventory,
+      toggleWorldMap,
       closeInventory,
       moveInventory,
       confirmInventory,
@@ -82,6 +85,13 @@
     window.addEventListener("keydown", (event) => {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "ShiftLeft", "ShiftRight"].includes(event.code)) {
         event.preventDefault();
+      }
+      if (state.worldMapOpen) {
+        if (event.code === "KeyP" || event.code === "Escape") {
+          event.preventDefault();
+          toggleWorldMap();
+        }
+        return;
       }
       if (state.shopOpen) {
         if (["ArrowUp", "ArrowDown", "Enter", "Space", "Escape", "KeyS"].includes(event.code)) {
@@ -113,6 +123,7 @@
       if (event.code === "KeyH") useSelectedItem();
       if (["Digit1", "Digit2", "Digit3"].includes(event.code)) useQuickItem(Number(event.code.slice(-1)) - 1);
       if (event.code === "KeyI" || event.code === "KeyM") toggleInventory();
+      if (event.code === "KeyP") toggleWorldMap();
       if (event.code === "KeyQ") cycleItem(-1);
       if (event.code === "KeyE") cycleItem(1);
       if (event.code === "KeyR" && state.gameOver) resetGame();

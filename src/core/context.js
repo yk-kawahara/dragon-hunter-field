@@ -222,6 +222,7 @@
           searchGround: r.searchGround,
           showStats: r.showStats,
           toggleInventory: r.toggleInventory,
+          toggleWorldMap: r.toggleWorldMap,
           closeInventory: r.closeInventory,
           moveInventory: r.moveInventory,
           confirmInventory: r.confirmInventory,

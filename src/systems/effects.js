@@ -52,6 +52,10 @@
       r.life -= dt;
       return r.life > 0;
     });
+    state.telegraphs = (state.telegraphs || []).filter((telegraph) => {
+      telegraph.life -= dt;
+      return telegraph.life > 0;
+    });
     state.particles = state.particles.filter((p) => {
       p.x += p.vx * dt * 0.001;
       p.y += p.vy * dt * 0.001;

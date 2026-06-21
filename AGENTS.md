@@ -78,6 +78,8 @@ Expand the game into a larger RPG while preserving density and purpose:
 * Terrain edits belong in `src/data/maps/world.js`.
 * Continue using human-editable fixed map data.
 * Do not return to random/noise terrain generation.
+* Prefer named fixed geography features (ridges, rivers, roads, districts, and landmarks) over long straight bands or repeated rectangular wall corridors. Organic shapes may be assembled from explicit editable points/stamps, but must remain deterministic and human-authored.
+* Major routes should usually offer a readable main road plus at least one safer/longer or riskier/rewarding alternative when space allows.
 * If map dimensions change, update map size definitions and dependent placement intentionally.
 * After terrain edits, regenerate:
   * `docs/world-map-preview.png`

@@ -275,6 +275,32 @@
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
   ];
 
+  // Fixed, human-editable geography. Each feature is a named polyline with a
+  // tile and width. Move/add points to reshape ridges, rivers, and roads.
+  // Terrain is painted first; roads are carved last to create readable passes.
+  const GEOGRAPHY_FEATURES = {
+    terrain: [
+      { id: "skyspine-west-ridge", tile: "#", width: 4, points: [[3, 74], [10, 76], [16, 80], [21, 86], [25, 94]] },
+      { id: "skyspine-east-ridge", tile: "#", width: 3, points: [[36, 73], [42, 76], [47, 81], [53, 86], [60, 94]] },
+      { id: "highland-south-ridge", tile: "#", width: 3, points: [[28, 97], [35, 100], [42, 105], [49, 111]] },
+      { id: "highland-pine-belt", tile: "T", width: 4, points: [[5, 91], [11, 96], [15, 103], [17, 111]] },
+      { id: "moon-west-woods", tile: "T", width: 3, points: [[27, 111], [32, 115], [36, 119]] },
+      { id: "black-sun-crags", tile: "#", width: 2, points: [[51, 128], [57, 133], [64, 137], [71, 142]] },
+      { id: "world-river", tile: "~", width: 2, points: [[68, 72], [70, 79], [67, 87], [69, 95], [62, 102], [63, 110], [60, 118], [61, 126], [60, 134], [61, 142]] },
+    ],
+    roads: [
+      { id: "highland-main-road", tile: "+", width: 2, points: [[30, 71], [31, 78], [38, 83], [48, 84], [58, 83], [69, 84], [81, 84], [94, 82], [102, 82]] },
+      { id: "highland-valley-road", tile: "+", width: 1, points: [[30, 71], [34, 82], [38, 91], [48, 94], [58, 92], [69, 90], [82, 91], [96, 90], [103, 89]] },
+      { id: "highland-ridge-shortcut", tile: "+", width: 1, points: [[32, 73], [40, 76], [49, 78], [58, 78], [67, 82], [79, 84]] },
+      { id: "moon-east-road", tile: "+", width: 2, points: [[103, 94], [102, 103], [103, 111], [102, 116]] },
+      { id: "moon-west-pilgrim-road", tile: "+", width: 1, points: [[103, 94], [94, 98], [86, 101], [76, 103], [69, 109], [81, 113], [94, 116], [102, 116]] },
+      { id: "mist-shrine-branch", tile: "+", width: 1, points: [[76, 103], [71, 110], [68, 117], [72, 122]] },
+      { id: "black-market-north-road", tile: "+", width: 2, points: [[102, 119], [98, 124], [98, 129], [88, 132], [78, 132], [68, 134], [58, 132], [48, 132]] },
+      { id: "black-market-south-road", tile: "+", width: 1, points: [[48, 138], [58, 140], [70, 140], [80, 140], [88, 135], [98, 133]] },
+      { id: "obsidian-bridge-road", tile: "+", width: 1, points: [[48, 135], [54, 135], [61, 136], [68, 136], [75, 135], [82, 133], [88, 132]] },
+    ],
+  };
+
   const TERRAIN_DETAILS = [
     { id: "grassland-camp", x: 20, y: 33, rows: ["....==....", "..****.."] },
     { id: "river-fork-farm", x: 22, y: 50, rows: ["..==..***.."] },
@@ -297,6 +323,23 @@
       "..#..**..++++..**..#....",
       "..##....++++++++....##..",
       "....######++++++++++....",
+    ] },
+    { id: "black-market-city", x: 15, y: 128, rows: [
+      "#####+++++########+++++###########",
+      "#^^^^_____#^^^^^^#_____#^^^^^____#",
+      "#^__^__+++#__++_#+++++#^___^_+++#",
+      "#____++++++++++++++++++++++++____#",
+      "#_+++++____+++++++____+++++++____#",
+      "#_+++++____+++++++____+++++++____#",
+      "#_++++++++++++++++++++++++++++++_#",
+      "#_+++++____+++++++____+++++++____#",
+      "#____++++++++++++++++++++++++____#",
+      "#_^^^__++++#^^^^^#++++__^^^^^___#",
+      "#_^_^__++++#^___^#++++__^___^___#",
+      "#_____+++++_______+++++__________#",
+      "#####+++++########+++++###########",
+      "....+++++..........+++++...........",
+      "....+++++..........+++++...........",
     ] },
     { id: "black-market-catacomb-door", x: 47, y: 130, rows: ["C"] },
     { id: "frost-tower-doors", x: 43, y: 148, rows: ["C++C"] },
@@ -341,12 +384,47 @@
     return detailed;
   }
 
+  function paintFeatureDisc(grid, cx, cy, radius, tile) {
+    for (let y = Math.floor(cy - radius); y <= Math.ceil(cy + radius); y += 1) {
+      if (y <= 0 || y >= grid.length - 1) continue;
+      for (let x = Math.floor(cx - radius); x <= Math.ceil(cx + radius); x += 1) {
+        if (x <= 0 || x >= grid[y].length - 1) continue;
+        if (Math.hypot(x - cx, y - cy) <= radius + 0.25) grid[y][x] = tile;
+      }
+    }
+  }
+
+  function paintFeatureLine(grid, feature) {
+    for (let index = 1; index < feature.points.length; index += 1) {
+      const [x1, y1] = feature.points[index - 1];
+      const [x2, y2] = feature.points[index];
+      const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+      for (let step = 0; step <= steps; step += 1) {
+        const t = steps === 0 ? 0 : step / steps;
+        paintFeatureDisc(
+          grid,
+          Math.round(x1 + (x2 - x1) * t),
+          Math.round(y1 + (y2 - y1) * t),
+          feature.width,
+          feature.tile,
+        );
+      }
+    }
+  }
+
+  function applyGeographyFeatures(rows) {
+    const grid = rows.map((row) => row.split(""));
+    for (const feature of GEOGRAPHY_FEATURES.terrain) paintFeatureLine(grid, feature);
+    for (const feature of GEOGRAPHY_FEATURES.roads) paintFeatureLine(grid, feature);
+    return grid.map((row) => row.join(""));
+  }
+
   function connectEastEdge(row, y) {
     const open = (y >= 15 && y <= 21) || (y >= 28 && y <= 35) || (y >= 49 && y <= 51) || (y >= 58 && y <= 66);
     return open ? `${row.slice(0, -1)}+` : row;
   }
 
-  const WORLD_MAP = applyTerrainDetails([
+  const ASSEMBLED_WORLD = [
     ...BASE_MAP.map((row, y) => connectEastEdge(row, y) + EAST_EXPANSION[y]),
     ...SOUTH_EXPANSION.slice(0, -1),
     SOUTH_GATE_ROW,
@@ -357,7 +435,8 @@
     ...CHAPTER3_EXPANSION.slice(0, -1),
     FROST_GATE_ROW,
     ...CHAPTER4_EXPANSION,
-  ]);
+  ];
+  const WORLD_MAP = applyTerrainDetails(applyGeographyFeatures(ASSEMBLED_WORLD));
 
   const WORLD_OBJECTS = [
     { type: "npc", npcType: "elder", x: 9, y: 47, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
@@ -403,6 +482,14 @@
     { type: "npc", npcType: "guard", x: 23, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
     { type: "npc", npcType: "villager", x: 25, y: 135, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
     { type: "npc", npcType: "villager", x: 46, y: 134, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 17, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 20, y: 137, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 24, y: 140, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 29, y: 138, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 34, y: 140, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 39, y: 138, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 44, y: 140, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 47, y: 137, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "guard", x: 95, y: 54, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
     { type: "npc", npcType: "villager", x: 109, y: 55, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "villager", x: 95, y: 115, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },

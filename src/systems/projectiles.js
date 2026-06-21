@@ -32,7 +32,7 @@
     return context;
   }
 
-  function shootProjectile(context, monster, target, angleOffset = 0) {
+  function shootProjectile(context, monster, target, angleOffset = 0, options = {}) {
     const { state, addSlash } = requireProjectileContext(context);
     const c = centerOf(monster);
     const midbossColor = monster.type === "towerWarden" ? "#d9f7ff" : monster.type === "frostGolem" ? "#8dd7ff" : monster.type === "warden" ? "#6de4ff" : monster.type === "mistKeeper" ? "#9fd6c7" : monster.type === "cryptWarden" ? "#d7b26d" : monster.type === "obsidianGolem" ? "#aab0c8" : "#55c7a0";
@@ -44,17 +44,26 @@
       x: baseAim.x * cos - baseAim.y * sin,
       y: baseAim.x * sin + baseAim.y * cos,
     };
-    const speed = (monster.type === "frostDragon" ? 98 : monster.type === "frostMoth" ? 90 : monster.type === "towerWarden" ? 82 : monster.type === "voidDragon" ? 94 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 88 : monster.type === "eclipseDragon" ? 86 : monster.boss ? 78 : monster.type === "cryptWarden" ? 76 : monster.type === "frostGolem" ? 64 : monster.type === "obsidianGolem" ? 60 : monster.midboss ? 68 : monster.type === "bubbler" ? 52 : monster.type === "eclipseMage" ? 82 : monster.type === "moonShade" ? 76 : monster.type === "summoner" ? 66 : monster.type === "sorcerer" ? 70 : 62) * WORLD_SCALE;
+    const baseSpeed = (monster.type === "frostDragon" ? 98 : monster.type === "frostMoth" ? 90 : monster.type === "towerWarden" ? 82 : monster.type === "voidDragon" ? 94 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 88 : monster.type === "eclipseDragon" ? 86 : monster.boss ? 78 : monster.type === "cryptWarden" ? 76 : monster.type === "frostGolem" ? 64 : monster.type === "obsidianGolem" ? 60 : monster.midboss ? 68 : monster.type === "bubbler" ? 52 : monster.type === "eclipseMage" ? 82 : monster.type === "moonShade" ? 76 : monster.type === "summoner" ? 66 : monster.type === "sorcerer" ? 70 : 62) * WORLD_SCALE;
+    const speed = options.stationary ? 0 : baseSpeed * (options.speedMultiplier || 1);
+    const baseDamage = monster.type === "frostDragon" ? 26 : monster.type === "towerWarden" ? 20 : monster.type === "frostGolem" ? 19 : monster.type === "frostMoth" ? 16 : monster.type === "voidDragon" ? 23 : monster.type === "obsidianGolem" ? 18 : monster.type === "cryptWarden" ? 16 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 15 : monster.type === "eclipseDragon" ? 18 : monster.boss ? 14 : monster.midboss ? 11 : monster.type === "bubbler" ? 6 : monster.type === "eclipseMage" ? 13 : monster.type === "moonShade" ? 11 : monster.type === "summoner" ? 10 : monster.type === "sorcerer" ? 10 : 8;
+    const spawnX = options.stationary ? target.x : c.x;
+    const spawnY = options.stationary ? target.y : c.y;
     state.projectiles.push({
-      x: c.x,
-      y: c.y,
+      x: spawnX,
+      y: spawnY,
       vx: aim.x * speed,
       vy: aim.y * speed,
-      r: worldPx(monster.boss ? 4 : monster.midboss ? 3 : 3),
-      damage: monster.type === "frostDragon" ? 26 : monster.type === "towerWarden" ? 20 : monster.type === "frostGolem" ? 19 : monster.type === "frostMoth" ? 16 : monster.type === "voidDragon" ? 23 : monster.type === "obsidianGolem" ? 18 : monster.type === "cryptWarden" ? 16 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 15 : monster.type === "eclipseDragon" ? 18 : monster.boss ? 14 : monster.midboss ? 11 : monster.type === "bubbler" ? 6 : monster.type === "eclipseMage" ? 13 : monster.type === "moonShade" ? 11 : monster.type === "summoner" ? 10 : monster.type === "sorcerer" ? 10 : 8,
-      color: projectileColor,
+      r: worldPx(options.radius || (monster.boss ? 4 : 3)),
+      damage: Math.max(1, Math.round(baseDamage * (options.damageMultiplier || 1))),
+      color: options.color || projectileColor,
       source: monster.type === "frostDragon" ? "frostDragon" : monster.type === "voidDragon" ? "voidDragon" : monster.type === "eclipseDragon" ? "eclipseDragon" : monster.boss ? "dragon" : monster.midboss ? monster.type : monster.type,
-      life: monster.type === "frostDragon" ? 1850 : monster.type === "voidDragon" ? 1750 : monster.type === "eclipseDragon" ? 1650 : monster.boss ? 1500 : monster.midboss ? 1350 : 1200,
+      life: options.life || (monster.type === "frostDragon" ? 1850 : monster.type === "voidDragon" ? 1750 : monster.type === "eclipseDragon" ? 1650 : monster.boss ? 1500 : monster.midboss ? 1350 : 1200),
+      piercing: Boolean(options.piercing),
+      wallPiercing: Boolean(options.wallPiercing),
+      persistent: Boolean(options.persistent),
+      hitCooldown: 0,
+      pattern: options.pattern || "",
     });
     addSlash(c.x + aim.x * worldPx(8), c.y + aim.y * worldPx(8), monster.dir, projectileColor);
   }
@@ -81,6 +90,7 @@
     } = requireProjectileContext(context);
 
     state.projectiles = state.projectiles.filter((p) => {
+      p.hitCooldown = Math.max(0, (p.hitCooldown || 0) - dt);
       const prevX = p.x;
       const prevY = p.y;
       p.x += p.vx * dt * 0.001;
@@ -94,14 +104,14 @@
         burst(p.x, p.y, "#6de4ff", 3);
         return false;
       }
-      if (isBlockedTile(tileAt(tx, ty), { flying: false })) {
+      if (!p.wallPiercing && isBlockedTile(tileAt(tx, ty), { flying: false })) {
         burst(p.x, p.y, p.color, 4);
         return false;
       }
 
       const hitbox = { x: p.x - p.r, y: p.y - p.r, w: p.r * 2, h: p.r * 2 };
       if (rectsOverlap(player, hitbox)) {
-        if (player.invuln <= 0 && player.hp > 0) {
+        if (p.hitCooldown <= 0 && player.invuln <= 0 && player.hp > 0) {
           const source = p.source === "frostDragon" || p.source === "frostGolem" || p.source === "frostMoth" || p.source === "towerWarden" ? "frost" : p.source === "obsidianGolem" || p.source === "obsidianCrawler" ? "obsidian" : p.source === "voidDragon" || p.source === "voidWraith" ? "void" : p.source === "eclipseDragon" || p.source === "eclipseMage" ? "eclipse" : p.source === "wisp" || p.source === "dragon" ? "fire" : p.source === "bubbler" ? "bubble" : p.source === "sorcerer" || p.source === "summoner" || p.source === "moonShade" || p.source === "ashKnight" || p.source === "mistKeeper" || p.source === "cryptWarden" ? "magic" : "projectile";
           let hurt = Math.max(1, Math.round((p.damage - Math.floor(playerDefense() * 0.45)) * armorDamageMultiplier({ boss: p.source === "dragon" || p.source === "eclipseDragon" || p.source === "voidDragon" || p.source === "frostDragon", midboss: p.source === "ashKnight" || p.source === "mistKeeper" || p.source === "cryptWarden" || p.source === "frostGolem", type: p.source }, 0, source)));
           if (p.source === "dragon" && hurt < 3) hurt = 3;
@@ -116,6 +126,7 @@
           if (player.guard > 0) hurt = Math.floor(hurt * 0.3);
           player.hp = Math.max(0, player.hp - hurt);
           player.invuln = 320;
+          p.hitCooldown = p.persistent ? 720 : 900;
           state.shake = Math.max(state.shake, 120);
           addFloater(player.x + player.w / 2, player.y, String(hurt), "#ffeb61");
           burst(player.x + player.w / 2, player.y + player.h / 2, p.color, 8);
@@ -156,7 +167,7 @@
             player.stamina = Math.max(0, player.stamina - (guard ? Math.ceil(baseStamina * 0.4) : baseStamina));
           }
         }
-        return false;
+        return p.persistent || p.piercing;
       }
 
       return true;

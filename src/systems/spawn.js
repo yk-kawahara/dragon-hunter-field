@@ -107,6 +107,13 @@
       isMonster: true,
       contactTimer: rand(0, 300),
       fireCooldown: rand(900, 1800),
+      patternCooldown: template.boss ? rand(2400, 3600) : 0,
+      patternState: "idle",
+      patternWindup: 0,
+      patternWaveCooldown: 0,
+      patternWaves: 0,
+      patternIndex: 0,
+      patternAim: { x: 0, y: 1 },
       summonCooldown: typeName === "summoner" ? rand(1800, 3200) : 0,
       summonAnnounced: false,
       trapTimer: 0,
@@ -168,6 +175,7 @@
     if (ty >= 112) return "eclipse";
     if (ty >= 96) return "moon";
     if ((tx >= 90 && tx <= 115 && ty >= 84) || (tx >= 105 && tx <= 116 && ty >= 36 && ty <= 47)) return "tower";
+    if (tx >= 24 && tx < 80 && ty >= 72 && ty < 96) return "highland";
     if (tx >= 80 || ty >= 72) return "ash";
     if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
     if (tx >= 20 && tx <= 43 && ty >= 60) return "mine";
@@ -359,6 +367,7 @@
     if (region === "regenCave") return "再生洞窟: 大再生の指輪を守る危険地帯";
     if (region === "smuggler") return "密輸道: 黒市へ抜ける危険な近道";
     if (region === "moon") return "月影廃墟: 古塔の先の危険地帯";
+    if (region === "highland") return "天脊高原: 峠・谷道・危険な近道";
     if (region === "north") return "北森: 強敵の気配";
     if (region === "east") return "東の森: 魔力が濃い";
     if (region === "mine") return "廃坑: 泡と魔法の気配";

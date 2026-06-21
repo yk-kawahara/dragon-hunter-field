@@ -19,6 +19,9 @@
     TILE: WORLD_TILE,
     BASE_TILE,
     WORLD_SCALE,
+    MAP_W,
+    MAP_H,
+    SAFE_ZONES,
     HEAL_POINTS,
     TOWN_GATES,
     TREASURE_CHESTS,
@@ -269,6 +272,7 @@ function draw(context) {
   drawInfoPanel();
   drawShopOverlay();
   drawInventoryOverlay();
+  drawWorldMapOverlay();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
   if ((state.victory && !state.elderReported) || state.chapter2Victory || state.chapter3Victory || state.chapter4Victory) drawVictoryBanner();
@@ -276,6 +280,98 @@ function draw(context) {
 
   ctx.restore();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function worldMapTileColor(tile) {
+  if (tile === TILE_WATER) return "#27698a";
+  if (tile === TILE_TREE) return "#1f6236";
+  if (tile === TILE_WALL) return "#5c626b";
+  if (tile === TILE_ROOF) return "#8c3f3f";
+  if (tile === TILE_FLOOR) return "#a49a7e";
+  if (tile === TILE_CAVE) return "#3a3146";
+  if (tile === TILE_PATH) return "#ad8752";
+  if (tile === TILE_FIELD) return "#8aa640";
+  if (tile === TILE_FLOWER) return "#55a953";
+  return "#3b914d";
+}
+
+function drawWorldMapMarker(mapX, mapY, scale, tx, ty, color, size = 3) {
+  const x = Math.round(mapX + tx * scale);
+  const y = Math.round(mapY + ty * scale);
+  ctx.fillStyle = "#07111c";
+  ctx.fillRect(x - size, y - size, size * 2 + 1, size * 2 + 1);
+  ctx.fillStyle = color;
+  ctx.fillRect(x - size + 1, y - size + 1, Math.max(1, size * 2 - 1), Math.max(1, size * 2 - 1));
+}
+
+function drawWorldMapOverlay() {
+  if (!state.worldMapOpen) return;
+  const panelX = 5;
+  const panelY = 5;
+  const panelW = W - 10;
+  const panelH = VIEW_H - 10;
+  const mapX = 11;
+  const mapY = 20;
+  const mapScale = Math.min(0.7, 86 / MAP_W, 111 / MAP_H);
+
+  ctx.fillStyle = "rgba(3, 8, 18, 0.97)";
+  ctx.fillRect(panelX, panelY, panelW, panelH);
+  ctx.strokeStyle = "#6de4ff";
+  ctx.strokeRect(panelX, panelY, panelW, panelH);
+  ctx.fillStyle = "#fff2a6";
+  ctx.font = "9px monospace";
+  ctx.textAlign = "left";
+  ctx.fillText("世界全体地図", 11, 15);
+
+  for (let ty = 0; ty < MAP_H; ty += 1) {
+    for (let tx = 0; tx < MAP_W; tx += 1) {
+      ctx.fillStyle = worldMapTileColor(tileAt(tx, ty));
+      ctx.fillRect(mapX + tx * mapScale, mapY + ty * mapScale, mapScale + 0.35, mapScale + 0.35);
+    }
+  }
+
+  for (const zone of SAFE_ZONES || []) {
+    drawWorldMapMarker(mapX, mapY, mapScale, (zone.x1 + zone.x2) / 2, (zone.y1 + zone.y2) / 2, "#74ff8f", 2);
+  }
+
+  const bosses = [
+    { site: { x: 51, y: 15 }, defeated: state.bossDefeated },
+    { site: ECLIPSE_DRAGON_SITE, defeated: state.eclipseDragonDefeated },
+    { site: VOID_DRAGON_SITE, defeated: state.voidDragonDefeated },
+    { site: FROST_DRAGON_SITE, defeated: state.frostDragonDefeated },
+  ];
+  for (const boss of bosses) {
+    drawWorldMapMarker(mapX, mapY, mapScale, boss.site.x, boss.site.y, boss.defeated ? "#69727c" : "#ff5f5f", 2);
+  }
+
+  const playerTileX = (player.x + player.w / 2) / WORLD_TILE;
+  const playerTileY = (player.y + player.h / 2) / WORLD_TILE;
+  drawWorldMapMarker(mapX, mapY, mapScale, playerTileX, playerTileY, "#ffffff", 3);
+
+  const infoX = 105;
+  const regionNames = {
+    grassland: "始まりの草原", north: "北森", east: "東の森", mine: "廃鉱山", cave: "竜洞",
+    ash: "灰の街道", highland: "天脊高原", tower: "古塔", moon: "月影廃墟", eclipse: "月蝕城",
+    obsidian: "黒曜地帯", void: "黒陽城", undercity: "地下墓所", frost: "霜原",
+    frostCave: "氷窟", frostCitadel: "霜冠城", frostTower1: "霜見塔一階", frostTower2: "霜見塔二階",
+  };
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "8px monospace";
+  ctx.fillText(`現在地: ${regionNames[currentRegion()] || "辺境"}`, infoX, 28);
+  ctx.fillStyle = "#74ff8f";
+  ctx.fillText("■ 安全な拠点", infoX, 43);
+  ctx.fillStyle = "#ff6b6b";
+  ctx.fillText("■ 未討伐の大ボス", infoX, 55);
+  ctx.fillStyle = "#69727c";
+  ctx.fillText("■ 討伐済み", infoX, 67);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("□ 現在地", infoX, 79);
+  ctx.fillStyle = "#d7e2ea";
+  ctx.fillText("北: 竜洞 / 東: 灰道", infoX, 96);
+  ctx.fillText("南: 月影 / 黒陽城", infoX, 107);
+  ctx.fillText("最南端: 霜原・霜冠城", infoX, 118);
+  ctx.fillStyle = "#8dd7ff";
+  ctx.fillText("P / Esc: 閉じる", infoX, 132);
 }
 
 function drawInfoPanel() {
@@ -633,6 +729,15 @@ function drawBlackMarketDetails(cam) {
   drawRoleMarker(35 * TILE - cam.x, 134 * TILE - cam.y, "H", "#6de4ff");
   drawRoleMarker(47 * TILE - cam.x, 134 * TILE - cam.y, "G", "#8dd7ff");
   drawSign(28 * TILE - cam.x, 136 * TILE - cam.y);
+  drawTent(19 * TILE - cam.x, 138 * TILE - cam.y, "#d9704c");
+  drawTent(27 * TILE - cam.x, 139 * TILE - cam.y, "#55c7a0");
+  drawTent(41 * TILE - cam.x, 139 * TILE - cam.y, "#8b5cff");
+  drawCrates(22 * TILE - cam.x, 140 * TILE - cam.y);
+  drawCrates(45 * TILE - cam.x, 140 * TILE - cam.y);
+  drawLamp(17 * TILE - cam.x, 136 * TILE - cam.y);
+  drawLamp(33 * TILE - cam.x, 139 * TILE - cam.y);
+  drawLamp(48 * TILE - cam.x, 137 * TILE - cam.y);
+  drawBench(31 * TILE - cam.x, 137 * TILE - cam.y, "horizontal");
 }
 
 function drawBlackFortDetails(cam) {
@@ -2027,14 +2132,50 @@ function drawEffects(cam) {
     ctx.fillRect(pointerX - 1, pointerY - 1, 2, 2);
   }
 
+  for (const telegraph of state.telegraphs || []) {
+    const alpha = clamp(0.22 + (telegraph.life / telegraph.max) * 0.58, 0, 1);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = telegraph.color;
+    if (telegraph.kind === "zone") {
+      const x = Math.round(screenX(telegraph.x, cam));
+      const y = Math.round(screenY(telegraph.y, cam));
+      const radius = Math.max(3, Math.round(worldToDraw(telegraph.radius)));
+      ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+      ctx.strokeRect(x - Math.floor(radius * 0.55), y - Math.floor(radius * 0.55), Math.floor(radius * 1.1), Math.floor(radius * 1.1));
+    } else {
+      const x1 = screenX(telegraph.x, cam);
+      const y1 = screenY(telegraph.y, cam);
+      const x2 = x1 + worldToDraw(telegraph.dx * telegraph.length);
+      const y2 = y1 + worldToDraw(telegraph.dy * telegraph.length);
+      ctx.lineWidth = Math.max(2, worldToDraw(telegraph.width));
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+    }
+    ctx.globalAlpha = 1;
+  }
+
   for (const p of state.projectiles) {
     const sx = Math.round(screenX(p.x, cam));
     const sy = Math.round(screenY(p.y, cam));
     const radius = worldToDraw(p.r);
-    ctx.fillStyle = "rgba(255, 120, 58, 0.32)";
+    ctx.fillStyle = p.persistent ? "rgba(127, 105, 217, 0.32)" : p.piercing ? "rgba(255, 242, 166, 0.38)" : "rgba(255, 120, 58, 0.32)";
     ctx.fillRect(sx - radius - 1, sy - radius - 1, radius * 2 + 2, radius * 2 + 2);
     ctx.fillStyle = p.color;
     ctx.fillRect(sx - radius, sy - radius, radius * 2, radius * 2);
+    if (p.persistent) {
+      const pulse = 2 + (Math.floor(performance.now() / 160) % 3);
+      ctx.strokeStyle = p.color;
+      ctx.strokeRect(sx - radius - pulse, sy - radius - pulse, (radius + pulse) * 2, (radius + pulse) * 2);
+    } else if (p.piercing) {
+      const trailX = Math.abs(p.vx) >= Math.abs(p.vy) ? -Math.sign(p.vx) * 10 : 0;
+      const trailY = Math.abs(p.vy) > Math.abs(p.vx) ? -Math.sign(p.vy) * 10 : 0;
+      ctx.globalAlpha = 0.55;
+      ctx.fillRect(sx + trailX - 1, sy + trailY - 1, Math.abs(trailX) + 2, Math.abs(trailY) + 2);
+      ctx.globalAlpha = 1;
+    }
     ctx.fillStyle = "#fff2a6";
     ctx.fillRect(sx - 1, sy - 1, 2, 2);
   }

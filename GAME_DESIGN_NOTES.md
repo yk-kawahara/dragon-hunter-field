@@ -59,7 +59,8 @@ Required direction:
 * At least one major city should become a dense service hub with multiple shops, specialists, residents, rumors, and optional activities.
 * NPCs in the same settlement should not all repeat one line. Dialogue should reveal local life, geography, services, danger, or changing story state.
 * All consumable types should be eligible for player-selected quick slots. The field UI must not imply that only three of the six item types matter.
-* A whole-world map is a future navigation requirement as the geography expands.
+* A whole-world map is a navigation requirement as the geography expands. The current implementation opens with `P`, reads the live fixed terrain, and marks the player, safe bases, and major bosses.
+* Bosses now establish distinct movement tests: piercing lanes, delayed rotating volleys, persistent danger zones, and late multi-wave patterns. Future bosses should combine these with terrain rather than only increasing projectile count.
 
 ## Chapter 1 role
 
@@ -144,6 +145,7 @@ Most important growth feeling: **reversal of power**.
 | Southwest Mine | Optional route with Bubbler pressure, slow/stamina drain, mine charm counterplay. |
 | Southwest Frontier Camp | First remote survival anchor: recovery, supplies, readable camp, outward safe radius. |
 | Ash Road / 灰の街道 | First larger eastward volume-expansion route beyond the Chapter 1 footprint; stronger magic pressure, farther rewards, and a route toward the old tower. |
+| Skyspine Highlands / 天脊高原 | Three-route mountain crossing toward Old Tower: a readable main road, a longer valley road with sustain rewards, and a dangerous ridge shortcut populated by guards, chargers, and sorcerers. |
 | Ash Hamlet / 灰道の宿場 | Second remote survival anchor: full recovery, supplies, and post-Ash-Knight star gear. |
 | Old Tower / 古塔 | Late optional danger pocket with dense magic pressure, Ash Knight midboss, and star-gear preparation. |
 | Moon Ruins / 月影廃墟 | Post-Old-Tower southern danger pocket with dense late enemies, moon relic rewards, and another reason to push beyond the Red Dragon route. |
@@ -156,6 +158,7 @@ Most important growth feeling: **reversal of power**.
 | Regeneration Cave | Optional side dungeon north of Black Market. Its Greater Regeneration Ring is a major survival-range reward, so it is guarded by the Regen Sentinel rather than being a free pickup. |
 | Mist Shrine | Optional shrine route beyond the Black Market north side path. It adds a second side-dungeon layer after Regeneration Cave, mixing trap, summon, magic, and charge pressure before awarding the Mist Charm. |
 | Black Market Catacombs / 黒市地下墓所 | Compact interior dungeon entered from Black Market. Its enclosed rooms combine life-drain contact pressure, shields, summons, and a named warden before awarding a route-extending accessory. |
+| Black Market City / 黒市都 | Expanded late-game city district with a central market, residential lanes, guards, recovery, merchant stock, wagon access, rumors, and the catacomb entrance. It is the foundation for the future major multi-service city. |
 | Frost Frontier / 霜原 | Chapter 4 expedition region beyond Black Sun Castle. Its main road is faster, while the southern ice route is denser and leads to the chapter countermeasure reward. |
 | Frost Haven / 白銀宿 | Chapter 4 safe hub: full recovery, wagon travel, premium supplies, and selectable frost weapon/armor/shield stock. It moves the safe radius into the frozen frontier. |
 | Ice Cave / 氷窟 | Chapter 4 branch dungeon with Frost Moth ranged pressure, Frost Beast charges, Frost Golem, and the Frost Heart reliquary. |
@@ -311,7 +314,7 @@ The Chapter 3 route should now read as a longer expedition rather than a short f
 Current added structure:
 
 * Black Fort remains the first Chapter 3 remote base.
-* Black Market is the Chapter 3 second town: safe zone, recovery, late shop, NPC guidance, and supplies.
+* Black Market City is the Chapter 3 second town: its safe area now spans multiple districts with recovery, late shop, wagon, NPC guidance, residential lanes, and supplies. The next city pass should add specialist services and optional urban activities rather than more empty floor.
 * Obsidian Cave is a Chapter 3 branch dungeon between Black Market and Black Sun Castle.
 * Obsidian Crawler adds ranged obsidian pressure.
 * Obsidian Golem is a Chapter 3 midboss after Chapter 2 report, Black Fort armory, and level 24.

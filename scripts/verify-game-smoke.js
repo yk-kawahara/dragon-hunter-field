@@ -216,7 +216,7 @@ function createRuntime() {
     guardianReady: () => spawn.guardianReady(contexts.spawn()),
     wardenReady: () => spawn.wardenReady(contexts.spawn()),
     updateStoryEvents: () => spawn.updateStoryEvents(contexts.spawn()),
-    shootProjectile: (monster, target, angleOffset) => projectiles.shootProjectile(contexts.projectile(), monster, target, angleOffset),
+    shootProjectile: (monster, target, angleOffset, options) => projectiles.shootProjectile(contexts.projectile(), monster, target, angleOffset, options),
     nearestNpc: () => npc.nearestNpc(contexts.npc()),
     handleNpc: (target) => npc.handleNpc(contexts.npc(), target),
     playerNearCave: () => npc.playerNearCave(contexts.npc()),
@@ -335,7 +335,7 @@ function assertMapReachability() {
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
   assert(d.MAP_W === 120 && d.MAP_H === 160, "expanded map should be 120x160");
-  assert(state.npcs.length === 57, "expected 57 NPCs after Frost Haven shield artisan expansion");
+  assert(state.npcs.length === 65, "expected 65 NPCs after Black Market city expansion");
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "merchant"), "black market merchant should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "porter"), "porter NPCs should load from WORLD_OBJECTS");
@@ -975,6 +975,12 @@ function assertExpandedWorldContent() {
   player.x = 90 * d.TILE;
   player.y = 60 * d.TILE;
   assert(runtime.currentRegion() === "ash", "expanded east road should use ash region");
+  player.x = 48 * d.TILE;
+  player.y = 84 * d.TILE;
+  assert(runtime.currentRegion() === "highland", "three-route mountain crossing should use the highland region");
+  player.level = 14;
+  const highlandPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "highland");
+  assert(highlandPool.includes("shieldSoldier") && highlandPool.includes("sorcerer") && highlandPool.includes("boar"), "highland routes should mix frontal guards, magic, and chargers");
   player.x = d.ASH_KNIGHT_SITE.x * d.TILE;
   player.y = d.ASH_KNIGHT_SITE.y * d.TILE;
   assert(runtime.currentRegion() === "tower", "old tower should use tower region");
@@ -1155,13 +1161,39 @@ function assertExpandedWorldContent() {
   runtime.updateMonsters(16);
   assert(behaviorFrostDragon.enraged && behaviorFrostDragon.summoned, "frost dragon should enrage and call frost reinforcements below half HP");
   assert(state.monsters.some((monster) => monster.type === "frostMoth") && state.monsters.some((monster) => monster.type === "frostBeast"), "frost dragon should summon both frost enemy behaviors");
+  behaviorFrostDragon.patternCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorFrostDragon.patternState === "windup" && state.telegraphs.some((entry) => entry.kind === "line"), "frost dragon should telegraph its advanced boss pattern");
+  behaviorFrostDragon.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.pattern === "frostLance" && projectile.piercing), "frost dragon should fire a piercing ice lance after its warning");
   state.monsters = [];
   state.projectiles = [];
+
+  player.x = 78 * d.TILE;
+  player.y = 140 * d.TILE;
+  runtime.spawnMonster("voidDragon", 80 * d.TILE, 140 * d.TILE);
+  const behaviorVoidDragon = state.monsters.find((monster) => monster.type === "voidDragon");
+  behaviorVoidDragon.patternCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(behaviorVoidDragon.patternState === "windup" && state.telegraphs.filter((entry) => entry.kind === "zone").length === 3, "void dragon should mark three delayed danger zones");
+  behaviorVoidDragon.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.pattern === "voidZone" && projectile.persistent), "void dragon danger zones should persist after activation");
+  state.monsters = [];
+  state.projectiles = [];
+
+  globalThis.DRAGON_HUNTER_UI.openWorldMap(contexts.ui());
+  assert(state.worldMapOpen && !state.inventoryOpen && !state.shopOpen, "world map should open as an exclusive paused overlay");
+  globalThis.DRAGON_HUNTER_UI.closeWorldMap(contexts.ui());
+  assert(!state.worldMapOpen, "world map should close cleanly");
 
   assert(runtime.inTownTile(102, 58), "ash hamlet should be a safe-zone tile");
   assert(runtime.inTownTile(102, 116), "moon camp should be a safe-zone tile");
   assert(runtime.inTownTile(98, 132), "black fort should be a safe-zone tile");
   assert(runtime.inTownTile(35, 135), "black market should be a safe-zone tile");
+  assert(runtime.inTownTile(20, 140) && runtime.inTownTile(47, 137), "expanded Black Market city districts should remain safe");
   assert(runtime.inTownTile(24, 154), "Frost Haven should be a safe-zone tile");
   runtime.ui.zone = { textContent: "" };
   player.x = 24 * d.TILE;

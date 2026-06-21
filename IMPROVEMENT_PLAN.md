@@ -40,10 +40,10 @@ Immediate work order:
 1. Fix dungeon-local population so exterior enemies cannot consume an interior's spawn budget; use tighter interior spawn radii and region-aware counting/pruning.
 2. Add weapon attack profiles so quick, thrust, sweep, reach, and heavy weapons feel different in the player's hands and dead sidegrades regain a purpose.
 3. Replace the fixed herb/bomb/ward dock with three configurable quick slots supporting all consumables and save migration.
-4. Expand boss action patterns with piercing lines, delayed multi-wave spreads, persistent hazards, and phase combinations that demand movement.
-5. Build the next world region as geography rather than corridors: mountain chain, highland, valley/coast route choices, and longer distinct travel beats.
+4. Expand boss action patterns with piercing lines, delayed multi-wave spreads, persistent hazards, and phase combinations that demand movement. **Initial implementation complete; balance/arena follow-up remains.**
+5. Build the next world region as geography rather than corridors: mountain chain, highland, valley/coast route choices, and longer distinct travel beats. **Skyspine Highlands and multi-route crossing complete; coast/island follow-up remains.**
 6. Add a major city with multiple shops, specialists, upgrades, residents, rumors, and optional reasons to revisit.
-7. Add person/location/progression-specific NPC dialogue and a whole-world map view.
+7. Add person/location/progression-specific NPC dialogue and a whole-world map view. **Initial implementation complete.**
 
 Acceptance rules from the playtest:
 
@@ -61,12 +61,16 @@ Completed in this playtest-response pass:
 * Inventory/status text now names attack styles and quick-slot assignments.
 * Villagers and guards now draw from settlement-specific dialogue pools across the village, frontier camp, Ash Hamlet, Moon Camp, Black Market, Black Fort, and Frost Haven.
 * Preserved the user's higher late-game enemy-stat tuning and Frost Frontier route openings as the new balance baseline.
+* Added distinct advanced boss attacks: piercing fire/ice lanes, delayed rotating Eclipse volleys, persistent Void zones, and Frost multi-wave blizzards with visible warnings.
+* Added a live whole-world map (`P` / command button) showing fixed terrain, current position, safe bases, and major boss markers.
+* Rebuilt the central expedition geography around Skyspine Highlands: organic mountain ridges, a meandering river, main/valley/ridge routes, new caches, discoveries, and a dedicated mixed-behavior spawn region.
+* Expanded Black Market into Black Market City, a much larger safe urban district with streets, residential blocks, market space, eight more residents/guards, and several approaches.
 
 Next player-facing implementation target:
 
-* Add boss pattern depth first: telegraphed piercing lanes, delayed multi-wave volleys, and persistent arena zones.
-* Then deliver a geography expansion pack built around a mountain range and highland basin, with several routes and a major city rather than another rectangular corridor extension.
-* Add a whole-world map view alongside the mountain/highland expansion so the new continental structure is readable.
+* Playtest the new boss patterns and tune warning time, shield counterplay, minimum damage, and arena density.
+* Continue the geography conversion north and south of Skyspine: shape a coast/island frontier and replace remaining rectangular castle approaches with terrain-led routes.
+* Turn Black Market City from a larger district into a true multi-service capital with specialist shops, upgrade activities, local errands, and progression-sensitive residents.
 
 ### 1. Latest completed player-facing pass
 

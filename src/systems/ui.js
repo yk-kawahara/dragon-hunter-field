@@ -123,6 +123,7 @@
     const { state, say } = requireUiContext(context);
     state.shopOpen = true;
     state.inventoryOpen = false;
+    state.worldMapOpen = false;
     state.infoPanel = null;
     state.shopTitle = title || "店";
     state.shopRows = Array.isArray(rows) ? rows : [];
@@ -349,6 +350,7 @@
     const { state, player, say } = requireUiContext(context);
     normalizeInventory(player);
     state.inventoryOpen = true;
+    state.worldMapOpen = false;
     state.infoPanel = null;
     if (!inventoryTabs().includes(state.inventoryTab)) state.inventoryTab = "items";
     clampInventoryIndex(state, inventoryRows(context));
@@ -369,6 +371,29 @@
     const { state } = requireUiContext(context);
     if (state.inventoryOpen) closeInventory(context);
     else openInventory(context);
+  }
+
+  function openWorldMap(context) {
+    const { state, say } = requireUiContext(context);
+    state.worldMapOpen = true;
+    state.inventoryOpen = false;
+    state.shopOpen = false;
+    state.infoPanel = null;
+    state.keys?.clear?.();
+    state.virtualKeys?.clear?.();
+    state.pointerMove = null;
+    say("全体地図を開いた", 700);
+  }
+
+  function closeWorldMap(context) {
+    const { state } = requireUiContext(context);
+    state.worldMapOpen = false;
+  }
+
+  function toggleWorldMap(context) {
+    const { state } = requireUiContext(context);
+    if (state.worldMapOpen) closeWorldMap(context);
+    else openWorldMap(context);
   }
 
   function moveInventory(context, dx, dy) {
@@ -641,7 +666,7 @@
     const tx = Math.floor((player.x + player.w / 2) / TILE);
     const ty = Math.floor((player.y + player.h / 2) / TILE);
     let name = "草原";
-    if (inTown(player.x, player.y)) name = (tx >= 12 && tx <= 34 && ty >= 150 && ty <= 156) ? "白銀宿" : (tx >= 20 && tx <= 48 && ty >= 129 && ty <= 136) ? "黒市" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
+    if (inTown(player.x, player.y)) name = (tx >= 12 && tx <= 34 && ty >= 150 && ty <= 156) ? "白銀宿" : (tx >= 15 && tx <= 49 && ty >= 128 && ty <= 142) ? "黒市都" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
     else if (tx >= 104 && tx <= 118 && ty >= 18 && ty <= 32) name = "霜見塔二階";
     else if (tx >= 88 && tx <= 102 && ty >= 18 && ty <= 32) name = "霜見塔一階";
     else if (ty >= 144 && tx >= 90) name = "霜冠城";
@@ -654,6 +679,7 @@
     else if (ty >= 128) name = "黒陽城";
     else if (ty >= 112) name = "月蝕城";
     else if (ty >= 96) name = "月影廃墟";
+    else if (tx >= 24 && tx < 80 && ty >= 72) name = "天脊高原";
     else if ((tx >= 90 && tx <= 115 && ty >= 84) || (tx >= 105 && tx <= 116 && ty >= 36 && ty <= 47)) name = "古塔";
     else if (tx >= 80 || ty >= 72) name = "灰の街道";
     else if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) name = "竜洞";
@@ -697,6 +723,9 @@
     openInventory,
     closeInventory,
     toggleInventory,
+    openWorldMap,
+    closeWorldMap,
+    toggleWorldMap,
     moveInventory,
     confirmInventory,
     assignInventoryQuickSlot,

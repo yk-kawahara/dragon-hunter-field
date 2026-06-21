@@ -173,7 +173,7 @@ button {
 
 .command-panel {
   display: grid;
-  grid-template-rows: auto repeat(5, 38px) auto;
+  grid-template-rows: auto repeat(6, 38px) auto;
   gap: 6px;
   padding: 8px;
 }
@@ -451,7 +451,7 @@ canvas:focus {
 
   .command-panel {
     grid-area: commands;
-    grid-template-rows: auto repeat(5, 34px) auto;
+    grid-template-rows: auto repeat(6, 34px) auto;
     padding: 6px;
   }
 
@@ -592,7 +592,7 @@ canvas:focus {
   }
 
   .command-panel {
-    grid-template-rows: auto repeat(5, 34px) auto;
+    grid-template-rows: auto repeat(6, 34px) auto;
     padding: 6px;
   }
 
