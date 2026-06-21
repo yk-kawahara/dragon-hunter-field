@@ -336,15 +336,20 @@ function assertMapReachability() {
     ["east-ridge", 168, 105],
     ["southwind-outpost", 168, 169],
     ["south-island-shrine", 57, 209],
+    ["dawn-harbor", 214, 72],
+    ["sunrise-north-ruin", 236, 44],
+    ["sunrise-valley-shrine", 211, 110],
+    ["suncrest-city", 238, 128],
+    ["ember-sanctum", 222, 226],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
-  assert(d.MAP_W === 192 && d.MAP_H === 224, "continent map should be 192x224");
+  assert(d.MAP_W === 256 && d.MAP_H === 256, "expanded RPG world should be 256x256");
   const overviewRows = globalThis.DRAGON_HUNTER_WORLD_MAP?.overviewRows;
   assert(Array.isArray(overviewRows) && overviewRows.length === d.MAP_H, "world overview should cover the full continental map");
   assert(overviewRows.every((row) => typeof row === "string" && row.length === d.MAP_W), "world overview rows should match map dimensions");
   assert(!overviewRows.slice(1, 15).some((row) => row.slice(80, 120).includes("_")), "world overview should hide embedded catacomb room layouts");
-  assert(state.npcs.length === 84, "expected 84 NPCs after island towns expansion");
+  assert(state.npcs.length === 106, "expected 106 NPCs after eastern continent cities expansion");
   const blockedNpcs = state.npcs.filter((npc) => !passable(Math.floor(npc.x / d.TILE), Math.floor(npc.y / d.TILE)));
   assert(blockedNpcs.length === 0, `NPCs must stand on reachable terrain: ${JSON.stringify(blockedNpcs.map((npc) => ({ type: npc.type, x: Math.floor(npc.x / d.TILE), y: Math.floor(npc.y / d.TILE) })))}`);
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
@@ -1003,6 +1008,17 @@ function assertExpandedWorldContent() {
   player.x = 58 * d.TILE;
   player.y = 209 * d.TILE;
   assert(runtime.currentRegion() === "southIsles", "southern archipelago should use southIsles region");
+  player.x = 214 * d.TILE;
+  player.y = 72 * d.TILE;
+  assert(runtime.currentRegion() === "dawnCoast", "eastern continent harbor should use dawnCoast region");
+  const dawnPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "dawnCoast");
+  assert(dawnPool.includes("mistLancer") && dawnPool.includes("frostBeast"), "dawn coast should mix lunges and charge pressure");
+  player.x = 238 * d.TILE;
+  player.y = 129 * d.TILE;
+  assert(runtime.currentRegion() === "sunriseHighland", "eastern continent inland should use sunriseHighland region");
+  player.x = 222 * d.TILE;
+  player.y = 226 * d.TILE;
+  assert(runtime.currentRegion() === "emberIsles", "southeastern volcanic archipelago should use emberIsles region");
   player.x = d.ASH_KNIGHT_SITE.x * d.TILE;
   player.y = d.ASH_KNIGHT_SITE.y * d.TILE;
   assert(runtime.currentRegion() === "tower", "old tower should use tower region");
@@ -1217,6 +1233,7 @@ function assertExpandedWorldContent() {
   assert(runtime.inTownTile(35, 135), "black market should be a safe-zone tile");
   assert(runtime.inTownTile(20, 140) && runtime.inTownTile(47, 137), "expanded Black Market city districts should remain safe");
   assert(runtime.inTownTile(150, 85) && runtime.inTownTile(168, 169), "east island harbor and cape outpost should be safe zones");
+  assert(runtime.inTownTile(214, 72) && runtime.inTownTile(238, 129), "dawn harbor and Suncrest City should be safe zones");
   assert(runtime.inTownTile(24, 154), "Frost Haven should be a safe-zone tile");
   player.x = 116 * d.TILE;
   player.y = 65 * d.TILE;
@@ -1224,6 +1241,12 @@ function assertExpandedWorldContent() {
   assert(Math.floor(player.x / d.TILE) === 139 && Math.floor(player.y / d.TILE) === 87, "western ferry should reach the east island harbor");
   runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "east-ferry"));
   assert(Math.floor(player.x / d.TILE) === 116 && Math.floor(player.y / d.TILE) === 65, "east ferry should return to the western continent");
+  player.x = 185 * d.TILE;
+  player.y = 102 * d.TILE;
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "sunrise-ferry"));
+  assert(Math.floor(player.x / d.TILE) === 204 && Math.floor(player.y / d.TILE) === 72, "outer-sea ferry should reach Dawn Harbor");
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "dawn-ferry"));
+  assert(Math.floor(player.x / d.TILE) === 185 && Math.floor(player.y / d.TILE) === 102, "Dawn Harbor ferry should return to Azure Wind Island");
   runtime.ui.zone = { textContent: "" };
   player.x = 24 * d.TILE;
   player.y = 154 * d.TILE;

@@ -8,7 +8,7 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 
 Current focus:
 
-* Deepen the new `192x224` continental overworld without creating empty walkable space.
+* Deepen the new `256x256` three-continent overworld without creating empty walkable space.
 * Preserve the organic coastline polygons and cartographic overview; never expose embedded interior mazes on the whole-world map.
 * Treat the western continent, 蒼風島, and southern cape/islands as distinct geographic and progression units.
 * Preserve content density, regional purpose, and survival-range expansion.
@@ -43,7 +43,7 @@ Immediate work order:
 2. Add weapon attack profiles so quick, thrust, sweep, reach, and heavy weapons feel different in the player's hands and dead sidegrades regain a purpose.
 3. Replace the fixed herb/bomb/ward dock with three configurable quick slots supporting all consumables and save migration.
 4. Expand boss action patterns with piercing lines, delayed multi-wave spreads, persistent hazards, and phase combinations that demand movement. **Initial implementation complete; balance/arena follow-up remains.**
-5. Build the next world region as geography rather than corridors: mountain chain, highland, valley/coast route choices, and longer distinct travel beats. **192x224 continental expansion complete; eastern-island content arc and balance remain.**
+5. Build the next world region as geography rather than corridors: mountain chain, highland, valley/coast route choices, and longer distinct travel beats. **256x256 three-continent geography complete; eastern chapter content and balance remain.**
 6. Add a major city with multiple shops, specialists, upgrades, residents, rumors, and optional reasons to revisit.
 7. Add person/location/progression-specific NPC dialogue and a whole-world map view. **Initial implementation complete.**
 
@@ -75,6 +75,7 @@ Next player-facing implementation target:
 
 * Playtest the new boss patterns and tune warning time, shield counterplay, minimum damage, and arena density.
 * Populate 蒼風島 as a full expedition arc across its lighthouse loop, west coast, mountain pass, river road, ridge shortcut, lake route, and southern cape: local behavior enemies, route-specific rewards, one interior dungeon, a named midboss, and a major destination beyond 南風岬砦.
+* Turn 日出大陸 into the next chapter-sized arc: 黎明港 arrival, northern ruins, western coast, central mountain shortcut, valley shrine, 陽冠都市, southern road, and 熾火群島 climax.
 * Turn Black Market City from a larger district into a true multi-service capital with specialist shops, upgrade activities, local errands, and progression-sensitive residents.
 
 ### 1. Latest completed player-facing pass
@@ -181,7 +182,7 @@ Next high-value content direction:
 * Manually playtest Frost Watchtower from Frost Haven: floor-one attrition, beacon pulse strength, warden phase readability, retreat pressure, elevator value, and Sky Emblem build value.
 * Deepen Black Market into a city hub with distinctive NPCs, stalls, optional errands, and late-route shop/reward reasons.
 * Continue turning optional routes into multi-step expeditions: approach danger, named guardian, route-specific enemy behavior, and reward that changes survivability.
-* Continue deepening the existing `192x224` overworld before another size jump: fill the new island routes with distinct encounters and rewards, then convert remaining western wall-maze segments.
+* Continue deepening the existing `256x256` overworld before another size jump: fill 蒼風島, 日出大陸, and 熾火群島 with distinct encounters and rewards, then convert remaining western wall-maze segments.
 * Continue the density pass region by region: every long open stretch should gain either a landmark, route choice, warning, small reward, or distinct enemy pocket.
 * Add the next interior with a structure different from both Catacombs and Frost Watchtower, preferably a flooded cave or castle wing linked to a lived-in town objective.
 * Add another behaviorally distinct enemy, preferably heavy-guard pressure or elite patrols, so the long expedition does not rely only on stats.
@@ -214,7 +215,7 @@ If browser QA is unavailable, record the limitation in `DEVELOPMENT_LOG.md` and 
 
 ### 3. Map size expansion follow-up
 
-Goal: turn the current `192x224` continental overworld into dense regional adventures without another immediate size increase.
+Goal: turn the current `256x256` three-continent overworld into dense regional adventures without another immediate size increase.
 
 Implementation direction:
 
@@ -300,7 +301,7 @@ Check:
 
 ### Map scope
 
-* Short-term: deepen the current `192x224` world, especially 蒼風島 and the southern islands, with dense encounters, rewards, and route goals.
+* Short-term: deepen the current `256x256` world, especially 蒼風島, 日出大陸, and 熾火群島, with dense encounters, rewards, and route goals.
 * Mid-term: add map files for dungeons/interiors such as caves, towers, castles, mines, and towns.
 * Long-term: make playable scope at least 10x Chapter 1 through larger `world.js`, additional map files, or both.
 * Continue hand-authored fixed map data; do not return to random terrain.

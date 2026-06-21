@@ -103,6 +103,13 @@
       "漁師「南の小島には古い祠がある。橋を渡るなら術師を先に倒せ」",
       "旅人「蒼風港の灯が見える範囲と、岬砦の灯が見える範囲は別の生存圏だ」",
     ],
+    dawn: [
+      "船乗り「蒼風島の東は外洋だ。黎明港まで着けば、帰りの航路は確保できる」",
+      "高原商人「陽冠都市へは西海岸道が安全だ。中央山道は近いが魔物が濃い」",
+      "都市衛兵「南門の先は熾火群島へ続く。回復薬と帰還鈴を惜しむな」",
+      "巡礼者「北の遺跡、谷の祠、南の群島。どの道にも旅の理由がある」",
+      "住民「陽冠都市は港町より大きい。鍛冶、物資、旅人の噂が集まる東方の中心だ」",
+    ],
   };
 
   const worldPx = (value) => value * WORLD_SCALE;
@@ -353,7 +360,10 @@
     }
 
     if (npc.type === "guide") {
-      if (npc.x > 132 * TILE) {
+      if (npc.x > 198 * TILE) {
+        if (npc.y > 118 * TILE) say("案内人「北は黎明港、西は谷の祠、南の街道は熾火群島へ続く」", 4200);
+        else say("案内人「北回りは遺跡、西海岸は安全、中央山道は近いが最も危険だ」", 4200);
+      } else if (npc.x > 132 * TILE) {
         if (npc.y > 154 * TILE) say("案内人「北は蒼風港、南西の橋は群島祠、東は海岸の強敵地帯だ」", 4200);
         else say("案内人「北道は灯台、中央は峠、南道は岬砦。峠が最短だが最も危険だ」", 4200);
       } else if (npc.y > 144 * TILE) {
@@ -374,7 +384,9 @@
     }
 
     if (npc.type === "villager" || npc.type === "guard") {
-      if (npc.x > 132 * TILE) {
+      if (npc.x > 198 * TILE) {
+        say(localDialogue(npc, townDialogue.dawn), 4000);
+      } else if (npc.x > 132 * TILE) {
         say(localDialogue(npc, townDialogue.island), 4000);
       } else if (npc.y > 144 * TILE) {
         say(localDialogue(npc, townDialogue.frost), 3800);

@@ -25,7 +25,7 @@ Current project status:
 * Core design: survival-range expansion.
 * Code structure is split across `src/data`, `src/core`, and `src/systems`.
 * Fixed hand-editable world map lives in `src/data/maps/world.js`.
-* Current map size is `192x224`; it now reads as a western continent, sea channel, 蒼風島, and southern cape/islands rather than one rectangular route stack.
+* Current map size is `256x256`; it now reads as a western continent, 蒼風島, 日出大陸, and multiple island chains rather than one rectangular route stack.
 * Real `もちもの` inventory exists with item, weapon, armor, and accessory handling.
 * Accessories are moving from permanent passive flags into equipment choices.
 * Southwest mine + southwest frontier camp are the first concrete volume-expansion pilot.
@@ -58,13 +58,15 @@ Current project status:
 * 蒼風島 adds a second major landmass with a mountain spine, lighthouse coast, river valley, terraces, multiple crossing routes, 蒼風港, and 南風岬砦.
 * Southern capes and island routes add bridges, a causeway, shrine island, caches, and a second long-range direction beyond the western chapter corridor.
 * The world now uses editable polygon coastlines, naturalized curved roads, and a cartographic overview layer that hides embedded interior mazes behind readable terrain/landmark symbols.
+* 日出大陸 adds 黎明港, 陽冠都市, a northern mountain route, western coast road, central ridge shortcut, valley shrine, southern road, and access to 熾火群島.
+* The world now contains 106 NPCs and 11 safe/travel anchors, allowing recovery and restock radius to move across the outer sea.
 
 Current high-priority risks:
 
 * Full real-browser desktop/mobile play QA is still needed.
 * Full fresh-save manual playthrough to elder report is still needed.
 * Mobile UI and inventory overlay need real-browser confirmation.
-* Future map expansion must avoid empty terrain and preserve reachability; the new `192x224` space now needs a complete eastern-island enemy/reward/dungeon arc rather than another size increase.
+* Future map expansion must avoid empty terrain and preserve reachability; the new `256x256` space now needs complete 蒼風島 / 日出大陸 enemy, reward, dungeon, and boss arcs rather than another size increase.
 * Gold/EXP/shop price balance should be checked after route expansion.
 * Chapter 4 LV30/LV34 pacing, rank-12 gear economy, and boss reinforcement pressure need a real playtest from a Chapter 3 clear save.
 * Frost Watchtower attrition, beacon pulse pressure, warden phase pacing, elevator usefulness, and Sky Emblem strength need a real Chapter 4 playtest.
@@ -99,6 +101,31 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-22: 256x256 three-continent world expansion
+
+Goal: move beyond a two-column continent/island layout and create a broad classic-RPG world with multiple seas, continents, cities, mountain routes, coasts, and island chains.
+
+Implemented:
+
+* Expanded the fixed world definition from `192x224` to `256x256` without moving existing progression coordinates.
+* Added 日出大陸 as a third major landmass with an irregular coast, crown mountain range, western/eastern forests, river system, cultivated north/valley regions, and dangerous southern heath.
+* Added northern sea island and 熾火群島, producing a world silhouette with multiple oceans, island chains, and long-range destinations instead of two parallel vertical landmasses.
+* Added seven named routes: outer-sea ferry, main highland road, northern pilgrimage loop, west-coast road, ridge shortcut, southern road, and ember-island causeway/loop.
+* Added 黎明港 and 陽冠都市 as full safe settlements with recovery, merchants, porters, guidance, guards, residents, cartographic landmarks, and wagon destinations.
+* Added seven new chests, seven discoveries, a north ruin, valley shrine, ember sanctum, and outer-sea ferry round trip.
+* Added `dawnCoast`, `sunriseHighland`, and `emberIsles` spawn identities with progressively higher enemy pressure and mixed behavior pools.
+* Expanded map/UI/guidance/NPC dialogue to identify the eastern continent and route choices without coordinate instructions.
+
+Verification:
+
+* Map preview regenerated at `256x256` and visually inspected. Western continent, 蒼風島, 日出大陸, northern island, southern islands, and 熾火群島 are separately readable.
+* `scripts/verify-game-smoke.js` passes with 32,867 reachable tiles, 106 reachable NPCs, all chests/discoveries/bosses/towns reachable, safe-zone checks, both ferry round trips, region pools, save/load, inventory, and Chapter 1-4 flow.
+
+Known risks / next work:
+
+* The new eastern geography is intentionally playable immediately after Chapter 4 report, but still needs unique enemies, equipment, dungeon progression, named midboss, and chapter boss.
+* Manual browser traversal is needed to tune voyage pacing, road travel time, spawn density, and whether the ridge shortcut feels meaningfully dangerous.
 
 ### 2026-06-22: Organic continent and cartographic world-map pass
 

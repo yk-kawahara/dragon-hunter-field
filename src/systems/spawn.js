@@ -161,6 +161,9 @@
   function regionAtPosition(x, y) {
     const tx = Math.floor(x / TILE);
     const ty = Math.floor(y / TILE);
+    if (tx >= 190 && ty >= 185) return "emberIsles";
+    if (tx >= 198 && ty < 90) return "dawnCoast";
+    if (tx >= 190) return "sunriseHighland";
     if (tx >= 132 && ty < 80) return "windCoast";
     if (tx >= 132 && ty < 154) return "eastHighland";
     if (tx >= 132) return "windCoast";
@@ -279,7 +282,7 @@
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
     const interior = INTERIOR_REGIONS.has(region);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : 6;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "emberIsles" ? 15 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -362,6 +365,9 @@
     if (region === "eastHighland") return "蒼風島内陸: 山越えの強敵地帯";
     if (region === "windCoast") return "蒼風海岸: 港から離れるほど危険";
     if (region === "southIsles") return "南岬群島: 退路の長い海辺の遠征";
+    if (region === "dawnCoast") return "黎明海岸: 外洋の先で霧槍兵と凍気敵が待つ";
+    if (region === "sunriseHighland") return "日出高原: 山脈・谷・都市街道を強敵が巡回する";
+    if (region === "emberIsles") return "熾火群島: 罠・召喚・重圧が重なる最深部";
     if (region === "frostTower1") return "霜見塔一階: 退路を確かめて登れ";
     if (region === "frostCitadel") return "霜冠城: 第4章の最奥";
     if (region === "frostCave") return "氷窟: 巨人と吸命の巣";

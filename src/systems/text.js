@@ -110,6 +110,9 @@
     if (region === "windCoast") return "蒼風港を足場に、灯台道か南の海岸道を選ぼう";
     if (region === "eastHighland") return "中央峠は近くて危険。西海岸道なら退路を取りやすい";
     if (region === "southIsles") return "南風岬砦で補給し、小島の橋と古い祠を巡ろう";
+    if (region === "dawnCoast") return "黎明港を拠点に、北の山道か西海岸の迂回路を選ぼう";
+    if (region === "sunriseHighland") return "陽冠都市を目指せ。中央山道は近いが敵圧が高い";
+    if (region === "emberIsles") return "熾火群島は最深部。退路と回復品を確保して祠へ進もう";
     if (region === "frostTower2" && !state.towerWardenDefeated) return "凍気灯を先に壊し、最上階の塔守を倒そう";
     if (region === "frostTower2") return "最上階の遺物庫と昇降機を調べよう";
     if (region === "frostTower1") return "補給庫を探し、南東の階段から二階へ";

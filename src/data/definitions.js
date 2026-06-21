@@ -8,8 +8,8 @@
   const VIEW_H = 144 * WORLD_SCALE;
   const HUD_H = H - VIEW_H;
   const TILE = BASE_TILE * WORLD_SCALE;
-  const MAP_W = 192;
-  const MAP_H = 224;
+  const MAP_W = 256;
+  const MAP_H = 256;
   const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const SAFE_ZONES = [
@@ -22,6 +22,8 @@
     { id: "frost-haven", name: "白銀宿", x1: 12, y1: 150, x2: 34, y2: 156, outerX1: 11, outerY1: 149, outerX2: 35, outerY2: 157 },
     { id: "east-harbor", name: "蒼風港", x1: 137, y1: 79, x2: 160, y2: 94, outerX1: 136, outerY1: 78, outerX2: 161, outerY2: 95 },
     { id: "southwind-outpost", name: "南風岬砦", x1: 160, y1: 165, x2: 176, y2: 173, outerX1: 159, outerY1: 164, outerX2: 178, outerY2: 175 },
+    { id: "dawn-harbor", name: "黎明港", x1: 203, y1: 65, x2: 225, y2: 77, outerX1: 202, outerY1: 64, outerX2: 226, outerY2: 79 },
+    { id: "suncrest-city", name: "陽冠都市", x1: 225, y1: 121, x2: 252, y2: 134, outerX1: 224, outerY1: 120, outerX2: 253, outerY2: 136 },
   ];
   const HEAL_POINTS = [
     { ...HEAL_CIRCLE, id: "village-circle", name: "村の回復陣" },
@@ -33,6 +35,8 @@
     { x: 24, y: 154, id: "frost-haven-circle", name: "白銀宿の回復陣" },
     { x: 150, y: 85, id: "east-harbor-circle", name: "蒼風港の回復陣" },
     { x: 168, y: 169, id: "southwind-circle", name: "南風岬砦の回復陣" },
+    { x: 214, y: 72, id: "dawn-harbor-circle", name: "黎明港の回復陣" },
+    { x: 238, y: 128, id: "suncrest-circle", name: "陽冠都市の回復陣" },
   ];
   const TRAVEL_POINTS = [
     { id: "village", name: "村", x: 10, y: 48, cost: 0, unlock: "always" },
@@ -44,6 +48,8 @@
     { id: "frost-haven", name: "白銀宿", x: 24, y: 154, cost: 420, unlock: "chapter3Reported" },
     { id: "east-harbor", name: "蒼風港", x: 150, y: 85, cost: 560, unlock: "chapter3Reported" },
     { id: "southwind-outpost", name: "南風岬砦", x: 168, y: 169, cost: 720, unlock: "chapter3Reported" },
+    { id: "dawn-harbor", name: "黎明港", x: 214, y: 72, cost: 900, unlock: "chapter4Reported" },
+    { id: "suncrest-city", name: "陽冠都市", x: 238, y: 128, cost: 1150, unlock: "chapter4Reported" },
   ];
   const DUNGEON_PORTALS = [
     { id: "black-market-catacomb-entry", name: "黒市地下墓所", x: 47, y: 130, toX: 83, toY: 2, prompt: "入る: 黒市地下墓所" },
@@ -56,6 +62,8 @@
     { id: "frost-tower-lift-entry", name: "霜見塔・二階", x: 46, y: 148, toX: 117, toY: 31, prompt: "昇降機: 霜見塔二階へ", unlock: "frostTowerLift" },
     { id: "western-ferry", name: "蒼風港", x: 116, y: 65, toX: 139, toY: 87, prompt: "渡船: 蒼風島へ" },
     { id: "east-ferry", name: "西方大陸", x: 139, y: 87, toX: 116, toY: 65, prompt: "渡船: 西方大陸へ" },
+    { id: "sunrise-ferry", name: "黎明港", x: 185, y: 102, toX: 204, toY: 72, prompt: "外洋船: 日出大陸へ" },
+    { id: "dawn-ferry", name: "蒼風島", x: 204, y: 72, toX: 185, toY: 102, prompt: "外洋船: 蒼風島へ" },
   ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
@@ -120,6 +128,13 @@
     { id: "southwind-supply", x: 172, y: 169, reward: "frostSupply" },
     { id: "south-island-cache", x: 57, y: 209, reward: "blackMarketSupply" },
     { id: "middle-isle-cache", x: 108, y: 202, reward: "voidSupply" },
+    { id: "dawn-harbor-supply", x: 220, y: 68, reward: "frostSupply" },
+    { id: "sunrise-north-cache", x: 237, y: 43, reward: "towerExpeditionSupply" },
+    { id: "sunrise-valley-cache", x: 211, y: 111, reward: "voidSupply" },
+    { id: "suncrest-city-cache", x: 246, y: 127, reward: "blackMarketSupply" },
+    { id: "sunrise-south-cache", x: 240, y: 166, reward: "frostSupply" },
+    { id: "ember-sanctum-cache", x: 222, y: 226, reward: "towerExpeditionSupply" },
+    { id: "ember-east-cache", x: 243, y: 233, reward: "voidSupply" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
@@ -168,6 +183,13 @@
     { id: "east-river-marker", x: 178, y: 120, kind: "routeHint" },
     { id: "southwind-map", x: 162, y: 171, kind: "shortcutHint" },
     { id: "south-island-altar", x: 57, y: 208, kind: "cache" },
+    { id: "dawn-harbor-chart", x: 208, y: 74, kind: "shortcutHint" },
+    { id: "sunrise-north-ruin", x: 236, y: 44, kind: "waystone" },
+    { id: "sunrise-ridge-marker", x: 232, y: 87, kind: "routeHint" },
+    { id: "sunrise-valley-shrine", x: 211, y: 110, kind: "cache" },
+    { id: "suncrest-road-map", x: 228, y: 131, kind: "shortcutHint" },
+    { id: "ember-causeway-marker", x: 220, y: 207, kind: "routeHint" },
+    { id: "ember-sanctum", x: 222, y: 225, kind: "waystone" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
@@ -221,6 +243,9 @@
     windCoast: { danger: 8, maxBonus: 9, pool: ["mistLancer", "frostMoth", "sorcerer", "shieldSoldier", "bubbler", "boar"] },
     eastHighland: { danger: 9, maxBonus: 11, pool: ["frostBeast", "mistLancer", "shieldSoldier", "summoner", "voidWraith", "frostMoth"] },
     southIsles: { danger: 9, maxBonus: 10, pool: ["frostMoth", "bubbler", "mistLancer", "summoner", "moonShade", "shieldSoldier"] },
+    dawnCoast: { danger: 9, maxBonus: 11, pool: ["mistLancer", "frostMoth", "shieldSoldier", "sorcerer", "bubbler", "frostBeast"] },
+    sunriseHighland: { danger: 10, maxBonus: 13, pool: ["frostBeast", "summoner", "voidWraith", "mistLancer", "shieldSoldier", "eclipseMage"] },
+    emberIsles: { danger: 11, maxBonus: 14, pool: ["trapFlower", "summoner", "voidWraith", "frostBeast", "eclipseMage", "shieldSoldier"] },
   };
 
   const TILE_GRASS = 0;

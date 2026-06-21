@@ -1,8 +1,8 @@
 "use strict";
 
 (() => {
-  const WORLD_WIDTH = 192;
-  const WORLD_HEIGHT = 224;
+  const WORLD_WIDTH = 256;
+  const WORLD_HEIGHT = 256;
   // Human-editable fixed world map for DRAGON HUNTER.
   // Edit BASE_MAP / EAST_EXPANSION / SOUTH_EXPANSION rows directly to change terrain.
   // Legend:
@@ -300,6 +300,21 @@
       tile: ".",
       points: [[96, 186], [108, 188], [117, 198], [120, 211], [113, 220], [101, 217], [94, 205]],
     },
+    {
+      id: "sunrise-continent",
+      tile: ".",
+      points: [[215, 14], [233, 16], [247, 28], [253, 45], [250, 61], [254, 78], [251, 95], [254, 112], [249, 129], [253, 146], [247, 166], [234, 181], [216, 184], [201, 176], [195, 160], [198, 143], [193, 126], [198, 108], [194, 91], [199, 74], [195, 58], [201, 41], [202, 26]],
+    },
+    {
+      id: "ember-archipelago",
+      tile: ".",
+      points: [[207, 195], [224, 188], [242, 194], [253, 207], [251, 226], [243, 244], [225, 253], [205, 249], [191, 237], [189, 220], [196, 205]],
+    },
+    {
+      id: "north-sea-isle",
+      tile: ".",
+      points: [[139, 6], [151, 3], [165, 7], [170, 16], [162, 23], [146, 21], [135, 15]],
+    },
   ];
 
   // Fixed, human-editable geography. Each feature is a named polyline with a
@@ -326,6 +341,16 @@
       { id: "east-valley-lake", tile: "~", width: 3, points: [[137, 143], [141, 150], [139, 157]] },
       { id: "east-south-meadows", tile: "=", width: 4, points: [[171, 184], [176, 195], [169, 207]] },
       { id: "east-northwest-foothills", tile: "T", width: 3, points: [[132, 73], [137, 82], [135, 94]] },
+      { id: "sunrise-crown-range", tile: "#", width: 4, points: [[224, 24], [235, 39], [241, 57], [232, 76], [238, 96], [229, 116], [239, 139], [234, 160]] },
+      { id: "sunrise-western-forest", tile: "T", width: 5, points: [[203, 43], [205, 59], [201, 78], [204, 98]] },
+      { id: "sunrise-eastern-forest", tile: "T", width: 4, points: [[247, 83], [247, 101], [244, 119]] },
+      { id: "sunrise-river", tile: "~", width: 1, points: [[247, 32], [249, 50], [245, 69], [249, 87], [245, 107], [248, 126]] },
+      { id: "sunrise-north-fields", tile: "=", width: 5, points: [[237, 24], [246, 35], [249, 47]] },
+      { id: "sunrise-valley-fields", tile: "=", width: 4, points: [[207, 111], [213, 126], [207, 142]] },
+      { id: "sunrise-south-heath", tile: "*", width: 4, points: [[243, 147], [247, 158], [240, 171]] },
+      { id: "ember-ridge", tile: "#", width: 4, points: [[201, 211], [215, 219], [230, 216], [244, 226]] },
+      { id: "ember-grove", tile: "T", width: 5, points: [[205, 231], [218, 244]] },
+      { id: "north-sea-grove", tile: "T", width: 3, points: [[143, 12], [153, 9], [163, 14]] },
       { id: "western-cape-fields", tile: "=", width: 4, points: [[76, 165], [88, 168], [100, 164]] },
       { id: "south-island-grove", tile: "T", width: 4, points: [[31, 207], [43, 216]] },
       { id: "south-cape-woods", tile: "T", width: 4, points: [[31, 168], [45, 177], [58, 181]] },
@@ -359,6 +384,15 @@
       { id: "east-north-lighthouse-loop", tile: "+", width: 1, points: [[150, 88], [140, 77], [136, 63], [141, 51], [150, 48]] },
       { id: "east-south-cape-loop", tile: "+", width: 1, points: [[168, 170], [180, 176], [181, 190], [173, 202], [158, 210], [142, 211], [128, 205]] },
       { id: "east-cape-crossing", tile: "+", width: 1, points: [[155, 158], [149, 172], [145, 188], [149, 202], [158, 210]] },
+      { id: "sunrise-ferry-road", tile: "+", width: 1, points: [[185, 102], [196, 92], [205, 72]] },
+      { id: "sunrise-main-road", tile: "+", width: 1, points: [[205, 72], [219, 73], [231, 87], [241, 102], [236, 118], [238, 129]] },
+      { id: "sunrise-north-loop", tile: "+", width: 1, points: [[205, 72], [207, 56], [217, 42], [229, 32], [240, 40]] },
+      { id: "sunrise-pilgrim-road", tile: "+", width: 2, points: [[214, 72], [220, 60], [229, 50], [237, 43]] },
+      { id: "sunrise-west-coast-road", tile: "+", width: 1, points: [[205, 72], [201, 90], [203, 109], [212, 127], [229, 130]] },
+      { id: "sunrise-ridge-shortcut", tile: "+", width: 1, points: [[219, 73], [230, 58], [243, 71], [241, 102]] },
+      { id: "sunrise-south-road", tile: "+", width: 1, points: [[238, 129], [245, 148], [238, 166], [221, 175]] },
+      { id: "ember-causeway", tile: "+", width: 1, points: [[221, 175], [218, 192], [220, 207], [222, 226]] },
+      { id: "ember-island-loop", tile: "+", width: 1, points: [[222, 226], [207, 218], [199, 229], [212, 242], [230, 246], [244, 233], [242, 214], [222, 207]] },
       { id: "western-cape-road", tile: "+", width: 2, points: [[24, 154], [35, 163], [46, 171], [61, 177], [78, 178], [96, 170], [112, 165]] },
       { id: "south-island-bridge", tile: "+", width: 1, points: [[62, 180], [64, 190], [63, 200], [58, 205]] },
       { id: "south-island-loop", tile: "+", width: 1, points: [[58, 205], [46, 207], [40, 214], [53, 217], [68, 212], [80, 216]] },
@@ -500,6 +534,59 @@
       "..#..+++..#..",
       "..#..+++..#..",
       "..###+++###..",
+    ] },
+    { id: "dawn-harbor-city", x: 202, y: 64, rows: [
+      "######++++++############",
+      "#^^^^#++++++#^^^^^#____#",
+      "#^__^#++++++#^___^#____#",
+      "#____++++++++++++++++__#",
+      "#____++++______++++++__#",
+      "#_+++++++++____+++++++_#",
+      "#_++++++++++++++++++++_#",
+      "#____++++______++++++__#",
+      "#++C+++++++++++++++++++#",
+      "#____++++______++++++__#",
+      "#^^^^#++++++#^^^^^#____#",
+      "######++++++############",
+      "......++++++............",
+      "......++++++............",
+      "......++++++............",
+    ] },
+    { id: "suncrest-city", x: 224, y: 120, rows: [
+      "########++++++#############",
+      "#^^^^^_#++++++#_^^^^^#____#",
+      "#^___^_#++++++#_^___^#____#",
+      "#______++++++++++++++++___#",
+      "#_+++++____++++++____++++_#",
+      "#_+++++____++++++____++++_#",
+      "#_+++++++++++++++++++++++_#",
+      "#_+++++____++++++____++++_#",
+      "#______++++++++++++++++___#",
+      "#_^__^_#++++++#_^___^#____#",
+      "#_^^^^_#++++++#_^^^^^#____#",
+      "#______++++++++++++++++___#",
+      "########++++++#############",
+      "........++++++.............",
+      "........++++++.............",
+    ] },
+    { id: "sunrise-north-ruin", x: 232, y: 43, rows: [
+      "..##++++###..",
+      "..#..++...#..",
+      "..#..++...#..",
+      "..###++++##..",
+    ] },
+    { id: "sunrise-valley-shrine", x: 206, y: 108, rows: [
+      "..###+++###..",
+      "..#..+++..#..",
+      "..#..+++..#..",
+      "..###+++###..",
+    ] },
+    { id: "ember-island-sanctum", x: 216, y: 222, rows: [
+      "..####+++####..",
+      "..#...+++...#..",
+      "..#...+C+...#..",
+      "..##..+++..##..",
+      ".....+++++.....",
     ] },
     { id: "black-market-catacomb-door", x: 47, y: 130, rows: ["C"] },
     { id: "frost-tower-doors", x: 43, y: 148, rows: ["C++C"] },
@@ -667,6 +754,8 @@
     { x1: 11, y1: 149, x2: 36, y2: 159, tile: "." },
     { x1: 136, y1: 78, x2: 161, y2: 95, tile: "." },
     { x1: 157, y1: 163, x2: 179, y2: 176, tile: "." },
+    { x1: 202, y1: 64, x2: 226, y2: 79, tile: "." },
+    { x1: 224, y1: 120, x2: 253, y2: 136, tile: "." },
   ];
 
   const OVERVIEW_TERRAIN = [
@@ -687,6 +776,9 @@
     { id: "frost-haven", x: 24, y: 154, rows: [".^^^^^.", "^_____^", "__+++__", ".+++++."] },
     { id: "east-harbor", x: 150, y: 86, rows: [".^^^^^.", "^_____^", "__+++__", "^_____^", ".+++++."] },
     { id: "southwind-outpost", x: 168, y: 169, rows: [".#####.", "#^___^#", "#__+__#", ".##+##."] },
+    { id: "dawn-harbor", x: 214, y: 72, rows: [".^^^^^.", "^_____^", "__+++__", "^_____^", ".+++++."] },
+    { id: "suncrest-city", x: 238, y: 129, rows: [".^^^^^^^.", "^_______^", "__+++++__", "^_______^", "__+++++__", ".+++++++."] },
+    { id: "ember-sanctum", x: 222, y: 226, rows: [".#####.", "#^___^#", "#__C__#", ".##+##."] },
     { id: "dragon-cave", x: 51, y: 18, rows: [".###.", "#_C_#", ".+++."] },
     { id: "old-tower", x: 104, y: 90, rows: [".###.", "#_^_#", "#_+_#", ".#+#."] },
     { id: "eclipse-castle", x: 82, y: 123, rows: [".#####.", "#^___^#", "#__C__#", ".##+##."] },
@@ -810,6 +902,28 @@
     { type: "npc", npcType: "villager", x: 164, y: 166, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
     { type: "npc", npcType: "villager", x: 172, y: 167, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
     { type: "npc", npcType: "villager", x: 161, y: 171, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "healer", x: 214, y: 72, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "merchant", x: 220, y: 70, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "porter", x: 207, y: 72, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 222, y: 74, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 203, y: 68, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 224, y: 73, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 210, y: 68, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 216, y: 67, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 211, y: 75, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 219, y: 76, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "healer", x: 238, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "merchant", x: 246, y: 126, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 229, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "porter", x: 233, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 248, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 225, y: 124, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 249, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 231, y: 124, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 239, y: 124, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 244, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 230, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 249, y: 125, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
   ];
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {

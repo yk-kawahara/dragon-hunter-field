@@ -85,7 +85,7 @@ Future work should grow the game into a larger RPG.
 
 Long-term direction:
 
-* The editable overworld is now `192x224`; deepen its continents and islands before the next size increase.
+* The editable overworld is now `256x256`; deepen its three continental regions and island chains before the next size increase.
 * Use hand-authored map data or additional hand-authored map files.
 * Add multiple regional arcs, not just one long walk from the starting village.
 * Add towns, frontier bases, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
@@ -282,7 +282,7 @@ Chapter 4 is a complete survival-range arc added beyond the reported Chapter 3 r
 
 Current structure:
 
-* Frost Frontier occupies the southern edge of the western continent inside the current `192x224` fixed overworld; its original 16-row chapter strip remains intentionally dense rather than empty padding.
+* Frost Frontier occupies the southern edge of the western continent inside the current `256x256` fixed overworld; its original 16-row chapter strip remains intentionally dense rather than empty padding.
 * Frost Haven is the new safe anchor. It offers full recovery, premium stock, wagon travel, guidance, and visible town life.
 * The northern road is the clearer and faster approach to Frost Crown Citadel.
 * The southern ice route is more dangerous and leads through Ice Cave to Frost Golem and `霜心の護符`.
@@ -377,7 +377,7 @@ A content pass is weak if it only adds empty walking space, cosmetic terrain, st
 
 ## Latest Design Truth: Dense Routes, Shields, and Landmarks
 
-The next content direction is to deepen the current `192x224` continental overworld before expanding map size again.
+The next content direction is to deepen the current `256x256` continental overworld before expanding map size again.
 
 Current design additions:
 
@@ -398,13 +398,13 @@ Current design additions:
 * The latest density pass added fixed terrain-detail overlays, additional supply caches, route hints, camp remains, shrine markers, thorn fields, and more remote-base NPCs. Continue using these small hand-authored landmarks to reduce sparse walking without bloating map size.
 * Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
 * `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.
-* Current `192x224` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and terrain-led shortcuts before another size jump.
+* Current `256x256` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and terrain-led shortcuts before another size jump.
 
 ## Latest Design Truth: Continental World Geography
 
 The overworld is now large enough to read as a journey across landmasses rather than a stack of boxed corridors.
 
-* World size is `192x224`, approximately 2.24 times the previous map area.
+* World size is `256x256`. Existing western and central coordinates remain save-compatible while new eastern and southeastern geography occupies the expanded canvas.
 * The original progression occupies the western continent. Existing chapters remain in place and retain their save-compatible coordinates.
 * A broad sea channel separates the western continent from 蒼風島. Ferry portals connect the western harbor and 蒼風港 after Chapter 3 progression.
 * 蒼風島 is organized around a north lighthouse coast, a central mountain spine, west terraces, a river valley, east-coast roads, and a southern heath/cape.
@@ -419,9 +419,11 @@ The overworld is now large enough to read as a journey across landmasses rather 
 The raw tile layout and the readable whole-world map have separate responsibilities.
 
 * Gameplay terrain keeps the real collision map, portals, interiors, settlements, and rewards.
-* `WORLD_LANDMASSES` defines editable polygon coastlines for the western continent, 蒼風島, and southern islands.
+* `WORLD_LANDMASSES` defines editable polygon coastlines for the western continent, 蒼風島, 日出大陸, northern/southern islands, and 熾火群島.
 * Broad legacy path blocks are naturalized into grassland, then replaced by named curved roads connecting actual destinations.
 * Embedded catacomb/tower floors are hidden on the whole-world map and replaced with regional terrain or compact landmark symbols.
 * Towns, forts, caves, towers, and castles should appear as recognizable cartographic landmarks rather than full room layouts.
 * A region is acceptable only when its silhouette, biome, route choices, and major destination can be understood without reading coordinates.
 * 蒼風島 now has a lighthouse loop, west-coast route, mountain pass, east-river road, ridge shortcut, southern cape loop, and inland lake. Future content should assign distinct danger/reward identities to these routes.
+* 日出大陸 adds 黎明港, a northern pilgrimage route, western coast road, central mountain shortcut, river highland, 陽冠都市, a southern road, and a causeway into 熾火群島.
+* 黎明港 and 陽冠都市 are real safe anchors with recovery, trade, travel, guidance, guards, and residents. Their purpose is to move the survival radius across the outer sea.
