@@ -325,6 +325,8 @@ function assertMapReachability() {
     ["frost-cave", d.FROST_GOLEM_SITE.x, d.FROST_GOLEM_SITE.y],
     ["frost-seal", 103, 154],
     ["frostDragon", d.FROST_DRAGON_SITE.x, d.FROST_DRAGON_SITE.y],
+    ["solarWarden", d.SOLAR_WARDEN_SITE.x, d.SOLAR_WARDEN_SITE.y],
+    ["emberDragon", d.EMBER_DRAGON_SITE.x, d.EMBER_DRAGON_SITE.y],
     ["frost-tower-entry", 43, 148],
     ["frost-tower-supply", 95, 27],
     ["frost-tower-stairs", 101, 31],
@@ -390,7 +392,8 @@ function assertSaveLoadAndEquipment() {
   player.deepLampCharm = true;
   player.frostCharm = true;
   player.skyCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky"];
+  player.horizonCharm = true;
+  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon"];
   player.equippedAccessory = "trail";
   player.equippedAccessories = ["trail", "greaterRegen"];
   state.chests.add("town-cache");
@@ -427,6 +430,11 @@ function assertSaveLoadAndEquipment() {
   state.spawnedObsidianGolem = true;
   state.chapter3Reported = true;
   state.chapter4Reported = true;
+  state.solarWardenDefeated = true;
+  state.spawnedSolarWarden = true;
+  state.emberDragonDefeated = true;
+  state.spawnedEmberDragon = true;
+  state.chapter5Reported = true;
   state.bossDefeated = true;
   state.spawnedBoss = true;
   state.elderReported = true;
@@ -450,10 +458,11 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.deepLampCharm, "deep lamp charm should persist");
   assert(restored.player.frostCharm, "frost charm should persist");
   assert(restored.player.skyCharm, "sky charm should persist");
+  assert(restored.player.horizonCharm, "horizon charm should persist");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost") && restored.player.ownedAccessories.includes("sky"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost") && restored.player.ownedAccessories.includes("sky") && restored.player.ownedAccessories.includes("horizon"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
@@ -476,6 +485,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.frostGolemDefeated, "frost golem defeat flag should persist");
   assert(restored.state.towerWardenDefeated, "frost tower warden defeat flag should persist");
   assert(restored.state.frostDragonDefeated && restored.state.chapter4Reported, "chapter 4 flags should persist");
+  assert(restored.state.solarWardenDefeated && restored.state.emberDragonDefeated && restored.state.chapter5Reported, "chapter 5 flags should persist");
   assert(restored.state.eclipseDragonDefeated && restored.state.chapter2Reported, "chapter 2 flags should persist");
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.obsidianGolemDefeated, "obsidian golem defeat flag should persist");
@@ -782,7 +792,35 @@ function assertStoryClearFlow() {
   assert(state.frostDragonDefeated && state.chapter4Victory, "Frost Dragon defeat should set chapter 4 victory");
   runtime.handleNpc(elder);
   assert(state.chapter4Reported, "Elder report should complete chapter 4 clear state");
-  return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported, chapter2Reported: state.chapter2Reported, chapter3Reported: state.chapter3Reported, chapter4Reported: state.chapter4Reported };
+
+  player.level = d.SOLAR_WARDEN_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.SOLAR_WARDEN_SITE.x * d.TILE;
+  player.y = d.SOLAR_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedSolarWarden, "Solar Warden should spawn after chapter 4 report and level gate");
+  const solarWarden = state.monsters.find((monster) => monster.type === "solarWarden");
+  assert(solarWarden, "Solar Warden monster should exist");
+  solarWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.solarWardenDefeated, "Solar Warden defeat should unlock Suncrest decisive gear");
+
+  state.discoveries.add("sunrise-seal");
+  state.chests.add("ember-sanctum-cache");
+  player.level = d.CHAPTER5_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.EMBER_DRAGON_SITE.x * d.TILE;
+  player.y = d.EMBER_DRAGON_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedEmberDragon, "Ember Dragon should spawn after chapter 5 requirements");
+  const emberDragon = state.monsters.find((monster) => monster.type === "emberDragon");
+  assert(emberDragon, "Ember Dragon monster should exist");
+  emberDragon.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.emberDragonDefeated && state.chapter5Victory, "Ember Dragon defeat should set chapter 5 victory");
+  runtime.handleNpc(elder);
+  assert(state.chapter5Reported, "Elder report should complete chapter 5 clear state");
+  return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported, chapter2Reported: state.chapter2Reported, chapter3Reported: state.chapter3Reported, chapter4Reported: state.chapter4Reported, chapter5Reported: state.chapter5Reported };
 }
 
 function assertMineContent() {
@@ -913,6 +951,12 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.frostBeacon), "frost beacon monster definition should exist");
   assert(Boolean(d.monsterTypes.towerWarden), "frost tower warden monster definition should exist");
   assert(Boolean(d.monsterTypes.frostDragon), "frost dragon monster definition should exist");
+  assert(Boolean(d.monsterTypes.sunLancer), "sun lancer monster definition should exist");
+  assert(Boolean(d.monsterTypes.mirageCaster), "mirage caster monster definition should exist");
+  assert(Boolean(d.monsterTypes.solarWarden), "solar warden monster definition should exist");
+  assert(Boolean(d.monsterTypes.emberDragon), "ember dragon monster definition should exist");
+  assert(d.weaponNames[13] === "暁光の長槍" && d.armorNames[13] === "陽冠の光鎧" && d.shieldNames[7] === "日輪大盾", "chapter 5 city gear should define all combat slots");
+  assert(d.accessoryData.horizon?.name === "遠見の護符", "chapter 5 should define the anti-sniper accessory");
   assert(d.weaponAttackProfiles.length === d.weaponNames.length, "every weapon should define an attack profile");
   assert(d.weaponAttackProfiles[1].cooldown < d.weaponAttackProfiles[11].cooldown && d.weaponAttackProfiles[8].range > d.weaponAttackProfiles[2].range, "weapon profiles should create visible speed and reach tradeoffs");
 
@@ -1208,6 +1252,68 @@ function assertExpandedWorldContent() {
   assert(state.projectiles.some((projectile) => projectile.pattern === "frostLance" && projectile.piercing), "frost dragon should fire a piercing ice lance after its warning");
   state.monsters = [];
   state.projectiles = [];
+
+  player.x = 232 * d.TILE;
+  player.y = 102 * d.TILE;
+  runtime.spawnMonster("sunLancer", player.x + d.TILE * 5, player.y);
+  const sunLancer = state.monsters.find((monster) => monster.type === "sunLancer");
+  sunLancer.fireCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(sunLancer.specialState === "sniper" && state.telegraphs.some((entry) => entry.kind === "line"), "sun lancer should warn a very long sniper line");
+  sunLancer.specialWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.source === "sunLancer" && projectile.pattern === "solarSniper" && projectile.piercing), "sun lancer should fire a piercing ultra-long projectile after warning");
+
+  state.monsters = [];
+  state.projectiles = [];
+  runtime.spawnMonster("mirageCaster", player.x + d.TILE * 5, player.y);
+  const mirageCaster = state.monsters.find((monster) => monster.type === "mirageCaster");
+  mirageCaster.fireCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(mirageCaster.specialState === "artillery" && state.telegraphs.filter((entry) => entry.kind === "zone").length === 3, "mirage caster should mark three artillery impact zones");
+  mirageCaster.specialWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.filter((projectile) => projectile.pattern === "solarArtillery" && projectile.persistent).length === 3, "mirage caster should create three persistent impact zones");
+
+  state.monsters = [];
+  state.projectiles = [];
+  runtime.spawnMonster("emberDragon", 236 * d.TILE, 102 * d.TILE);
+  const behaviorEmberDragon = state.monsters.find((monster) => monster.type === "emberDragon");
+  behaviorEmberDragon.patternCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorEmberDragon.patternKind === "emberSniper" && state.telegraphs.some((entry) => entry.kind === "line" && entry.length >= 400 * d.WORLD_SCALE), "ember dragon should open with a near-screen-edge sniper warning");
+  behaviorEmberDragon.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.pattern === "emberSniper" && projectile.piercing && projectile.wallPiercing), "ember dragon sniper should pierce enemies and walls");
+  state.monsters = [];
+  state.projectiles = [];
+
+  const chapter5Defense = createRuntime();
+  const solarThreat = { type: "sunLancer" };
+  const unprepared = chapter5Defense.runtime.armorDamageMultiplier(solarThreat, 0, "solar");
+  chapter5Defense.player.armor = 13;
+  chapter5Defense.player.shield = 7;
+  chapter5Defense.player.horizonCharm = true;
+  chapter5Defense.player.ownedAccessories = ["horizon"];
+  chapter5Defense.player.equippedAccessories = ["horizon"];
+  const prepared = chapter5Defense.runtime.armorDamageMultiplier(solarThreat, 0, "solar");
+  assert(prepared < unprepared * 0.2, `Suncrest gear should dramatically reduce solar ranged pressure: ${prepared} vs ${unprepared}`);
+
+  const suncrestShop = createRuntime();
+  const suncrestMerchant = suncrestShop.state.npcs.find((npc) => npc.type === "merchant" && npc.x > 240 * d.TILE);
+  assert(suncrestMerchant, "Suncrest City should have its own large merchant");
+  suncrestShop.state.solarWardenDefeated = true;
+  suncrestShop.player.gold = 200000;
+  suncrestShop.runtime.handleNpc(suncrestMerchant);
+  assert(suncrestShop.state.shopTitle.includes("陽冠都市"), "Suncrest merchant should open the metropolis armament store");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "weapon" && row.id === 13, "Suncrest weapon should be selectable");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "armor" && row.id === 13, "Suncrest armor should be selectable");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "shield" && row.id === 7, "Suncrest shield should be selectable");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "accessory" && row.id === "horizon", "Suncrest accessory should be selectable");
+  assert(suncrestShop.player.ownedWeapons.includes(13) && suncrestShop.player.ownedArmors.includes(13) && suncrestShop.player.ownedShields.includes(7) && suncrestShop.player.ownedAccessories.includes("horizon"), "Suncrest purchases should enter the real equipment inventory");
 
   player.x = 78 * d.TILE;
   player.y = 140 * d.TILE;

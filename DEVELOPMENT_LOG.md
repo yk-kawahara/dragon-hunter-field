@@ -60,6 +60,8 @@ Current project status:
 * The world now uses editable polygon coastlines, naturalized curved roads, and a cartographic overview layer that hides embedded interior mazes behind readable terrain/landmark symbols.
 * 日出大陸 adds 黎明港, 陽冠都市, a northern mountain route, western coast road, central ridge shortcut, valley shrine, southern road, and access to 熾火群島.
 * The world now contains 106 NPCs and 11 safe/travel anchors, allowing recovery and restock radius to move across the outer sea.
+* Chapter 5 now runs from the Chapter 4 report through 日出高原, 日輪砲台守, 陽冠都市's high-price countermeasure shop, 熾火群島, 熾火天竜, and an elder-report ending.
+* 光槍兵, 陽炎術師, 日輪砲台守, and 熾火天竜 introduce long sniper lines, delayed artillery zones, piercing shots, broad multi-wave attacks, and mixed reinforcements.
 
 Current high-priority risks:
 
@@ -101,6 +103,32 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-22: Chapter 5 horizon-fire expedition
+
+Goal: create a complete high-difficulty chapter where entering a hostile continent exposes the player to ultra-long-range attacks, while expensive equipment from a super-city visibly expands survivable range and enables the final boss push.
+
+Implemented:
+
+* Added the Chapter 5 progression chain: Chapter 4 report -> LV38 日輪砲台守 -> 陽光封印碑 -> 熾火聖域 cache -> LV42 熾火天竜 -> elder report.
+* Added 光槍兵's telegraphed piercing sniper line and 陽炎術師's three delayed persistent artillery zones to 日出高原 / 熾火群島 spawn pools.
+* Added 日輪砲台守, alternating between triple sniping and artillery, as the equipment-stock unlock midboss.
+* Added 熾火天竜 with three rotating pattern families, enrage, and mixed Chapter 5 reinforcements.
+* Added selectable expensive 陽冠都市 equipment: 暁光の長槍, 陽冠の光鎧, 日輪大盾, and 遠見の護符, plus premium consumable packs.
+* Added two one-time Chapter 5 supply caches, the 陽光封印碑 discovery, objective/guidance text, world-map boss marker, ending overlay, and state/save/load/reset migration.
+* Fixed Chapter 4-report wagon unlock evaluation so 黎明港 and 陽冠都市 travel points actually become available.
+* Extended VM smoke coverage for reachability, story clear flow, save migration, inventory purchases, prepared/unprepared solar damage, sniper/artillery behavior, and boss piercing patterns.
+
+Verification:
+
+* Syntax checked all changed JavaScript files with the bundled Node.js runtime.
+* `scripts/verify-game-smoke.js`: PASS, including 32,867 reachable tiles, all Chapter 5 locations, full boss/report flow, save/load, city purchases, and attack-pattern assertions.
+* Real-browser QA was attempted but not completed: local HTTP server startup was denied by the current execution allowance, and direct `file://` navigation was blocked by browser policy. Remaining visual risk is shop-overlay fit and telegraph readability at desktop/mobile-like viewports.
+* Map preview regeneration was not required because this pass added object/data placements but did not change terrain.
+
+Known balance risk:
+
+* Chapter 5 prices and LV38/LV42 gates are structurally tested but still need a Chapter 4-clear manual playtest to measure real gold income, retreat frequency, and whether one defensive purchase is naturally affordable.
 
 ### 2026-06-22: 256x256 three-continent world expansion
 

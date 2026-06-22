@@ -135,6 +135,8 @@
     { id: "sunrise-south-cache", x: 240, y: 166, reward: "frostSupply" },
     { id: "ember-sanctum-cache", x: 222, y: 226, reward: "towerExpeditionSupply" },
     { id: "ember-east-cache", x: 243, y: 233, reward: "voidSupply" },
+    { id: "solar-warden-cache", x: 241, y: 104, reward: "solarSupply" },
+    { id: "ember-dragon-cache", x: 235, y: 232, reward: "emberSupply" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
@@ -188,6 +190,7 @@
     { id: "sunrise-ridge-marker", x: 232, y: 87, kind: "routeHint" },
     { id: "sunrise-valley-shrine", x: 211, y: 110, kind: "cache" },
     { id: "suncrest-road-map", x: 228, y: 131, kind: "shortcutHint" },
+    { id: "sunrise-seal", x: 240, y: 165, kind: "sunriseSeal" },
     { id: "ember-causeway-marker", x: 220, y: 207, kind: "routeHint" },
     { id: "ember-sanctum", x: 222, y: 225, kind: "waystone" },
   ];
@@ -216,6 +219,10 @@
   const FROST_TOWER_WARDEN_REQUIREMENTS = { level: 32 };
   const FROST_DRAGON_SITE = { x: 108, y: 156 };
   const CHAPTER4_REQUIREMENTS = { level: 34 };
+  const SOLAR_WARDEN_SITE = { x: 241, y: 102 };
+  const SOLAR_WARDEN_REQUIREMENTS = { level: 38 };
+  const EMBER_DRAGON_SITE = { x: 232, y: 232 };
+  const CHAPTER5_REQUIREMENTS = { level: 42 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -244,8 +251,8 @@
     eastHighland: { danger: 9, maxBonus: 11, pool: ["frostBeast", "mistLancer", "shieldSoldier", "summoner", "voidWraith", "frostMoth"] },
     southIsles: { danger: 9, maxBonus: 10, pool: ["frostMoth", "bubbler", "mistLancer", "summoner", "moonShade", "shieldSoldier"] },
     dawnCoast: { danger: 9, maxBonus: 11, pool: ["mistLancer", "frostMoth", "shieldSoldier", "sorcerer", "bubbler", "frostBeast"] },
-    sunriseHighland: { danger: 10, maxBonus: 13, pool: ["frostBeast", "summoner", "voidWraith", "mistLancer", "shieldSoldier", "eclipseMage"] },
-    emberIsles: { danger: 11, maxBonus: 14, pool: ["trapFlower", "summoner", "voidWraith", "frostBeast", "eclipseMage", "shieldSoldier"] },
+    sunriseHighland: { danger: 10, maxBonus: 13, pool: ["sunLancer", "mirageCaster", "frostBeast", "summoner", "shieldSoldier", "eclipseMage"] },
+    emberIsles: { danger: 11, maxBonus: 14, pool: ["sunLancer", "mirageCaster", "trapFlower", "summoner", "voidWraith", "shieldSoldier"] },
   };
 
   const TILE_GRASS = 0;
@@ -270,9 +277,9 @@
   const ATTACK_WIDTH = 20 * WORLD_SCALE;
   const DASH_COST = 34;
 
-  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣", "黒曜の槌", "霜砕きの剣"];
-  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧", "白銀の外套"];
-  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し", "凍土特効"];
+  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣", "黒曜の槌", "霜砕きの剣", "暁光の長槍"];
+  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧", "白銀の外套", "陽冠の光鎧"];
+  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し", "凍土特効", "光砲兵・熾火特効"];
   const weaponAttackProfiles = [
     { style: "小振り", cooldown: 205, range: 0.9, width: 0.9, power: 0.92, lunge: 0, knockback: 5, color: "#f8fbff" },
     { style: "高速突き", cooldown: 155, range: 1.35, width: 0.58, power: 0.8, lunge: 4, knockback: 5, color: "#fff2a6" },
@@ -287,18 +294,19 @@
     { style: "黒陽大円斬", cooldown: 235, range: 1.42, width: 1.38, power: 1.17, lunge: 2, knockback: 11, color: "#7b80d8" },
     { style: "重装粉砕", cooldown: 390, range: 1.08, width: 1.62, power: 1.55, lunge: 0, knockback: 18, color: "#aab0c8" },
     { style: "霜刃滑走", cooldown: 190, range: 1.48, width: 1.45, power: 1.12, lunge: 5, knockback: 12, color: "#b9f4ff" },
+    { style: "暁光突貫", cooldown: 165, range: 2.2, width: 0.72, power: 1.2, lunge: 8, knockback: 14, color: "#fff0a6" },
   ];
-  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御", "凍結軽減"];
-  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 7400, 9600, 12800, 18500];
-  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34, 40];
-  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 6200, 12200, 15200, 21500];
-  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42, 50];
+  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御", "凍結軽減", "狙撃・光熱・着弾軽減"];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 7400, 9600, 12800, 18500, 42000];
+  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34, 40, 52];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 6200, 12200, 15200, 21500, 48000];
+  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42, 50, 64];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
-  const shieldNames = ["なし", "木盾", "鉄盾", "星盾", "黒陽盾", "黒曜大盾", "霜鏡盾"];
-  const shieldTraits = ["盾なし", "正面接触を少し軽減", "正面接触を軽減", "魔法敵にも構えやすい", "黒陽領の正面圧を軽減", "重いが正面戦闘に強い", "凍土の正面圧を軽減"];
-  const shieldCosts = [0, 120, 520, 1700, 6600, 26200, 32000];
-  const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48, 0.42];
+  const shieldNames = ["なし", "木盾", "鉄盾", "星盾", "黒陽盾", "黒曜大盾", "霜鏡盾", "日輪大盾"];
+  const shieldTraits = ["盾なし", "正面接触を少し軽減", "正面接触を軽減", "魔法敵にも構えやすい", "黒陽領の正面圧を軽減", "重いが正面戦闘に強い", "凍土の正面圧を軽減", "正面射撃と光砲を大幅軽減"];
+  const shieldCosts = [0, 120, 520, 1700, 6600, 26200, 32000, 36000];
+  const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48, 0.42, 0.34];
   const shieldSellValues = shieldCosts.map((cost) => Math.floor(cost * 0.45));
   const shieldRuneOrder = ["bastion", "stride", "counter"];
   const shieldRuneData = {
@@ -335,7 +343,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -414,6 +422,12 @@
       trait: "回避距離+40%・再使用時間短縮",
       sell: 0,
       flag: "skyCharm",
+    },
+    horizon: {
+      name: "遠見の護符",
+      trait: "狙撃線・光砲・着弾術を軽減",
+      sell: 14000,
+      flag: "horizonCharm",
     },
   };
 
@@ -818,6 +832,43 @@
       boss: true,
       drop: 1,
     },
+    sunLancer: {
+      name: "光槍兵",
+      hp: 760,
+      atk: 218,
+      def: 132,
+      speed: 24 * WORLD_SCALE,
+      xp: 610,
+      gold: 280,
+      color: "#ffe57a",
+      shadow: "#7a5318",
+      drop: 0.38,
+    },
+    mirageCaster: {
+      name: "陽炎術師",
+      hp: 680,
+      atk: 225,
+      def: 106,
+      speed: 22 * WORLD_SCALE,
+      xp: 690,
+      gold: 310,
+      color: "#ff9f5a",
+      shadow: "#732c1c",
+      drop: 0.42,
+    },
+    solarWarden: {
+      name: "日輪砲台守",
+      hp: 6800,
+      atk: 282,
+      def: 220,
+      speed: 18 * WORLD_SCALE,
+      xp: 5200,
+      gold: 5200,
+      color: "#fff0a6",
+      shadow: "#704717",
+      midboss: true,
+      drop: 1,
+    },
     frostDragon: {
       name: "霜冠竜",
       hp: 7600,
@@ -828,6 +879,19 @@
       gold: 3200,
       color: "#d9f7ff",
       shadow: "#315d7a",
+      boss: true,
+      drop: 1,
+    },
+    emberDragon: {
+      name: "熾火天竜",
+      hp: 11200,
+      atk: 308,
+      def: 248,
+      speed: 28 * WORLD_SCALE,
+      xp: 9200,
+      gold: 8800,
+      color: "#ffcf5a",
+      shadow: "#8a2518",
       boss: true,
       drop: 1,
     },
@@ -877,6 +941,10 @@
     FROST_TOWER_WARDEN_REQUIREMENTS,
     FROST_DRAGON_SITE,
     CHAPTER4_REQUIREMENTS,
+    SOLAR_WARDEN_SITE,
+    SOLAR_WARDEN_REQUIREMENTS,
+    EMBER_DRAGON_SITE,
+    CHAPTER5_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,

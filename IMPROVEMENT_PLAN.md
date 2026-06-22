@@ -8,6 +8,8 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 
 Current focus:
 
+* Chapter 5 is now the active late-game arc: 黎明港 -> 日出高原 -> 日輪砲台守 -> 陽冠都市 equipment preparation -> 熾火群島 -> 熾火天竜 -> elder report.
+* Balance the intended "unprepared ranged oppression -> expensive city countermeasure -> conquered route" reversal without making the complete set mandatory.
 * Deepen the new `256x256` three-continent overworld without creating empty walkable space.
 * Preserve the organic coastline polygons and cartographic overview; never expose embedded interior mazes on the whole-world map.
 * Treat the western continent, 蒼風島, and southern cape/islands as distinct geographic and progression units.
@@ -32,6 +34,25 @@ Current focus:
 Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requested for a one-off handoff.
 
 ## Next development order
+
+### 0.5 Chapter 5 horizon-fire arc (implemented 2026-06-22)
+
+Completed:
+
+* Added 光槍兵 with a near-screen-edge telegraphed piercing sniper shot.
+* Added 陽炎術師 with three marked delayed artillery zones.
+* Added the LV38 日輪砲台守 midboss, alternating sniper and artillery pressure.
+* Turned 陽冠都市's merchant into a unique high-price armament store with rank-13 weapon/armor, rank-7 shield, a new anti-sniper accessory, and premium expedition items.
+* Added the LV42 熾火天竜 final boss with triple sniper lanes, four impact zones, rotating five-way waves, enrage, and mixed reinforcements.
+* Added Chapter 5 seal/cache gates, objectives, guidance, rewards, elder report, ending overlay, save migration, world-map boss marker, and VM regression coverage.
+
+Next balance/content order:
+
+1. Manual playtest from a Chapter 4 clear save: confirm first highland contact is frightening but escapable, and measure average gold on arrival.
+2. Tune the 42,000G / 48,000G / 36,000G / 32,000G metropolis prices so at least one defensive countermeasure is attainable after the midboss without erasing the need to fight locally.
+3. Validate warning readability and dodge windows for 820ms sniper, 1120ms artillery, and the three 熾火天竜 pattern families at desktop and mobile-like viewports.
+4. Deepen 陽冠都市 with specialist services and optional urban activities only after the Chapter 5 combat/economy loop is manually confirmed.
+5. Add a distinct interior on 日出大陸 so the new chapter has one longer enclosed expedition as well as open-world highland pressure.
 
 ### 0. Playtest-driven priority reset (2026-06-21)
 

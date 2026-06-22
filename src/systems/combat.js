@@ -77,6 +77,7 @@
     if (player.weapon === 10 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "eclipseMage")) mult += 1.25;
     if (player.weapon === 11 && (monster.type === "obsidianGolem" || monster.type === "obsidianCrawler" || monster.type === "trapFlower" || monster.type === "voidDragon" || monster.type === "voidWraith")) mult += 1.45;
     if (player.weapon === 12 && (monster.type === "frostMoth" || monster.type === "frostBeast" || monster.type === "frostGolem" || monster.type === "frostBeacon" || monster.type === "towerWarden" || monster.type === "frostDragon")) mult += 1.55;
+    if (player.weapon === 13 && (monster.type === "sunLancer" || monster.type === "mirageCaster" || monster.type === "solarWarden" || monster.type === "emberDragon")) mult += 1.75;
     if (monster.type === "shieldSoldier") {
       if (behind) mult += 0.75;
       else if (flanking) mult += 0.35;
@@ -98,12 +99,14 @@
     if (player.armor === 10 && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void" || source === "eclipse" || source === "projectile")) mult *= 0.42;
     if (player.armor === 11 && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || monster?.type === "trapFlower" || monster?.type === "voidDragon" || source === "obsidian" || source === "void" || source === "trap" || source === "projectile" || source === "contact")) mult *= 0.36;
     if (player.armor === 12 && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostBeacon" || monster?.type === "towerWarden" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.34;
+    if (player.armor === 13 && (monster?.type === "sunLancer" || monster?.type === "mirageCaster" || monster?.type === "solarWarden" || monster?.type === "emberDragon" || source === "solar")) mult *= 0.3;
     if (source === "contact" && pDot > 0.42 && player.shield > 0) {
       const shieldMult = shieldGuard[player.shield] || 1;
       mult *= shieldMult;
       if (player.shieldRune === "bastion") mult *= 0.82;
       if (monster?.type === "shieldSoldier" && pDot > 0.58) mult *= 0.86;
     }
+    if (player.shield === 7 && (source === "solar" || source === "projectile" || monster?.type === "sunLancer" || monster?.type === "solarWarden" || monster?.type === "emberDragon")) mult *= 0.62;
     if (activeAccessory(player, "aegis", "aegisCharm") && (source === "fire" || source === "projectile")) mult *= 0.82;
     if (activeAccessory(player, "mine", "mineCharm") && (monster?.type === "bubbler" || monster?.type === "trapFlower" || source === "bubble" || source === "trap")) mult *= 0.72;
     if (activeAccessory(player, "mist", "mistCharm") && (monster?.type === "mistLancer" || monster?.type === "mistKeeper" || monster?.type === "summoner" || monster?.type === "trapFlower" || source === "magic" || source === "trap" || source === "projectile")) mult *= 0.74;
@@ -112,6 +115,7 @@
     if (activeAccessory(player, "obsidian", "obsidianCharm") && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || source === "obsidian" || (source === "contact" && pDot > 0.3))) mult *= 0.68;
     if (activeAccessory(player, "deepLamp", "deepLampCharm") && (monster?.type === "vaultLeech" || monster?.type === "cryptWarden")) mult *= 0.7;
     if (activeAccessory(player, "frost", "frostCharm") && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostBeacon" || monster?.type === "towerWarden" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.68;
+    if (activeAccessory(player, "horizon", "horizonCharm") && (monster?.type === "sunLancer" || monster?.type === "mirageCaster" || monster?.type === "solarWarden" || monster?.type === "emberDragon" || source === "solar" || source === "projectile")) mult *= 0.58;
     return mult;
   }
 
@@ -132,6 +136,7 @@
       + (activeAccessory(player, "obsidian", "obsidianCharm") ? 8 : 0);
     if (activeAccessory(player, "deepLamp", "deepLampCharm")) player.staminaMax += 6;
     if (activeAccessory(player, "frost", "frostCharm")) player.staminaMax += 10;
+    if (activeAccessory(player, "horizon", "horizonCharm")) player.staminaMax += 12;
     player.stamina = Math.min(player.stamina, player.staminaMax);
   }
 

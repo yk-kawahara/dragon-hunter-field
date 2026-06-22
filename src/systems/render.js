@@ -41,6 +41,8 @@
     FROST_GOLEM_REQUIREMENTS,
     FROST_DRAGON_SITE,
     CHAPTER4_REQUIREMENTS,
+    EMBER_DRAGON_SITE,
+    CHAPTER5_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -362,6 +364,7 @@ function drawWorldMapOverlay() {
     { site: ECLIPSE_DRAGON_SITE, defeated: state.eclipseDragonDefeated },
     { site: VOID_DRAGON_SITE, defeated: state.voidDragonDefeated },
     { site: FROST_DRAGON_SITE, defeated: state.frostDragonDefeated },
+    { site: EMBER_DRAGON_SITE, defeated: state.emberDragonDefeated },
   ];
   for (const boss of bosses) {
     drawWorldMapMarker(mapX, mapY, mapScale, boss.site.x, boss.site.y, boss.defeated ? "#69727c" : "#ff5f5f", 2);
@@ -1350,6 +1353,14 @@ function drawDiscoveries(cam) {
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(sx + 8, sy + 1, 2, 2);
       if (!found) drawGlint(sx + 10, sy + 3, "#d9f7ff");
+    } else if (discovery.kind === "sunriseSeal") {
+      ctx.fillStyle = found ? "#9b8150" : "#fff0a6";
+      ctx.fillRect(sx + 3, sy + 2, 11, 13);
+      ctx.fillStyle = found ? "#5d5138" : "#ff9f3f";
+      ctx.fillRect(sx + 6, sy + 4, 4, 8);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(sx + 8, sy + 1, 2, 2);
+      if (!found) drawGlint(sx + 10, sy + 3, "#fff0a6");
     } else if (discovery.kind === "obsidianWaystone") {
       ctx.fillStyle = found ? "#3d465a" : "#111522";
       ctx.fillRect(sx + 4, sy + 3, 8, 12);
@@ -1791,7 +1802,7 @@ function drawActorShadow(sx, sy, w) {
 }
 
 function drawWeapon(sx, sy) {
-  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166", "#8dd7ff", "#ff9a3d", "#f8fbff", "#b990ff", "#e36dff", "#d8d8ff", "#b8c0cc"];
+  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166", "#8dd7ff", "#ff9a3d", "#f8fbff", "#b990ff", "#e36dff", "#d8d8ff", "#b8c0cc", "#d9f7ff", "#fff0a6"];
   ctx.fillStyle = colors[player.weapon] || "#ffd166";
   if (player.dir === "up") ctx.fillRect(sx + 5, sy - 4, 2, 7);
   if (player.dir === "down") ctx.fillRect(sx + 5, sy + 10, 2, 7);
@@ -1809,7 +1820,7 @@ function drawMonster(monster, sx, sy) {
     ctx.strokeStyle = "#ffef8a";
     ctx.strokeRect(sx - 2, sy - 2, spriteW + 4, spriteH + 4);
   }
-  if (monster.type === "dragon" || monster.type === "eclipseDragon" || monster.type === "voidDragon" || monster.type === "frostDragon") {
+  if (monster.type === "dragon" || monster.type === "eclipseDragon" || monster.type === "voidDragon" || monster.type === "frostDragon" || monster.type === "emberDragon") {
     drawDragon(monster, sx, sy);
     return;
   }
@@ -2149,7 +2160,10 @@ function drawDragon(monster, sx, sy) {
   const eclipse = monster.type === "eclipseDragon";
   const voidBoss = monster.type === "voidDragon";
   const frostBoss = monster.type === "frostDragon";
-  ctx.fillStyle = frostBoss
+  const emberBoss = monster.type === "emberDragon";
+  ctx.fillStyle = emberBoss
+    ? (monster.enraged ? "rgba(255, 207, 90, 0.52)" : "rgba(255, 125, 46, 0.32)")
+    : frostBoss
     ? (monster.enraged ? "rgba(217, 247, 255, 0.48)" : "rgba(141, 215, 255, 0.3)")
     : voidBoss
     ? (monster.enraged ? "rgba(109, 228, 255, 0.36)" : "rgba(216, 216, 255, 0.22)")
@@ -2166,16 +2180,16 @@ function drawDragon(monster, sx, sy) {
   ctx.fillRect(sx + 18, sy + 7, 8, 7);
   ctx.fillRect(sx + 5, sy + 4, 13, 14);
   ctx.fillRect(sx + 16, sy + 8, 8, 8);
-  ctx.fillStyle = frostBoss ? "#b9f4ff" : voidBoss ? "#d8d8ff" : eclipse ? "#7f8cff" : "#ff8c3e";
+  ctx.fillStyle = emberBoss ? "#fff0a6" : frostBoss ? "#b9f4ff" : voidBoss ? "#d8d8ff" : eclipse ? "#7f8cff" : "#ff8c3e";
   ctx.fillRect(sx + 1, sy + 6, 7, 6);
   ctx.fillRect(sx + 10, sy, 3, 5);
   ctx.fillRect(sx + 16, sy, 3, 5);
-  ctx.fillStyle = frostBoss ? "#ffffff" : voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ffd166";
+  ctx.fillStyle = emberBoss ? "#ff7a2f" : frostBoss ? "#ffffff" : voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ffd166";
   ctx.fillRect(sx + 11, sy - 2, 2, 3);
   ctx.fillRect(sx + 17, sy - 2, 2, 3);
   ctx.fillRect(sx + 9, sy + 9, 2, 2);
   ctx.fillRect(sx + 13, sy + 12, 2, 2);
-  ctx.fillStyle = frostBoss ? "#315d7a" : voidBoss ? "#ffffff" : eclipse ? "#fff2ff" : "#fff2a6";
+  ctx.fillStyle = emberBoss ? "#ffffff" : frostBoss ? "#315d7a" : voidBoss ? "#ffffff" : eclipse ? "#fff2ff" : "#fff2a6";
   ctx.fillRect(sx + 18, sy + 10, 2, 2);
   ctx.fillStyle = "#211010";
   ctx.fillRect(sx + 21, sy + 11, 2, 1);
@@ -2430,9 +2444,9 @@ function drawEndingOverlay() {
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.font = "16px monospace";
-  const title = state.chapter4Reported ? "CHAPTER 4 CLEAR" : state.chapter3Reported ? "CHAPTER 3 CLEAR" : state.chapter2Reported ? "CHAPTER 2 CLEAR" : "QUEST CLEAR";
-  const line1 = state.chapter4Reported ? "霜冠竜は封じられた" : state.chapter3Reported ? "黒陽竜は封じられた" : state.chapter2Reported ? "月蝕竜は封じられた" : "赤竜は封じられた";
-  const line2 = state.chapter4Reported ? "白銀宿から新たな国への道が続く" : state.chapter3Reported ? "黒門砦からさらに遠征路が開く" : state.chapter2Reported ? "月見砦の灯がさらに南を照らす" : "村に朝が戻り 旅は語り継がれる";
+  const title = state.chapter5Reported ? "CHAPTER 5 CLEAR" : state.chapter4Reported ? "CHAPTER 4 CLEAR" : state.chapter3Reported ? "CHAPTER 3 CLEAR" : state.chapter2Reported ? "CHAPTER 2 CLEAR" : "QUEST CLEAR";
+  const line1 = state.chapter5Reported ? "熾火天竜は封じられた" : state.chapter4Reported ? "霜冠竜は封じられた" : state.chapter3Reported ? "黒陽竜は封じられた" : state.chapter2Reported ? "月蝕竜は封じられた" : "赤竜は封じられた";
+  const line2 = state.chapter5Reported ? "陽冠都市と西方の村を結ぶ航路が開く" : state.chapter4Reported ? "白銀宿から新たな国への道が続く" : state.chapter3Reported ? "黒門砦からさらに遠征路が開く" : state.chapter2Reported ? "月見砦の灯がさらに南を照らす" : "村に朝が戻り 旅は語り継がれる";
   ctx.fillText(title, W / 2, 52);
   ctx.font = "8px monospace";
   ctx.fillStyle = "#fff2a6";

@@ -24,6 +24,8 @@
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
     CHAPTER4_REQUIREMENTS,
+    CHAPTER5_REQUIREMENTS,
+    SOLAR_WARDEN_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -247,13 +249,20 @@
   function handleNpc(context, npc) {
     const { state, player, say, guardianReady } = requireNpcContext(context);
     if (npc.type === "elder") {
-      if (state.frostDragonDefeated && !state.chapter4Reported) {
+      if (state.emberDragonDefeated && !state.chapter5Reported) {
+        state.chapter5Reported = true;
+        state.chapter5Victory = false;
+        state.clearPanelOpen = true;
+        say("長老「地平線を射抜く熾火天竜まで封じたか。第5章の大遠征は成った」", 6400);
+      } else if (state.chapter5Reported) {
+        say("長老「陽冠都市の光は、我らの村まで新しい交易路を照らしている」", 4800);
+      } else if (state.frostDragonDefeated && !state.chapter4Reported) {
         state.chapter4Reported = true;
         state.chapter4Victory = false;
         state.clearPanelOpen = true;
         say("長老「霜冠竜を越えたか。第4章の遠征は新たな国への道となる」", 5800);
       } else if (state.chapter4Reported) {
-        say("長老「霜境のさらに先にも、人の灯は続いている」", 4400);
+        say(`長老「外洋の黎明港から陽冠都市へ。日輪砲台守を破り、LV${CHAPTER5_REQUIREMENTS.level}で熾火群島へ向かえ」`, 5000);
       } else if (state.voidDragonDefeated && !state.chapter3Reported) {
         state.chapter3Reported = true;
         state.chapter3Victory = false;
@@ -328,6 +337,33 @@
     }
 
     if (npc.type === "merchant") {
+      if (npc.x > 240 * TILE) {
+        openShop(context, "陽冠都市・大武装商会", [
+          weaponRow(13, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+          armorRow(13, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+          shieldRow(7, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+          accessoryRow("horizon", 32000, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+          itemRow("elixir", 3, 980 + player.level * 24),
+          itemRow("tonic", 5, 560 + player.level * 18),
+          itemRow("ward", 6, 620 + player.level * 20),
+          itemRow("bomb", 5, 540 + player.level * 18),
+          itemRow("warp", 3, 760 + player.level * 20),
+        ]);
+        return;
+      }
+      if (npc.x > 198 * TILE) {
+        openShop(context, "黎明港・外洋交易所", [
+          weaponRow(12),
+          armorRow(12),
+          shieldRow(6),
+          accessoryRow("sky", 18000),
+          itemRow("elixir", 2, 620 + player.level * 18),
+          itemRow("tonic", 4, 380 + player.level * 14),
+          itemRow("ward", 5, 420 + player.level * 15),
+          itemRow("warp", 2, 520 + player.level * 16),
+        ]);
+        return;
+      }
       openShop(context, "黒市の大商館", [
         weaponRow(11, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
         armorRow(11, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
@@ -361,8 +397,11 @@
 
     if (npc.type === "guide") {
       if (npc.x > 198 * TILE) {
-        if (npc.y > 118 * TILE) say("案内人「北は黎明港、西は谷の祠、南の街道は熾火群島へ続く」", 4200);
-        else say("案内人「北回りは遺跡、西海岸は安全、中央山道は近いが最も危険だ」", 4200);
+        if (!state.solarWardenDefeated) say(`案内人「日輪砲台守は北東高原。LV${SOLAR_WARDEN_REQUIREMENTS.level}で射線を横切り、砲台を壊せ」`, 4600);
+        else if (!state.discoveries.has("sunrise-seal")) say("案内人「南街道の陽光封印碑を読め。陽冠装備は大武装商会で選べる」", 4400);
+        else if (!state.chests.has("ember-sanctum-cache")) say("案内人「熾火群島の聖域で天竜戦の補給箱を確保せよ」", 4400);
+        else if (npc.y > 118 * TILE) say(`案内人「陽冠装備を整え、LV${CHAPTER5_REQUIREMENTS.level}で南の熾火聖域へ」`, 4400);
+        else say("案内人「北回りは遺跡、西海岸は安全、中央山道は光槍兵が狙う危険な近道だ」", 4400);
       } else if (npc.x > 132 * TILE) {
         if (npc.y > 154 * TILE) say("案内人「北は蒼風港、南西の橋は群島祠、東は海岸の強敵地帯だ」", 4200);
         else say("案内人「北道は灯台、中央は峠、南道は岬砦。峠が最短だが最も危険だ」", 4200);

@@ -186,6 +186,8 @@ function respawnAtVillage() {
   if (!state.frostGolemDefeated) state.spawnedFrostGolem = false;
   if (!state.towerWardenDefeated) state.spawnedTowerWarden = false;
   if (!state.frostDragonDefeated) state.spawnedFrostDragon = false;
+  if (!state.solarWardenDefeated) state.spawnedSolarWarden = false;
+  if (!state.emberDragonDefeated) state.spawnedEmberDragon = false;
   if (!state.eclipseDragonDefeated) state.spawnedEclipseDragon = false;
   if (!state.voidDragonDefeated) state.spawnedVoidDragon = false;
   if (!state.obsidianGolemDefeated) state.spawnedObsidianGolem = false;

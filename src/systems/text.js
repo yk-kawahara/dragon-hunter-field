@@ -18,6 +18,8 @@
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
     CHAPTER4_REQUIREMENTS,
+    CHAPTER5_REQUIREMENTS,
+    SOLAR_WARDEN_REQUIREMENTS,
     OBSIDIAN_GOLEM_REQUIREMENTS,
     SMUGGLER_CAPTAIN_REQUIREMENTS,
     REGEN_SENTINEL_REQUIREMENTS,
@@ -39,6 +41,14 @@
   function objectiveText(context) {
     const { state, player } = requireTextContext(context);
     const stage = gameStage(context);
+    if (stage === "chapter5cleared") return "第5章CLEAR: 熾火天竜を封じた";
+    if (stage === "chapter5report") return "目的: 長老へ熾火天竜討伐を報告";
+    if (stage === "emberDragon") return "目的: 熾火天竜を倒す";
+    if (stage === "emberReady") return "目的: 熾火聖域の最奥へ進む";
+    if (stage === "emberSupply") return "目的: 熾火聖域の補給箱を確保";
+    if (stage === "sunriseSeal") return "目的: 日出高原南の陽光封印碑を読む";
+    if (stage === "solarWarden") return "目的: 日輪砲台守を破壊";
+    if (stage === "sunriseRoute") return `目的: 日出高原へ LV${SOLAR_WARDEN_REQUIREMENTS.level}`;
     if (stage === "chapter4cleared") return "第4章CLEAR: 霜冠竜を封じた";
     if (stage === "chapter4report") return "目的: 長老へ霜冠竜討伐を報告";
     if (stage === "frostDragon") return "目的: 霜冠竜を倒す";
@@ -76,11 +86,18 @@
   function guidanceText(context) {
     const { state, player, inTown, currentRegion, areaDangerText } = requireTextContext(context);
     if (inTown(player.x, player.y)) {
+      if (state.chapter5Victory) return "熾火天竜討伐を長老へ報告";
       if (state.chapter4Victory) return "霜冠竜討伐を長老へ報告";
       if (state.chapter3Victory) return "黒陽竜討伐を長老へ報告";
       if (state.chapter2Victory) return "月蝕竜討伐を長老へ報告";
       if (player.hp < player.hpMax) return "回復陣か薬師で立て直そう";
       const cost = nextUpgradeCost(context);
+      if (state.chapter4Reported && !state.solarWardenDefeated && player.level < SOLAR_WARDEN_REQUIREMENTS.level) return `日輪砲台守にはLV${SOLAR_WARDEN_REQUIREMENTS.level}が要る`;
+      if (state.chapter4Reported && !state.solarWardenDefeated) return "黎明港から北東高原の日輪砲台へ";
+      if (state.chapter4Reported && !state.discoveries.has("sunrise-seal")) return "陽冠都市の南街道で陽光封印碑を探す";
+      if (state.chapter4Reported && !state.chests.has("ember-sanctum-cache")) return "熾火聖域で決戦物資を確保する";
+      if (state.chapter4Reported && player.level < CHAPTER5_REQUIREMENTS.level) return `熾火天竜にはLV${CHAPTER5_REQUIREMENTS.level}が要る`;
+      if (state.chapter4Reported) return "陽冠都市で光砲対策装備を整える";
       if (state.chapter3Reported && !state.frostGolemDefeated && player.level < FROST_GOLEM_REQUIREMENTS.level) return `氷窟巨人にはLV${FROST_GOLEM_REQUIREMENTS.level}が要る`;
       if (state.chapter3Reported && !state.frostGolemDefeated) return "白銀宿の東、氷窟巨人を倒そう";
       if (state.chapter3Reported && !state.discoveries.has("frost-seal")) return "霜冠城の中庭で封印碑を探そう";
@@ -111,8 +128,12 @@
     if (region === "eastHighland") return "中央峠は近くて危険。西海岸道なら退路を取りやすい";
     if (region === "southIsles") return "南風岬砦で補給し、小島の橋と古い祠を巡ろう";
     if (region === "dawnCoast") return "黎明港を拠点に、北の山道か西海岸の迂回路を選ぼう";
-    if (region === "sunriseHighland") return "陽冠都市を目指せ。中央山道は近いが敵圧が高い";
-    if (region === "emberIsles") return "熾火群島は最深部。退路と回復品を確保して祠へ進もう";
+    if (region === "sunriseHighland" && !state.solarWardenDefeated) return "光槍兵の長い射線を横切り、北東高原の日輪砲台へ";
+    if (region === "sunriseHighland" && !state.discoveries.has("sunrise-seal")) return "陽冠都市の南街道で陽光封印碑を探そう";
+    if (region === "sunriseHighland") return "陽冠都市の高額装備で狙撃と着弾術を軽減できる";
+    if (region === "emberIsles" && !state.chests.has("ember-sanctum-cache")) return "熾火聖域の補給箱を確保して退路を作ろう";
+    if (region === "emberIsles" && player.level < CHAPTER5_REQUIREMENTS.level) return `熾火天竜にはLV${CHAPTER5_REQUIREMENTS.level}ほど欲しい`;
+    if (region === "emberIsles") return "射線・着弾円・扇状弾を見て熾火天竜へ踏み込もう";
     if (region === "frostTower2" && !state.towerWardenDefeated) return "凍気灯を先に壊し、最上階の塔守を倒そう";
     if (region === "frostTower2") return "最上階の遺物庫と昇降機を調べよう";
     if (region === "frostTower1") return "補給庫を探し、南東の階段から二階へ";
@@ -155,6 +176,8 @@
     if (stage === "report") return "村へ戻って報告";
     if (stage === "chapter2report") return "長老へ第2章の報告";
     if (stage === "chapter3report") return "長老へ第3章の報告";
+    if (stage === "chapter4report") return "長老へ第4章の報告";
+    if (stage === "chapter5report") return "長老へ第5章の報告";
     return areaDangerText(region);
   }
 
@@ -168,6 +191,14 @@
 
   function gameStage(context) {
     const { state, player, canChallengeDragon, guardianReady } = requireTextContext(context);
+    if (state.chapter5Reported) return "chapter5cleared";
+    if (state.chapter5Victory || (state.emberDragonDefeated && !state.chapter5Reported)) return "chapter5report";
+    if (state.spawnedEmberDragon) return "emberDragon";
+    if (state.chapter4Reported && state.solarWardenDefeated && state.discoveries.has("sunrise-seal") && state.chests.has("ember-sanctum-cache") && player.level >= CHAPTER5_REQUIREMENTS.level) return "emberReady";
+    if (state.chapter4Reported && state.solarWardenDefeated && state.discoveries.has("sunrise-seal") && !state.chests.has("ember-sanctum-cache")) return "emberSupply";
+    if (state.chapter4Reported && state.solarWardenDefeated && !state.discoveries.has("sunrise-seal")) return "sunriseSeal";
+    if (state.spawnedSolarWarden) return "solarWarden";
+    if (state.chapter4Reported) return "sunriseRoute";
     if (state.chapter4Reported) return "chapter4cleared";
     if (state.chapter4Victory || (state.frostDragonDefeated && !state.chapter4Reported)) return "chapter4report";
     if (state.spawnedFrostDragon) return "frostDragon";
@@ -229,6 +260,14 @@
       frostDragon: "霜冠竜戦",
       chapter4report: "第4章報告",
       chapter4cleared: "第4章クリア",
+      sunriseRoute: "日出高原遠征",
+      solarWarden: "日輪砲台戦",
+      sunriseSeal: "陽光封印",
+      emberSupply: "熾火聖域探索",
+      emberReady: "熾火天竜の聖域",
+      emberDragon: "熾火天竜戦",
+      chapter5report: "第5章報告",
+      chapter5cleared: "第5章クリア",
     };
     return names[stage] || "旅";
   }

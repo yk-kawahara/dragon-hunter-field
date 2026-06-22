@@ -61,7 +61,8 @@
     if (point.unlock === "elderReported") return Boolean(state.elderReported || state.chapter2Reported || state.chapter3Reported);
     if (point.unlock === "ashKnightDefeated") return Boolean(state.ashKnightDefeated || state.chapter2Reported || state.chapter3Reported);
     if (point.unlock === "chapter2Reported") return Boolean(state.chapter2Reported || state.chapter3Reported);
-    if (point.unlock === "chapter3Reported") return Boolean(state.chapter3Reported || state.chapter4Reported);
+    if (point.unlock === "chapter3Reported") return Boolean(state.chapter3Reported || state.chapter4Reported || state.chapter5Reported);
+    if (point.unlock === "chapter4Reported") return Boolean(state.chapter4Reported || state.chapter5Reported);
     if (point.unlock === "blackMarket") return Boolean(state.chapter2Reported && (state.chests?.has?.("black-fort-armory") || state.obsidianGolemDefeated || state.chapter3Reported));
     return false;
   }
@@ -317,7 +318,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -542,6 +543,24 @@
       say("霜見塔の最上階で天駆けの徽章を得た");
       return true;
     }
+    if (reward === "solarSupply") {
+      player.gold += 6800;
+      addItem(player, "elixir", 2);
+      addItem(player, "tonic", 3);
+      addItem(player, "ward", 4);
+      addItem(player, "warp", 2);
+      say("日輪砲台守の金庫から6800Gと陽冠都市の決戦物資を得た");
+      return true;
+    }
+    if (reward === "emberSupply") {
+      player.gold += 4200;
+      addItem(player, "elixir", 3);
+      addItem(player, "tonic", 3);
+      addItem(player, "ward", 5);
+      addItem(player, "warp", 2);
+      say("熾火聖域の秘庫から天竜戦用の物資を得た");
+      return true;
+    }
     if (reward === "shieldSupply") {
       player.gold += 520;
       grantShieldAtLeast(context, 3, "星盾を手に入れた。盾兵や魔法道を正面から受けやすい");
@@ -692,6 +711,16 @@
       player.wards = Math.min(9, player.wards + 3);
       burst(x, y, "#d9f7ff", 26);
       say("霜冠の封印碑を読んだ。氷窟巨人を倒せば霜冠竜への道が開く");
+      return;
+    }
+    if (discovery.kind === "sunriseSeal") {
+      player.gold += 1800;
+      player.stamina = player.staminaMax;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.wards = Math.min(9, player.wards + 4);
+      burst(x, y, "#fff0a6", 28);
+      say("陽光の封印碑を読んだ。日輪砲台守を破れば熾火天竜への道が開く");
       return;
     }
     if (discovery.kind === "frostTowerHint") {

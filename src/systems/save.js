@@ -84,6 +84,7 @@
         deepLampCharm: player.deepLampCharm,
         frostCharm: player.frostCharm,
         skyCharm: player.skyCharm,
+        horizonCharm: player.horizonCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -107,6 +108,10 @@
       towerWardenDefeated: state.towerWardenDefeated,
       spawnedFrostDragon: state.spawnedFrostDragon,
       frostDragonDefeated: state.frostDragonDefeated,
+      spawnedSolarWarden: state.spawnedSolarWarden,
+      solarWardenDefeated: state.solarWardenDefeated,
+      spawnedEmberDragon: state.spawnedEmberDragon,
+      emberDragonDefeated: state.emberDragonDefeated,
       spawnedEclipseDragon: state.spawnedEclipseDragon,
       eclipseDragonDefeated: state.eclipseDragonDefeated,
       spawnedVoidDragon: state.spawnedVoidDragon,
@@ -120,6 +125,8 @@
       chapter3Reported: state.chapter3Reported,
       chapter4Victory: state.chapter4Victory,
       chapter4Reported: state.chapter4Reported,
+      chapter5Victory: state.chapter5Victory,
+      chapter5Reported: state.chapter5Reported,
       chests: Array.from(state.chests),
       discoveries: Array.from(state.discoveries),
     };
@@ -157,6 +164,7 @@
       player.deepLampCharm = Boolean(player.deepLampCharm);
       player.frostCharm = Boolean(player.frostCharm);
       player.skyCharm = Boolean(player.skyCharm);
+      player.horizonCharm = Boolean(player.horizonCharm);
       normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
@@ -180,6 +188,8 @@
       state.frostGolemDefeated = Boolean(data.frostGolemDefeated);
       state.towerWardenDefeated = Boolean(data.towerWardenDefeated);
       state.frostDragonDefeated = Boolean(data.frostDragonDefeated);
+      state.solarWardenDefeated = Boolean(data.solarWardenDefeated);
+      state.emberDragonDefeated = Boolean(data.emberDragonDefeated);
       state.eclipseDragonDefeated = Boolean(data.eclipseDragonDefeated);
       state.voidDragonDefeated = Boolean(data.voidDragonDefeated);
       state.obsidianGolemDefeated = Boolean(data.obsidianGolemDefeated);
@@ -194,6 +204,8 @@
       state.spawnedFrostGolem = state.frostGolemDefeated ? Boolean(data.spawnedFrostGolem) : false;
       state.spawnedTowerWarden = state.towerWardenDefeated ? Boolean(data.spawnedTowerWarden) : false;
       state.spawnedFrostDragon = state.frostDragonDefeated ? Boolean(data.spawnedFrostDragon) : false;
+      state.spawnedSolarWarden = state.solarWardenDefeated ? Boolean(data.spawnedSolarWarden) : false;
+      state.spawnedEmberDragon = state.emberDragonDefeated ? Boolean(data.spawnedEmberDragon) : false;
       state.spawnedEclipseDragon = state.eclipseDragonDefeated ? Boolean(data.spawnedEclipseDragon) : false;
       state.spawnedVoidDragon = state.voidDragonDefeated ? Boolean(data.spawnedVoidDragon) : false;
       state.spawnedObsidianGolem = state.obsidianGolemDefeated ? Boolean(data.spawnedObsidianGolem) : false;
@@ -204,6 +216,8 @@
       state.chapter3Victory = Boolean(data.voidDragonDefeated) && !state.chapter3Reported;
       state.chapter4Reported = Boolean(data.chapter4Reported);
       state.chapter4Victory = Boolean(data.frostDragonDefeated) && !state.chapter4Reported;
+      state.chapter5Reported = Boolean(data.chapter5Reported);
+      state.chapter5Victory = Boolean(data.emberDragonDefeated) && !state.chapter5Reported;
       state.clearPanelOpen = false;
       state.gameOver = false;
       state.inventoryOpen = false;
@@ -268,6 +282,7 @@
       deepLampCharm: false,
       frostCharm: false,
       skyCharm: false,
+      horizonCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,
@@ -313,6 +328,10 @@
     state.towerWardenDefeated = false;
     state.spawnedFrostDragon = false;
     state.frostDragonDefeated = false;
+    state.spawnedSolarWarden = false;
+    state.solarWardenDefeated = false;
+    state.spawnedEmberDragon = false;
+    state.emberDragonDefeated = false;
     state.spawnedEclipseDragon = false;
     state.eclipseDragonDefeated = false;
     state.spawnedVoidDragon = false;
@@ -326,6 +345,8 @@
     state.chapter3Reported = false;
     state.chapter4Victory = false;
     state.chapter4Reported = false;
+    state.chapter5Victory = false;
+    state.chapter5Reported = false;
     state.clearPanelOpen = false;
     state.gameOver = false;
     state.shopOpen = false;

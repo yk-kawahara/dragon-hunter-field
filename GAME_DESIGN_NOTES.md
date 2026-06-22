@@ -79,6 +79,34 @@ Current target route:
 
 Ideal feeling: **"I survived farther because I prepared better."**
 
+## Chapter 5 role: the horizon-fire expedition
+
+Chapter 5 begins after the Frost Crown Dragon report and uses the eastern continent as a high-level survival-range test.
+
+Progression:
+
+1. Cross the outer sea and establish safety at 黎明港.
+2. Enter 日出高原, where 光槍兵 can fire piercing shots from near the edge of the visible field and 陽炎術師 marks several delayed impact zones.
+3. Reach and defeat the LV38 日輪砲台守, which alternates sniper lanes and artillery zones.
+4. Enter the super-city 陽冠都市 and spend accumulated late-game gold on expensive countermeasure gear.
+5. Read the 陽光封印碑, secure the 熾火聖域 expedition cache, and reach LV42.
+6. Cross 熾火群島 and defeat 熾火天竜, then return to the elder for the Chapter 5 ending.
+
+The intended reversal is explicit: entering the highland unprepared should feel oppressive, while the same sniper/artillery pressure becomes readable and survivable after buying city gear.
+
+Chapter 5 countermeasure set:
+
+* `暁光の長槍`: long, fast lunging thrust and strong damage against the Chapter 5 enemy family.
+* `陽冠の光鎧`: major reduction to solar sniper, artillery, and boss projectile damage.
+* `日輪大盾`: strong frontal protection and additional ranged/solar reduction.
+* `遠見の護符`: accessory choice that reduces sniper, light-cannon, artillery, and ordinary projectile pressure.
+
+Chapter 5 boss identity:
+
+* 熾火天竜 is not an HP-only boss. It rotates between triple piercing sniper lines, four marked artillery impacts, and multi-wave wide fans.
+* Below half HP it gains speed/power, then calls a 光槍兵 and 陽炎術師 so target priority and arena movement remain relevant.
+* Boss minimum damage preserves danger even with the complete countermeasure set.
+
 ## Volume expansion rules
 
 Future work should grow the game into a larger RPG.

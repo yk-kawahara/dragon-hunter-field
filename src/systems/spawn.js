@@ -42,6 +42,10 @@
     FROST_TOWER_WARDEN_REQUIREMENTS,
     FROST_DRAGON_SITE,
     CHAPTER4_REQUIREMENTS,
+    SOLAR_WARDEN_SITE,
+    SOLAR_WARDEN_REQUIREMENTS,
+    EMBER_DRAGON_SITE,
+    CHAPTER5_REQUIREMENTS,
     monsterTypes,
   } = definitions;
 
@@ -114,6 +118,11 @@
       patternWaves: 0,
       patternIndex: 0,
       patternAim: { x: 0, y: 1 },
+      specialState: "idle",
+      specialWindup: 0,
+      specialIndex: 0,
+      specialTargets: [],
+      specialAim: { x: 0, y: 1 },
       summonCooldown: typeName === "summoner" ? rand(1800, 3200) : 0,
       summonAnnounced: false,
       trapTimer: 0,
@@ -481,6 +490,23 @@
       && player.level >= CHAPTER4_REQUIREMENTS.level;
   }
 
+  function solarWardenReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.solarWardenDefeated
+      && state.chapter4Reported
+      && player.level >= SOLAR_WARDEN_REQUIREMENTS.level;
+  }
+
+  function emberDragonReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.emberDragonDefeated
+      && state.chapter4Reported
+      && state.solarWardenDefeated
+      && state.discoveries.has("sunrise-seal")
+      && state.chests.has("ember-sanctum-cache")
+      && player.level >= CHAPTER5_REQUIREMENTS.level;
+  }
+
   function playerNearGuardianSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -585,6 +611,22 @@
     return Math.hypot(pc.x - dx, pc.y - dy) < worldPx(112);
   }
 
+  function playerNearSolarWardenSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const sx = (SOLAR_WARDEN_SITE.x + 0.5) * TILE;
+    const sy = (SOLAR_WARDEN_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - sx, pc.y - sy) < worldPx(118);
+  }
+
+  function playerNearEmberDragonSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const ex = (EMBER_DRAGON_SITE.x + 0.5) * TILE;
+    const ey = (EMBER_DRAGON_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - ex, pc.y - ey) < worldPx(124);
+  }
+
   function updateStoryEvents(context) {
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver) return;
@@ -628,6 +670,12 @@
     if (state.spawnedFrostDragon && !state.frostDragonDefeated && !hasLiveMonster(context, "frostDragon")) {
       state.spawnedFrostDragon = false;
     }
+    if (state.spawnedSolarWarden && !state.solarWardenDefeated && !hasLiveMonster(context, "solarWarden")) {
+      state.spawnedSolarWarden = false;
+    }
+    if (state.spawnedEmberDragon && !state.emberDragonDefeated && !hasLiveMonster(context, "emberDragon")) {
+      state.spawnedEmberDragon = false;
+    }
 
     if (smugglerCaptainReady(context) && !state.spawnedSmugglerCaptain && playerNearSmugglerCaptainSite(context)) {
       state.spawnedSmugglerCaptain = true;
@@ -669,6 +717,18 @@
       state.spawnedFrostDragon = true;
       spawnMonster(context, "frostDragon", FROST_DRAGON_SITE.x * TILE, FROST_DRAGON_SITE.y * TILE);
       say("霜冠城の奥で霜冠竜が目覚めた!", 3600);
+    }
+
+    if (solarWardenReady(context) && !state.spawnedSolarWarden && playerNearSolarWardenSite(context)) {
+      state.spawnedSolarWarden = true;
+      spawnMonster(context, "solarWarden", SOLAR_WARDEN_SITE.x * TILE, SOLAR_WARDEN_SITE.y * TILE);
+      say("日出高原の砲台から日輪砲台守が起動した!", 3600);
+    }
+
+    if (emberDragonReady(context) && !state.spawnedEmberDragon && playerNearEmberDragonSite(context)) {
+      state.spawnedEmberDragon = true;
+      spawnMonster(context, "emberDragon", EMBER_DRAGON_SITE.x * TILE, EMBER_DRAGON_SITE.y * TILE);
+      say("熾火聖域の空を裂いて熾火天竜が降り立った!", 4000);
     }
 
     if (ashKnightReady(context) && !state.spawnedAshKnight && playerNearAshKnightSite(context)) {
@@ -737,6 +797,8 @@
     frostGolemReady,
     towerWardenReady,
     frostDragonReady,
+    solarWardenReady,
+    emberDragonReady,
     hasLiveMonster,
     playerNearGuardianSite,
     playerNearWardenSite,
@@ -751,6 +813,8 @@
     playerNearFrostGolemSite,
     playerNearTowerWardenSite,
     playerNearFrostDragonSite,
+    playerNearSolarWardenSite,
+    playerNearEmberDragonSite,
     updateStoryEvents,
   };
 })();
