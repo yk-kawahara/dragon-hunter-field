@@ -8,7 +8,9 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 
 Current focus:
 
-* Chapter 5 is now the active late-game arc: 黎明港 -> 日出高原 -> 日輪砲台守 -> 陽冠都市 equipment preparation -> 日鏡塔 -> 反射水晶 -> 熾火群島 -> 熾火天竜 -> elder report.
+* Chapters 1-5 should be understandable without coordinate knowledge; objective/guidance text, town guides, discoveries, and shop roles must point to the next survival-range step.
+* Chapter 2 is now a thicker route: 灰道の宿場 -> 古塔/灰騎士 -> 月影廃墟 relic -> 月の書庫/番人 -> 月蝕遺物庫 -> 月蝕城 seal -> 月蝕竜 -> elder report.
+* Chapter 5 is the active late-game arc: 黎明港 -> 日出高原 -> 日輪砲台守 -> 陽冠都市 equipment/supply/accessory preparation -> 日鏡塔 -> 反射水晶 -> 熾火群島 -> 熾火天竜 -> elder report.
 * Balance the intended "unprepared ranged oppression -> expensive city countermeasure -> conquered route" reversal without making the complete set mandatory.
 * Deepen the new `256x256` three-continent overworld without creating empty walkable space.
 * Preserve the organic coastline polygons and cartographic overview; never expose embedded interior mazes on the whole-world map.
@@ -34,6 +36,24 @@ Current focus:
 Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requested for a one-off handoff.
 
 ## Next development order
+
+### 0.5c Chapter guidance and Suncrest metropolis pass (implemented 2026-06-26)
+
+Completed:
+
+* Added 月の書庫 as a Chapter 2 portal-linked interior from 月見砦 so the chapter has a real dungeon step between 月影廃墟 and 月蝕城.
+* Added `月書庫の番人` as a LV18 midboss and made 月蝕竜 require the new reliquary reward, not only the old moon relic and seal.
+* Added Moon Archive supply/reliquary rewards, discovery hints, region spawn identity, save/load/reset state, guarded chest behavior, story-flow coverage, and map/overview coverage.
+* Split 陽冠都市's city economy into 大武装商会, 遠征薬舗, and 旅装ギルド; added more Suncrest NPCs, guide text, city caches, and city-specific resident dialogue.
+* Updated 1-5 chapter objective/guidance flow where the new steps could otherwise be missed.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Next high-value order:
+
+1. Manual playtest Chapter 2 from Red Dragon report through 月蝕竜: check whether LV18/LV20 pacing, Moon Archive density, and reliquary reward feel like a good extra expedition rather than padding.
+2. Manual playtest Chapter 5 from Chapter 4 report through 熾火天竜: check Suncrest gold economy, whether at least one countermeasure purchase feels naturally affordable, and whether the new city shops are understandable in the field UI.
+3. Add one compact side route or optional mini-dungeon to Chapter 1 or Chapter 3 only if playtest still says those routes lack memorable volume.
+4. Avoid adding another world-size expansion until the current Chapter 2/5 route density and city utility are confirmed in real browser play.
 
 ### 0.5b Chapter 5 quality/volume pass (implemented 2026-06-25)
 

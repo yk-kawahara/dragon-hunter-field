@@ -15,6 +15,7 @@
     BOSS_REQUIREMENTS,
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_REQUIREMENTS,
+    MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
     CHAPTER4_REQUIREMENTS,
@@ -73,6 +74,10 @@
     if (stage === "eclipse") return "目的: 月蝕竜を倒す";
     if (stage === "eclipseReady") return "目的: 月蝕城の奥へ進む";
     if (stage === "eclipseSeal") return "目的: 月蝕城の封印碑を探す";
+    if (stage === "moonArchiveReward") return "目的: 月の書庫の遺物庫を開ける";
+    if (stage === "moonArchiveWarden") return "目的: 月の書庫の番人を倒す";
+    if (stage === "moonArchive") return `目的: 月見砦東の月の書庫へ LV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}`;
+    if (stage === "moonRelic") return "目的: 月影廃墟で月影遺物を探す";
     if (stage === "moonRoute") return `目的: 月見砦と月蝕城へ LV${CHAPTER2_REQUIREMENTS.level}`;
     if (stage === "postDragon") return "目的: 灰道の宿場から古塔へ";
     if (stage === "cleared") return "第1章CLEAR: 旅は続く";
@@ -117,6 +122,10 @@
       if (state.chapter2Reported && !state.obsidianGolemDefeated) return "黒市の東、黒曜洞の巨人を倒そう";
       if (state.chapter2Reported && player.level < CHAPTER3_REQUIREMENTS.level) return `第3章大ボスにはLV${CHAPTER3_REQUIREMENTS.level}が要る`;
       if (state.chapter2Reported) return "黒門砦で黒陽装備を整えよう";
+      if (state.elderReported && state.ashKnightDefeated && !state.chests.has("moon-ruin-cache")) return "月影廃墟で月影遺物を探す";
+      if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.archiveWardenDefeated && player.level < MOON_ARCHIVE_WARDEN_REQUIREMENTS.level) return `月の書庫の番人にはLV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}が要る`;
+      if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.archiveWardenDefeated) return "月見砦の東、月の書庫へ";
+      if (state.elderReported && state.archiveWardenDefeated && !state.chests.has("moon-archive-reliquary")) return "月の書庫の奥で遺物庫を開ける";
       if (state.elderReported && state.ashKnightDefeated && !state.discoveries.has("eclipse-seal")) return "月見砦の南西で封印碑を探す";
       if (state.elderReported && state.ashKnightDefeated && player.level < CHAPTER2_REQUIREMENTS.level) return `第2章大ボスにはLV${CHAPTER2_REQUIREMENTS.level}が要る`;
       if (state.elderReported && state.ashKnightDefeated) return "月見砦で月蝕装備を整えよう";
@@ -157,6 +166,10 @@
     if (region === "frostCitadel") return "霜冠竜の氷弾は白銀装備と霜心で軽くなる";
     if (region === "frost") return "白銀宿で回復し、本道か南の氷窟道を選ぼう";
     if (region === "undercity" && !state.chapter2Reported) return "黒市地下墓所は終盤級。無理なら入口へ戻ろう";
+    if (region === "moonArchive" && !state.archiveWardenDefeated && player.level < MOON_ARCHIVE_WARDEN_REQUIREMENTS.level) return `月の書庫はLV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}級。無理なら月見砦へ戻ろう`;
+    if (region === "moonArchive" && !state.archiveWardenDefeated) return "召喚士を先に倒し、奥の月書庫の番人へ進もう";
+    if (region === "moonArchive" && !state.chests.has("moon-archive-reliquary")) return "番人の奥の遺物庫で月蝕の指輪を取ろう";
+    if (region === "moonArchive") return "月蝕の備えを整え、月見砦南西の封印碑へ戻ろう";
     if (region === "undercity" && !state.cryptWardenDefeated && player.level < CRYPT_WARDEN_REQUIREMENTS.level) return `墓所の番人にはLV${CRYPT_WARDEN_REQUIREMENTS.level}ほど欲しい`;
     if (region === "undercity" && !state.cryptWardenDefeated) return "吸命鬼を避け、最奥の墓所番人を倒そう";
     if (region === "undercity") return "深層灯の護符は鈍足と薬草運用を改善する";
@@ -176,7 +189,8 @@
     if (state.wardenDefeated && !state.ashKnightDefeated && region === "ash") return "古塔は南。LV14で灰騎士に挑む";
     if (state.wardenDefeated && !state.ashKnightDefeated && region === "tower") return "古塔の灰騎士を探せ";
     if (state.ashKnightDefeated && region === "tower") return "さらに南の月影廃墟へ進める";
-    if (region === "moon") return "月影廃墟の南に月見砦がある";
+    if (region === "moon" && !state.chests.has("moon-ruin-cache")) return "月影廃墟の星遺物を探し、月見砦で補給しよう";
+    if (region === "moon") return "月影廃墟の南に月見砦、東に月の書庫がある";
     if (player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level && !state.wardenDefeated) return "南東の番人の気配が近い";
     if (stage === "scales") return player.armor === 0 ? "痛ければ村で防具を買おう" : "外で鱗とゴールドを集めよう";
     if (stage === "ruin") return "北森で守護者の紋章を探す";
@@ -229,7 +243,11 @@
     if (state.chapter2Reported) return "voidRoute";
     if (state.chapter2Victory || (state.eclipseDragonDefeated && !state.chapter2Reported)) return "chapter2report";
     if (state.spawnedEclipseDragon) return "eclipse";
-    if (state.elderReported && state.ashKnightDefeated && state.discoveries.has("eclipse-seal") && player.level >= CHAPTER2_REQUIREMENTS.level) return "eclipseReady";
+    if (state.elderReported && state.ashKnightDefeated && state.archiveWardenDefeated && state.chests.has("moon-archive-reliquary") && state.discoveries.has("eclipse-seal") && player.level >= CHAPTER2_REQUIREMENTS.level) return "eclipseReady";
+    if (state.spawnedArchiveWarden) return "moonArchiveWarden";
+    if (state.elderReported && state.ashKnightDefeated && state.archiveWardenDefeated && !state.chests.has("moon-archive-reliquary")) return "moonArchiveReward";
+    if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.archiveWardenDefeated) return "moonArchive";
+    if (state.elderReported && state.ashKnightDefeated && !state.chests.has("moon-ruin-cache")) return "moonRelic";
     if (state.elderReported && state.ashKnightDefeated && !state.discoveries.has("eclipse-seal")) return "eclipseSeal";
     if (state.elderReported && state.ashKnightDefeated) return "moonRoute";
     if (state.elderReported) return "postDragon";
@@ -254,6 +272,10 @@
       cleared: "第1章クリア",
       postDragon: "第2章開始",
       moonRoute: "月影遠征",
+      moonRelic: "月影遺物",
+      moonArchive: "月の書庫",
+      moonArchiveWarden: "書庫番戦",
+      moonArchiveReward: "月蝕遺物庫",
       eclipseSeal: "月蝕封印",
       eclipseReady: "月蝕城",
       eclipse: "月蝕竜戦",

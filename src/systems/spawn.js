@@ -22,6 +22,8 @@
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_SITE,
     ASH_KNIGHT_REQUIREMENTS,
+    MOON_ARCHIVE_WARDEN_SITE,
+    MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     ECLIPSE_DRAGON_SITE,
     CHAPTER2_REQUIREMENTS,
     VOID_DRAGON_SITE,
@@ -58,7 +60,7 @@
   } = mathHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
-  const INTERIOR_REGIONS = new Set(["cave", "undercity", "frostTower1", "frostTower2", "sunspire"]);
+  const INTERIOR_REGIONS = new Set(["cave", "moonArchive", "undercity", "frostTower1", "frostTower2", "sunspire"]);
 
   function monsterSize(typeName, template) {
     return worldPx(template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11);
@@ -174,6 +176,7 @@
     const ty = Math.floor(y / TILE);
     if (tx >= 190 && ty >= 185) return "emberIsles";
     if (tx >= 160 && tx <= 195 && ty >= 1 && ty <= 23) return "sunspire";
+    if (tx >= 122 && tx <= 156 && ty >= 1 && ty <= 22) return "moonArchive";
     if (tx >= 198 && ty < 90) return "dawnCoast";
     if (tx >= 190) return "sunriseHighland";
     if (tx >= 132 && ty < 80) return "windCoast";
@@ -222,6 +225,7 @@
       if (region === "mistShrine") return ["bubbler", "wisp", "trapFlower"];
       if (region === "undercity") return ["shieldSoldier", "wisp", "vaultLeech"];
       if (region === "frostTower1" || region === "frostTower2") return ["frostBeacon", "frostMoth", "shieldSoldier"];
+      if (region === "moonArchive") return ["moonShade", "eclipseMage", "summoner", "shieldSoldier"];
       if (region === "sunspire") return ["prismBeacon", "solarRunner", "shieldSoldier"];
       if (region === "frost" || region === "frostCave" || region === "frostCitadel") return ["frostMoth", "frostBeast", "shieldSoldier"];
       const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => !["dragonling", "wisp", "summoner", "trapFlower", "sorcerer", "moonShade", "eclipseMage", "voidWraith", "obsidianCrawler", "shieldSoldier", "mistLancer", "mistKeeper"].includes(type));
@@ -295,7 +299,7 @@
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
     const interior = INTERIOR_REGIONS.has(region);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "moonArchive" ? 12 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -393,6 +397,7 @@
     if (region === "mistShrine") return "霧灯の祠: 罠と召喚が濃い寄り道";
     if (region === "regenCave") return "再生洞窟: 大再生の指輪を守る危険地帯";
     if (region === "smuggler") return "密輸道: 黒市へ抜ける危険な近道";
+    if (region === "moonArchive") return "月の書庫: 召喚と月蝕術が渦巻く第2章の深部";
     if (region === "moon") return "月影廃墟: 古塔の先の危険地帯";
     if (region === "highland") return "天脊高原: 峠・谷道・危険な近道";
     if (region === "north") return "北森: 強敵の気配";
@@ -423,9 +428,20 @@
     return !state.eclipseDragonDefeated
       && state.elderReported
       && state.ashKnightDefeated
+      && state.archiveWardenDefeated
       && state.chests.has("moon-ruin-cache")
+      && state.chests.has("moon-archive-reliquary")
       && state.discoveries.has("eclipse-seal")
       && player.level >= CHAPTER2_REQUIREMENTS.level;
+  }
+
+  function archiveWardenReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.archiveWardenDefeated
+      && state.elderReported
+      && state.ashKnightDefeated
+      && state.chests.has("moon-ruin-cache")
+      && player.level >= MOON_ARCHIVE_WARDEN_REQUIREMENTS.level;
   }
 
   function voidDragonReady(context) {
@@ -546,6 +562,14 @@
     return Math.hypot(pc.x - ax, pc.y - ay) < worldPx(92);
   }
 
+  function playerNearArchiveWardenSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const ax = (MOON_ARCHIVE_WARDEN_SITE.x + 0.5) * TILE;
+    const ay = (MOON_ARCHIVE_WARDEN_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - ax, pc.y - ay) < worldPx(96);
+  }
+
   function playerNearEclipseDragonSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -663,6 +687,9 @@
     if (state.spawnedAshKnight && !state.ashKnightDefeated && !hasLiveMonster(context, "ashKnight")) {
       state.spawnedAshKnight = false;
     }
+    if (state.spawnedArchiveWarden && !state.archiveWardenDefeated && !hasLiveMonster(context, "archiveWarden")) {
+      state.spawnedArchiveWarden = false;
+    }
     if (state.spawnedEclipseDragon && !state.eclipseDragonDefeated && !hasLiveMonster(context, "eclipseDragon")) {
       state.spawnedEclipseDragon = false;
     }
@@ -769,6 +796,12 @@
       say("古塔の灰騎士が道を塞いだ!", 2600);
     }
 
+    if (archiveWardenReady(context) && !state.spawnedArchiveWarden && playerNearArchiveWardenSite(context)) {
+      state.spawnedArchiveWarden = true;
+      spawnMonster(context, "archiveWarden", MOON_ARCHIVE_WARDEN_SITE.x * TILE, MOON_ARCHIVE_WARDEN_SITE.y * TILE);
+      say("月の書庫の番人が遺物庫を閉ざした!", 3200);
+    }
+
     if (eclipseDragonReady(context) && !state.spawnedEclipseDragon && playerNearEclipseDragonSite(context)) {
       state.spawnedEclipseDragon = true;
       spawnMonster(context, "eclipseDragon", ECLIPSE_DRAGON_SITE.x * TILE, ECLIPSE_DRAGON_SITE.y * TILE);
@@ -819,6 +852,7 @@
     guardianReady,
     wardenReady,
     ashKnightReady,
+    archiveWardenReady,
     eclipseDragonReady,
     voidDragonReady,
     obsidianGolemReady,
@@ -836,6 +870,7 @@
     playerNearGuardianSite,
     playerNearWardenSite,
     playerNearAshKnightSite,
+    playerNearArchiveWardenSite,
     playerNearEclipseDragonSite,
     playerNearVoidDragonSite,
     playerNearObsidianGolemSite,

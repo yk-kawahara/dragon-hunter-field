@@ -34,6 +34,7 @@ Current project status:
 * Ash Sorcerer and Old Tower Ash Knight add magic-pressure content beyond the Southeast Warden route.
 * Moon Ruins extend the Old Tower route southward with Moon Shade pressure, late supplies, and moon relic rewards.
 * Moon Camp + Eclipse Castle are the first Chapter 2 boss route beyond Moon Ruins.
+* Moon Archive is now a Chapter 2 interior from Moon Camp, with a LV18 Archive Warden, guarded reliquary, Eclipse Ring reward, and a required step before Eclipse Dragon.
 * Eclipse Mage, eclipse gear, Eclipse Ring, and Eclipse Dragon add the first post-Red-Dragon major boss arc.
 * Black Gate + Black Fort + Black Sun Castle are the first Chapter 3 route beyond Eclipse Castle.
 * Void Wraith, Black Sun gear, Void Charm, and Black Sun Dragon add a harder post-Chapter-2 major boss arc.
@@ -59,8 +60,9 @@ Current project status:
 * Southern capes and island routes add bridges, a causeway, shrine island, caches, and a second long-range direction beyond the western chapter corridor.
 * The world now uses editable polygon coastlines, naturalized curved roads, and a cartographic overview layer that hides embedded interior mazes behind readable terrain/landmark symbols.
 * 日出大陸 adds 黎明港, 陽冠都市, a northern mountain route, western coast road, central ridge shortcut, valley shrine, southern road, and access to 熾火群島.
-* The world now contains 114 NPCs and 11 safe/travel anchors, allowing recovery and restock radius to move across the outer sea.
+* The world now contains 121 NPCs and 11 safe/travel anchors, allowing recovery and restock radius to move across the outer sea.
 * Chapter 5 now runs from the Chapter 4 report through 日出高原, 日輪砲台守, 陽冠都市's high-price countermeasure shop, 日鏡塔, 反射水晶, 熾火群島, 熾火天竜, and an elder-report ending.
+* 陽冠都市 now functions more like a metropolis: separate armament, expedition apothecary, and travel-gear guild shops, extra city NPCs, city caches, and route-specific guide/resident information.
 * 光槍兵, 陽炎術師, 閃光走者, 光柱鏡, 日輪砲台守, 日鏡塔の守主, and 熾火天竜 introduce long sniper lines, delayed artillery zones, charges, piercing shots, broad multi-wave attacks, and mixed reinforcements.
 
 Current high-priority risks:
@@ -104,6 +106,32 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-26: Chapter 1-5 guidance, Chapter 2 Moon Archive, and Suncrest metropolis pass
+
+Goal: reduce route confusion across Chapters 1-5, make the thin Chapter 2 arc more substantial, and turn the Chapter 5 super-city into a more useful and memorable preparation hub.
+
+Implemented:
+
+* Added 月の書庫 as a portal-linked Chapter 2 interior entered from 月見砦.
+* Added `月書庫の番人`, a LV18 midboss that gates the new Moon Archive reliquary.
+* Made 月蝕竜 readiness require 灰騎士, 月影遺物, 月書庫の番人, 月蝕遺物庫, 月蝕封印碑, and LV20.
+* Added Moon Archive supply/reliquary chests, two discovery hints, an independent `moonArchive` region/spawn pool, guarded chest lock, save/load/reset state, objective/guidance text, and smoke coverage.
+* Split 陽冠都市 into multiple services: `大武装商会`, `遠征薬舗`, and `旅装ギルド`.
+* Added more Suncrest merchants, guides, residents, guards, city caches, city guide discoveries, and city-specific dialogue so Chapter 5 has a richer urban preparation step.
+* Updated map overview hiding for the new interior and regenerated `docs/world-map-preview.png` / `docs/world-map-preview.svg`.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS, including reachability, 121 NPC placements, Moon Archive portal/region/spawn/reliquary, Archive Warden save/story flow, Suncrest shop purchases, full Chapter 1-5 story flow, save/load migration, and script-load smoke.
+* `scripts/generate-map-preview.ps1`: PASS.
+
+Known risks / next work:
+
+* Real-browser visual QA remains needed for the new Suncrest shop menus and dense NPC placement.
+* Manual Chapter 2 playtest is needed to tune 月の書庫 attrition and confirm the added step feels like adventure volume rather than a checklist.
+* Manual Chapter 5 playtest is needed to tune city prices, item-pack value, and whether guides clearly communicate the highland -> tower -> seal -> sanctum route.
 
 ### 2026-06-25: Chapter 5 日鏡塔 quality and volume pass
 

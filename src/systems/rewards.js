@@ -318,7 +318,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -391,6 +391,24 @@
       player.bombs = Math.min(9, player.bombs + 3);
       player.wards = Math.min(9, player.wards + 3);
       say("月影街道の補給箱を回収した");
+      return true;
+    }
+    if (reward === "moonArchiveSupply") {
+      player.gold += 760;
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      say("月の書庫で対術師用の補給を得た");
+      return true;
+    }
+    if (reward === "moonArchiveRelic") {
+      player.gold += 980;
+      addItem(player, "elixir", 1);
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 3);
+      grantAccessory(context, "eclipse", "月蝕の指輪を得た。装備すると月蝕魔法を軽くする");
+      say("月の書庫の遺物庫から月蝕の指輪と決戦物資を得た");
       return true;
     }
     if (reward === "summonerSupply") {
@@ -550,6 +568,22 @@
       addItem(player, "ward", 4);
       addItem(player, "warp", 2);
       say("日輪砲台守の金庫から6800Gと陽冠都市の決戦物資を得た");
+      return true;
+    }
+    if (reward === "suncrestMarketSupply") {
+      player.gold += 2400;
+      addItem(player, "tonic", 3);
+      addItem(player, "warp", 2);
+      addItem(player, "ward", 3);
+      say("陽冠都市の市場台帳から遠征割引券と物資を得た");
+      return true;
+    }
+    if (reward === "suncrestArsenalSupply") {
+      player.gold += 3200;
+      addItem(player, "elixir", 2);
+      addItem(player, "bomb", 3);
+      addItem(player, "ward", 4);
+      say("陽冠都市の武装庫から高原決戦の物資を得た");
       return true;
     }
     if (reward === "sunspireSupply") {
@@ -747,6 +781,23 @@
       addItem(player, "ward", 2);
       burst(x, y, "#fff0a6", 22);
       say("日鏡塔の観測記録を読んだ。光柱鏡を先に壊すと塔の圧力を減らせる");
+      return;
+    }
+    if (discovery.kind === "moonArchiveHint") {
+      player.gold += 240;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#b08cff", 20);
+      say("月の書庫の記録: 召喚士を放置せず、番人を倒して遺物庫を開け");
+      return;
+    }
+    if (discovery.kind === "suncrestGuide") {
+      player.gold += 520;
+      addItem(player, "warp", 1);
+      addItem(player, "ward", 1);
+      burst(x, y, "#fff0a6", 20);
+      say("陽冠都市の攻略掲示を読んだ。北東高原、日鏡塔、南街道の順に準備を進めよう");
       return;
     }
     if (discovery.kind === "frostTowerHint") {

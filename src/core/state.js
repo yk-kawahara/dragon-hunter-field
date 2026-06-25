@@ -32,6 +32,8 @@
       wardenDefeated: false,
       spawnedAshKnight: false,
       ashKnightDefeated: false,
+      spawnedArchiveWarden: false,
+      archiveWardenDefeated: false,
       spawnedSmugglerCaptain: false,
       smugglerCaptainDefeated: false,
       spawnedRegenSentinel: false,

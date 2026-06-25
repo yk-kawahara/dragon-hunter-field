@@ -310,6 +310,10 @@ function assertMapReachability() {
     ["moon-ruin", 97, 99],
     ["moon-road", 102, 106],
     ["moon-camp", 102, 116],
+    ["moon-archive-entry", 110, 115],
+    ["moon-archive", 130, 4],
+    ["archiveWarden", d.MOON_ARCHIVE_WARDEN_SITE.x, d.MOON_ARCHIVE_WARDEN_SITE.y],
+    ["moon-archive-reliquary", 151, 17],
     ["eclipse-seal", 82, 121],
     ["eclipseDragon", d.ECLIPSE_DRAGON_SITE.x, d.ECLIPSE_DRAGON_SITE.y],
     ["black-fort", 98, 132],
@@ -355,7 +359,8 @@ function assertMapReachability() {
   assert(Array.isArray(overviewRows) && overviewRows.length === d.MAP_H, "world overview should cover the full continental map");
   assert(overviewRows.every((row) => typeof row === "string" && row.length === d.MAP_W), "world overview rows should match map dimensions");
   assert(!overviewRows.slice(1, 15).some((row) => row.slice(80, 120).includes("_")), "world overview should hide embedded catacomb room layouts");
-  assert(state.npcs.length === 114, "expected 114 NPCs after Suncrest City life pass");
+  assert(!overviewRows.slice(1, 22).some((row) => row.slice(122, 157).includes("_")), "world overview should hide embedded Moon Archive room layouts");
+  assert(state.npcs.length === 121, "expected 121 NPCs after Suncrest City service pass");
   const blockedNpcs = state.npcs.filter((npc) => !passable(Math.floor(npc.x / d.TILE), Math.floor(npc.y / d.TILE)));
   assert(blockedNpcs.length === 0, `NPCs must stand on reachable terrain: ${JSON.stringify(blockedNpcs.map((npc) => ({ type: npc.type, x: Math.floor(npc.x / d.TILE), y: Math.floor(npc.y / d.TILE) })))}`);
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
@@ -412,6 +417,8 @@ function assertSaveLoadAndEquipment() {
   state.spawnedWarden = true;
   state.ashKnightDefeated = true;
   state.spawnedAshKnight = true;
+  state.archiveWardenDefeated = true;
+  state.spawnedArchiveWarden = true;
   state.smugglerCaptainDefeated = true;
   state.spawnedSmugglerCaptain = true;
   state.regenSentinelDefeated = true;
@@ -486,6 +493,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
   assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
+  assert(restored.state.archiveWardenDefeated, "archive warden defeat flag should persist");
   assert(restored.state.smugglerCaptainDefeated, "smuggler captain defeat flag should persist");
   assert(restored.state.regenSentinelDefeated, "regen sentinel defeat flag should persist");
   assert(restored.state.mistKeeperDefeated, "mist keeper defeat flag should persist");
@@ -730,6 +738,19 @@ function assertStoryClearFlow() {
   assert(state.elderReported, "Elder report should complete clear state");
 
   state.chests.add("moon-ruin-cache");
+  player.level = d.MOON_ARCHIVE_WARDEN_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.MOON_ARCHIVE_WARDEN_SITE.x * d.TILE;
+  player.y = d.MOON_ARCHIVE_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedArchiveWarden, "Archive Warden should spawn after Moon relic and level gate");
+  const archiveWarden = state.monsters.find((monster) => monster.type === "archiveWarden");
+  assert(archiveWarden, "Archive Warden monster should exist");
+  archiveWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.archiveWardenDefeated, "Archive Warden defeat should open the Moon Archive reliquary");
+
+  state.chests.add("moon-archive-reliquary");
   state.discoveries.add("eclipse-seal");
   player.level = d.CHAPTER2_REQUIREMENTS.level;
   player.hp = player.hpMax;
@@ -966,6 +987,7 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.mistKeeper), "mist keeper monster definition should exist");
   assert(Boolean(d.monsterTypes.vaultLeech), "vault leech monster definition should exist");
   assert(Boolean(d.monsterTypes.cryptWarden), "crypt warden monster definition should exist");
+  assert(Boolean(d.monsterTypes.archiveWarden), "Moon Archive Warden monster definition should exist");
   assert(Boolean(d.monsterTypes.frostMoth), "frost moth monster definition should exist");
   assert(Boolean(d.monsterTypes.frostBeast), "frost beast monster definition should exist");
   assert(Boolean(d.monsterTypes.frostGolem), "frost golem monster definition should exist");
@@ -1018,6 +1040,14 @@ function assertExpandedWorldContent() {
   runtime.traversePortal(catacombPortal);
   assert(Math.floor(player.x / d.TILE) === 83 && Math.floor(player.y / d.TILE) === 2, "catacomb portal should move the player into the interior");
   assert(runtime.currentRegion() === "undercity", "catacomb interior should use undercity region");
+  player.x = 110 * d.TILE;
+  player.y = 115 * d.TILE;
+  const moonArchivePortal = runtime.nearestPortal();
+  assert(moonArchivePortal?.id === "moon-archive-entry", "Moon Camp should expose the Moon Archive entrance");
+  runtime.traversePortal(moonArchivePortal);
+  assert(runtime.currentRegion() === "moonArchive", "Moon Archive interior should use its own region");
+  const moonArchivePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moonArchive");
+  assert(moonArchivePool.includes("eclipseMage") && moonArchivePool.includes("summoner"), "Moon Archive should mix eclipse magic and summoners");
   player.x = 43 * d.TILE;
   player.y = 148 * d.TILE;
   const towerEntry = runtime.nearestPortal();
@@ -1099,6 +1129,9 @@ function assertExpandedWorldContent() {
   player.x = 104 * d.TILE;
   player.y = 102 * d.TILE;
   assert(runtime.currentRegion() === "moon", "moon ruins should use moon region");
+  player.x = 150 * d.TILE;
+  player.y = 17 * d.TILE;
+  assert(runtime.currentRegion() === "moonArchive", "Moon Archive should use its own interior spawn region");
   player.x = 86 * d.TILE;
   player.y = 123 * d.TILE;
   assert(runtime.currentRegion() === "eclipse", "eclipse castle should use eclipse region");
@@ -1122,6 +1155,19 @@ function assertExpandedWorldContent() {
   player.level = 16;
   const moonTrapPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
   assert(moonTrapPool.includes("trapFlower"), "moon spawn pool should include trap flowers after level 16");
+  state.elderReported = true;
+  state.ashKnightDefeated = true;
+  state.chests.add("moon-ruin-cache");
+  state.monsters = [];
+  player.level = d.MOON_ARCHIVE_WARDEN_REQUIREMENTS.level;
+  player.x = d.MOON_ARCHIVE_WARDEN_SITE.x * d.TILE;
+  player.y = d.MOON_ARCHIVE_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  const archiveWarden = state.monsters.find((monster) => monster.type === "archiveWarden");
+  assert(archiveWarden, "Moon Archive should spawn its named warden encounter after the Moon relic");
+  archiveWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.archiveWardenDefeated, "archive warden defeat should persist in state");
   player.level = 1;
   const smugglerLowPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "smuggler");
   assert(smugglerLowPool.includes("shieldSoldier") && smugglerLowPool.includes("wisp"), "smuggler shortcut should remain dangerous even at low level");
@@ -1384,6 +1430,21 @@ function assertExpandedWorldContent() {
   buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "shield" && row.id === 7, "Suncrest shield should be selectable");
   buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "accessory" && row.id === "horizon", "Suncrest accessory should be selectable");
   assert(suncrestShop.player.ownedWeapons.includes(13) && suncrestShop.player.ownedArmors.includes(13) && suncrestShop.player.ownedShields.includes(7) && suncrestShop.player.ownedAccessories.includes("horizon"), "Suncrest purchases should enter the real equipment inventory");
+  const suncrestApothecary = suncrestShop.state.npcs.find((npc) => npc.type === "merchant" && Math.floor(npc.x / d.TILE) === 242);
+  assert(suncrestApothecary, "Suncrest City should have a dedicated expedition apothecary");
+  suncrestShop.runtime.handleNpc(suncrestApothecary);
+  assert(suncrestShop.state.shopTitle.includes("遠征薬舗"), "Suncrest apothecary should be a separate item shop");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "item" && row.id === "elixir", "Suncrest apothecary should sell elixir packs");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "item" && row.id === "warp", "Suncrest apothecary should sell warp packs");
+  const suncrestGuild = suncrestShop.state.npcs.find((npc) => npc.type === "merchant" && Math.floor(npc.x / d.TILE) === 230);
+  assert(suncrestGuild, "Suncrest City should have a travel gear guild");
+  suncrestShop.player.shield = 7;
+  suncrestShop.state.sunspireKeeperDefeated = true;
+  suncrestShop.player.gold = 100000;
+  suncrestShop.runtime.handleNpc(suncrestGuild);
+  assert(suncrestShop.state.shopTitle.includes("旅装ギルド"), "Suncrest travel guild should be a separate accessory and shield shop");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "accessory" && row.id === "prismLens", "Suncrest guild should sell high-end prism counter gear after the tower keeper");
+  assert(suncrestShop.player.ownedAccessories.includes("prismLens"), "Suncrest guild prism gear should enter accessory inventory");
 
   player.x = 78 * d.TILE;
   player.y = 140 * d.TILE;
@@ -1423,6 +1484,12 @@ function assertExpandedWorldContent() {
   assert(Math.floor(player.x / d.TILE) === 204 && Math.floor(player.y / d.TILE) === 72, "outer-sea ferry should reach Dawn Harbor");
   runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "dawn-ferry"));
   assert(Math.floor(player.x / d.TILE) === 185 && Math.floor(player.y / d.TILE) === 102, "Dawn Harbor ferry should return to Azure Wind Island");
+  player.x = 110 * d.TILE;
+  player.y = 115 * d.TILE;
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "moon-archive-entry"));
+  assert(runtime.currentRegion() === "moonArchive", "Moon Archive portal should enter the book vault interior");
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "moon-archive-exit"));
+  assert(Math.floor(player.x / d.TILE) === 110 && Math.floor(player.y / d.TILE) === 115, "Moon Archive exit should return to Moon Camp");
   player.x = 246 * d.TILE;
   player.y = 128 * d.TILE;
   runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "sunspire-entry"));
@@ -1622,6 +1689,15 @@ function assertExpandedWorldContent() {
   guardedMistChest.runtime.openChest(mistChest);
   assert(guardedMistChest.state.chests.has("mist-shrine-cache") && guardedMistChest.player.ownedAccessories.includes("mist"), "mist shrine cache should open after Mist Keeper defeat");
 
+  const moonArchiveChest = d.TREASURE_CHESTS.find((chest) => chest.id === "moon-archive-reliquary");
+  assert(moonArchiveChest, "Moon Archive reliquary should exist");
+  const guardedMoonArchiveChest = createRuntime();
+  guardedMoonArchiveChest.runtime.openChest(moonArchiveChest);
+  assert(!guardedMoonArchiveChest.state.chests.has("moon-archive-reliquary") && !guardedMoonArchiveChest.player.ownedAccessories.includes("eclipse"), "Moon Archive reliquary should stay locked until Archive Warden defeat");
+  guardedMoonArchiveChest.state.archiveWardenDefeated = true;
+  guardedMoonArchiveChest.runtime.openChest(moonArchiveChest);
+  assert(guardedMoonArchiveChest.state.chests.has("moon-archive-reliquary") && guardedMoonArchiveChest.player.ownedAccessories.includes("eclipse"), "Moon Archive reliquary should grant the eclipse accessory after Archive Warden defeat");
+
   const cryptChest = d.TREASURE_CHESTS.find((chest) => chest.id === "undercity-reliquary");
   assert(cryptChest, "catacomb reliquary should exist");
   const guardedCryptChest = createRuntime();
@@ -1698,11 +1774,20 @@ function assertExpandedWorldContent() {
   assert(reward.player.tonics >= 9 && reward.player.warps >= 6, "frost tower supply should support the two-floor expedition");
   reward.runtime.grantChestReward("skyCharm");
   assert(reward.player.ownedAccessories.includes("sky"), "frost tower reliquary should grant the sky accessory");
+  reward.runtime.grantChestReward("moonArchiveSupply");
+  assert(reward.player.tonics >= 9 && reward.player.warps >= 7, "Moon Archive supply should extend the chapter 2 interior expedition");
+  reward.runtime.grantChestReward("moonArchiveRelic");
+  assert(reward.player.ownedAccessories.includes("eclipse"), "Moon Archive reliquary should grant eclipse counter gear");
+  reward.runtime.grantChestReward("suncrestMarketSupply");
+  reward.runtime.grantChestReward("suncrestArsenalSupply");
+  assert(reward.player.elixirs >= 7 && reward.player.wards >= 9, "Suncrest city caches should provide chapter 5 expedition supplies");
   reward.runtime.grantChestReward("sunspireSupply");
   assert(reward.player.elixirs >= 6 && reward.player.warps >= 7, "Sunspire supply should support the chapter 5 tower expedition");
   reward.runtime.grantChestReward("prismLens");
   assert(reward.player.ownedAccessories.includes("prismLens"), "Sunspire reliquary should grant the prism lens accessory");
   reward.runtime.grantDiscoveryReward({ id: "test-sunspire-hint", kind: "sunspireHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-moon-archive-hint", kind: "moonArchiveHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-suncrest-guide", kind: "suncrestGuide" }, 0, 0);
   assert(reward.player.wards >= 9 && reward.player.stamina === reward.player.staminaMax, "Sunspire observation point should provide anti-solar preparation");
 
   const normalDash = createRuntime();

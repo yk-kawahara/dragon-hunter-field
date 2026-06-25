@@ -79,6 +79,21 @@ Current target route:
 
 Ideal feeling: **"I survived farther because I prepared better."**
 
+## Chapter 2 role: moonlit ruins and the archive expedition
+
+Chapter 2 begins after the Red Dragon report and should be a real multi-step expedition, not a short straight line to one boss.
+
+Current target route:
+
+1. Travel to 灰道の宿場 and establish it as the next safe base.
+2. Push south to 古塔, defeat the LV14 灰騎士, and open the route into 月影廃墟.
+3. Search 月影廃墟 for the moon relic, then return to 月見砦 for recovery and supplies.
+4. Enter 月見砦's eastern portal into 月の書庫, an interior dungeon with summon and eclipse-magic pressure.
+5. Defeat the LV18 月書庫の番人, open the reliquary, and earn the 月蝕の指輪 plus route-extension supplies.
+6. Read the 月蝕城 seal, prepare eclipse gear/items at 月見砦, reach LV20, defeat 月蝕竜, and report to the elder.
+
+Intended feeling: **"The old tower was not the end; the safe radius moved again, and now I can survive a deeper ruin, an interior dungeon, and a boss route."**
+
 ## Chapter 5 role: the horizon-fire expedition
 
 Chapter 5 begins after the Frost Crown Dragon report and uses the eastern continent as a high-level survival-range test.
@@ -88,7 +103,7 @@ Progression:
 1. Cross the outer sea and establish safety at 黎明港.
 2. Enter 日出高原, where 光槍兵 can fire piercing shots from near the edge of the visible field and 陽炎術師 marks several delayed impact zones.
 3. Reach and defeat the LV38 日輪砲台守, which alternates sniper lanes and artillery zones.
-4. Enter the super-city 陽冠都市 and spend accumulated late-game gold on expensive countermeasure gear.
+4. Enter the super-city 陽冠都市 and spend accumulated late-game gold on expensive countermeasure gear, expedition supplies, and route-specific accessories.
 5. Enter 日鏡塔 from the city's east gate. The tower adds a longer enclosed Chapter 5 expedition with 閃光走者 charges, 光柱鏡 artillery, and the LV40 日鏡塔の守主.
 6. Defeat 日鏡塔の守主 and claim `反射水晶`, a final countermeasure accessory that makes the 熾火群島 push feel earned rather than a checklist.
 7. Read the 陽光封印碑, secure the 熾火聖域 expedition cache, and reach LV42.
@@ -103,6 +118,13 @@ Chapter 5 countermeasure set:
 * `日輪大盾`: strong frontal protection and additional ranged/solar reduction.
 * `遠見の護符`: accessory choice that reduces sniper, light-cannon, artillery, and ordinary projectile pressure.
 * `反射水晶`: earned in 日鏡塔 after the LV40 guardian. It further reduces solar/ember pressure, especially tower artillery and final-boss magic, and rewards players who complete the enclosed expedition before the southern push.
+
+Suncrest City service identity:
+
+* `陽冠都市・大武装商会`: high-price late-game weapon, armor, shield, and anti-sniper purchases.
+* `陽冠都市・遠征薬舗`: bulk elixir, tonic, ward, bomb, and return-bell packs for long sorties.
+* `陽冠都市・旅装ギルド`: accessory and shield-rune preparation, including late prism counter-gear after 日鏡塔の守主.
+* Residents and guides should explain route order, shop roles, the tower, the southern seal, and final-boss preparation without coordinate-style instructions.
 
 Chapter 5 dungeon identity:
 
@@ -188,6 +210,7 @@ Most important growth feeling: **reversal of power**.
 | Old Tower / 古塔 | Late optional danger pocket with dense magic pressure, Ash Knight midboss, and star-gear preparation. |
 | Moon Ruins / 月影廃墟 | Post-Old-Tower southern danger pocket with dense late enemies, moon relic rewards, and another reason to push beyond the Red Dragon route. |
 | Moon Camp / 月見砦 | Chapter 2 remote survival anchor: recovery, supplies, eclipse gear, and the feeling that the safe radius moved far beyond the village. |
+| Moon Archive / 月の書庫 | Chapter 2 interior dungeon entered from Moon Camp. It adds summon/magic pressure, a named warden, and the Eclipse Ring reliquary before the Eclipse Castle push. |
 | Eclipse Castle / 月蝕城 | Chapter 2 final danger route: eclipse magic pressure, seal tablet, final supplies, and Eclipse Dragon arena. |
 | Black Gate / 黒門 | Chapter 3 transition route south of Eclipse Castle; the map becomes darker, enemy pressure rises, and retreat distance matters again. |
 | Black Fort / 黒門砦 | Chapter 3 remote survival anchor: recovery, supplies, Black Sun gear, and a new safe radius before the final southern push. |
@@ -202,6 +225,10 @@ Most important growth feeling: **reversal of power**.
 | Ice Cave / 氷窟 | Chapter 4 branch dungeon with Frost Moth ranged pressure, Frost Beast charges, Frost Golem, and the Frost Heart reliquary. |
 | Frost Watchtower / 霜見塔 | Optional two-floor Chapter 4 interior. The first floor tests supply management, the second combines frost auras and a named warden, and the far-side elevator permanently shortens repeat expeditions. |
 | Frost Crown Citadel / 霜冠城 | Chapter 4 final route: seal discovery, highest regional spawn pressure, final supplies, and Frost Crown Dragon arena. |
+| Dawn Harbor / 黎明港 | Chapter 5 outer-sea arrival hub: recovery, wagon travel, and route guidance before the hostile eastern continent. |
+| Suncrest City / 陽冠都市 | Chapter 5 super-city: recovery hub, armament store, expedition apothecary, travel gear guild, residents, guides, and high-price countermeasure economy before 日鏡塔 and 熾火群島. |
+| Sunspire Tower / 日鏡塔 | Chapter 5 interior dungeon from Suncrest's east gate; mixes charge and artillery enemies before the Prism Lens reward. |
+| Ember Isles / 熾火群島 | Chapter 5 final volcanic route with solar pressure, final supply cache, and Ember Dragon arena. |
 | Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
 
 ## Enemy roles
@@ -234,8 +261,9 @@ Most important growth feeling: **reversal of power**.
 | North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
 | Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
 | Old Tower Ash Knight | Optional late midboss after Southeast Warden + level 14; unlocks stronger magic-route preparation and tests the expanded-world route. |
+| Archive Warden / 月書庫の番人 | Chapter 2 interior midboss. It gates the Moon Archive reliquary so the Eclipse Ring is earned through a real dungeon push rather than a free pickup. |
 | Red Dragon | Chapter 1 final boss: enrage, spread shots, summons, preparation check. |
-| Eclipse Dragon / 月蝕竜 | Chapter 2 major boss after Red Dragon report, Ash Knight, moon relic, eclipse seal, and level 20; enrages into wider magic shots and summons late enemies. |
+| Eclipse Dragon / 月蝕竜 | Chapter 2 major boss after Red Dragon report, Ash Knight, moon relic, Archive Warden/reliquary, eclipse seal, and level 20; enrages into wider magic shots and summons late enemies. |
 | Black Sun Dragon / 黒陽竜 | Chapter 3 major boss after Chapter 2 report, Eclipse Castle cache, Black Fort armory, Black Sun seal, and level 26; uses heavy void projectiles, wider enraged spreads, and summons. |
 | Frost Crown Dragon / 霜冠竜 | Chapter 4 major boss after Chapter 3 report, Frost Golem, frost seal, and level 34. It enrages into five-way frost spreads and summons both ranged and charging reinforcements. |
 
@@ -280,6 +308,7 @@ Current direction:
 * The southwest frontier camp is becoming the first remote equipment hub, not only a healing point.
 * The ash hamlet is the second remote equipment hub and sells star gear after the Ash Knight is defeated.
 * Moon Camp is the third remote equipment hub and sells/grants eclipse preparation after the player reaches the Chapter 2 route.
+* 月の書庫 now gates `月蝕の指輪` behind a named midboss and reliquary, making Chapter 2 resistance gear an earned dungeon reward.
 * Black Fort is the fourth remote equipment hub and sells/grants Black Sun preparation after the player reaches the Chapter 3 route.
 * `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` prepare for Void Wraith / Black Sun Dragon pressure.
 * Frost Haven is the fifth remote equipment hub and sells `霜砕きの剣`, `白銀の外套`, and `霜鏡盾` for the Chapter 4 route.
@@ -295,6 +324,7 @@ Current direction:
 * `霧灯の護符` is an optional route-preparation accessory found in the Mist Shrine after defeating the Mist Keeper. It reduces trap, summon, and magic pressure, making dangerous side routes and late ruins more survivable.
 * `深層灯の護符` is earned in the Black Market Catacombs after defeating the Crypt Warden. It reduces slow movement loss and strengthens herb healing, trading broad resistance for longer recovery-based expeditions.
 * `天駆けの徽章` is earned at the top of Frost Watchtower after defeating its warden. It lengthens dash distance and shortens dash recovery, changing traversal and escape options rather than only adding defense.
+* 陽冠都市 is the late-game metropolis economy hub. It separates armaments, expedition medicine, and travel gear so the player can prepare for sniper lanes, artillery, long routes, or shield-rune play instead of buying one fixed shop list.
 * Accessory ownership and accessory effects are separate: an owned but unequipped accessory must never grant its active effect.
 * Weapon identity includes attack behavior as well as ATK and route multipliers. Inventory text should describe reach, speed, arc, or impact so an older sidegrade can remain a deliberate choice.
 * The field item dock consists of player-configurable quick slots. Any consumable in `itemOrder` can be assigned, selected, and used from those slots.

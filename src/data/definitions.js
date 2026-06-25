@@ -64,6 +64,8 @@
     { id: "east-ferry", name: "西方大陸", x: 139, y: 87, toX: 116, toY: 65, prompt: "渡船: 西方大陸へ" },
     { id: "sunrise-ferry", name: "黎明港", x: 185, y: 102, toX: 204, toY: 72, prompt: "外洋船: 日出大陸へ" },
     { id: "dawn-ferry", name: "蒼風島", x: 204, y: 72, toX: 185, toY: 102, prompt: "外洋船: 蒼風島へ" },
+    { id: "moon-archive-entry", name: "月の書庫", x: 110, y: 115, toX: 123, toY: 2, prompt: "入る: 月の書庫" },
+    { id: "moon-archive-exit", name: "月見砦", x: 123, y: 2, toX: 110, toY: 115, prompt: "戻る: 月見砦" },
     { id: "sunspire-entry", name: "日鏡塔", x: 246, y: 128, toX: 164, toY: 5, prompt: "入る: 日鏡塔" },
     { id: "sunspire-exit", name: "陽冠都市", x: 164, y: 5, toX: 246, toY: 128, prompt: "戻る: 陽冠都市" },
   ];
@@ -97,6 +99,9 @@
     { id: "moon-thorn-cache", x: 86, y: 105, reward: "trapSupply" },
     { id: "moon-west-camp-cache", x: 76, y: 103, reward: "moonSupply" },
     { id: "moon-camp-armory", x: 106, y: 116, reward: "eclipseGear" },
+    { id: "moon-archive-supply", x: 132, y: 6, reward: "moonArchiveSupply" },
+    { id: "moon-archive-side-vault", x: 144, y: 12, reward: "moonArchiveSupply" },
+    { id: "moon-archive-reliquary", x: 151, y: 17, reward: "moonArchiveRelic" },
     { id: "regen-side-cache", x: 34, y: 125, reward: "smugglerSupply" },
     { id: "mist-shrine-cache", x: 68, y: 123, reward: "mistCharm" },
     { id: "mist-shrine-supply", x: 77, y: 121, reward: "mistSupply" },
@@ -134,6 +139,8 @@
     { id: "sunrise-north-cache", x: 237, y: 43, reward: "towerExpeditionSupply" },
     { id: "sunrise-valley-cache", x: 211, y: 111, reward: "voidSupply" },
     { id: "suncrest-city-cache", x: 246, y: 127, reward: "blackMarketSupply" },
+    { id: "suncrest-market-ledger", x: 231, y: 126, reward: "suncrestMarketSupply" },
+    { id: "suncrest-arsenal-vault", x: 247, y: 130, reward: "suncrestArsenalSupply" },
     { id: "sunrise-south-cache", x: 240, y: 166, reward: "frostSupply" },
     { id: "ember-sanctum-cache", x: 222, y: 226, reward: "towerExpeditionSupply" },
     { id: "ember-east-cache", x: 243, y: 233, reward: "voidSupply" },
@@ -160,6 +167,8 @@
     { id: "moon-grave-note", x: 91, y: 103, kind: "routeHint" },
     { id: "summoner-warning", x: 82, y: 107, kind: "summonerHint" },
     { id: "thorn-warning", x: 86, y: 104, kind: "trapHint" },
+    { id: "moon-archive-map", x: 130, y: 4, kind: "moonArchiveHint" },
+    { id: "moon-archive-lens-note", x: 145, y: 14, kind: "moonArchiveHint" },
     { id: "eclipse-seal", x: 82, y: 121, kind: "eclipseSeal" },
     { id: "eclipse-side-road", x: 78, y: 126, kind: "routeHint" },
     { id: "void-seal", x: 82, y: 138, kind: "voidSeal" },
@@ -194,6 +203,8 @@
     { id: "sunrise-ridge-marker", x: 232, y: 87, kind: "routeHint" },
     { id: "sunrise-valley-shrine", x: 211, y: 110, kind: "cache" },
     { id: "suncrest-road-map", x: 228, y: 131, kind: "shortcutHint" },
+    { id: "suncrest-tactics-board", x: 234, y: 123, kind: "suncrestGuide" },
+    { id: "suncrest-market-rumor", x: 241, y: 131, kind: "suncrestGuide" },
     { id: "sunspire-observatory", x: 180, y: 10, kind: "sunspireHint" },
     { id: "sunrise-seal", x: 240, y: 165, kind: "sunriseSeal" },
     { id: "ember-causeway-marker", x: 220, y: 207, kind: "routeHint" },
@@ -204,6 +215,8 @@
   const WARDEN_REQUIREMENTS = { level: 10 };
   const ASH_KNIGHT_SITE = { x: 103, y: 89 };
   const ASH_KNIGHT_REQUIREMENTS = { level: 14 };
+  const MOON_ARCHIVE_WARDEN_SITE = { x: 150, y: 17 };
+  const MOON_ARCHIVE_WARDEN_REQUIREMENTS = { level: 18 };
   const ECLIPSE_DRAGON_SITE = { x: 82, y: 123 };
   const CHAPTER2_REQUIREMENTS = { level: 20 };
   const VOID_DRAGON_SITE = { x: 80, y: 140 };
@@ -242,6 +255,7 @@
     highland: { danger: 5, maxBonus: 6, pool: ["shieldSoldier", "boar", "sorcerer", "wisp", "dragonling"] },
     tower: { danger: 5, maxBonus: 6, pool: ["shieldSoldier", "sorcerer", "sorcerer", "dragonling", "wisp"] },
     moon: { danger: 6, maxBonus: 7, pool: ["moonShade", "summoner", "trapFlower", "sorcerer", "dragonling", "wisp"] },
+    moonArchive: { danger: 8, maxBonus: 10, pool: ["moonShade", "eclipseMage", "summoner", "shieldSoldier", "trapFlower"] },
     eclipse: { danger: 7, maxBonus: 8, pool: ["shieldSoldier", "summoner", "trapFlower", "eclipseMage", "moonShade", "sorcerer", "dragonling"] },
     smuggler: { danger: 8, maxBonus: 8, pool: ["shieldSoldier", "trapFlower", "summoner", "wisp", "boar", "dragonling"] },
     regenCave: { danger: 8, maxBonus: 9, pool: ["bubbler", "trapFlower", "summoner", "obsidianCrawler", "shieldSoldier", "moonShade"] },
@@ -794,6 +808,19 @@
       midboss: true,
       drop: 0,
     },
+    archiveWarden: {
+      name: "月書庫の番人",
+      hp: 2650,
+      atk: 132,
+      def: 98,
+      speed: 23 * WORLD_SCALE,
+      xp: 1550,
+      gold: 820,
+      color: "#b08cff",
+      shadow: "#2d174f",
+      midboss: true,
+      drop: 0.85,
+    },
     dragon: {
       name: "赤竜",
       hp: 2000,
@@ -972,6 +999,8 @@
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_SITE,
     ASH_KNIGHT_REQUIREMENTS,
+    MOON_ARCHIVE_WARDEN_SITE,
+    MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     ECLIPSE_DRAGON_SITE,
     CHAPTER2_REQUIREMENTS,
     VOID_DRAGON_SITE,

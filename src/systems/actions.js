@@ -244,6 +244,10 @@
       say("地下墓所の番人を倒さないと遺物庫は開かない", 2200);
       return;
     }
+    if (chest.id === "moon-archive-reliquary" && !state.archiveWardenDefeated) {
+      say("月の書庫の番人を倒さないと遺物庫は開かない", 2200);
+      return;
+    }
     if (chest.id === "frost-core-reliquary" && !state.frostGolemDefeated) {
       say("氷窟巨人を倒さないと霜心の遺物庫は開かない", 2200);
       return;

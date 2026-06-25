@@ -95,6 +95,8 @@
       wardenDefeated: state.wardenDefeated,
       spawnedAshKnight: state.spawnedAshKnight,
       ashKnightDefeated: state.ashKnightDefeated,
+      spawnedArchiveWarden: state.spawnedArchiveWarden,
+      archiveWardenDefeated: state.archiveWardenDefeated,
       spawnedSmugglerCaptain: state.spawnedSmugglerCaptain,
       smugglerCaptainDefeated: state.smugglerCaptainDefeated,
       spawnedRegenSentinel: state.spawnedRegenSentinel,
@@ -185,6 +187,7 @@
       state.guardianDefeated = Boolean(data.guardianDefeated);
       state.wardenDefeated = Boolean(data.wardenDefeated);
       state.ashKnightDefeated = Boolean(data.ashKnightDefeated);
+      state.archiveWardenDefeated = Boolean(data.archiveWardenDefeated);
       state.smugglerCaptainDefeated = Boolean(data.smugglerCaptainDefeated);
       state.regenSentinelDefeated = Boolean(data.regenSentinelDefeated);
       state.mistKeeperDefeated = Boolean(data.mistKeeperDefeated);
@@ -202,6 +205,7 @@
       state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
       state.spawnedWarden = state.wardenDefeated ? Boolean(data.spawnedWarden) : false;
       state.spawnedAshKnight = state.ashKnightDefeated ? Boolean(data.spawnedAshKnight) : false;
+      state.spawnedArchiveWarden = state.archiveWardenDefeated ? Boolean(data.spawnedArchiveWarden) : false;
       state.spawnedSmugglerCaptain = state.smugglerCaptainDefeated ? Boolean(data.spawnedSmugglerCaptain) : false;
       state.spawnedRegenSentinel = state.regenSentinelDefeated ? Boolean(data.spawnedRegenSentinel) : false;
       state.spawnedMistKeeper = state.mistKeeperDefeated ? Boolean(data.spawnedMistKeeper) : false;
@@ -321,6 +325,8 @@
     state.wardenDefeated = false;
     state.spawnedAshKnight = false;
     state.ashKnightDefeated = false;
+    state.spawnedArchiveWarden = false;
+    state.archiveWardenDefeated = false;
     state.spawnedSmugglerCaptain = false;
     state.smugglerCaptainDefeated = false;
     state.spawnedRegenSentinel = false;
