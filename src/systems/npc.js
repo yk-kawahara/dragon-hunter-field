@@ -26,6 +26,7 @@
     CHAPTER4_REQUIREMENTS,
     CHAPTER5_REQUIREMENTS,
     SOLAR_WARDEN_REQUIREMENTS,
+    SUNSPIRE_KEEPER_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -398,6 +399,9 @@
     if (npc.type === "guide") {
       if (npc.x > 198 * TILE) {
         if (!state.solarWardenDefeated) say(`案内人「日輪砲台守は北東高原。LV${SOLAR_WARDEN_REQUIREMENTS.level}で射線を横切り、砲台を壊せ」`, 4600);
+        else if (!state.sunspireKeeperDefeated && player.level < SUNSPIRE_KEEPER_REQUIREMENTS.level) say(`案内人「次は陽冠都市の東門、日鏡塔だ。守主にはLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}と光砲対策が欲しい」`, 4800);
+        else if (!state.sunspireKeeperDefeated) say("案内人「日鏡塔では反射鏡の着弾円が重なる。走者を先に処理して守主へ詰めろ」", 4800);
+        else if (!state.chests.has("sunspire-reliquary")) say("案内人「守主を倒したなら塔奥の遺物庫を調べろ。反射水晶が熾火聖域の備えになる」", 4600);
         else if (!state.discoveries.has("sunrise-seal")) say("案内人「南街道の陽光封印碑を読め。陽冠装備は大武装商会で選べる」", 4400);
         else if (!state.chests.has("ember-sanctum-cache")) say("案内人「熾火群島の聖域で天竜戦の補給箱を確保せよ」", 4400);
         else if (npc.y > 118 * TILE) say(`案内人「陽冠装備を整え、LV${CHAPTER5_REQUIREMENTS.level}で南の熾火聖域へ」`, 4400);

@@ -64,6 +64,8 @@
     { id: "east-ferry", name: "西方大陸", x: 139, y: 87, toX: 116, toY: 65, prompt: "渡船: 西方大陸へ" },
     { id: "sunrise-ferry", name: "黎明港", x: 185, y: 102, toX: 204, toY: 72, prompt: "外洋船: 日出大陸へ" },
     { id: "dawn-ferry", name: "蒼風島", x: 204, y: 72, toX: 185, toY: 102, prompt: "外洋船: 蒼風島へ" },
+    { id: "sunspire-entry", name: "日鏡塔", x: 246, y: 128, toX: 164, toY: 5, prompt: "入る: 日鏡塔" },
+    { id: "sunspire-exit", name: "陽冠都市", x: 164, y: 5, toX: 246, toY: 128, prompt: "戻る: 陽冠都市" },
   ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
@@ -136,6 +138,8 @@
     { id: "ember-sanctum-cache", x: 222, y: 226, reward: "towerExpeditionSupply" },
     { id: "ember-east-cache", x: 243, y: 233, reward: "voidSupply" },
     { id: "solar-warden-cache", x: 241, y: 104, reward: "solarSupply" },
+    { id: "sunspire-supply", x: 175, y: 6, reward: "sunspireSupply" },
+    { id: "sunspire-reliquary", x: 190, y: 17, reward: "prismLens" },
     { id: "ember-dragon-cache", x: 235, y: 232, reward: "emberSupply" },
   ];
   const DISCOVERY_POINTS = [
@@ -190,6 +194,7 @@
     { id: "sunrise-ridge-marker", x: 232, y: 87, kind: "routeHint" },
     { id: "sunrise-valley-shrine", x: 211, y: 110, kind: "cache" },
     { id: "suncrest-road-map", x: 228, y: 131, kind: "shortcutHint" },
+    { id: "sunspire-observatory", x: 180, y: 10, kind: "sunspireHint" },
     { id: "sunrise-seal", x: 240, y: 165, kind: "sunriseSeal" },
     { id: "ember-causeway-marker", x: 220, y: 207, kind: "routeHint" },
     { id: "ember-sanctum", x: 222, y: 225, kind: "waystone" },
@@ -221,6 +226,8 @@
   const CHAPTER4_REQUIREMENTS = { level: 34 };
   const SOLAR_WARDEN_SITE = { x: 241, y: 102 };
   const SOLAR_WARDEN_REQUIREMENTS = { level: 38 };
+  const SUNSPIRE_KEEPER_SITE = { x: 189, y: 17 };
+  const SUNSPIRE_KEEPER_REQUIREMENTS = { level: 40 };
   const EMBER_DRAGON_SITE = { x: 232, y: 232 };
   const CHAPTER5_REQUIREMENTS = { level: 42 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
@@ -252,6 +259,7 @@
     southIsles: { danger: 9, maxBonus: 10, pool: ["frostMoth", "bubbler", "mistLancer", "summoner", "moonShade", "shieldSoldier"] },
     dawnCoast: { danger: 9, maxBonus: 11, pool: ["mistLancer", "frostMoth", "shieldSoldier", "sorcerer", "bubbler", "frostBeast"] },
     sunriseHighland: { danger: 10, maxBonus: 13, pool: ["sunLancer", "mirageCaster", "frostBeast", "summoner", "shieldSoldier", "eclipseMage"] },
+    sunspire: { danger: 12, maxBonus: 14, pool: ["solarRunner", "prismBeacon", "sunLancer", "mirageCaster", "shieldSoldier"] },
     emberIsles: { danger: 11, maxBonus: 14, pool: ["sunLancer", "mirageCaster", "trapFlower", "summoner", "voidWraith", "shieldSoldier"] },
   };
 
@@ -343,7 +351,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -428,6 +436,12 @@
       trait: "狙撃線・光砲・着弾術を軽減",
       sell: 14000,
       flag: "horizonCharm",
+    },
+    prismLens: {
+      name: "反射水晶",
+      trait: "光弾を軽減し、熾火戦の回避余裕を伸ばす",
+      sell: 0,
+      flag: "prismLensCharm",
     },
   };
 
@@ -856,6 +870,30 @@
       shadow: "#732c1c",
       drop: 0.42,
     },
+    solarRunner: {
+      name: "閃光走者",
+      hp: 920,
+      atk: 232,
+      def: 118,
+      speed: 33 * WORLD_SCALE,
+      xp: 780,
+      gold: 340,
+      color: "#fff7a6",
+      shadow: "#7a5a18",
+      drop: 0.42,
+    },
+    prismBeacon: {
+      name: "光柱鏡",
+      hp: 880,
+      atk: 238,
+      def: 150,
+      speed: 0,
+      xp: 840,
+      gold: 360,
+      color: "#d7f6ff",
+      shadow: "#315d7a",
+      drop: 0.45,
+    },
     solarWarden: {
       name: "日輪砲台守",
       hp: 6800,
@@ -866,6 +904,19 @@
       gold: 5200,
       color: "#fff0a6",
       shadow: "#704717",
+      midboss: true,
+      drop: 1,
+    },
+    sunspireKeeper: {
+      name: "日鏡塔の守主",
+      hp: 7600,
+      atk: 292,
+      def: 226,
+      speed: 20 * WORLD_SCALE,
+      xp: 6600,
+      gold: 6800,
+      color: "#ffeab0",
+      shadow: "#6b481b",
       midboss: true,
       drop: 1,
     },
@@ -943,6 +994,8 @@
     CHAPTER4_REQUIREMENTS,
     SOLAR_WARDEN_SITE,
     SOLAR_WARDEN_REQUIREMENTS,
+    SUNSPIRE_KEEPER_SITE,
+    SUNSPIRE_KEEPER_REQUIREMENTS,
     EMBER_DRAGON_SITE,
     CHAPTER5_REQUIREMENTS,
     BOSS_REQUIREMENTS,

@@ -434,11 +434,21 @@
         say("霜見の塔守が三つの凍気灯を起動した!", 2600);
       }
 
-      if ((monster.type === "boar" || monster.type === "mistLancer" || monster.type === "frostBeast") && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < worldPx(monster.type === "frostBeast" ? 132 : monster.type === "mistLancer" ? 118 : 92)) {
+      if (monster.type === "sunspireKeeper" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {
+        monster.summoned = true;
+        monster.speed += worldPx(5);
+        spawnIfClear("prismBeacon", 185 * TILE, 13 * TILE);
+        spawnIfClear("solarRunner", 192 * TILE, 15 * TILE);
+        spawnIfClear("solarRunner", 185 * TILE, 19 * TILE);
+        addRing(c.x, c.y, "#fff0a6", worldPx(48));
+        say("日鏡塔の守主が反射鏡と閃光走者を呼び出した!", 2800);
+      }
+
+      if ((monster.type === "boar" || monster.type === "mistLancer" || monster.type === "frostBeast" || monster.type === "solarRunner") && monster.windup <= 0 && monster.chargeTime <= 0 && monster.chargeCooldown <= 0 && dist < worldPx(monster.type === "frostBeast" ? 132 : monster.type === "mistLancer" ? 118 : monster.type === "solarRunner" ? 150 : 92)) {
         monster.chargeVector = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
-        monster.windup = monster.type === "frostBeast" ? 640 : monster.type === "mistLancer" ? 520 : 360;
-        monster.chargeCooldown = monster.type === "frostBeast" ? 2700 : monster.type === "mistLancer" ? 2300 : 1700;
-        addRing(c.x, c.y, monster.type === "frostBeast" ? "#b9f4ff" : monster.type === "mistLancer" ? "#9fd6c7" : "#ff8a3d", worldPx(monster.type === "frostBeast" ? 23 : monster.type === "mistLancer" ? 20 : 15));
+        monster.windup = monster.type === "frostBeast" ? 640 : monster.type === "mistLancer" ? 520 : monster.type === "solarRunner" ? 460 : 360;
+        monster.chargeCooldown = monster.type === "frostBeast" ? 2700 : monster.type === "mistLancer" ? 2300 : monster.type === "solarRunner" ? 2100 : 1700;
+        addRing(c.x, c.y, monster.type === "frostBeast" ? "#b9f4ff" : monster.type === "mistLancer" ? "#9fd6c7" : monster.type === "solarRunner" ? "#fff0a6" : "#ff8a3d", worldPx(monster.type === "frostBeast" ? 23 : monster.type === "mistLancer" ? 20 : monster.type === "solarRunner" ? 22 : 15));
       }
 
       if (monster.type === "summoner" && monster.summonCooldown <= 0 && dist < worldPx(185) && state.monsters.length < 18) {
@@ -482,12 +492,12 @@
         }
       }
 
-      const usesSolarSpecial = monster.type === "sunLancer" || monster.type === "mirageCaster" || monster.type === "solarWarden";
-      if (usesSolarSpecial && monster.specialState === "idle" && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "solarWarden" ? 410 : 370)) {
+      const usesSolarSpecial = monster.type === "sunLancer" || monster.type === "mirageCaster" || monster.type === "prismBeacon" || monster.type === "solarWarden" || monster.type === "sunspireKeeper";
+      if (usesSolarSpecial && monster.specialState === "idle" && monster.fireCooldown <= 0 && dist < worldPx(monster.type === "sunspireKeeper" ? 450 : monster.type === "solarWarden" ? 410 : 370)) {
         monster.specialIndex = (monster.specialIndex || 0) + 1;
-        const artillery = monster.type === "mirageCaster" || (monster.type === "solarWarden" && monster.specialIndex % 2 === 0);
+        const artillery = monster.type === "mirageCaster" || monster.type === "prismBeacon" || ((monster.type === "solarWarden" || monster.type === "sunspireKeeper") && monster.specialIndex % 2 === 0);
         monster.specialState = artillery ? "artillery" : "sniper";
-        monster.specialWindup = artillery ? 1120 : 820;
+        monster.specialWindup = monster.type === "sunspireKeeper" ? (artillery ? 1180 : 880) : artillery ? 1120 : 820;
         monster.specialAim = normalize(playerCenter.x - c.x, playerCenter.y - c.y);
         if (artillery) {
           monster.specialTargets = [
@@ -495,26 +505,29 @@
             { x: playerCenter.x + worldPx(30), y: playerCenter.y - worldPx(24) },
             { x: playerCenter.x - worldPx(32), y: playerCenter.y + worldPx(22) },
           ];
+          if (monster.type === "sunspireKeeper") {
+            monster.specialTargets.push({ x: playerCenter.x + worldPx(8), y: playerCenter.y + worldPx(46) });
+          }
           for (const zone of monster.specialTargets) {
-            state.telegraphs.push({ kind: "zone", x: zone.x, y: zone.y, radius: worldPx(monster.type === "solarWarden" ? 17 : 14), color: "#ff9f5a", life: monster.specialWindup, max: monster.specialWindup });
+            state.telegraphs.push({ kind: "zone", x: zone.x, y: zone.y, radius: worldPx(monster.type === "sunspireKeeper" ? 19 : monster.type === "solarWarden" ? 17 : monster.type === "prismBeacon" ? 16 : 14), color: "#ff9f5a", life: monster.specialWindup, max: monster.specialWindup });
           }
         } else {
-          state.telegraphs.push({ kind: "line", x: c.x, y: c.y, dx: monster.specialAim.x, dy: monster.specialAim.y, length: worldPx(440), width: worldPx(monster.type === "solarWarden" ? 11 : 7), color: "#fff0a6", life: monster.specialWindup, max: monster.specialWindup });
+          state.telegraphs.push({ kind: "line", x: c.x, y: c.y, dx: monster.specialAim.x, dy: monster.specialAim.y, length: worldPx(monster.type === "sunspireKeeper" ? 520 : 440), width: worldPx(monster.type === "sunspireKeeper" ? 13 : monster.type === "solarWarden" ? 11 : 7), color: "#fff0a6", life: monster.specialWindup, max: monster.specialWindup });
         }
       }
       if (usesSolarSpecial && monster.specialState !== "idle" && monster.specialWindup <= 0) {
         if (monster.specialState === "artillery") {
           for (const zone of monster.specialTargets || []) {
-            shootProjectile(monster, zone, 0, { stationary: true, persistent: true, radius: monster.type === "solarWarden" ? 17 : 14, damageMultiplier: monster.type === "solarWarden" ? 0.86 : 0.72, life: 2100, color: "#ff9f5a", pattern: "solarArtillery" });
+            shootProjectile(monster, zone, 0, { stationary: true, persistent: true, radius: monster.type === "sunspireKeeper" ? 19 : monster.type === "solarWarden" ? 17 : monster.type === "prismBeacon" ? 16 : 14, damageMultiplier: monster.type === "sunspireKeeper" ? 0.95 : monster.type === "solarWarden" ? 0.86 : monster.type === "prismBeacon" ? 0.8 : 0.72, life: monster.type === "sunspireKeeper" ? 2400 : 2100, color: "#ff9f5a", pattern: "solarArtillery" });
           }
         } else {
           const target = { x: c.x + monster.specialAim.x * worldPx(500), y: c.y + monster.specialAim.y * worldPx(500) };
-          const offsets = monster.type === "solarWarden" ? [-0.1, 0, 0.1] : [0];
+          const offsets = monster.type === "sunspireKeeper" ? [-0.16, -0.08, 0, 0.08, 0.16] : monster.type === "solarWarden" ? [-0.1, 0, 0.1] : [0];
           for (const offset of offsets) shootProjectile(monster, target, offset, { speedMultiplier: 2.45, damageMultiplier: 1.05, radius: 6, life: 3300, piercing: true, wallPiercing: true, color: "#fff4b0", pattern: "solarSniper" });
         }
         monster.specialState = "idle";
         monster.specialTargets = [];
-        monster.fireCooldown = monster.type === "solarWarden" ? rand(1250, 1800) : rand(1500, 2200);
+        monster.fireCooldown = monster.type === "sunspireKeeper" ? rand(1050, 1550) : monster.type === "solarWarden" ? rand(1250, 1800) : rand(1500, 2200);
       }
 
       const bossPatternActive = updateBossPattern(context, monster, playerCenter, dist);
@@ -711,6 +724,13 @@
       player.slow = Math.max(player.slow, Math.round(baseSlow * (guard ? 0.5 : 1)));
       player.stamina = Math.max(0, player.stamina - (guard ? 5 : baseStamina));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), isObsidian ? "曜" : isVoid ? "黒" : monster.type === "cryptWarden" ? "墓" : monster.type === "mistKeeper" ? "霧" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "蝕" : "MAG", isObsidian ? "#aab0c8" : isVoid ? "#d8d8ff" : monster.type === "cryptWarden" ? "#d7b26d" : monster.type === "mistKeeper" ? "#9fd6c7" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "#e36dff" : "#b990ff");
+    } else if (monster.type === "sunLancer" || monster.type === "mirageCaster" || monster.type === "solarRunner" || monster.type === "prismBeacon" || monster.type === "solarWarden" || monster.type === "sunspireKeeper") {
+      const solarGuard = player.armor === 13 || player.shield === 7 || activeAccessory(player, "horizon", "horizonCharm") || activeAccessory(player, "prismLens", "prismLensCharm");
+      const baseSlow = monster.type === "sunspireKeeper" ? 1500 : monster.type === "solarWarden" ? 1350 : monster.type === "prismBeacon" ? 1100 : monster.type === "solarRunner" ? 950 : 850;
+      const baseStamina = monster.type === "sunspireKeeper" ? 26 : monster.type === "solarWarden" ? 22 : monster.type === "prismBeacon" ? 18 : monster.type === "solarRunner" ? 15 : 12;
+      player.slow = Math.max(player.slow, Math.round(baseSlow * (solarGuard ? 0.48 : 1)));
+      player.stamina = Math.max(0, player.stamina - (solarGuard ? Math.ceil(baseStamina * 0.38) : baseStamina));
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "光圧", "#fff0a6");
     } else if (monster.type === "wisp" || monster.type === "dragonling" || monster.boss) {
       const fireGuard = player.armor === 6;
       player.burn = Math.max(player.burn, Math.round((monster.boss ? 2600 : 1500) * (fireGuard ? 0.55 : 1)));
@@ -788,6 +808,16 @@
       player.wards = Math.min(9, player.wards + 3);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#fff0a6", 68);
       say("日輪砲台守を破壊した。陽冠都市の決戦装備が解禁された!", 5200);
+    } else if (monster.type === "sunspireKeeper") {
+      state.sunspireKeeperDefeated = true;
+      state.spawnedSunspireKeeper = true;
+      player.gold += 4800;
+      player.elixirs = Math.min(9, (player.elixirs || 0) + 2);
+      player.tonics = Math.min(9, (player.tonics || 0) + 2);
+      player.wards = Math.min(9, player.wards + 4);
+      player.warps = Math.min(9, (player.warps || 0) + 1);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#fff0a6", 72);
+      say("日鏡塔の守主を倒した。塔奥の反射水晶を受け取れる!", 5400);
     } else if (monster.type === "frostGolem") {
       state.frostGolemDefeated = true;
       state.spawnedFrostGolem = true;
@@ -868,7 +898,7 @@
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
       say("南東の道番を越え、守りの護石を得た!", 4200);
-    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "frostGolem", "towerWarden", "solarWarden"].includes(monster.type)) {
+    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "frostGolem", "towerWarden", "solarWarden", "sunspireKeeper"].includes(monster.type)) {
       state.guardianDefeated = true;
       player.sealCrest = true;
       player.scales = Math.min(3, player.scales + 1);

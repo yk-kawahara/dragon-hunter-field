@@ -20,6 +20,7 @@
     CHAPTER4_REQUIREMENTS,
     CHAPTER5_REQUIREMENTS,
     SOLAR_WARDEN_REQUIREMENTS,
+    SUNSPIRE_KEEPER_REQUIREMENTS,
     OBSIDIAN_GOLEM_REQUIREMENTS,
     SMUGGLER_CAPTAIN_REQUIREMENTS,
     REGEN_SENTINEL_REQUIREMENTS,
@@ -47,6 +48,9 @@
     if (stage === "emberReady") return "目的: 熾火聖域の最奥へ進む";
     if (stage === "emberSupply") return "目的: 熾火聖域の補給箱を確保";
     if (stage === "sunriseSeal") return "目的: 日出高原南の陽光封印碑を読む";
+    if (stage === "sunspireReward") return "目的: 日鏡塔の反射水晶を受け取る";
+    if (stage === "sunspireKeeper") return "目的: 日鏡塔の守主を倒す";
+    if (stage === "sunspireRoute") return `目的: 陽冠都市東の日鏡塔へ LV${SUNSPIRE_KEEPER_REQUIREMENTS.level}`;
     if (stage === "solarWarden") return "目的: 日輪砲台守を破壊";
     if (stage === "sunriseRoute") return `目的: 日出高原へ LV${SOLAR_WARDEN_REQUIREMENTS.level}`;
     if (stage === "chapter4cleared") return "第4章CLEAR: 霜冠竜を封じた";
@@ -94,6 +98,9 @@
       const cost = nextUpgradeCost(context);
       if (state.chapter4Reported && !state.solarWardenDefeated && player.level < SOLAR_WARDEN_REQUIREMENTS.level) return `日輪砲台守にはLV${SOLAR_WARDEN_REQUIREMENTS.level}が要る`;
       if (state.chapter4Reported && !state.solarWardenDefeated) return "黎明港から北東高原の日輪砲台へ";
+      if (state.chapter4Reported && state.solarWardenDefeated && !state.sunspireKeeperDefeated && player.level < SUNSPIRE_KEEPER_REQUIREMENTS.level) return `日鏡塔の守主にはLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}が要る`;
+      if (state.chapter4Reported && state.solarWardenDefeated && !state.sunspireKeeperDefeated) return "陽冠都市の東門から日鏡塔へ";
+      if (state.chapter4Reported && state.sunspireKeeperDefeated && !state.chests.has("sunspire-reliquary")) return "日鏡塔奥で反射水晶を受け取る";
       if (state.chapter4Reported && !state.discoveries.has("sunrise-seal")) return "陽冠都市の南街道で陽光封印碑を探す";
       if (state.chapter4Reported && !state.chests.has("ember-sanctum-cache")) return "熾火聖域で決戦物資を確保する";
       if (state.chapter4Reported && player.level < CHAPTER5_REQUIREMENTS.level) return `熾火天竜にはLV${CHAPTER5_REQUIREMENTS.level}が要る`;
@@ -129,6 +136,10 @@
     if (region === "southIsles") return "南風岬砦で補給し、小島の橋と古い祠を巡ろう";
     if (region === "dawnCoast") return "黎明港を拠点に、北の山道か西海岸の迂回路を選ぼう";
     if (region === "sunriseHighland" && !state.solarWardenDefeated) return "光槍兵の長い射線を横切り、北東高原の日輪砲台へ";
+    if (region === "sunspire" && !state.sunspireKeeperDefeated && player.level < SUNSPIRE_KEEPER_REQUIREMENTS.level) return `日鏡塔はLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}級。無理なら陽冠都市へ戻ろう`;
+    if (region === "sunspire" && !state.sunspireKeeperDefeated) return "反射鏡の着弾円を避け、塔奥の日鏡塔の守主へ";
+    if (region === "sunspire" && !state.chests.has("sunspire-reliquary")) return "守主の奥の遺物庫で反射水晶を取ろう";
+    if (region === "sunspire") return "反射水晶を装備し、南の陽光封印碑と熾火聖域へ備えよう";
     if (region === "sunriseHighland" && !state.discoveries.has("sunrise-seal")) return "陽冠都市の南街道で陽光封印碑を探そう";
     if (region === "sunriseHighland") return "陽冠都市の高額装備で狙撃と着弾術を軽減できる";
     if (region === "emberIsles" && !state.chests.has("ember-sanctum-cache")) return "熾火聖域の補給箱を確保して退路を作ろう";
@@ -194,9 +205,12 @@
     if (state.chapter5Reported) return "chapter5cleared";
     if (state.chapter5Victory || (state.emberDragonDefeated && !state.chapter5Reported)) return "chapter5report";
     if (state.spawnedEmberDragon) return "emberDragon";
-    if (state.chapter4Reported && state.solarWardenDefeated && state.discoveries.has("sunrise-seal") && state.chests.has("ember-sanctum-cache") && player.level >= CHAPTER5_REQUIREMENTS.level) return "emberReady";
-    if (state.chapter4Reported && state.solarWardenDefeated && state.discoveries.has("sunrise-seal") && !state.chests.has("ember-sanctum-cache")) return "emberSupply";
-    if (state.chapter4Reported && state.solarWardenDefeated && !state.discoveries.has("sunrise-seal")) return "sunriseSeal";
+    if (state.chapter4Reported && state.solarWardenDefeated && state.sunspireKeeperDefeated && state.chests.has("sunspire-reliquary") && state.discoveries.has("sunrise-seal") && state.chests.has("ember-sanctum-cache") && player.level >= CHAPTER5_REQUIREMENTS.level) return "emberReady";
+    if (state.chapter4Reported && state.solarWardenDefeated && state.sunspireKeeperDefeated && state.chests.has("sunspire-reliquary") && state.discoveries.has("sunrise-seal") && !state.chests.has("ember-sanctum-cache")) return "emberSupply";
+    if (state.chapter4Reported && state.solarWardenDefeated && state.sunspireKeeperDefeated && state.chests.has("sunspire-reliquary") && !state.discoveries.has("sunrise-seal")) return "sunriseSeal";
+    if (state.spawnedSunspireKeeper) return "sunspireKeeper";
+    if (state.chapter4Reported && state.solarWardenDefeated && state.sunspireKeeperDefeated && !state.chests.has("sunspire-reliquary")) return "sunspireReward";
+    if (state.chapter4Reported && state.solarWardenDefeated && !state.sunspireKeeperDefeated) return "sunspireRoute";
     if (state.spawnedSolarWarden) return "solarWarden";
     if (state.chapter4Reported) return "sunriseRoute";
     if (state.chapter4Reported) return "chapter4cleared";
@@ -262,6 +276,9 @@
       chapter4cleared: "第4章クリア",
       sunriseRoute: "日出高原遠征",
       solarWarden: "日輪砲台戦",
+      sunspireRoute: "日鏡塔遠征",
+      sunspireKeeper: "日鏡塔守主戦",
+      sunspireReward: "反射水晶",
       sunriseSeal: "陽光封印",
       emberSupply: "熾火聖域探索",
       emberReady: "熾火天竜の聖域",

@@ -59,13 +59,14 @@ Current project status:
 * Southern capes and island routes add bridges, a causeway, shrine island, caches, and a second long-range direction beyond the western chapter corridor.
 * The world now uses editable polygon coastlines, naturalized curved roads, and a cartographic overview layer that hides embedded interior mazes behind readable terrain/landmark symbols.
 * 日出大陸 adds 黎明港, 陽冠都市, a northern mountain route, western coast road, central ridge shortcut, valley shrine, southern road, and access to 熾火群島.
-* The world now contains 106 NPCs and 11 safe/travel anchors, allowing recovery and restock radius to move across the outer sea.
-* Chapter 5 now runs from the Chapter 4 report through 日出高原, 日輪砲台守, 陽冠都市's high-price countermeasure shop, 熾火群島, 熾火天竜, and an elder-report ending.
-* 光槍兵, 陽炎術師, 日輪砲台守, and 熾火天竜 introduce long sniper lines, delayed artillery zones, piercing shots, broad multi-wave attacks, and mixed reinforcements.
+* The world now contains 114 NPCs and 11 safe/travel anchors, allowing recovery and restock radius to move across the outer sea.
+* Chapter 5 now runs from the Chapter 4 report through 日出高原, 日輪砲台守, 陽冠都市's high-price countermeasure shop, 日鏡塔, 反射水晶, 熾火群島, 熾火天竜, and an elder-report ending.
+* 光槍兵, 陽炎術師, 閃光走者, 光柱鏡, 日輪砲台守, 日鏡塔の守主, and 熾火天竜 introduce long sniper lines, delayed artillery zones, charges, piercing shots, broad multi-wave attacks, and mixed reinforcements.
 
 Current high-priority risks:
 
 * Full real-browser desktop/mobile play QA is still needed.
+* Browser QA in this session was blocked by the in-app browser local-file URL policy; VM smoke coverage is current, but real visual/mobile checks remain needed.
 * Full fresh-save manual playthrough to elder report is still needed.
 * Mobile UI and inventory overlay need real-browser confirmation.
 * Future map expansion must avoid empty terrain and preserve reachability; the new `256x256` space now needs complete 蒼風島 / 日出大陸 enemy, reward, dungeon, and boss arcs rather than another size increase.
@@ -103,6 +104,34 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-25: Chapter 5 日鏡塔 quality and volume pass
+
+Goal: make Chapter 5 feel more deliberate and substantial by adding a real high-level interior expedition between the super-city preparation step and the final 熾火群島 boss route.
+
+Implemented:
+
+* Added 日鏡塔 as a portal-linked Chapter 5 interior entered from 陽冠都市's east gate.
+* Added tower supply and observation rewards, plus a guarded reliquary reward.
+* Added `閃光走者`, a fast charge enemy that pressures side-steps rather than only projectile dodging.
+* Added `光柱鏡`, a stationary artillery enemy that creates persistent solar danger zones.
+* Added LV40 `日鏡塔の守主`, a midboss with long sniper lines, multi-zone artillery, and half-HP mirror/runner reinforcements.
+* Added `反射水晶` as the tower reward and a new prerequisite/countermeasure before 熾火天竜.
+* Updated Chapter 5 objective text, town/field guidance, Suncrest guide dialogue, world-map marker, region danger text, save/load/reset state, reward locks, and smoke coverage.
+* Moved the tower interior after verification found it overlapped 蒼風島's lighthouse route; fixed two Suncrest NPCs that were standing on blocked city tiles.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS, including reachability, 114 NPC placements, portal travel, save/load migration, guarded 日鏡塔 reliquary, story flow through Chapter 5 report, and behavior checks for 閃光走者 / 光柱鏡 / 日鏡塔の守主.
+* `scripts/generate-map-preview.ps1`: PASS.
+* Real-browser QA attempted through the in-app browser, but local `file://` navigation was blocked by browser URL policy. Standalone Playwright was also unavailable because the bundled package lacked `playwright-core` in ordinary Node resolution.
+
+Known risks / next work:
+
+* Manual playtest is still needed for 日鏡塔 attrition, boss readability, 反射水晶 strength, and Chapter 5 gold/equipment pacing.
+* Desktop/mobile visual QA remains needed because this session could not load the local page in a browser surface.
 
 ### 2026-06-22: Chapter 5 horizon-fire expedition
 

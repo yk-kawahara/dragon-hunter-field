@@ -8,7 +8,7 @@ Expand the roughly 20-minute Chapter 1 route into a larger RPG while preserving 
 
 Current focus:
 
-* Chapter 5 is now the active late-game arc: 黎明港 -> 日出高原 -> 日輪砲台守 -> 陽冠都市 equipment preparation -> 熾火群島 -> 熾火天竜 -> elder report.
+* Chapter 5 is now the active late-game arc: 黎明港 -> 日出高原 -> 日輪砲台守 -> 陽冠都市 equipment preparation -> 日鏡塔 -> 反射水晶 -> 熾火群島 -> 熾火天竜 -> elder report.
 * Balance the intended "unprepared ranged oppression -> expensive city countermeasure -> conquered route" reversal without making the complete set mandatory.
 * Deepen the new `256x256` three-continent overworld without creating empty walkable space.
 * Preserve the organic coastline polygons and cartographic overview; never expose embedded interior mazes on the whole-world map.
@@ -35,6 +35,25 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 ## Next development order
 
+### 0.5b Chapter 5 quality/volume pass (implemented 2026-06-25)
+
+Completed:
+
+* Added 日鏡塔 as a dedicated Chapter 5 interior entered from 陽冠都市's east gate.
+* Added `閃光走者`, a fast solar charger that changes the high-level tower from pure ranged pressure into mixed movement pressure.
+* Added `光柱鏡`, a stationary artillery enemy that marks persistent solar danger zones.
+* Added the LV40 `日鏡塔の守主` midboss with long sniper lines, artillery zones, and half-HP reinforcements.
+* Added `反射水晶` as a guarded accessory reward and new boss-challenge prerequisite, making the final 熾火聖域 push depend on a real expedition reward.
+* Added tower supply and observation rewards, Suncrest guide text, objective/stage text, save/load/reset migration, world-map marker coverage, guarded chest behavior, and VM smoke coverage.
+* Moved the embedded tower interior away from existing 蒼風島 terrain after verification caught overlap with the lighthouse route.
+
+Next balance/content order:
+
+1. Manual Chapter 5 playtest from a Chapter 4 clear save: confirm 日輪砲台守 -> 陽冠都市 -> 日鏡塔 -> 熾火群島 feels like a longer expedition rather than three isolated checks.
+2. Tune 日鏡塔 spawn density, 守主 HP, reinforcement timing, and 反射水晶 strength against actual player movement.
+3. Add one more optional Suncrest service or rumor chain only if the tower route still feels under-explained after manual play.
+4. Add a future Chapter 6 only after Chapter 5 route length, economy, and visual readability are manually confirmed.
+
 ### 0.5 Chapter 5 horizon-fire arc (implemented 2026-06-22)
 
 Completed:
@@ -52,7 +71,7 @@ Next balance/content order:
 2. Tune the 42,000G / 48,000G / 36,000G / 32,000G metropolis prices so at least one defensive countermeasure is attainable after the midboss without erasing the need to fight locally.
 3. Validate warning readability and dodge windows for 820ms sniper, 1120ms artillery, and the three 熾火天竜 pattern families at desktop and mobile-like viewports.
 4. Deepen 陽冠都市 with specialist services and optional urban activities only after the Chapter 5 combat/economy loop is manually confirmed.
-5. Add a distinct interior on 日出大陸 so the new chapter has one longer enclosed expedition as well as open-world highland pressure.
+5. Add a distinct interior on 日出大陸 so the new chapter has one longer enclosed expedition as well as open-world highland pressure. **Completed by 日鏡塔; tuning remains.**
 
 ### 0. Playtest-driven priority reset (2026-06-21)
 

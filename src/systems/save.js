@@ -85,6 +85,7 @@
         frostCharm: player.frostCharm,
         skyCharm: player.skyCharm,
         horizonCharm: player.horizonCharm,
+        prismLensCharm: player.prismLensCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -110,6 +111,8 @@
       frostDragonDefeated: state.frostDragonDefeated,
       spawnedSolarWarden: state.spawnedSolarWarden,
       solarWardenDefeated: state.solarWardenDefeated,
+      spawnedSunspireKeeper: state.spawnedSunspireKeeper,
+      sunspireKeeperDefeated: state.sunspireKeeperDefeated,
       spawnedEmberDragon: state.spawnedEmberDragon,
       emberDragonDefeated: state.emberDragonDefeated,
       spawnedEclipseDragon: state.spawnedEclipseDragon,
@@ -165,6 +168,7 @@
       player.frostCharm = Boolean(player.frostCharm);
       player.skyCharm = Boolean(player.skyCharm);
       player.horizonCharm = Boolean(player.horizonCharm);
+      player.prismLensCharm = Boolean(player.prismLensCharm);
       normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
@@ -189,6 +193,7 @@
       state.towerWardenDefeated = Boolean(data.towerWardenDefeated);
       state.frostDragonDefeated = Boolean(data.frostDragonDefeated);
       state.solarWardenDefeated = Boolean(data.solarWardenDefeated);
+      state.sunspireKeeperDefeated = Boolean(data.sunspireKeeperDefeated);
       state.emberDragonDefeated = Boolean(data.emberDragonDefeated);
       state.eclipseDragonDefeated = Boolean(data.eclipseDragonDefeated);
       state.voidDragonDefeated = Boolean(data.voidDragonDefeated);
@@ -205,6 +210,7 @@
       state.spawnedTowerWarden = state.towerWardenDefeated ? Boolean(data.spawnedTowerWarden) : false;
       state.spawnedFrostDragon = state.frostDragonDefeated ? Boolean(data.spawnedFrostDragon) : false;
       state.spawnedSolarWarden = state.solarWardenDefeated ? Boolean(data.spawnedSolarWarden) : false;
+      state.spawnedSunspireKeeper = state.sunspireKeeperDefeated ? Boolean(data.spawnedSunspireKeeper) : false;
       state.spawnedEmberDragon = state.emberDragonDefeated ? Boolean(data.spawnedEmberDragon) : false;
       state.spawnedEclipseDragon = state.eclipseDragonDefeated ? Boolean(data.spawnedEclipseDragon) : false;
       state.spawnedVoidDragon = state.voidDragonDefeated ? Boolean(data.spawnedVoidDragon) : false;
@@ -283,6 +289,7 @@
       frostCharm: false,
       skyCharm: false,
       horizonCharm: false,
+      prismLensCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,
@@ -330,6 +337,8 @@
     state.frostDragonDefeated = false;
     state.spawnedSolarWarden = false;
     state.solarWardenDefeated = false;
+    state.spawnedSunspireKeeper = false;
+    state.sunspireKeeperDefeated = false;
     state.spawnedEmberDragon = false;
     state.emberDragonDefeated = false;
     state.spawnedEclipseDragon = false;

@@ -318,7 +318,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "emberSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -552,6 +552,23 @@
       say("日輪砲台守の金庫から6800Gと陽冠都市の決戦物資を得た");
       return true;
     }
+    if (reward === "sunspireSupply") {
+      player.gold += 3600;
+      addItem(player, "elixir", 1);
+      addItem(player, "tonic", 3);
+      addItem(player, "ward", 3);
+      addItem(player, "warp", 1);
+      say("日鏡塔の補給庫から塔攻略用の物資を得た");
+      return true;
+    }
+    if (reward === "prismLens") {
+      player.gold += 2400;
+      addItem(player, "elixir", 2);
+      addItem(player, "ward", 3);
+      grantAccessory(context, "prismLens", "反射水晶を得た。装備すると光弾と熾火の広域攻撃に備えやすい");
+      say("日鏡塔の遺物庫で反射水晶を得た");
+      return true;
+    }
     if (reward === "emberSupply") {
       player.gold += 4200;
       addItem(player, "elixir", 3);
@@ -721,6 +738,15 @@
       player.wards = Math.min(9, player.wards + 4);
       burst(x, y, "#fff0a6", 28);
       say("陽光の封印碑を読んだ。日輪砲台守を破れば熾火天竜への道が開く");
+      return;
+    }
+    if (discovery.kind === "sunspireHint") {
+      player.gold += 520;
+      player.stamina = player.staminaMax;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 2);
+      burst(x, y, "#fff0a6", 22);
+      say("日鏡塔の観測記録を読んだ。光柱鏡を先に壊すと塔の圧力を減らせる");
       return;
     }
     if (discovery.kind === "frostTowerHint") {

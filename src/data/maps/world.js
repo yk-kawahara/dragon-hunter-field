@@ -390,6 +390,7 @@
       { id: "sunrise-pilgrim-road", tile: "+", width: 2, points: [[214, 72], [220, 60], [229, 50], [237, 43]] },
       { id: "sunrise-west-coast-road", tile: "+", width: 1, points: [[205, 72], [201, 90], [203, 109], [212, 127], [229, 130]] },
       { id: "sunrise-ridge-shortcut", tile: "+", width: 1, points: [[219, 73], [230, 58], [243, 71], [241, 102]] },
+      { id: "sunspire-tower-road", tile: "+", width: 1, points: [[238, 129], [246, 128]] },
       { id: "sunrise-south-road", tile: "+", width: 1, points: [[238, 129], [245, 148], [238, 166], [221, 175]] },
       { id: "ember-causeway", tile: "+", width: 1, points: [[221, 175], [218, 192], [220, 207], [222, 226]] },
       { id: "ember-island-loop", tile: "+", width: 1, points: [[222, 226], [207, 218], [199, 229], [212, 242], [230, 246], [244, 233], [242, 214], [222, 207]] },
@@ -568,6 +569,31 @@
       "########++++++#############",
       "........++++++.............",
       "........++++++.............",
+    ] },
+    { id: "sunspire-gate", x: 246, y: 128, rows: ["C"] },
+    { id: "sunspire-observatory", x: 160, y: 1, rows: [
+      "###################################",
+      "#C________________________________#",
+      "#_#######_#######_#######_#####__#",
+      "#_________________________________#",
+      "#___C_____________________________#",
+      "#_____++++______++++______++++___#",
+      "#_____+__+______+__+______+__+___#",
+      "#_____++++______++++______++++___#",
+      "#_________________________________#",
+      "#____####____++++++____####______#",
+      "#____#..#____+____+____#..#______#",
+      "#____####____++++++____####______#",
+      "#_________________________________#",
+      "#______+++++++____+++++++________#",
+      "#______+____#+____+#____+________#",
+      "#______+++++++____+++++++________#",
+      "#_________________________________#",
+      "#____####__________++++++________#",
+      "#____#..#__________+____+________#",
+      "#____####__________++++++________#",
+      "#_________________________________#",
+      "###################################",
     ] },
     { id: "sunrise-north-ruin", x: 232, y: 43, rows: [
       "..##++++###..",
@@ -756,6 +782,7 @@
     { x1: 157, y1: 163, x2: 179, y2: 176, tile: "." },
     { x1: 202, y1: 64, x2: 226, y2: 79, tile: "." },
     { x1: 224, y1: 120, x2: 253, y2: 136, tile: "." },
+    { x1: 160, y1: 1, x2: 195, y2: 23, tile: "." },
   ];
 
   const OVERVIEW_TERRAIN = [
@@ -765,6 +792,7 @@
     { id: "black-sun-highlands", tile: "#", width: 3, points: [[67, 136], [80, 140], [94, 138], [108, 145]] },
     { id: "frost-frontier-pines", tile: "T", width: 3, points: [[42, 151], [55, 154], [70, 151]] },
     { id: "frost-crown-range", tile: "#", width: 3, points: [[84, 151], [97, 154], [111, 157]] },
+    { id: "sunspire-overview-range", tile: "#", width: 2, points: [[163, 8], [175, 3], [189, 10]] },
   ];
 
   const OVERVIEW_LANDMARKS = [
@@ -778,6 +806,7 @@
     { id: "southwind-outpost", x: 168, y: 169, rows: [".#####.", "#^___^#", "#__+__#", ".##+##."] },
     { id: "dawn-harbor", x: 214, y: 72, rows: [".^^^^^.", "^_____^", "__+++__", "^_____^", ".+++++."] },
     { id: "suncrest-city", x: 238, y: 129, rows: [".^^^^^^^.", "^_______^", "__+++++__", "^_______^", "__+++++__", ".+++++++."] },
+    { id: "sunspire", x: 180, y: 10, rows: [".###.", "#_^_#", "#_C_#", ".#+#."] },
     { id: "ember-sanctum", x: 222, y: 226, rows: [".#####.", "#^___^#", "#__C__#", ".##+##."] },
     { id: "dragon-cave", x: 51, y: 18, rows: [".###.", "#_C_#", ".+++."] },
     { id: "old-tower", x: 104, y: 90, rows: [".###.", "#_^_#", "#_+_#", ".#+#."] },
@@ -924,6 +953,14 @@
     { type: "npc", npcType: "villager", x: 244, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "villager", x: 230, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
     { type: "npc", npcType: "villager", x: 249, y: 125, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "merchant", x: 242, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guide", x: 235, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 236, y: 126, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "guard", x: 249, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 232, y: 126, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 235, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 236, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 247, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
   ];
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {

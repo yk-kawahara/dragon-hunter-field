@@ -44,6 +44,8 @@
     CHAPTER4_REQUIREMENTS,
     SOLAR_WARDEN_SITE,
     SOLAR_WARDEN_REQUIREMENTS,
+    SUNSPIRE_KEEPER_SITE,
+    SUNSPIRE_KEEPER_REQUIREMENTS,
     EMBER_DRAGON_SITE,
     CHAPTER5_REQUIREMENTS,
     monsterTypes,
@@ -56,7 +58,7 @@
   } = mathHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
-  const INTERIOR_REGIONS = new Set(["cave", "undercity", "frostTower1", "frostTower2"]);
+  const INTERIOR_REGIONS = new Set(["cave", "undercity", "frostTower1", "frostTower2", "sunspire"]);
 
   function monsterSize(typeName, template) {
     return worldPx(template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11);
@@ -171,6 +173,7 @@
     const tx = Math.floor(x / TILE);
     const ty = Math.floor(y / TILE);
     if (tx >= 190 && ty >= 185) return "emberIsles";
+    if (tx >= 160 && tx <= 195 && ty >= 1 && ty <= 23) return "sunspire";
     if (tx >= 198 && ty < 90) return "dawnCoast";
     if (tx >= 190) return "sunriseHighland";
     if (tx >= 132 && ty < 80) return "windCoast";
@@ -219,6 +222,7 @@
       if (region === "mistShrine") return ["bubbler", "wisp", "trapFlower"];
       if (region === "undercity") return ["shieldSoldier", "wisp", "vaultLeech"];
       if (region === "frostTower1" || region === "frostTower2") return ["frostBeacon", "frostMoth", "shieldSoldier"];
+      if (region === "sunspire") return ["prismBeacon", "solarRunner", "shieldSoldier"];
       if (region === "frost" || region === "frostCave" || region === "frostCitadel") return ["frostMoth", "frostBeast", "shieldSoldier"];
       const safePool = region === "grassland" ? ["slime", "slime", "bat"] : pool.filter((type) => !["dragonling", "wisp", "summoner", "trapFlower", "sorcerer", "moonShade", "eclipseMage", "voidWraith", "obsidianCrawler", "shieldSoldier", "mistLancer", "mistKeeper"].includes(type));
       return safePool.length ? safePool : ["bat", "boar"];
@@ -291,7 +295,7 @@
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
     const interior = INTERIOR_REGIONS.has(region);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "emberIsles" ? 15 : 6;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -376,6 +380,7 @@
     if (region === "southIsles") return "南岬群島: 退路の長い海辺の遠征";
     if (region === "dawnCoast") return "黎明海岸: 外洋の先で霧槍兵と凍気敵が待つ";
     if (region === "sunriseHighland") return "日出高原: 山脈・谷・都市街道を強敵が巡回する";
+    if (region === "sunspire") return "日鏡塔: 反射鏡と閃光走者が光弾を重ねる";
     if (region === "emberIsles") return "熾火群島: 罠・召喚・重圧が重なる最深部";
     if (region === "frostTower1") return "霜見塔一階: 退路を確かめて登れ";
     if (region === "frostCitadel") return "霜冠城: 第4章の最奥";
@@ -497,11 +502,21 @@
       && player.level >= SOLAR_WARDEN_REQUIREMENTS.level;
   }
 
+  function sunspireKeeperReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.sunspireKeeperDefeated
+      && state.chapter4Reported
+      && state.solarWardenDefeated
+      && player.level >= SUNSPIRE_KEEPER_REQUIREMENTS.level;
+  }
+
   function emberDragonReady(context) {
     const { state, player } = requireSpawnContext(context);
     return !state.emberDragonDefeated
       && state.chapter4Reported
       && state.solarWardenDefeated
+      && state.sunspireKeeperDefeated
+      && state.chests.has("sunspire-reliquary")
       && state.discoveries.has("sunrise-seal")
       && state.chests.has("ember-sanctum-cache")
       && player.level >= CHAPTER5_REQUIREMENTS.level;
@@ -619,6 +634,14 @@
     return Math.hypot(pc.x - sx, pc.y - sy) < worldPx(118);
   }
 
+  function playerNearSunspireKeeperSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const sx = (SUNSPIRE_KEEPER_SITE.x + 0.5) * TILE;
+    const sy = (SUNSPIRE_KEEPER_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - sx, pc.y - sy) < worldPx(104);
+  }
+
   function playerNearEmberDragonSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -673,6 +696,9 @@
     if (state.spawnedSolarWarden && !state.solarWardenDefeated && !hasLiveMonster(context, "solarWarden")) {
       state.spawnedSolarWarden = false;
     }
+    if (state.spawnedSunspireKeeper && !state.sunspireKeeperDefeated && !hasLiveMonster(context, "sunspireKeeper")) {
+      state.spawnedSunspireKeeper = false;
+    }
     if (state.spawnedEmberDragon && !state.emberDragonDefeated && !hasLiveMonster(context, "emberDragon")) {
       state.spawnedEmberDragon = false;
     }
@@ -723,6 +749,12 @@
       state.spawnedSolarWarden = true;
       spawnMonster(context, "solarWarden", SOLAR_WARDEN_SITE.x * TILE, SOLAR_WARDEN_SITE.y * TILE);
       say("日出高原の砲台から日輪砲台守が起動した!", 3600);
+    }
+
+    if (sunspireKeeperReady(context) && !state.spawnedSunspireKeeper && playerNearSunspireKeeperSite(context)) {
+      state.spawnedSunspireKeeper = true;
+      spawnMonster(context, "sunspireKeeper", SUNSPIRE_KEEPER_SITE.x * TILE, SUNSPIRE_KEEPER_SITE.y * TILE);
+      say("日鏡塔の守主が反射水晶を守って現れた!", 3600);
     }
 
     if (emberDragonReady(context) && !state.spawnedEmberDragon && playerNearEmberDragonSite(context)) {
@@ -798,6 +830,7 @@
     towerWardenReady,
     frostDragonReady,
     solarWardenReady,
+    sunspireKeeperReady,
     emberDragonReady,
     hasLiveMonster,
     playerNearGuardianSite,
@@ -814,6 +847,7 @@
     playerNearTowerWardenSite,
     playerNearFrostDragonSite,
     playerNearSolarWardenSite,
+    playerNearSunspireKeeperSite,
     playerNearEmberDragonSite,
     updateStoryEvents,
   };

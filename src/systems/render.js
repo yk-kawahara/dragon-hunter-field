@@ -41,6 +41,7 @@
     FROST_GOLEM_REQUIREMENTS,
     FROST_DRAGON_SITE,
     CHAPTER4_REQUIREMENTS,
+    SUNSPIRE_KEEPER_SITE,
     EMBER_DRAGON_SITE,
     CHAPTER5_REQUIREMENTS,
     weaponNames,
@@ -281,7 +282,7 @@ function draw(context) {
   drawWorldMapOverlay();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
-  if ((state.victory && !state.elderReported) || state.chapter2Victory || state.chapter3Victory || state.chapter4Victory) drawVictoryBanner();
+  if ((state.victory && !state.elderReported) || state.chapter2Victory || state.chapter3Victory || state.chapter4Victory || state.chapter5Victory) drawVictoryBanner();
   if (state.clearPanelOpen) drawEndingOverlay();
 
   ctx.restore();
@@ -364,6 +365,7 @@ function drawWorldMapOverlay() {
     { site: ECLIPSE_DRAGON_SITE, defeated: state.eclipseDragonDefeated },
     { site: VOID_DRAGON_SITE, defeated: state.voidDragonDefeated },
     { site: FROST_DRAGON_SITE, defeated: state.frostDragonDefeated },
+    { site: SUNSPIRE_KEEPER_SITE, defeated: state.sunspireKeeperDefeated },
     { site: EMBER_DRAGON_SITE, defeated: state.emberDragonDefeated },
   ];
   for (const boss of bosses) {
@@ -379,7 +381,7 @@ function drawWorldMapOverlay() {
     grassland: "始まりの草原", north: "北森", east: "東の森", mine: "廃鉱山", cave: "竜洞",
     ash: "灰の街道", highland: "天脊高原", windCoast: "蒼風海岸", eastHighland: "蒼風島高原", southIsles: "南岬群島", dawnCoast: "黎明海岸", sunriseHighland: "日出高原", emberIsles: "熾火群島", tower: "古塔", moon: "月影廃墟", eclipse: "月蝕城",
     obsidian: "黒曜地帯", void: "黒陽城", undercity: "地下墓所", frost: "霜原",
-    frostCave: "氷窟", frostCitadel: "霜冠城", frostTower1: "霜見塔一階", frostTower2: "霜見塔二階",
+    frostCave: "氷窟", frostCitadel: "霜冠城", frostTower1: "霜見塔一階", frostTower2: "霜見塔二階", sunspire: "日鏡塔",
   };
   ctx.fillStyle = "#ffffff";
   ctx.font = "8px monospace";
@@ -1381,14 +1383,14 @@ function drawDiscoveries(cam) {
       ctx.fillRect(sx + 6, sy + 3, 4, 4);
       ctx.fillRect(sx + 7, sy + 8, 2, 5);
       if (!found) drawGlint(sx + 11, sy + 4, "#ff5e9f");
-    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint" || discovery.kind === "mistHint" || discovery.kind === "cryptHint" || discovery.kind === "frostHint") {
+    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint" || discovery.kind === "mistHint" || discovery.kind === "cryptHint" || discovery.kind === "frostHint" || discovery.kind === "sunspireHint") {
       ctx.fillStyle = found ? "#604622" : "#7b4b25";
       ctx.fillRect(sx + 5, sy + 5, 7, 8);
-      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : "#ffd166";
+      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : "#ffd166";
       ctx.fillRect(sx + 3, sy + 4, 10, 3);
       ctx.fillStyle = "#2a1d12";
       ctx.fillRect(sx + 8, sy + 8, 2, 6);
-      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : "#ffd166");
+      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : "#ffd166");
     }
   }
 }
@@ -2317,7 +2319,7 @@ function drawEffects(cam) {
 function drawScreenGrade(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
-  const inCave = (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) || (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) || (tx >= 88 && tx <= 118 && ty >= 18 && ty <= 32);
+  const inCave = (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) || (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) || (tx >= 88 && tx <= 118 && ty >= 18 && ty <= 32) || (tx >= 160 && tx <= 195 && ty >= 1 && ty <= 23);
   const gradient = ctx.createLinearGradient(0, 0, 0, VIEW_H);
   gradient.addColorStop(0, inCave ? "rgba(35, 10, 8, 0.18)" : "rgba(255, 244, 192, 0.08)");
   gradient.addColorStop(0.52, "rgba(0, 0, 0, 0)");
@@ -2465,10 +2467,10 @@ function drawVictoryBanner() {
   ctx.textAlign = "center";
   ctx.fillStyle = "#fff2a6";
   ctx.font = "10px monospace";
-  ctx.fillText(state.chapter4Victory ? "FROST CROWN SEALED" : state.chapter3Victory ? "BLACK SUN SEALED" : state.chapter2Victory ? "ECLIPSE SEALED" : "DRAGON SEALED", W / 2, 39);
+  ctx.fillText(state.chapter5Victory ? "EMBER WYRM SEALED" : state.chapter4Victory ? "FROST CROWN SEALED" : state.chapter3Victory ? "BLACK SUN SEALED" : state.chapter2Victory ? "ECLIPSE SEALED" : "DRAGON SEALED", W / 2, 39);
   ctx.font = "7px monospace";
   ctx.fillStyle = "#ffffff";
-  ctx.fillText(state.chapter4Victory ? "長老へ第4章の報告" : state.chapter3Victory ? "長老へ第3章の報告" : state.chapter2Victory ? "長老へ第2章の報告" : "村へ戻り長老に報告", W / 2, 52);
+  ctx.fillText(state.chapter5Victory ? "長老へ第5章の報告" : state.chapter4Victory ? "長老へ第4章の報告" : state.chapter3Victory ? "長老へ第3章の報告" : state.chapter2Victory ? "長老へ第2章の報告" : "村へ戻り長老に報告", W / 2, 52);
 }
   globalThis.DRAGON_HUNTER_RENDER = {
     draw,

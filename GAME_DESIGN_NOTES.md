@@ -89,8 +89,10 @@ Progression:
 2. Enter 日出高原, where 光槍兵 can fire piercing shots from near the edge of the visible field and 陽炎術師 marks several delayed impact zones.
 3. Reach and defeat the LV38 日輪砲台守, which alternates sniper lanes and artillery zones.
 4. Enter the super-city 陽冠都市 and spend accumulated late-game gold on expensive countermeasure gear.
-5. Read the 陽光封印碑, secure the 熾火聖域 expedition cache, and reach LV42.
-6. Cross 熾火群島 and defeat 熾火天竜, then return to the elder for the Chapter 5 ending.
+5. Enter 日鏡塔 from the city's east gate. The tower adds a longer enclosed Chapter 5 expedition with 閃光走者 charges, 光柱鏡 artillery, and the LV40 日鏡塔の守主.
+6. Defeat 日鏡塔の守主 and claim `反射水晶`, a final countermeasure accessory that makes the 熾火群島 push feel earned rather than a checklist.
+7. Read the 陽光封印碑, secure the 熾火聖域 expedition cache, and reach LV42.
+8. Cross 熾火群島 and defeat 熾火天竜, then return to the elder for the Chapter 5 ending.
 
 The intended reversal is explicit: entering the highland unprepared should feel oppressive, while the same sniper/artillery pressure becomes readable and survivable after buying city gear.
 
@@ -100,6 +102,14 @@ Chapter 5 countermeasure set:
 * `陽冠の光鎧`: major reduction to solar sniper, artillery, and boss projectile damage.
 * `日輪大盾`: strong frontal protection and additional ranged/solar reduction.
 * `遠見の護符`: accessory choice that reduces sniper, light-cannon, artillery, and ordinary projectile pressure.
+* `反射水晶`: earned in 日鏡塔 after the LV40 guardian. It further reduces solar/ember pressure, especially tower artillery and final-boss magic, and rewards players who complete the enclosed expedition before the southern push.
+
+Chapter 5 dungeon identity:
+
+* 日鏡塔 is the quality/volume layer between the city and final boss route. It should feel like a serious high-level detour, not a small cache room.
+* 閃光走者 teaches fast charge evasion under solar pressure.
+* 光柱鏡 creates persistent artillery zones, forcing movement even before the boss.
+* 日鏡塔の守主 opens with longer sniper lines, can switch to multi-zone artillery, and calls both mirrors and runners below half HP.
 
 Chapter 5 boss identity:
 

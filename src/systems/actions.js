@@ -252,6 +252,10 @@
       say("霜見の塔守を倒さないと最上階の遺物庫は開かない", 2200);
       return;
     }
+    if (chest.id === "sunspire-reliquary" && !state.sunspireKeeperDefeated) {
+      say("日鏡塔の守主を倒さないと反射水晶には触れられない", 2200);
+      return;
+    }
     state.chests.add(chest.id);
     const cx = (chest.x + 0.5) * TILE;
     const cy = (chest.y + 0.5) * TILE;
