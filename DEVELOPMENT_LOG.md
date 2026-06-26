@@ -40,7 +40,7 @@ Current high-priority design risks:
 * Several town-to-town routes are short or low-pressure enough that the next safe base may not feel like a hard-earned survival-range breakthrough; 黒市都 -> 黒門砦 now has a first 黒門前哨 pass and needs manual tuning.
 * Chapter 2 now has 月影洞窟 as a required attrition route between 月影廃墟 and 月見砦; manual tuning is still needed for pressure, length, and reward feel.
 * Chapter 4 now routes more clearly through 白銀宿 -> 氷窟 -> 霜冠城, with 霜見塔 kept as optional movement/reward content; manual route-pressure testing is still needed.
-* Chapter 5 has strong content but can become checklist-like if UI guidance, travel memo, and map markers do not present it as one expedition.
+* Chapter 5 has stronger full-route map support now, but can still become checklist-like if city exits, route pressure, and map markers are not browser-verified together.
 * Optional 陽冠闘技場 can appear too prominent compared with the main 日鏡塔 route if guidance priority is not fixed.
 * Travel memo needs to become a route plan with main/optional/preparation sections.
 * First arrival at new safe bases now has persistent payoff messaging, stamina relief, projectile clearing, and a short guard buffer; browser/manual tuning is still needed.
@@ -80,6 +80,27 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-27: Chapter 5 full-route world-map marker pass
+
+Goal: make the Chapter 5 main expedition readable on the whole-world map after 日輪砲台守, not only in text.
+
+Implemented:
+
+* Extended `currentWorldMapDestinationFor` so Chapter 5 map markers advance through 陽冠都市, 日鏡塔守主, 反射水晶, 陽光封印碑, 熾火聖域補給箱, and 熾火天竜.
+* Kept optional 陽冠闘技場 out of the main marker chain so it does not compete with 日鏡塔.
+* Added smoke assertions for each Chapter 5 marker stage.
+* Updated planning/design docs to reflect that Chapter 5 map support now covers the full main route.
+
+Verification:
+
+* `node --check` for changed JavaScript files passed.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with line-ending warnings only.
+
+Known risks:
+
+* Browser/manual QA was not run; actual overlay readability at map scale and Suncrest exit comprehension still need hands-on confirmation.
 
 ### 2026-06-26: Chapter 4 Frost Haven route-clarity pass
 

@@ -337,6 +337,24 @@ function currentWorldMapDestinationFor(stateArg, playerArg) {
   if (stateArg?.chapter4Reported && !stateArg.solarWardenDefeated) {
     return { site: SOLAR_WARDEN_SITE, label: "日輪砲台守" };
   }
+  if (stateArg?.chapter4Reported && stateArg.solarWardenDefeated && !stateArg.arrivedSafeBases?.has("suncrest-city")) {
+    return { site: { x: 238, y: 128 }, label: "陽冠都市" };
+  }
+  if (stateArg?.chapter4Reported && stateArg.solarWardenDefeated && !stateArg.sunspireKeeperDefeated) {
+    return { site: SUNSPIRE_KEEPER_SITE, label: "日鏡塔守主" };
+  }
+  if (stateArg?.chapter4Reported && stateArg.sunspireKeeperDefeated && !stateArg.chests?.has("sunspire-reliquary")) {
+    return { site: { x: 190, y: 17 }, label: "反射水晶" };
+  }
+  if (stateArg?.chapter4Reported && stateArg.sunspireKeeperDefeated && stateArg.chests?.has("sunspire-reliquary") && !stateArg.discoveries?.has("sunrise-seal")) {
+    return { site: { x: 240, y: 165 }, label: "陽光封印碑" };
+  }
+  if (stateArg?.chapter4Reported && stateArg.sunspireKeeperDefeated && stateArg.chests?.has("sunspire-reliquary") && stateArg.discoveries?.has("sunrise-seal") && !stateArg.chests?.has("ember-sanctum-cache")) {
+    return { site: { x: 222, y: 226 }, label: "熾火聖域補給箱" };
+  }
+  if (stateArg?.chapter4Reported && stateArg.sunspireKeeperDefeated && stateArg.chests?.has("sunspire-reliquary") && stateArg.discoveries?.has("sunrise-seal") && stateArg.chests?.has("ember-sanctum-cache") && !stateArg.emberDragonDefeated) {
+    return { site: EMBER_DRAGON_SITE, label: "熾火天竜" };
+  }
   if (stateArg?.chapter3Reported && !stateArg.frostGolemDefeated && !stateArg.arrivedSafeBases?.has("frost-haven")) {
     return { site: { x: 24, y: 154 }, label: "白銀宿" };
   }

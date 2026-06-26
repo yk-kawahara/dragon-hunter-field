@@ -1799,6 +1799,23 @@ function assertExpandedWorldContent() {
   routeReadability.player.level = d.SUNCREST_CHAMPION_REQUIREMENTS.level;
   const suncrestMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(routeReadability.contexts.ui()).find((page) => page.title === "旅メモ");
   assert(suncrestMemo?.lines[0]?.includes("本線: 陽冠都市東門 -> 日鏡塔") && suncrestMemo.lines.some((line) => /任意: 西広場の闘技場/.test(line)), "Suncrest memo should show main tower route before optional arena");
+  let chapter5Destination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(chapter5Destination?.label === "陽冠都市" && chapter5Destination.site.x === 238, "world map should mark Suncrest City after Solar Warden until first arrival");
+  routeReadability.state.arrivedSafeBases.add("suncrest-city");
+  chapter5Destination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(chapter5Destination?.label === "日鏡塔守主" && chapter5Destination.site.x === d.SUNSPIRE_KEEPER_SITE.x, "world map should mark Sunspire Keeper as the main Chapter 5 route before optional arena");
+  routeReadability.state.sunspireKeeperDefeated = true;
+  chapter5Destination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(chapter5Destination?.label === "反射水晶" && chapter5Destination.site.x === 190, "world map should mark the Sunspire reliquary after the keeper");
+  routeReadability.state.chests.add("sunspire-reliquary");
+  chapter5Destination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(chapter5Destination?.label === "陽光封印碑" && chapter5Destination.site.y === 165, "world map should mark the sunrise seal after the prism lens");
+  routeReadability.state.discoveries.add("sunrise-seal");
+  chapter5Destination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(chapter5Destination?.label === "熾火聖域補給箱" && chapter5Destination.site.x === 222, "world map should mark the Ember Sanctum supply cache before the final boss");
+  routeReadability.state.chests.add("ember-sanctum-cache");
+  chapter5Destination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(chapter5Destination?.label === "熾火天竜" && chapter5Destination.site.x === d.EMBER_DRAGON_SITE.x, "world map should mark Ember Dragon after all Chapter 5 preparation");
 
   const moonCavernReadability = createRuntime();
   moonCavernReadability.state.elderReported = true;

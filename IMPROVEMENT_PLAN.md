@@ -18,7 +18,7 @@ Main playtest/code-analysis findings:
 * Some town-to-town routes are short or low-pressure enough that a new safe base does not feel like a breakthrough; 黒市都 -> 黒門砦 now has a first Black Gate approach pass.
 * Chapter 2 now has a first 月影洞窟 attrition route between 月影廃墟 and 月見砦; it needs real-browser/manual tuning to confirm pressure, length, and reward feel.
 * Chapter 4 now has first-pass role clarity: 白銀宿 first-arrival payoff, main-route travel memo, world-map destination markers, and guide dialogue distinguish 氷窟 / 霜冠城 from optional 霜見塔.
-* Chapter 5 has strong content but can read like a checklist if route guidance, travel memo, and map support are not unified.
+* Chapter 5 now has stronger map support through the full main route, but still needs browser/manual checks to confirm the city exits and late-route markers are visually clear.
 * Optional content, especially 陽冠闘技場, can appear too prominently compared with the main route.
 * Travel memo should become a route plan, not only a treasure/rumor reminder.
 * A few low-risk unreachable or duplicated code paths should be cleaned up before more AI-assisted editing.
@@ -35,6 +35,26 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 ---
 
 # Now: recommended implementation sequence
+
+## Completed 2026-06-27: Chapter 5 full-route world-map marker pass
+
+Implemented:
+
+* Extended the whole-world current-destination marker beyond 日輪砲台守 so it now follows the full Chapter 5 main route:
+  * 陽冠都市 after 日輪砲台守.
+  * 日鏡塔守主 after first Suncrest arrival.
+  * 反射水晶 after 日鏡塔守主.
+  * 陽光封印碑 after 反射水晶.
+  * 熾火聖域補給箱 after 陽光封印碑.
+  * 熾火天竜 after final supplies.
+* Kept optional 陽冠闘技場 out of the main current-destination sequence.
+* Added smoke coverage for every Chapter 5 map-marker stage.
+
+Next:
+
+1. Browser/manual check the whole-world map while advancing through Chapter 5 stages.
+2. Browser/manual check 陽冠都市 east/west/south exits against the new marker sequence.
+3. If markers are clear, move to street-to-street tension tuning, especially 黎明港 -> 日輪砲台守 -> 陽冠都市.
 
 ## Completed 2026-06-26: Pass 8 Chapter 4 arrival and role clarity
 

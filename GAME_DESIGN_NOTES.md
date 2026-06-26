@@ -390,7 +390,7 @@ Current issues:
 
 * 日輪砲台守 can be hard to locate.
 * Optional 陽冠闘技場 can appear too prominent if guidance priority is wrong.
-* Chapter 5 can become a checklist if UI does not present it as one expedition.
+* Chapter 5 can become a checklist if UI and the world map do not present it as one expedition.
 * 陽冠都市 should feel like reaching civilization after hostile terrain, not only a shop stop.
 
 Desired improvement:
@@ -398,6 +398,7 @@ Desired improvement:
 * Route breadcrumbs and current-objective world-map marker for 日輪砲台守 are now implemented.
 * Main route now appears before optional arena advice in Suncrest/Dawn guidance and Chapter 5 travel memo.
 * Chapter 5 travel memo lines now use 本線 / 今 / 準備 / 任意.
+* The whole-world current-destination marker now follows the main chain from 陽冠都市 through 日鏡塔, 反射水晶, 陽光封印碑, 熾火聖域補給箱, and 熾火天竜.
 * Add strong first-arrival payoff for 陽冠都市.
 * Browser-check Suncrest east gate, west plaza, and south gate readability.
 
