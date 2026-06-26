@@ -309,6 +309,10 @@ function assertMapReachability() {
     ["old-tower", 104, 90],
     ["moon-ruin", 97, 99],
     ["moon-road", 102, 106],
+    ["moon-cavern-entry", 92, 103],
+    ["moon-cavern-mid-cache", 136, 34],
+    ["moon-cavern-reliquary", 153, 41],
+    ["moon-cavern-east-exit", 153, 43],
     ["moon-camp", 102, 116],
     ["moon-archive-entry", 110, 115],
     ["moon-archive", 130, 4],
@@ -320,6 +324,10 @@ function assertMapReachability() {
     ["black-market", 35, 135],
     ["old-tower-side-cache", 97, 92],
     ["obsidianGolem", d.OBSIDIAN_GOLEM_SITE.x, d.OBSIDIAN_GOLEM_SITE.y],
+    ["black-gate-road-post", 63, 134],
+    ["black-gate-forward-cache", 68, 134],
+    ["black-gate-lookout", 84, 132],
+    ["black-gate-final-cache", 86, 132],
     ["black-gate-shield-cache", 73, 134],
     ["void-seal", 82, 138],
     ["voidDragon", d.VOID_DRAGON_SITE.x, d.VOID_DRAGON_SITE.y],
@@ -364,6 +372,7 @@ function assertMapReachability() {
   assert(overviewRows.every((row) => typeof row === "string" && row.length === d.MAP_W), "world overview rows should match map dimensions");
   assert(!overviewRows.slice(1, 15).some((row) => row.slice(80, 120).includes("_")), "world overview should hide embedded catacomb room layouts");
   assert(!overviewRows.slice(1, 22).some((row) => row.slice(122, 157).includes("_")), "world overview should hide embedded Moon Archive room layouts");
+  assert(!overviewRows.slice(24, 46).some((row) => row.slice(122, 157).includes("_")), "world overview should hide embedded Moon Cavern room layouts");
   assert(!overviewRows.slice(1, 23).some((row) => row.slice(198, 227).includes("_")), "world overview should hide embedded Suncrest Arena room layouts");
   assert(state.npcs.length === 121, "expected 121 NPCs after Suncrest City service pass");
   const blockedNpcs = state.npcs.filter((npc) => !passable(Math.floor(npc.x / d.TILE), Math.floor(npc.y / d.TILE)));
@@ -755,7 +764,10 @@ function assertStoryClearFlow() {
   player.x = d.MOON_ARCHIVE_WARDEN_SITE.x * d.TILE;
   player.y = d.MOON_ARCHIVE_WARDEN_SITE.y * d.TILE;
   runtime.updateStoryEvents();
-  assert(state.spawnedArchiveWarden, "Archive Warden should spawn after Moon relic and level gate");
+  assert(!state.spawnedArchiveWarden, "Archive Warden should wait until the Moon Cavern relic is secured");
+  state.chests.add("moon-cavern-reliquary");
+  runtime.updateStoryEvents();
+  assert(state.spawnedArchiveWarden, "Archive Warden should spawn after Moon relic, Moon Cavern relic, and level gate");
   const archiveWarden = state.monsters.find((monster) => monster.type === "archiveWarden");
   assert(archiveWarden, "Archive Warden monster should exist");
   archiveWarden.hp = 0;
@@ -1088,6 +1100,21 @@ function assertExpandedWorldContent() {
   runtime.traversePortal(catacombPortal);
   assert(Math.floor(player.x / d.TILE) === 83 && Math.floor(player.y / d.TILE) === 2, "catacomb portal should move the player into the interior");
   assert(runtime.currentRegion() === "undercity", "catacomb interior should use undercity region");
+  player.x = 92 * d.TILE;
+  player.y = 103 * d.TILE;
+  const moonCavernPortal = runtime.nearestPortal();
+  assert(moonCavernPortal?.id === "moon-cavern-west-entry", "Moon Ruins should expose the Moon Cavern attrition route");
+  runtime.traversePortal(moonCavernPortal);
+  assert(runtime.currentRegion() === "moonCavern", "Moon Cavern interior should use its own region");
+  player.level = 14;
+  const moonCavernPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moonCavern");
+  assert(moonCavernPool.includes("moonShade") && moonCavernPool.includes("summoner") && moonCavernPool.includes("shieldSoldier"), "Moon Cavern should mix moon shades, summoners, and shield soldiers");
+  player.x = 153 * d.TILE;
+  player.y = 43 * d.TILE;
+  const moonCavernEastExit = runtime.nearestPortal();
+  assert(moonCavernEastExit?.id === "moon-cavern-east-exit", "Moon Cavern should exit near Moon Camp");
+  runtime.traversePortal(moonCavernEastExit);
+  assert(Math.floor(player.x / d.TILE) === 95 && Math.floor(player.y / d.TILE) === 115, "Moon Cavern east exit should land at Moon Camp");
   player.x = 110 * d.TILE;
   player.y = 115 * d.TILE;
   const moonArchivePortal = runtime.nearestPortal();
@@ -1180,6 +1207,9 @@ function assertExpandedWorldContent() {
   player.x = 150 * d.TILE;
   player.y = 17 * d.TILE;
   assert(runtime.currentRegion() === "moonArchive", "Moon Archive should use its own interior spawn region");
+  player.x = 136 * d.TILE;
+  player.y = 34 * d.TILE;
+  assert(runtime.currentRegion() === "moonCavern", "Moon Cavern should use its own interior spawn region");
   player.x = 86 * d.TILE;
   player.y = 123 * d.TILE;
   assert(runtime.currentRegion() === "eclipse", "eclipse castle should use eclipse region");
@@ -1211,8 +1241,11 @@ function assertExpandedWorldContent() {
   player.x = d.MOON_ARCHIVE_WARDEN_SITE.x * d.TILE;
   player.y = d.MOON_ARCHIVE_WARDEN_SITE.y * d.TILE;
   runtime.updateStoryEvents();
+  assert(!state.spawnedArchiveWarden, "Moon Archive warden should wait for the Moon Cavern relic");
+  state.chests.add("moon-cavern-reliquary");
+  runtime.updateStoryEvents();
   const archiveWarden = state.monsters.find((monster) => monster.type === "archiveWarden");
-  assert(archiveWarden, "Moon Archive should spawn its named warden encounter after the Moon relic");
+  assert(archiveWarden, "Moon Archive should spawn its named warden encounter after the Moon and cavern relics");
   archiveWarden.hp = 0;
   runtime.updateMonsters(16);
   assert(state.archiveWardenDefeated, "archive warden defeat should persist in state");
@@ -1758,6 +1791,29 @@ function assertExpandedWorldContent() {
   const suncrestMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(routeReadability.contexts.ui()).find((page) => page.title === "旅メモ");
   assert(suncrestMemo?.lines[0]?.includes("本線: 陽冠都市東門 -> 日鏡塔") && suncrestMemo.lines.some((line) => /任意: 西広場の闘技場/.test(line)), "Suncrest memo should show main tower route before optional arena");
 
+  const moonCavernReadability = createRuntime();
+  moonCavernReadability.state.elderReported = true;
+  moonCavernReadability.state.ashKnightDefeated = true;
+  moonCavernReadability.state.chests.add("moon-ruin-cache");
+  assert(/月影洞窟/.test(moonCavernReadability.runtime.objectiveText()), "Chapter 2 objective should route through Moon Cavern before Moon Archive");
+  const moonCavernDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(moonCavernReadability.state, moonCavernReadability.player);
+  assert(moonCavernDestination?.label === "月影洞窟" && moonCavernDestination.site.x === 92, "world map should mark Moon Cavern during the Chapter 2 attrition route");
+
+  const blackRouteReadability = createRuntime();
+  blackRouteReadability.state.elderReported = true;
+  blackRouteReadability.state.ashKnightDefeated = true;
+  blackRouteReadability.state.archiveWardenDefeated = true;
+  blackRouteReadability.state.eclipseDragonDefeated = true;
+  blackRouteReadability.state.chapter2Reported = true;
+  assert(/黒門前哨|黒門砦/.test(blackRouteReadability.runtime.objectiveText()), "Chapter 3 objective should first route through the Black Gate approach");
+  const blackRouteMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(blackRouteReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(blackRouteMemo?.lines[0]?.includes("本線: 黒市東門 -> 黒門前哨 -> 黒門砦") && blackRouteMemo.lines.some((line) => /任意: 黒市地下墓所/.test(line)), "Chapter 3 memo should show Black Fort as main route before optional dungeons");
+  const blackFortDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(blackRouteReadability.state, blackRouteReadability.player);
+  assert(blackFortDestination?.label === "黒門砦" && blackFortDestination.site.x === 98, "world map should mark Black Fort before its armory is secured");
+  blackRouteReadability.state.chests.add("black-fort-armory");
+  const blackSealDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(blackRouteReadability.state, blackRouteReadability.player);
+  assert(blackSealDestination?.label === "黒陽碑" && blackSealDestination.site.x === 82, "world map should mark the Black Sun seal after Black Fort armory");
+
   const reward = createRuntime();
   reward.runtime.grantChestReward("ashGear");
   assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8), "ashGear chest should grant star gear inventory");
@@ -1765,6 +1821,10 @@ function assertExpandedWorldContent() {
   assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8) && reward.player.wards >= 4, "moonRelic chest should reinforce star gear and wards");
   reward.runtime.grantChestReward("moonSupply");
   assert(reward.player.bombs >= 3 && reward.player.wards >= 7, "moonSupply chest should add late expedition supplies");
+  reward.runtime.grantChestReward("moonCavernSupply");
+  assert(reward.player.tonics >= 2 && reward.player.warps >= 1, "Moon Cavern mid-cache should add retreat supplies");
+  reward.runtime.grantChestReward("moonCavernRelic");
+  assert(reward.player.ownedShields.includes(3) && reward.player.elixirs >= 1, "Moon Cavern relic should grant the route shield and an elixir");
   reward.runtime.grantChestReward("summonerSupply");
   assert(reward.player.tonics >= 2 && reward.player.warps >= 1 && reward.player.bombs >= 5, "summonerSupply should add route-extension supplies");
   reward.runtime.grantChestReward("trapSupply");
@@ -1792,6 +1852,8 @@ function assertExpandedWorldContent() {
   assert(reward.player.ownedAccessories.includes("obsidian") && reward.player.elixirs >= 2 && reward.player.warps >= 1, "obsidianGear chest should grant obsidian accessory and premium supplies");
   reward.runtime.grantChestReward("obsidianSupply");
   assert(reward.player.elixirs >= 3 && reward.player.tonics >= 4 && reward.player.warps >= 2, "obsidianSupply chest should add route-extension supplies");
+  reward.runtime.grantChestReward("blackGateSupply");
+  assert(reward.player.tonics >= 6 && reward.player.warps >= 3 && reward.player.wards >= 9, "Black Gate supply should extend the Black Fort approach");
   reward.runtime.grantChestReward("smugglerSupply");
   assert(reward.player.warps >= 3 && reward.player.bombs >= 4, "smugglerSupply should add shortcut-route supplies");
 
@@ -1933,6 +1995,7 @@ function assertExpandedWorldContent() {
   reward.player.stamina = 1;
   reward.runtime.grantDiscoveryReward({ id: "test-solar-warden-hint", kind: "solarWardenHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-moon-archive-hint", kind: "moonArchiveHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-moon-cavern-hint", kind: "moonCavernHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-suncrest-guide", kind: "suncrestGuide" }, 0, 0);
   assert(reward.player.wards >= 9 && reward.player.stamina === reward.player.staminaMax, "Sunspire observation point should provide anti-solar preparation");
 
@@ -1971,6 +2034,7 @@ function assertExpandedWorldContent() {
   reward.runtime.grantDiscoveryReward({ id: "test-route-hint", kind: "routeHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-shortcut-hint", kind: "shortcutHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-smuggler-hint", kind: "smugglerHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-black-gate-hint", kind: "blackGateHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-greater-regen-hint", kind: "greaterRegenHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-mist-hint", kind: "mistHint" }, 0, 0);
   assert(reward.player.warps >= 5 && reward.player.tonics >= 6 && reward.player.wards >= 9, "route, shortcut, and cave hints should provide travel supplies");

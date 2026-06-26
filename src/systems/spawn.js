@@ -62,7 +62,7 @@
   } = mathHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
-  const INTERIOR_REGIONS = new Set(["cave", "moonArchive", "undercity", "frostTower1", "frostTower2", "sunspire", "suncrestArena"]);
+  const INTERIOR_REGIONS = new Set(["cave", "moonCavern", "moonArchive", "undercity", "frostTower1", "frostTower2", "sunspire", "suncrestArena"]);
 
   function monsterSize(typeName, template) {
     return worldPx(template.boss ? 22 : template.midboss ? 18 : typeName === "dragonling" ? 14 : 11);
@@ -179,6 +179,7 @@
     if (tx >= 190 && ty >= 185) return "emberIsles";
     if (tx >= 160 && tx <= 195 && ty >= 1 && ty <= 23) return "sunspire";
     if (tx >= 198 && tx <= 226 && ty >= 1 && ty <= 23) return "suncrestArena";
+    if (tx >= 122 && tx <= 156 && ty >= 24 && ty <= 45) return "moonCavern";
     if (tx >= 122 && tx <= 156 && ty >= 1 && ty <= 22) return "moonArchive";
     if (tx >= 198 && ty < 90) return "dawnCoast";
     if (tx >= 190) return "sunriseHighland";
@@ -228,6 +229,7 @@
       if (region === "mistShrine") return ["bubbler", "wisp", "trapFlower"];
       if (region === "undercity") return ["shieldSoldier", "wisp", "vaultLeech"];
       if (region === "frostTower1" || region === "frostTower2") return ["frostBeacon", "frostMoth", "shieldSoldier"];
+      if (region === "moonCavern") return ["moonShade", "sorcerer", "shieldSoldier"];
       if (region === "moonArchive") return ["moonShade", "eclipseMage", "summoner", "shieldSoldier"];
       if (region === "suncrestArena") return ["solarRunner", "sunLancer", "shieldSoldier"];
       if (region === "sunspire") return ["prismBeacon", "solarRunner", "shieldSoldier"];
@@ -247,10 +249,11 @@
     }
     if (lv < 14) return pool.filter((type) => type !== "summoner" && type !== "trapFlower");
     if (lv < 16 && (region === "moon" || region === "eclipse")) return pool.filter((type) => type !== "trapFlower" && !(region === "eclipse" && type === "summoner"));
+    if (lv < 16 && region === "moonCavern") return pool.filter((type) => type !== "trapFlower");
     if (lv < 18 && region === "eclipse") return pool.filter((type) => type !== "summoner");
     if (lv < 22 && (region === "obsidian" || region === "void")) return pool.filter((type) => type !== "summoner" && type !== "trapFlower");
-    if (lv >= 14 && region === "moon") pool.push("summoner");
-    if (lv >= 16 && (region === "moon" || region === "eclipse")) pool.push("trapFlower");
+    if (lv >= 14 && (region === "moon" || region === "moonCavern")) pool.push("summoner");
+    if (lv >= 16 && (region === "moon" || region === "moonCavern" || region === "eclipse")) pool.push("trapFlower");
     if (lv >= 16 && region === "eclipse") pool.push("eclipseMage", "moonShade");
     if (lv >= 18 && region === "eclipse") pool.push("summoner");
     if (lv >= 20 && region === "eclipse") pool.push("eclipseMage");
@@ -303,7 +306,7 @@
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
     const interior = INTERIOR_REGIONS.has(region);
-    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "moonArchive" ? 12 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "suncrestArena" ? 13 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
+    const target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "moonCavern" ? 11 : region === "moonArchive" ? 12 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "suncrestArena" ? 13 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
       state.regionSpawnTimer = 0;
@@ -403,6 +406,7 @@
     if (region === "regenCave") return "再生洞窟: 大再生の指輪を守る危険地帯";
     if (region === "smuggler") return "密輸道: 黒市へ抜ける危険な近道";
     if (region === "moonArchive") return "月の書庫: 召喚と月蝕術が渦巻く第2章の深部";
+    if (region === "moonCavern") return "月影洞窟: 月見砦へ抜ける消耗路";
     if (region === "moon") return "月影廃墟: 古塔の先の危険地帯";
     if (region === "highland") return "天脊高原: 峠・谷道・危険な近道";
     if (region === "north") return "北森: 強敵の気配";
@@ -446,6 +450,7 @@
       && state.elderReported
       && state.ashKnightDefeated
       && state.chests.has("moon-ruin-cache")
+      && state.chests.has("moon-cavern-reliquary")
       && player.level >= MOON_ARCHIVE_WARDEN_REQUIREMENTS.level;
   }
 

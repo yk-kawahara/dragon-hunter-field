@@ -12,6 +12,8 @@
     DISCOVERY_POINTS,
     TILE_WATER,
     BOSS_REQUIREMENTS,
+    MOON_ARCHIVE_WARDEN_REQUIREMENTS,
+    CHAPTER2_REQUIREMENTS,
     SOLAR_WARDEN_REQUIREMENTS,
     SUNCREST_CHAMPION_REQUIREMENTS,
     SUNSPIRE_KEEPER_REQUIREMENTS,
@@ -540,10 +542,45 @@
       ];
     }
     if (!state.chapter2Reported) {
+      if (!state.chests.has("moon-ruin-cache")) {
+        return [
+          "本線: 古塔南 -> 月影廃墟の遺物",
+          "召喚士は放置せず先に倒す",
+          "地雷花は近づく前に斬る",
+        ];
+      }
+      if (!state.chests.has("moon-cavern-reliquary")) {
+        return [
+          "本線: 月影廃墟西門 -> 月影洞窟 -> 月見砦",
+          "今: 中継補給を拾い、奥の月洞印を得る",
+          "準備: 帰還鈴と護符を残して消耗路へ",
+        ];
+      }
+      if (!state.archiveWardenDefeated) {
+        return [
+          "本線: 月見砦東 -> 月の書庫",
+          `今: 書庫番LV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}に備える`,
+          "準備: 月洞印と星盾で正面被害を抑える",
+        ];
+      }
       return [
-        "古塔の南は月影廃墟",
-        "召喚士は放置せず先に倒す",
-        "地雷花は近づく前に斬る",
+        "本線: 月蝕城の封印碑と月蝕竜",
+        `今: LV${player.level}/${CHAPTER2_REQUIREMENTS.level}で砦から南西へ`,
+        "準備: 書庫遺物と護符を確認",
+      ];
+    }
+    if (!state.chapter3Reported && !state.chests.has("black-fort-armory")) {
+      return [
+        "本線: 黒市東門 -> 黒門前哨 -> 黒門砦",
+        "今: 前哨の補給を拾い、砦の武具箱を確保",
+        "任意: 黒市地下墓所 / 密輸道 / 再生洞窟",
+      ];
+    }
+    if (!state.chapter3Reported && !state.discoveries.has("void-seal")) {
+      return [
+        "本線: 黒門砦南西の黒陽碑",
+        "今: 砦を拠点に黒陽城の封印を読む",
+        "準備: 黒陽装備と帰還鈴を確認",
       ];
     }
     if (state.regenSentinelDefeated && !state.mistKeeperDefeated) {
@@ -562,16 +599,16 @@
     }
     if (!state.obsidianGolemDefeated) {
       return [
-        "黒市東の黒曜洞窟へ",
-        "帰還鈴を残して深部へ進む",
+        "本線: 黒市東の黒曜洞窟",
+        "今: 帰還鈴を残して巨人の深部へ進む",
         `黒曜巨人はLV${player.level}/24目安`,
       ];
     }
     if (!state.chapter3Reported) {
       return [
-        "黒市で最終装備を選ぶ",
-        "黒陽城の地雷花は距離を取る",
-        "黒陽竜撃破後は長老へ報告",
+        "本線: 黒門砦 -> 黒陽城 -> 黒陽竜",
+        "準備: 黒市で最終装備を選ぶ",
+        "任意: 地下墓所・密輸道・霧灯の祠で遠征補助",
       ];
     }
     if (!state.frostGolemDefeated) {
@@ -722,6 +759,8 @@
     let name = "草原";
     if (inTown(player.x, player.y)) name = (tx >= 203 && tx <= 225 && ty >= 65 && ty <= 77) ? "黎明港" : (tx >= 225 && tx <= 252 && ty >= 121 && ty <= 134) ? "陽冠都市" : (tx >= 137 && tx <= 160 && ty >= 79 && ty <= 94) ? "蒼風港" : (tx >= 160 && tx <= 176 && ty >= 165 && ty <= 173) ? "南風岬砦" : (tx >= 12 && tx <= 34 && ty >= 150 && ty <= 156) ? "白銀宿" : (tx >= 15 && tx <= 49 && ty >= 128 && ty <= 142) ? "黒市都" : (tx >= 88 && tx <= 106 && ty >= 129 && ty <= 134) ? "黒門砦" : (tx >= 94 && tx <= 110 && ty >= 113 && ty <= 118) ? "月見砦" : (tx >= 94 && tx <= 110 && ty >= 52 && ty <= 60) ? "灰道の宿場" : (tx >= 24 && tx <= 36 && ty >= 55 && ty <= 62) ? "前線キャンプ" : "村";
     else if (tx >= 190 && ty >= 185) name = "熾火群島";
+    else if (tx >= 122 && tx <= 156 && ty >= 24 && ty <= 45) name = "月影洞窟";
+    else if (tx >= 122 && tx <= 156 && ty >= 1 && ty <= 22) name = "月の書庫";
     else if (tx >= 198 && ty < 90) name = "黎明海岸";
     else if (tx >= 190) name = "日出高原";
     else if (tx >= 132 && ty < 80) name = "蒼風島北岸";

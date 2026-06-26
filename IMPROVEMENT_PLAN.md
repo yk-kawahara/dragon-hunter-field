@@ -15,8 +15,8 @@ Main playtest/code-analysis findings:
 * Required bosses can be hard to locate if the player misses route landmarks.
 * Confirmed playtest concern: 日輪砲台守 is hard to find.
 * Similar concern exists for Chapter 1 竜洞 / Red Dragon.
-* Some town-to-town routes are short or low-pressure enough that a new safe base does not feel like a breakthrough.
-* Chapter 2 can still feel short; 灰道の宿場 -> 月見砦 is the strongest candidate for an added attrition route.
+* Some town-to-town routes are short or low-pressure enough that a new safe base does not feel like a breakthrough; 黒市都 -> 黒門砦 now has a first Black Gate approach pass.
+* Chapter 2 now has a first 月影洞窟 attrition route between 月影廃墟 and 月見砦; it needs real-browser/manual tuning to confirm pressure, length, and reward feel.
 * Chapter 5 has strong content but can read like a checklist if route guidance, travel memo, and map support are not unified.
 * Optional content, especially 陽冠闘技場, can appear too prominently compared with the main route.
 * Travel memo should become a route plan, not only a treasure/rumor reminder.
@@ -68,6 +68,42 @@ Next:
 1. Manual/browser check that the arrival ring/message reads well in actual play.
 2. Tune which safe bases deserve stronger bespoke text after playtest.
 3. Proceed to Pass 5: Chapter 2 attrition dungeon prototype, because 譛郁ｦ狗ｦ still needs a more hard-earned approach.
+
+## Completed 2026-06-26: Pass 5 Chapter 2 attrition dungeon prototype
+
+Implemented:
+
+* Added 月影洞窟 as a required embedded interior between 月影廃墟 and 月見砦.
+* Added west/east portals so the player can enter from 月影廃墟, retreat, or push through to 月見砦.
+* Added local `moonCavern` spawn handling so dungeon monsters are not starved by exterior enemies.
+* Added mid-route supply, 月洞印 reliquary reward, and two 月影洞窟 discovery hints.
+* Made 月洞印 required before 月の書庫の番人 can spawn, turning the route into progression rather than optional cleanup.
+* Updated objective text, field guidance, travel memo, zone name, and whole-world destination marker for the new route.
+* Regenerated world map previews and extended smoke coverage for reachability, portal travel, local spawns, rewards, progression gating, and world-map markers.
+
+Next:
+
+1. Manual/browser playtest from 灰道の宿場 through 月影洞窟 to 月見砦.
+2. Tune enemy density, trap timing, and reward strength if the route is too punishing or too flat.
+3. Move to Pass 4 street-to-street expedition tension review, especially 黒市都 -> 黒門砦 or 霜原 -> 白銀宿.
+
+## Completed 2026-06-26: Pass 4 Chapter 3 Black Gate approach pass
+
+Implemented:
+
+* Added 黒門前哨 route signs and forward supply caches between 黒市都 and 黒門砦.
+* Added `blackGateSupply` and `blackGateHint` rewards to support the continue/retreat decision on the way to 黒門砦.
+* Added small visual route landmarks around the Black Gate approach without expanding world size.
+* Added a `blackFortRoute` stage so Chapter 3 starts by routing the player from 黒市東門 through 黒門前哨 to 黒門砦 before 黒陽碑 / 黒曜洞 / optional dungeons.
+* Updated Chapter 3 travel memo to show 本線 first and list 地下墓所 / 密輸道 / 再生洞窟 as optional.
+* Added whole-world destination markers for 黒門砦 and then 黒陽碑.
+* Extended smoke coverage for reachability, reward/discovery behavior, travel memo priority, and destination markers.
+
+Next:
+
+1. Manual/browser playtest the 黒市都 -> 黒門砦 approach for enemy pressure and whether the two route options feel distinct.
+2. If Chapter 3 readability is acceptable, move to Pass 8: 白銀宿 arrival and Chapter 4 role clarity.
+3. If Chapter 3 still feels confusing, add one Black Market guide line or sign that explicitly names 本線 vs 任意.
 
 ## Pass 1: required route readability micro-pass
 
@@ -217,9 +253,9 @@ Town-to-town routes should create “continue or retreat?” decisions.
 
 Make Chapter 2 feel like a real expedition, not a short chain of nearby checks.
 
-### Candidate
+### Implemented prototype
 
-Add `月影洞窟` or `月下坑道` as a required attrition route before 月見砦.
+`月影洞窟` is now a required attrition route before 月見砦.
 
 Proposed route:
 

@@ -318,7 +318,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonCavernSupply" || reward === "moonCavernRelic" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "blackGateSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -391,6 +391,24 @@
       player.bombs = Math.min(9, player.bombs + 3);
       player.wards = Math.min(9, player.wards + 3);
       say("月影街道の補給箱を回収した");
+      return true;
+    }
+    if (reward === "moonCavernSupply") {
+      player.gold += 420;
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      say("月影洞窟の中継補給を得た。帰還札と護符で、もう少し奥へ進める");
+      return true;
+    }
+    if (reward === "moonCavernRelic") {
+      player.gold += 720;
+      addItem(player, "elixir", 1);
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 2);
+      grantShieldAtLeast(context, 3, "月洞印と星盾を得た。月見砦まで押し切る守りが増した");
+      say("月洞印を得た。月見砦の書庫へ向かう道筋が見えた");
       return true;
     }
     if (reward === "moonArchiveSupply") {
@@ -653,6 +671,15 @@
       say("黒市の隠し倉庫から遠征物資を得た");
       return true;
     }
+    if (reward === "blackGateSupply") {
+      player.gold += 760;
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 1);
+      say("黒門前哨の補給箱を得た。砦まで押し切る余力が増えた");
+      return true;
+    }
     if (reward === "smugglerSupply") {
       player.gold += 360;
       addItem(player, "tonic", 1);
@@ -823,6 +850,24 @@
       player.stamina = player.staminaMax;
       burst(x, y, "#b08cff", 20);
       say("月の書庫の記録: 召喚士を放置せず、番人を倒して遺物庫を開け");
+      return;
+    }
+    if (discovery.kind === "moonCavernHint") {
+      player.gold += 180;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#b08cff", 20);
+      say("月影洞窟の道標: 途中の補給を拾い、奥の出口から月見砦へ抜けろ");
+      return;
+    }
+    if (discovery.kind === "blackGateHint") {
+      player.gold += 160;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#8dd7ff", 20);
+      say("黒門前哨の道標: 北道は盾兵、南道は罠。補給を拾って砦まで進め");
       return;
     }
     if (discovery.kind === "suncrestGuide") {

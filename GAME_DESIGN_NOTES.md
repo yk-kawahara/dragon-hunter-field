@@ -231,15 +231,33 @@ Current structure:
 
 Current issue:
 
-* The chapter has good pieces, but 灰道の宿場 -> 月見砦 can feel too short or too low-pressure.
-* 月見砦 should feel like a hard-earned safe base, not simply the next nearby stop.
+* A first implementation of 月影洞窟 now sits between 月影廃墟 and 月見砦, so the chapter has a real attrition route before the next safe base.
+* 月見砦 should still be manually tuned to feel like a hard-earned safe base, not simply the next nearby stop.
 * 月の書庫 adds volume, but it can read like an extra checklist step if the route before 月見砦 is not memorable.
 
-Leading improvement candidate:
+Implemented route:
 
-Add a required attrition route such as `月影洞窟` / `月下坑道` before 月見砦.
+```text
+灰道の宿場
+↓
+古塔 / 灰騎士
+↓
+月影廃墟
+↓
+月影洞窟
+  - local moon pressure
+  - summons / shield soldiers / traps
+  - mid-route supply
+  - 月洞印 reward
+↓
+月見砦 first-arrival safe-radius payoff
+↓
+月の書庫
+↓
+月蝕城
+```
 
-Desired route:
+Desired tuning target:
 
 ```text
 灰道の宿場
@@ -294,10 +312,12 @@ Optional or side content includes:
 Current issue:
 
 * The amount of content is good, but the player can lose track of what is main route vs optional.
+* A first Black Gate approach pass now makes 黒市都 -> 黒門砦 read as the main Chapter 3 push before optional cleanup.
 
 Desired improvement:
 
 * Travel memo and guides should clearly separate 本線 and 任意.
+* The Black Gate approach should create a small continue/retreat decision through route signs, forward supplies, and shield/trap pressure.
 * Black Market City should function as a hub for preparation and rumors, not just a large safe zone.
 * If 黒市都 -> 黒門砦 feels too short, consider a compact 黒門関所 / 影道 route.
 
@@ -418,11 +438,12 @@ Potential future additions:
 | Ash Hamlet / 灰道の宿場 | Chapter 2 launch base. |
 | Old Tower / 古塔 | Chapter 2 early danger pocket and Ash Knight step. |
 | Moon Ruins / 月影廃墟 | Moon pressure and relic route. |
-| Moon Cavern / 月影洞窟 | Candidate required attrition route before 月見砦. |
+| Moon Cavern / 月影洞窟 | Required attrition route before 月見砦; local moon spawns, mid-route supply, and 月洞印 gate. |
 | Moon Camp / 月見砦 | Chapter 2 safe base that should feel hard-earned. |
 | Moon Archive / 月の書庫 | Deeper Chapter 2 interior after 月見砦. |
 | Eclipse Castle / 月蝕城 | Chapter 2 final route and boss. |
 | Black Market City / 黒市都 | Chapter 3 hub for main route and optional rumors. |
+| Black Gate Approach / 黒門前哨 | Chapter 3 street-to-street attrition route: supplies, signs, and route choice before 黒門砦. |
 | Black Fort / 黒門砦 | Chapter 3 remote safety anchor before Black Sun pressure. |
 | Black Sun Castle / 黒陽城 | Chapter 3 final danger route. |
 | Frost Haven / 白銀宿 | Chapter 4 safe base; should feel like shelter in a hostile frozen frontier. |

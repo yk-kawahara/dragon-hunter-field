@@ -37,8 +37,8 @@ Current high-priority design risks:
 
 * Required route targets can be hard to locate if the player misses landmarks. Confirmed concern: 日輪砲台守; similar concern exists for Chapter 1 竜洞 / Red Dragon.
 * Chapter 1 竜洞 and Chapter 5 日輪砲台守 now have stronger objective text, route breadcrumbs, guide dialogue, travel memo support, and current-destination map markers; browser/manual readability still needs confirmation.
-* Several town-to-town routes are short or low-pressure enough that the next safe base may not feel like a hard-earned survival-range breakthrough.
-* Chapter 2 can still feel short; 灰道の宿場 -> 月見砦 is the leading candidate for a required attrition route such as 月影洞窟.
+* Several town-to-town routes are short or low-pressure enough that the next safe base may not feel like a hard-earned survival-range breakthrough; 黒市都 -> 黒門砦 now has a first 黒門前哨 pass and needs manual tuning.
+* Chapter 2 now has 月影洞窟 as a required attrition route between 月影廃墟 and 月見砦; manual tuning is still needed for pressure, length, and reward feel.
 * Chapter 5 has strong content but can become checklist-like if UI guidance, travel memo, and map markers do not present it as one expedition.
 * Optional 陽冠闘技場 can appear too prominent compared with the main 日鏡塔 route if guidance priority is not fixed.
 * Travel memo needs to become a route plan with main/optional/preparation sections.
@@ -78,6 +78,55 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-26: Chapter 3 Black Gate approach expedition pass
+
+Goal: make 黒市都 -> 黒門砦 read as a main street-to-street survival push instead of a quick hop surrounded by optional content.
+
+Implemented:
+
+* Added 黒門前哨 signs, lookout terrain, and two forward supply caches on the approach to 黒門砦.
+* Added `blackGateSupply` and `blackGateHint` reward handling for route supplies and route-specific guidance.
+* Added `blackFortRoute` stage so Chapter 3 first points to 黒門砦 / 黒門前哨 before 黒陽碑 or optional dungeons.
+* Updated Chapter 3 travel memo so 本線 appears before 任意 content such as 黒市地下墓所, 密輸道, and 再生洞窟.
+* Added whole-world current-destination markers for 黒門砦 and, after the armory, 黒陽碑.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS, including Black Gate reachability, route memo priority, map markers, and supply/hint rewards.
+* `scripts/generate-map-preview.js`: PASS.
+
+Known risks / next work:
+
+* Real-browser/manual QA was not performed in this pass. The route still needs tuning for enemy pressure, whether north/south routes feel distinct, and whether 黒門砦 arrival now feels earned.
+* Existing unstaged user changes to `AGENTS.md`, `README.md`, and level-up tuning in `src/systems/monsters.js` were preserved.
+
+### 2026-06-26: Chapter 2 Moon Cavern attrition route prototype
+
+Goal: make the route from 月影廃墟 to 月見砦 feel like a real survival-range push instead of a short transition.
+
+Implemented:
+
+* Added 月影洞窟 as a required embedded interior before 月見砦.
+* Added portals from 月影廃墟 into the cavern and from the cavern out to 月見砦, while preserving a retreat route.
+* Added a local `moonCavern` region and spawn pressure using moon shades, summoners, shield soldiers, sorcerers, and later trap flowers.
+* Added mid-route supply, a 月洞印 reliquary reward, and two route-hint discoveries.
+* Made 月洞印 required before 月の書庫の番人 can spawn.
+* Updated objective text, guidance, travel memo, zone naming, and world-map current destination markers for the new Chapter 2 step.
+* Regenerated `docs/world-map-preview.png` and `docs/world-map-preview.svg`.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS, including Moon Cavern reachability, portal travel, local spawn pool, progression gating, rewards, discovery reward, and world-map marker assertions.
+* `scripts/generate-map-preview.js`: PASS.
+
+Known risks / next work:
+
+* Real-browser/manual QA was not performed in this pass. The route needs hands-on tuning for enemy density, trap pressure, visual readability, and whether 月見砦 now feels hard-earned.
+* PowerShell preview generation via `.ps1` was blocked by the local execution policy, so the Node preview generator was used successfully instead.
 
 ### 2026-06-26: Safe-base first-arrival payoff pass
 

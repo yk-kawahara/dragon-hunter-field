@@ -71,6 +71,7 @@
     if (stage === "voidReady") return "目的: 黒陽城の奥へ進む";
     if (stage === "obsidian") return "目的: 黒曜洞の巨人を倒す";
     if (stage === "obsidianReady") return "目的: 黒市の東、黒曜洞へ";
+    if (stage === "blackFortRoute") return "目的: 黒市から黒門前哨を越えて黒門砦へ";
     if (stage === "voidSeal") return "目的: 黒陽城の封印碑を探す";
     if (stage === "voidRoute") return `目的: 黒門砦と黒陽城へ LV${CHAPTER3_REQUIREMENTS.level}`;
     if (stage === "chapter2cleared") return "第2章CLEAR: 月蝕竜を封じた";
@@ -81,6 +82,7 @@
     if (stage === "moonArchiveReward") return "目的: 月の書庫の遺物庫を開ける";
     if (stage === "moonArchiveWarden") return "目的: 月の書庫の番人を倒す";
     if (stage === "moonArchive") return `目的: 月見砦東の月の書庫へ LV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}`;
+    if (stage === "moonCavern") return "目的: 月影洞窟を抜けて月見砦へ";
     if (stage === "moonRelic") return "目的: 月影廃墟で月影遺物を探す";
     if (stage === "moonRoute") return `目的: 月見砦と月蝕城へ LV${CHAPTER2_REQUIREMENTS.level}`;
     if (stage === "postDragon") return "目的: 灰道の宿場から古塔へ";
@@ -120,14 +122,15 @@
       if (state.chapter3Reported && !state.discoveries.has("frost-seal")) return "霜冠城の中庭で封印碑を探そう";
       if (state.chapter3Reported && player.level < CHAPTER4_REQUIREMENTS.level) return `霜冠竜にはLV${CHAPTER4_REQUIREMENTS.level}が要る`;
       if (state.chapter3Reported) return "白銀宿で凍土装備を整えよう";
-      if (state.chapter2Reported && !state.discoveries.has("void-seal")) return "黒門砦の南西で黒陽碑を探す";
       if (state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門砦の武具箱で黒陽装備を得よう";
+      if (state.chapter2Reported && !state.discoveries.has("void-seal")) return "黒門砦の南西で黒陽碑を探す";
       if (state.chapter2Reported && !state.cryptWardenDefeated && player.level >= CRYPT_WARDEN_REQUIREMENTS.level) return "黒市の地下入口から墓所の番人へ挑める";
       if (state.chapter2Reported && !state.obsidianGolemDefeated && player.level < OBSIDIAN_GOLEM_REQUIREMENTS.level) return `黒曜洞の巨人にはLV${OBSIDIAN_GOLEM_REQUIREMENTS.level}が要る`;
       if (state.chapter2Reported && !state.obsidianGolemDefeated) return "黒市の東、黒曜洞の巨人を倒そう";
       if (state.chapter2Reported && player.level < CHAPTER3_REQUIREMENTS.level) return `第3章大ボスにはLV${CHAPTER3_REQUIREMENTS.level}が要る`;
       if (state.chapter2Reported) return "黒門砦で黒陽装備を整えよう";
       if (state.elderReported && state.ashKnightDefeated && !state.chests.has("moon-ruin-cache")) return "月影廃墟で月影遺物を探す";
+      if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.chests.has("moon-cavern-reliquary")) return "月影廃墟の洞窟を抜け、月洞印を得て月見砦へ";
       if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.archiveWardenDefeated && player.level < MOON_ARCHIVE_WARDEN_REQUIREMENTS.level) return `月の書庫の番人にはLV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}が要る`;
       if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.archiveWardenDefeated) return "月見砦の東、月の書庫へ";
       if (state.elderReported && state.archiveWardenDefeated && !state.chests.has("moon-archive-reliquary")) return "月の書庫の奥で遺物庫を開ける";
@@ -179,6 +182,9 @@
     if (region === "moonArchive" && !state.archiveWardenDefeated) return "召喚士を先に倒し、奥の月書庫の番人へ進もう";
     if (region === "moonArchive" && !state.chests.has("moon-archive-reliquary")) return "番人の奥の遺物庫で月蝕の指輪を取ろう";
     if (region === "moonArchive") return "月蝕の備えを整え、月見砦南西の封印碑へ戻ろう";
+    if (region === "moonCavern" && !state.chests.has("moon-cavern-mid-cache")) return "月影洞窟の中継補給を探せ。帰還札を残すと撤退しやすい";
+    if (region === "moonCavern" && !state.chests.has("moon-cavern-reliquary")) return "奥で月洞印を得て、東の出口から月見砦へ抜けろ";
+    if (region === "moonCavern") return "月洞印は得た。東は月見砦、西は月影廃墟へ戻れる";
     if (region === "undercity" && !state.cryptWardenDefeated && player.level < CRYPT_WARDEN_REQUIREMENTS.level) return `墓所の番人にはLV${CRYPT_WARDEN_REQUIREMENTS.level}ほど欲しい`;
     if (region === "undercity" && !state.cryptWardenDefeated) return "吸命鬼を避け、最奥の墓所番人を倒そう";
     if (region === "undercity") return "深層灯の護符は鈍足と薬草運用を改善する";
@@ -192,13 +198,16 @@
     if (region === "smuggler" && !state.smugglerCaptainDefeated && player.level < SMUGGLER_CAPTAIN_REQUIREMENTS.level) return `密輸道は危険な近道。隊長に挑むならLV${SMUGGLER_CAPTAIN_REQUIREMENTS.level}が目安`;
     if (region === "smuggler" && !state.smugglerCaptainDefeated) return "密輸隊長を倒せば黒市への近道が少し安全になる";
     if (region === "smuggler") return "密輸道は黒市への近道。補給箱を拾いながら抜けよう";
+    if (region === "obsidian" && state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門前哨の補給を拾い、東の黒門砦まで押し切ろう";
     if (region === "obsidian") return "黒曜洞は中ボス級の圧。黒市へ戻る余力を残そう";
+    if (region === "void" && state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門砦が近い。南道の罠か北道の盾兵を見て進もう";
     if (region === "void") return "黒陽領は最高危険度。砦へ戻る余力を残そう";
     if (region === "eclipse") return "月蝕魔法が濃い。砦へ戻れるHPを残そう";
     if (state.wardenDefeated && !state.ashKnightDefeated && region === "ash") return "古塔は南。LV14で灰騎士に挑む";
     if (state.wardenDefeated && !state.ashKnightDefeated && region === "tower") return "古塔の灰騎士を探せ";
     if (state.ashKnightDefeated && region === "tower") return "さらに南の月影廃墟へ進める";
     if (region === "moon" && !state.chests.has("moon-ruin-cache")) return "月影廃墟の星遺物を探し、月見砦で補給しよう";
+    if (region === "moon" && state.chests.has("moon-ruin-cache") && !state.chests.has("moon-cavern-reliquary")) return "月影廃墟の西門から月影洞窟へ。奥で月洞印を取れば月見砦へ抜けられる";
     if (region === "moon") return "月影廃墟の南に月見砦、東に月の書庫がある";
     if (player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level && !state.wardenDefeated) return "南東の番人の気配が近い";
     if (stage === "scales") return player.armor === 0 ? "痛ければ村で防具を買おう" : "外で鱗とゴールドを集めよう";
@@ -250,6 +259,7 @@
     if (state.chapter3Victory || (state.voidDragonDefeated && !state.chapter3Reported)) return "chapter3report";
     if (state.spawnedVoidDragon) return "void";
     if (state.spawnedObsidianGolem) return "obsidian";
+    if (state.chapter2Reported && !state.chests.has("black-fort-armory")) return "blackFortRoute";
     if (state.chapter2Reported && state.discoveries.has("void-seal") && state.chests.has("black-fort-armory") && !state.obsidianGolemDefeated && player.level >= OBSIDIAN_GOLEM_REQUIREMENTS.level) return "obsidianReady";
     if (state.chapter2Reported && state.discoveries.has("void-seal") && state.chests.has("black-fort-armory") && state.obsidianGolemDefeated && player.level >= CHAPTER3_REQUIREMENTS.level) return "voidReady";
     if (state.chapter2Reported && !state.discoveries.has("void-seal")) return "voidSeal";
@@ -259,6 +269,7 @@
     if (state.elderReported && state.ashKnightDefeated && state.archiveWardenDefeated && state.chests.has("moon-archive-reliquary") && state.discoveries.has("eclipse-seal") && player.level >= CHAPTER2_REQUIREMENTS.level) return "eclipseReady";
     if (state.spawnedArchiveWarden) return "moonArchiveWarden";
     if (state.elderReported && state.ashKnightDefeated && state.archiveWardenDefeated && !state.chests.has("moon-archive-reliquary")) return "moonArchiveReward";
+    if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.chests.has("moon-cavern-reliquary")) return "moonCavern";
     if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.archiveWardenDefeated) return "moonArchive";
     if (state.elderReported && state.ashKnightDefeated && !state.chests.has("moon-ruin-cache")) return "moonRelic";
     if (state.elderReported && state.ashKnightDefeated && !state.discoveries.has("eclipse-seal")) return "eclipseSeal";
@@ -286,6 +297,7 @@
       postDragon: "第2章開始",
       moonRoute: "月影遠征",
       moonRelic: "月影遺物",
+      moonCavern: "月影洞窟",
       moonArchive: "月の書庫",
       moonArchiveWarden: "書庫番戦",
       moonArchiveReward: "月蝕遺物庫",
@@ -295,6 +307,7 @@
       chapter2report: "第2章報告",
       chapter2cleared: "第2章クリア",
       voidRoute: "黒陽遠征",
+      blackFortRoute: "黒門砦への遠征",
       voidSeal: "黒陽封印",
       obsidianReady: "黒曜洞",
       obsidian: "黒曜巨人戦",

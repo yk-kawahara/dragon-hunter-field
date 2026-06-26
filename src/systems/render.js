@@ -337,6 +337,18 @@ function currentWorldMapDestinationFor(stateArg, playerArg) {
   if (stateArg?.chapter4Reported && !stateArg.solarWardenDefeated) {
     return { site: SOLAR_WARDEN_SITE, label: "日輪砲台守" };
   }
+  if (stateArg?.chapter2Reported && !stateArg.chests?.has("black-fort-armory")) {
+    return { site: { x: 98, y: 132 }, label: "黒門砦" };
+  }
+  if (stateArg?.chapter2Reported && stateArg.chests?.has("black-fort-armory") && !stateArg.discoveries?.has("void-seal")) {
+    return { site: { x: 82, y: 138 }, label: "黒陽碑" };
+  }
+  if (stateArg?.elderReported && stateArg?.ashKnightDefeated && stateArg.chests?.has("moon-ruin-cache") && !stateArg.chests?.has("moon-cavern-reliquary")) {
+    return { site: { x: 92, y: 103 }, label: "月影洞窟" };
+  }
+  if (stateArg?.elderReported && stateArg?.ashKnightDefeated && stateArg.chests?.has("moon-cavern-reliquary") && !stateArg.archiveWardenDefeated) {
+    return { site: { x: 110, y: 115 }, label: "月の書庫" };
+  }
   if (!stateArg?.bossDefeated && stateArg?.guardianDefeated && playerArg?.sealCrest && (playerArg.scales || 0) >= BOSS_REQUIREMENTS.scales) {
     return { site: { x: 51, y: 15 }, label: "竜洞" };
   }
@@ -398,7 +410,7 @@ function drawWorldMapOverlay() {
   const infoX = 105;
   const regionNames = {
     grassland: "始まりの草原", north: "北森", east: "東の森", mine: "廃鉱山", cave: "竜洞",
-    ash: "灰の街道", highland: "天脊高原", windCoast: "蒼風海岸", eastHighland: "蒼風島高原", southIsles: "南岬群島", dawnCoast: "黎明海岸", sunriseHighland: "日出高原", emberIsles: "熾火群島", tower: "古塔", moon: "月影廃墟", eclipse: "月蝕城",
+    ash: "灰の街道", highland: "天脊高原", windCoast: "蒼風海岸", eastHighland: "蒼風島高原", southIsles: "南岬群島", dawnCoast: "黎明海岸", sunriseHighland: "日出高原", emberIsles: "熾火群島", tower: "古塔", moon: "月影廃墟", moonCavern: "月影洞窟", moonArchive: "月の書庫", eclipse: "月蝕城",
     obsidian: "黒曜地帯", void: "黒陽城", undercity: "地下墓所", frost: "霜原",
     frostCave: "氷窟", frostCitadel: "霜冠城", frostTower1: "霜見塔一階", frostTower2: "霜見塔二階", suncrestArena: "陽冠闘技場", sunspire: "日鏡塔",
   };
@@ -1404,14 +1416,14 @@ function drawDiscoveries(cam) {
       ctx.fillRect(sx + 6, sy + 3, 4, 4);
       ctx.fillRect(sx + 7, sy + 8, 2, 5);
       if (!found) drawGlint(sx + 11, sy + 4, "#ff5e9f");
-    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint" || discovery.kind === "mistHint" || discovery.kind === "cryptHint" || discovery.kind === "frostHint" || discovery.kind === "sunspireHint") {
+    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint" || discovery.kind === "mistHint" || discovery.kind === "cryptHint" || discovery.kind === "frostHint" || discovery.kind === "sunspireHint" || discovery.kind === "moonCavernHint" || discovery.kind === "blackGateHint") {
       ctx.fillStyle = found ? "#604622" : "#7b4b25";
       ctx.fillRect(sx + 5, sy + 5, 7, 8);
-      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : "#ffd166";
+      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : discovery.kind === "moonCavernHint" ? "#b08cff" : discovery.kind === "blackGateHint" ? "#8dd7ff" : "#ffd166";
       ctx.fillRect(sx + 3, sy + 4, 10, 3);
       ctx.fillStyle = "#2a1d12";
       ctx.fillRect(sx + 8, sy + 8, 2, 6);
-      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : "#ffd166");
+      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "blackGateHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : discovery.kind === "moonCavernHint" ? "#b08cff" : "#ffd166");
     }
   }
 }
