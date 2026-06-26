@@ -36,6 +36,22 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-06-27: Chapter 5 Suncrest approach tension pass
+
+Implemented:
+
+* Added a reachable 陽冠都市前哨 supply cache and approach sign between 日輪砲台守 and 陽冠都市.
+* Added `suncrestApproachSupply` and `suncrestApproachHint` rewards so a depleted player can decide whether to push onward to the city.
+* Added late 日出高原 spawn pressure: at the Chapter 5 level gate, the highland pool can include 閃光走者 and 光柱鏡, and city-unreached highland routes target slightly higher local density.
+* Extended smoke coverage for reachability, reward behavior, discovery reward behavior, and late highland spawn composition.
+
+Next:
+
+1. Browser/manual playtest 黎明港 -> 日輪砲台守 -> 陽冠都市 to confirm the final approach feels tense but fair.
+2. Browser/manual check the whole-world map while advancing through Chapter 5 stages.
+3. Browser/manual check 陽冠都市 east/west/south exits against the current marker sequence.
+4. If Chapter 5 feels readable and tense enough, move to Chapter 2 月影洞窟 pressure/length tuning.
+
 ## Completed 2026-06-27: Chapter 5 full-route world-map marker pass
 
 Implemented:
@@ -49,12 +65,6 @@ Implemented:
   * 熾火天竜 after final supplies.
 * Kept optional 陽冠闘技場 out of the main current-destination sequence.
 * Added smoke coverage for every Chapter 5 map-marker stage.
-
-Next:
-
-1. Browser/manual check the whole-world map while advancing through Chapter 5 stages.
-2. Browser/manual check 陽冠都市 east/west/south exits against the new marker sequence.
-3. If markers are clear, move to street-to-street tension tuning, especially 黎明港 -> 日輪砲台守 -> 陽冠都市.
 
 ## Completed 2026-06-26: Pass 8 Chapter 4 arrival and role clarity
 

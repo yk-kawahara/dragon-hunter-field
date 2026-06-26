@@ -84,6 +84,7 @@ Implemented route-readability support:
 
 * 竜洞 now has objective text naming the north-east rock landmark, scorched field breadcrumbs, elder guidance, and a whole-world map required-destination marker once the player has the seal and scales.
 * 日輪砲台守 now has objective text naming the 黎明港 -> 北東高原 route, burned highland breadcrumbs, Dawn/Suncrest guide lines, Chapter 5 travel memo support, and a whole-world map required-destination marker.
+* The 日輪砲台守 -> 陽冠都市 final approach now has a reachable forward supply and approach sign so the city arrival is preceded by a small continue/retreat decision instead of empty walking.
 
 ## Safe-base arrival and expedition tension
 
@@ -399,6 +400,7 @@ Desired improvement:
 * Main route now appears before optional arena advice in Suncrest/Dawn guidance and Chapter 5 travel memo.
 * Chapter 5 travel memo lines now use 本線 / 今 / 準備 / 任意.
 * The whole-world current-destination marker now follows the main chain from 陽冠都市 through 日鏡塔, 反射水晶, 陽光封印碑, 熾火聖域補給箱, and 熾火天竜.
+* The highland approach after 日輪砲台守 now adds final-valley pressure and a forward cache before 陽冠都市, strengthening the feeling that the city is earned.
 * Add strong first-arrival payoff for 陽冠都市.
 * Browser-check Suncrest east gate, west plaza, and south gate readability.
 

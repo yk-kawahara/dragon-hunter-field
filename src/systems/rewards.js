@@ -322,7 +322,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonCavernSupply" || reward === "moonCavernRelic" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "blackGateSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonCavernSupply" || reward === "moonCavernRelic" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "blackGateSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestApproachSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -592,6 +592,15 @@
       say("日輪砲台守の金庫から6800Gと陽冠都市の決戦物資を得た");
       return true;
     }
+    if (reward === "suncrestApproachSupply") {
+      player.gold += 1800;
+      addItem(player, "elixir", 1);
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 3);
+      addItem(player, "warp", 1);
+      say("陽冠都市前哨の補給箱を得た。砲台戦後でも都市まで押し切れる");
+      return true;
+    }
     if (reward === "suncrestMarketSupply") {
       player.gold += 2400;
       addItem(player, "tonic", 3);
@@ -829,6 +838,16 @@
       addItem(player, "tonic", 1);
       burst(x, y, "#fff0a6", 22);
       say("焼けた道標: 黎明港から北東高原へ。光の砲声を追えば日輪砲台守に届く");
+      return;
+    }
+    if (discovery.kind === "suncrestApproachHint") {
+      player.gold += 540;
+      player.stamina = player.staminaMax;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      addItem(player, "warp", 1);
+      burst(x, y, "#fff0a6", 22);
+      say("前哨札: 砲台を越えたら南へ下れ。最後の谷は走者が多いが、その先が陽冠都市だ");
       return;
     }
     if (discovery.kind === "dragonCaveHint") {

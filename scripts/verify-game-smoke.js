@@ -338,6 +338,8 @@ function assertMapReachability() {
     ["frost-seal", 103, 154],
     ["frostDragon", d.FROST_DRAGON_SITE.x, d.FROST_DRAGON_SITE.y],
     ["solarWarden", d.SOLAR_WARDEN_SITE.x, d.SOLAR_WARDEN_SITE.y],
+    ["suncrest-approach-cache", 234, 116],
+    ["suncrest-approach-post", 235, 117],
     ["suncrest-arena-entry", 229, 131],
     ["suncrest-arena-supply", 205, 8],
     ["suncrestChampion", d.SUNCREST_CHAMPION_SITE.x, d.SUNCREST_CHAMPION_SITE.y],
@@ -1195,6 +1197,9 @@ function assertExpandedWorldContent() {
   player.x = 238 * d.TILE;
   player.y = 129 * d.TILE;
   assert(runtime.currentRegion() === "sunriseHighland", "eastern continent inland should use sunriseHighland region");
+  player.level = d.SOLAR_WARDEN_REQUIREMENTS.level;
+  const sunrisePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "sunriseHighland");
+  assert(sunrisePool.includes("solarRunner") && sunrisePool.includes("prismBeacon"), "late Sunrise Highland should add runner and artillery pressure before Suncrest");
   player.x = 180 * d.TILE;
   player.y = 10 * d.TILE;
   assert(runtime.currentRegion() === "sunspire", "Sunspire Tower interior should use its own region");
@@ -2029,6 +2034,8 @@ function assertExpandedWorldContent() {
   assert(reward.player.tonics >= 9 && reward.player.warps >= 7, "Moon Archive supply should extend the chapter 2 interior expedition");
   reward.runtime.grantChestReward("moonArchiveRelic");
   assert(reward.player.ownedAccessories.includes("eclipse"), "Moon Archive reliquary should grant eclipse counter gear");
+  reward.runtime.grantChestReward("suncrestApproachSupply");
+  assert(reward.player.elixirs >= 5 && reward.player.warps >= 5, "Suncrest approach supply should let the player push from Solar Warden to the city");
   reward.runtime.grantChestReward("suncrestMarketSupply");
   reward.runtime.grantChestReward("suncrestArsenalSupply");
   assert(reward.player.elixirs >= 7 && reward.player.wards >= 9, "Suncrest city caches should provide chapter 5 expedition supplies");
@@ -2050,6 +2057,7 @@ function assertExpandedWorldContent() {
   reward.runtime.grantDiscoveryReward({ id: "test-suncrest-arena-hint", kind: "suncrestArenaHint" }, 0, 0);
   reward.player.stamina = 1;
   reward.runtime.grantDiscoveryReward({ id: "test-solar-warden-hint", kind: "solarWardenHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-suncrest-approach-hint", kind: "suncrestApproachHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-moon-archive-hint", kind: "moonArchiveHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-moon-cavern-hint", kind: "moonCavernHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-suncrest-guide", kind: "suncrestGuide" }, 0, 0);

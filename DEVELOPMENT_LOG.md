@@ -81,6 +81,28 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
+### 2026-06-27: Chapter 5 Suncrest approach tension pass
+
+Goal: make the 日輪砲台守 -> 陽冠都市 stretch feel like the last tense push to a new safe base, not empty travel after the midboss.
+
+Implemented:
+
+* Added `suncrest-approach-cache` and `suncrest-approach-post` on reachable tiles north of 陽冠都市.
+* Added `suncrestApproachSupply` and `suncrestApproachHint` so players get a small supply and route reminder before deciding to push into the city.
+* Added late 日出高原 pressure by mixing 閃光走者 / 光柱鏡 into the highland pool at the Chapter 5 level gate and raising local target density until 陽冠都市 has been physically reached.
+* Added smoke coverage for approach reachability, reward/discovery behavior, and late highland spawn composition.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS.
+* `git diff --check`: PASS with CRLF normalization warnings only.
+
+Known risks:
+
+* Real-browser/manual playtest was not run in this pass. The final approach needs hands-on tuning to confirm 閃光走者 / 光柱鏡 pressure is tense but not unfair before first Suncrest arrival.
+* No terrain tiles were changed, so map preview regeneration was not required.
+
 ### 2026-06-27: Chapter 5 full-route world-map marker pass
 
 Goal: make the Chapter 5 main expedition readable on the whole-world map after 日輪砲台守, not only in text.
