@@ -44,6 +44,8 @@ function assertScriptOrder() {
   const html = fs.readFileSync("index.html", "utf8");
   const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((match) => match[1]);
   assert(JSON.stringify(scripts) === JSON.stringify(SCRIPT_ORDER), "index.html script order drifted");
+  assert((html.match(/data-quick-slot=/g) || []).length === 3, "field UI should expose three configurable quick slots");
+  assert(!/data-item=/.test(html), "field UI should not hard-code a fixed subset of item types");
 }
 
 function installBrowserStubs() {
@@ -185,11 +187,13 @@ function createRuntime() {
     isBlockedTile: (tile, actor) => map.isBlockedTile(contexts.map(), tile, actor),
     inTownTile: (tx, ty) => map.inTownTile(contexts.map(), tx, ty),
     inTown: (x, y) => map.inTown(contexts.map(), x, y),
+    distanceFromVillage: () => 0,
     tileInGate: (tx, ty) => map.tileInGate(contexts.map(), tx, ty),
     isPassableRect: (actor, x, y) => map.isPassableRect(contexts.map(), actor, x, y),
     moveActor: (actor, dx, dy) => playerHelpers.moveActor(contexts.player(), actor, dx, dy),
     facingVector: () => playerHelpers.facingVector(contexts.player()),
     updateHealCircle: () => playerHelpers.updateHealCircle(contexts.player()),
+    dash: () => playerHelpers.dash(contexts.player()),
     playerAttack: () => combat.playerAttack(contexts.combat()),
     playerDefense: () => combat.playerDefense(contexts.combat()),
     playerMoveSpeed: () => combat.playerMoveSpeed(contexts.combat()),
@@ -198,6 +202,7 @@ function createRuntime() {
     refreshDerivedStats: () => combat.refreshDerivedStats(contexts.combat()),
     weaponDamageMultiplier: (monster, pDot, mDot) => combat.weaponDamageMultiplier(contexts.combat(), monster, pDot, mDot),
     armorDamageMultiplier: (monster, pDot, source) => combat.armorDamageMultiplier(contexts.combat(), monster, pDot, source),
+    shieldRuneCounterDamage: (pDot) => combat.shieldRuneCounterDamage(contexts.combat(), pDot),
     grantMonsterDefeatDrops: (monster) => rewards.grantMonsterDefeatDrops(contexts.reward(), monster),
     grantChestReward: (reward) => rewards.grantChestReward(contexts.reward(), reward),
     grantDiscoveryReward: (discovery, x, y) => rewards.grantDiscoveryReward(contexts.reward(), discovery, x, y),
@@ -205,18 +210,24 @@ function createRuntime() {
     spawnMonster: (type, x, y) => spawn.spawnMonster(contexts.spawn(), type, x, y),
     spawnIfClear: (type, x, y) => spawn.spawnIfClear(contexts.spawn(), type, x, y),
     currentRegion: () => spawn.currentRegion(contexts.spawn()),
+    updateRegionSpawns: (dt) => spawn.updateRegionSpawns(contexts.spawn(), dt),
+    countRegionMonsters: (region) => spawn.countRegionMonsters(contexts.spawn(), region),
     areaDangerText: (region) => spawn.areaDangerText(contexts.spawn(), region),
     guardianReady: () => spawn.guardianReady(contexts.spawn()),
     wardenReady: () => spawn.wardenReady(contexts.spawn()),
     updateStoryEvents: () => spawn.updateStoryEvents(contexts.spawn()),
-    shootProjectile: (monster, target, angleOffset) => projectiles.shootProjectile(contexts.projectile(), monster, target, angleOffset),
+    shootProjectile: (monster, target, angleOffset, options) => projectiles.shootProjectile(contexts.projectile(), monster, target, angleOffset, options),
     nearestNpc: () => npc.nearestNpc(contexts.npc()),
     handleNpc: (target) => npc.handleNpc(contexts.npc(), target),
     playerNearCave: () => npc.playerNearCave(contexts.npc()),
     handleCave: () => npc.handleCave(contexts.npc()),
     canChallengeDragon: () => npc.canChallengeDragon(contexts.npc()),
     nearestChest: () => actions.nearestChest(contexts.action()),
+    nearestPortal: () => actions.nearestPortal(contexts.action()),
+    traversePortal: (portal) => actions.traversePortal(contexts.action(), portal),
+    openChest: (chest) => actions.openChest(contexts.action(), chest),
     nearestDiscovery: () => actions.nearestDiscovery(contexts.action()),
+    searchGround: () => actions.searchGround(contexts.action()),
     objectiveText: () => text.objectiveText(contexts.text()),
     guidanceText: () => text.guidanceText(contexts.text()),
     contextPromptText: () => text.contextPromptText(contexts.text()),
@@ -225,10 +236,14 @@ function createRuntime() {
     saveGame: () => save.saveGame(contexts.save()),
     loadGame: () => save.loadGame(contexts.save()),
     useSelectedItem: () => rewards.useSelectedItem(contexts.reward()),
+    useQuickItem: (slot) => rewards.useQuickItem(contexts.reward(), slot),
+    cycleItem: (step) => rewards.cycleItem(contexts.reward(), step),
+    performAttack: () => actions.performAttack(contexts.action()),
     openInventory: () => ui.openInventory(contexts.ui()),
     closeInventory: () => ui.closeInventory(contexts.ui()),
     moveInventory: (dx, dy) => ui.moveInventory(contexts.ui(), dx, dy),
     confirmInventory: () => ui.confirmInventory(contexts.ui()),
+    assignInventoryQuickSlot: (slot) => ui.assignInventoryQuickSlot(contexts.ui(), slot),
     sellInventorySelection: () => ui.sellInventorySelection(contexts.ui()),
     openShop: (title, rows) => ui.openShop(contexts.ui(), title, rows),
     closeShop: () => ui.closeShop(contexts.ui()),
@@ -271,6 +286,14 @@ function assertMapReachability() {
         queue.push([nx, ny]);
       }
     }
+    for (const portal of d.DUNGEON_PORTALS || []) {
+      if (portal.x !== x || portal.y !== y) continue;
+      const key = `${portal.toX},${portal.toY}`;
+      if (!seen.has(key) && passable(portal.toX, portal.toY)) {
+        seen.add(key);
+        queue.push([portal.toX, portal.toY]);
+      }
+    }
   }
   const goals = [
     ...d.TREASURE_CHESTS.map((chest) => [`chest:${chest.id}`, chest.x, chest.y]),
@@ -287,6 +310,10 @@ function assertMapReachability() {
     ["moon-ruin", 97, 99],
     ["moon-road", 102, 106],
     ["moon-camp", 102, 116],
+    ["moon-archive-entry", 110, 115],
+    ["moon-archive", 130, 4],
+    ["archiveWarden", d.MOON_ARCHIVE_WARDEN_SITE.x, d.MOON_ARCHIVE_WARDEN_SITE.y],
+    ["moon-archive-reliquary", 151, 17],
     ["eclipse-seal", 82, 121],
     ["eclipseDragon", d.ECLIPSE_DRAGON_SITE.x, d.ECLIPSE_DRAGON_SITE.y],
     ["black-fort", 98, 132],
@@ -296,14 +323,55 @@ function assertMapReachability() {
     ["black-gate-shield-cache", 73, 134],
     ["void-seal", 82, 138],
     ["voidDragon", d.VOID_DRAGON_SITE.x, d.VOID_DRAGON_SITE.y],
+    ["black-market-catacomb-entry", 47, 130],
+    ["cryptWarden", d.CRYPT_WARDEN_SITE.x, d.CRYPT_WARDEN_SITE.y],
+    ["frost-haven", 24, 154],
+    ["frost-cave", d.FROST_GOLEM_SITE.x, d.FROST_GOLEM_SITE.y],
+    ["frost-seal", 103, 154],
+    ["frostDragon", d.FROST_DRAGON_SITE.x, d.FROST_DRAGON_SITE.y],
+    ["solarWarden", d.SOLAR_WARDEN_SITE.x, d.SOLAR_WARDEN_SITE.y],
+    ["suncrest-arena-entry", 229, 131],
+    ["suncrest-arena-supply", 205, 8],
+    ["suncrestChampion", d.SUNCREST_CHAMPION_SITE.x, d.SUNCREST_CHAMPION_SITE.y],
+    ["suncrest-arena-reliquary", 216, 18],
+    ["sunspire-entry", 246, 128],
+    ["sunspire-observatory", 180, 10],
+    ["sunspireKeeper", d.SUNSPIRE_KEEPER_SITE.x, d.SUNSPIRE_KEEPER_SITE.y],
+    ["sunspire-reliquary", 190, 17],
+    ["emberDragon", d.EMBER_DRAGON_SITE.x, d.EMBER_DRAGON_SITE.y],
+    ["frost-tower-entry", 43, 148],
+    ["frost-tower-supply", 95, 27],
+    ["frost-tower-stairs", 101, 31],
+    ["frost-tower-warden", d.FROST_TOWER_WARDEN_SITE.x, d.FROST_TOWER_WARDEN_SITE.y],
+    ["frost-tower-reliquary", 115, 29],
+    ["frost-tower-lift", 114, 31],
+    ["east-harbor", 150, 85],
+    ["east-lighthouse", 150, 48],
+    ["east-ridge", 168, 105],
+    ["southwind-outpost", 168, 169],
+    ["south-island-shrine", 57, 209],
+    ["dawn-harbor", 214, 72],
+    ["sunrise-north-ruin", 236, 44],
+    ["sunrise-valley-shrine", 211, 110],
+    ["suncrest-city", 238, 128],
+    ["ember-sanctum", 222, 226],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
   assert(unreachable.length === 0, `unreachable map goals: ${JSON.stringify(unreachable)}`);
-  assert(d.MAP_W === 120 && d.MAP_H === 144, "expanded map should be 120x144");
-  assert(state.npcs.length === 40, "expected 40 NPCs after base population, city, and wagon expansion");
+  assert(d.MAP_W === 256 && d.MAP_H === 256, "expanded RPG world should be 256x256");
+  const overviewRows = globalThis.DRAGON_HUNTER_WORLD_MAP?.overviewRows;
+  assert(Array.isArray(overviewRows) && overviewRows.length === d.MAP_H, "world overview should cover the full continental map");
+  assert(overviewRows.every((row) => typeof row === "string" && row.length === d.MAP_W), "world overview rows should match map dimensions");
+  assert(!overviewRows.slice(1, 15).some((row) => row.slice(80, 120).includes("_")), "world overview should hide embedded catacomb room layouts");
+  assert(!overviewRows.slice(1, 22).some((row) => row.slice(122, 157).includes("_")), "world overview should hide embedded Moon Archive room layouts");
+  assert(!overviewRows.slice(1, 23).some((row) => row.slice(198, 227).includes("_")), "world overview should hide embedded Suncrest Arena room layouts");
+  assert(state.npcs.length === 121, "expected 121 NPCs after Suncrest City service pass");
+  const blockedNpcs = state.npcs.filter((npc) => !passable(Math.floor(npc.x / d.TILE), Math.floor(npc.y / d.TILE)));
+  assert(blockedNpcs.length === 0, `NPCs must stand on reachable terrain: ${JSON.stringify(blockedNpcs.map((npc) => ({ type: npc.type, x: Math.floor(npc.x / d.TILE), y: Math.floor(npc.y / d.TILE) })))}`);
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "merchant"), "black market merchant should load from WORLD_OBJECTS");
   assert(state.npcs.some((entry) => entry.type === "porter"), "porter NPCs should load from WORLD_OBJECTS");
+  assert(state.npcs.some((entry) => entry.type === "frostSmith"), "Frost Haven shield artisan should load from WORLD_OBJECTS");
   return { reachableTiles: seen.size, npcs: state.npcs.map((entry) => entry.type) };
 }
 
@@ -312,6 +380,7 @@ function assertSaveLoadAndEquipment() {
   player.weapon = 3;
   player.armor = 3;
   player.shield = 2;
+  player.shieldRune = "stride";
   player.ownedWeapons = [0, 1, 2, 3];
   player.ownedArmors = [0, 1, 2, 3];
   player.ownedShields = [0, 1, 2];
@@ -319,6 +388,9 @@ function assertSaveLoadAndEquipment() {
   player.tonics = 3;
   player.elixirs = 2;
   player.warps = 1;
+  player.quickItems = ["elixir", "tonic", "warp"];
+  player.activeQuickSlot = 1;
+  player.selectedItem = "tonic";
   player.scales = 2;
   player.sealCrest = true;
   player.hunterCharm = true;
@@ -327,10 +399,17 @@ function assertSaveLoadAndEquipment() {
   player.trailCharm = true;
   player.aegisCharm = true;
   player.mineCharm = true;
+  player.mistCharm = true;
   player.eclipseCharm = true;
   player.voidCharm = true;
   player.obsidianCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
+  player.deepLampCharm = true;
+  player.frostCharm = true;
+  player.skyCharm = true;
+  player.horizonCharm = true;
+  player.prismLensCharm = true;
+  player.duelistCharm = true;
+  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens", "duelist"];
   player.equippedAccessory = "trail";
   player.equippedAccessories = ["trail", "greaterRegen"];
   state.chests.add("town-cache");
@@ -344,6 +423,22 @@ function assertSaveLoadAndEquipment() {
   state.spawnedWarden = true;
   state.ashKnightDefeated = true;
   state.spawnedAshKnight = true;
+  state.archiveWardenDefeated = true;
+  state.spawnedArchiveWarden = true;
+  state.smugglerCaptainDefeated = true;
+  state.spawnedSmugglerCaptain = true;
+  state.regenSentinelDefeated = true;
+  state.spawnedRegenSentinel = true;
+  state.mistKeeperDefeated = true;
+  state.spawnedMistKeeper = true;
+  state.cryptWardenDefeated = true;
+  state.spawnedCryptWarden = true;
+  state.frostGolemDefeated = true;
+  state.spawnedFrostGolem = true;
+  state.towerWardenDefeated = true;
+  state.spawnedTowerWarden = true;
+  state.frostDragonDefeated = true;
+  state.spawnedFrostDragon = true;
   state.eclipseDragonDefeated = true;
   state.spawnedEclipseDragon = true;
   state.chapter2Reported = true;
@@ -352,6 +447,16 @@ function assertSaveLoadAndEquipment() {
   state.obsidianGolemDefeated = true;
   state.spawnedObsidianGolem = true;
   state.chapter3Reported = true;
+  state.chapter4Reported = true;
+  state.solarWardenDefeated = true;
+  state.spawnedSolarWarden = true;
+  state.suncrestChampionDefeated = true;
+  state.spawnedSuncrestChampion = true;
+  state.sunspireKeeperDefeated = true;
+  state.spawnedSunspireKeeper = true;
+  state.emberDragonDefeated = true;
+  state.spawnedEmberDragon = true;
+  state.chapter5Reported = true;
   state.bossDefeated = true;
   state.spawnedBoss = true;
   state.elderReported = true;
@@ -362,21 +467,30 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.weapon === 3, "weapon rank should persist");
   assert(restored.player.armor === 3, "armor rank should persist");
   assert(restored.player.shield === 2, "shield rank should persist");
+  assert(restored.player.shieldRune === "stride", "shield rune should persist");
   assert(restored.player.regenCharm, "regen charm should persist");
   assert(restored.player.greaterRegenCharm, "greater regen charm should persist");
   assert(restored.player.trailCharm, "trail charm should persist");
   assert(restored.player.aegisCharm, "aegis charm should persist");
   assert(restored.player.mineCharm, "mine charm should persist");
+  assert(restored.player.mistCharm, "mist charm should persist");
   assert(restored.player.eclipseCharm, "eclipse charm should persist");
   assert(restored.player.voidCharm, "void charm should persist");
   assert(restored.player.obsidianCharm, "obsidian charm should persist");
+  assert(restored.player.deepLampCharm, "deep lamp charm should persist");
+  assert(restored.player.frostCharm, "frost charm should persist");
+  assert(restored.player.skyCharm, "sky charm should persist");
+  assert(restored.player.horizonCharm, "horizon charm should persist");
+  assert(restored.player.prismLensCharm, "prism lens charm should persist");
+  assert(restored.player.duelistCharm, "duelist charm should persist");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost") && restored.player.ownedAccessories.includes("sky") && restored.player.ownedAccessories.includes("horizon") && restored.player.ownedAccessories.includes("prismLens") && restored.player.ownedAccessories.includes("duelist"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
+  assert(JSON.stringify(restored.player.quickItems) === JSON.stringify(["elixir", "tonic", "warp"]) && restored.player.activeQuickSlot === 1 && restored.player.selectedItem === "tonic", `quick item assignments should persist: ${JSON.stringify({ quickItems: restored.player.quickItems, active: restored.player.activeQuickSlot, selected: restored.player.selectedItem })}`);
   const baseline = createRuntime();
   baseline.player.armor = restored.player.armor;
   baseline.player.weapon = restored.player.weapon;
@@ -388,6 +502,15 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
   assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
+  assert(restored.state.archiveWardenDefeated, "archive warden defeat flag should persist");
+  assert(restored.state.smugglerCaptainDefeated, "smuggler captain defeat flag should persist");
+  assert(restored.state.regenSentinelDefeated, "regen sentinel defeat flag should persist");
+  assert(restored.state.mistKeeperDefeated, "mist keeper defeat flag should persist");
+  assert(restored.state.cryptWardenDefeated, "crypt warden defeat flag should persist");
+  assert(restored.state.frostGolemDefeated, "frost golem defeat flag should persist");
+  assert(restored.state.towerWardenDefeated, "frost tower warden defeat flag should persist");
+  assert(restored.state.frostDragonDefeated && restored.state.chapter4Reported, "chapter 4 flags should persist");
+  assert(restored.state.solarWardenDefeated && restored.state.suncrestChampionDefeated && restored.state.sunspireKeeperDefeated && restored.state.emberDragonDefeated && restored.state.chapter5Reported, "chapter 5 flags should persist");
   assert(restored.state.eclipseDragonDefeated && restored.state.chapter2Reported, "chapter 2 flags should persist");
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.obsidianGolemDefeated, "obsidian golem defeat flag should persist");
@@ -454,6 +577,20 @@ function assertInventoryManagement() {
   player.shield = 0;
   player.gold = 10;
   runtime.refreshDerivedStats();
+
+  state.inventoryTab = "items";
+  state.inventoryIndex = 1;
+  player.tonics = 2;
+  runtime.openInventory();
+  runtime.assignInventoryQuickSlot(2);
+  assert(player.quickItems[2] === "tonic" && player.activeQuickSlot === 2, "inventory should assign any item to a chosen quick slot");
+  runtime.closeInventory();
+  const tonicBeforeQuickUse = player.tonics;
+  player.stamina = 0;
+  runtime.useQuickItem(2);
+  assert(player.tonics === tonicBeforeQuickUse - 1 && player.stamina === player.staminaMax, "quick slot should immediately use its assigned item");
+  runtime.cycleItem(-1);
+  assert(player.activeQuickSlot === 1 && player.selectedItem === player.quickItems[1], "Q/E item cycling should move between configured quick slots");
 
   runtime.openInventory();
   assert(state.inventoryOpen, "inventory should open");
@@ -523,6 +660,45 @@ function assertStoryClearFlow() {
   assert(state.ashKnightDefeated, "Ash Knight defeat should set ashKnightDefeated");
   assert(!state.guardianDefeated, "Ash Knight defeat should not count as Guardian defeat");
 
+  player.level = d.SMUGGLER_CAPTAIN_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.SMUGGLER_CAPTAIN_SITE.x * d.TILE;
+  player.y = d.SMUGGLER_CAPTAIN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedSmugglerCaptain, "Smuggler Captain should spawn on the dangerous shortcut at its level gate");
+  const smugglerCaptain = state.monsters.find((monster) => monster.type === "smugglerCaptain");
+  assert(smugglerCaptain, "Smuggler Captain monster should exist");
+  smugglerCaptain.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.smugglerCaptainDefeated, "Smuggler Captain defeat should persist in state");
+  assert(!state.guardianDefeated, "Smuggler Captain defeat should not count as Guardian defeat");
+
+  player.level = d.REGEN_SENTINEL_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.REGEN_SENTINEL_SITE.x * d.TILE;
+  player.y = d.REGEN_SENTINEL_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedRegenSentinel, "Regen Sentinel should spawn inside the greater regeneration cave");
+  const regenSentinel = state.monsters.find((monster) => monster.type === "regenSentinel");
+  assert(regenSentinel, "Regen Sentinel monster should exist");
+  regenSentinel.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.regenSentinelDefeated, "Regen Sentinel defeat should persist in state");
+  assert(!state.guardianDefeated, "Regen Sentinel defeat should not count as Guardian defeat");
+
+  player.level = d.MIST_KEEPER_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.MIST_KEEPER_SITE.x * d.TILE;
+  player.y = d.MIST_KEEPER_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedMistKeeper, "Mist Keeper should spawn inside the mist shrine");
+  const mistKeeper = state.monsters.find((monster) => monster.type === "mistKeeper");
+  assert(mistKeeper, "Mist Keeper monster should exist");
+  mistKeeper.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.mistKeeperDefeated, "Mist Keeper defeat should persist in state");
+  assert(!state.guardianDefeated, "Mist Keeper defeat should not count as Guardian defeat");
+
   player.level = 3;
   player.scales = 2;
   player.hp = player.hpMax;
@@ -571,6 +747,19 @@ function assertStoryClearFlow() {
   assert(state.elderReported, "Elder report should complete clear state");
 
   state.chests.add("moon-ruin-cache");
+  player.level = d.MOON_ARCHIVE_WARDEN_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.MOON_ARCHIVE_WARDEN_SITE.x * d.TILE;
+  player.y = d.MOON_ARCHIVE_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedArchiveWarden, "Archive Warden should spawn after Moon relic and level gate");
+  const archiveWarden = state.monsters.find((monster) => monster.type === "archiveWarden");
+  assert(archiveWarden, "Archive Warden monster should exist");
+  archiveWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.archiveWardenDefeated, "Archive Warden defeat should open the Moon Archive reliquary");
+
+  state.chests.add("moon-archive-reliquary");
   state.discoveries.add("eclipse-seal");
   player.level = d.CHAPTER2_REQUIREMENTS.level;
   player.hp = player.hpMax;
@@ -614,7 +803,87 @@ function assertStoryClearFlow() {
   assert(state.voidDragonDefeated && state.chapter3Victory, "Void Dragon defeat should set chapter 3 victory");
   runtime.handleNpc(elder);
   assert(state.chapter3Reported, "Elder report should complete chapter 3 clear state");
-  return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported, chapter2Reported: state.chapter2Reported, chapter3Reported: state.chapter3Reported };
+
+  player.level = d.FROST_GOLEM_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.FROST_GOLEM_SITE.x * d.TILE;
+  player.y = d.FROST_GOLEM_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedFrostGolem, "Frost Golem should spawn after chapter 3 report and level gate");
+  const frostGolem = state.monsters.find((monster) => monster.type === "frostGolem");
+  assert(frostGolem, "Frost Golem monster should exist");
+  frostGolem.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.frostGolemDefeated, "Frost Golem defeat should unlock the frost citadel route");
+
+  state.discoveries.add("frost-seal");
+  player.level = d.CHAPTER4_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.FROST_DRAGON_SITE.x * d.TILE;
+  player.y = d.FROST_DRAGON_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedFrostDragon, "Frost Dragon should spawn after chapter 4 requirements");
+  const frostDragon = state.monsters.find((monster) => monster.type === "frostDragon");
+  assert(frostDragon, "Frost Dragon monster should exist");
+  frostDragon.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.frostDragonDefeated && state.chapter4Victory, "Frost Dragon defeat should set chapter 4 victory");
+  runtime.handleNpc(elder);
+  assert(state.chapter4Reported, "Elder report should complete chapter 4 clear state");
+
+  player.level = d.SOLAR_WARDEN_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.SOLAR_WARDEN_SITE.x * d.TILE;
+  player.y = d.SOLAR_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedSolarWarden, "Solar Warden should spawn after chapter 4 report and level gate");
+  const solarWarden = state.monsters.find((monster) => monster.type === "solarWarden");
+  assert(solarWarden, "Solar Warden monster should exist");
+  solarWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.solarWardenDefeated, "Solar Warden defeat should unlock Suncrest decisive gear");
+
+  player.level = d.SUNCREST_CHAMPION_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.SUNCREST_CHAMPION_SITE.x * d.TILE;
+  player.y = d.SUNCREST_CHAMPION_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedSuncrestChampion, "Suncrest Champion should spawn after Solar Warden and level gate");
+  const suncrestChampion = state.monsters.find((monster) => monster.type === "suncrestChampion");
+  assert(suncrestChampion, "Suncrest Champion monster should exist");
+  suncrestChampion.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.suncrestChampionDefeated, "Suncrest Champion defeat should unlock the arena reliquary");
+
+  player.level = d.SUNSPIRE_KEEPER_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.SUNSPIRE_KEEPER_SITE.x * d.TILE;
+  player.y = d.SUNSPIRE_KEEPER_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedSunspireKeeper, "Sunspire Keeper should spawn after Solar Warden and level gate");
+  const sunspireKeeper = state.monsters.find((monster) => monster.type === "sunspireKeeper");
+  assert(sunspireKeeper, "Sunspire Keeper monster should exist");
+  sunspireKeeper.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.sunspireKeeperDefeated, "Sunspire Keeper defeat should unlock the prism lens reliquary");
+
+  state.chests.add("sunspire-reliquary");
+  state.discoveries.add("sunrise-seal");
+  state.chests.add("ember-sanctum-cache");
+  player.level = d.CHAPTER5_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.EMBER_DRAGON_SITE.x * d.TILE;
+  player.y = d.EMBER_DRAGON_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedEmberDragon, "Ember Dragon should spawn after chapter 5 requirements");
+  const emberDragon = state.monsters.find((monster) => monster.type === "emberDragon");
+  assert(emberDragon, "Ember Dragon monster should exist");
+  emberDragon.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.emberDragonDefeated && state.chapter5Victory, "Ember Dragon defeat should set chapter 5 victory");
+  runtime.handleNpc(elder);
+  assert(state.chapter5Reported, "Elder report should complete chapter 5 clear state");
+  return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported, chapter2Reported: state.chapter2Reported, chapter3Reported: state.chapter3Reported, chapter4Reported: state.chapter4Reported, chapter5Reported: state.chapter5Reported };
 }
 
 function assertMineContent() {
@@ -733,6 +1002,116 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.shieldSoldier), "shield soldier monster definition should exist");
   assert(Boolean(d.monsterTypes.summoner), "summoner monster definition should exist");
   assert(Boolean(d.monsterTypes.trapFlower), "trap flower monster definition should exist");
+  assert(Boolean(d.monsterTypes.smugglerCaptain), "smuggler captain monster definition should exist");
+  assert(Boolean(d.monsterTypes.regenSentinel), "regen sentinel monster definition should exist");
+  assert(Boolean(d.monsterTypes.mistLancer), "mist lancer monster definition should exist");
+  assert(Boolean(d.monsterTypes.mistKeeper), "mist keeper monster definition should exist");
+  assert(Boolean(d.monsterTypes.vaultLeech), "vault leech monster definition should exist");
+  assert(Boolean(d.monsterTypes.cryptWarden), "crypt warden monster definition should exist");
+  assert(Boolean(d.monsterTypes.archiveWarden), "Moon Archive Warden monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostMoth), "frost moth monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostBeast), "frost beast monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostGolem), "frost golem monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostBeacon), "frost beacon monster definition should exist");
+  assert(Boolean(d.monsterTypes.towerWarden), "frost tower warden monster definition should exist");
+  assert(Boolean(d.monsterTypes.frostDragon), "frost dragon monster definition should exist");
+  assert(Boolean(d.monsterTypes.sunLancer), "sun lancer monster definition should exist");
+  assert(Boolean(d.monsterTypes.mirageCaster), "mirage caster monster definition should exist");
+  assert(Boolean(d.monsterTypes.solarRunner), "solar runner monster definition should exist");
+  assert(Boolean(d.monsterTypes.prismBeacon), "prism beacon monster definition should exist");
+  assert(Boolean(d.monsterTypes.solarWarden), "solar warden monster definition should exist");
+  assert(Boolean(d.monsterTypes.suncrestChampion), "suncrest arena champion monster definition should exist");
+  assert(Boolean(d.monsterTypes.sunspireKeeper), "sunspire keeper monster definition should exist");
+  assert(Boolean(d.monsterTypes.emberDragon), "ember dragon monster definition should exist");
+  assert(d.weaponNames[13] === "暁光の長槍" && d.armorNames[13] === "陽冠の光鎧" && d.shieldNames[7] === "日輪大盾", "chapter 5 city gear should define all combat slots");
+  assert(d.accessoryData.horizon?.name === "遠見の護符", "chapter 5 should define the anti-sniper accessory");
+  assert(d.accessoryData.prismLens?.name === "反射水晶", "chapter 5 tower should define the prism lens accessory");
+  assert(d.accessoryData.duelist?.name === "陽冠闘士の徽章", "Suncrest Arena should define the duelist accessory");
+  assert(d.weaponAttackProfiles.length === d.weaponNames.length, "every weapon should define an attack profile");
+  assert(d.weaponAttackProfiles[1].cooldown < d.weaponAttackProfiles[11].cooldown && d.weaponAttackProfiles[8].range > d.weaponAttackProfiles[2].range, "weapon profiles should create visible speed and reach tradeoffs");
+
+  const attackStyle = createRuntime();
+  attackStyle.player.x = 30 * d.TILE;
+  attackStyle.player.y = 40 * d.TILE;
+  attackStyle.player.dir = "right";
+  attackStyle.player.weapon = 1;
+  const attackStartX = attackStyle.player.x;
+  attackStyle.runtime.performAttack();
+  assert(attackStyle.player.attackCooldown === d.weaponAttackProfiles[1].cooldown && attackStyle.player.x > attackStartX, "spear attack should use its quick lunging profile");
+
+  const duelistAttack = createRuntime();
+  duelistAttack.player.x = 30 * d.TILE;
+  duelistAttack.player.y = 40 * d.TILE;
+  duelistAttack.player.dir = "right";
+  duelistAttack.player.weapon = 1;
+  duelistAttack.player.ownedAccessories = ["duelist"];
+  duelistAttack.player.equippedAccessories = ["duelist"];
+  duelistAttack.player.equippedAccessory = "duelist";
+  duelistAttack.runtime.refreshDerivedStats();
+  duelistAttack.runtime.performAttack();
+  assert(duelistAttack.player.attackCooldown < d.weaponAttackProfiles[1].cooldown, "duelist accessory should speed normal attack cadence");
+
+  const interiorSpawn = createRuntime();
+  interiorSpawn.player.level = 30;
+  interiorSpawn.player.x = 96 * d.TILE;
+  interiorSpawn.player.y = 25 * d.TILE;
+  interiorSpawn.runtime.spawnMonster("slime", 86 * d.TILE, 25 * d.TILE);
+  assert(interiorSpawn.runtime.currentRegion() === "frostTower1", "interior spawn test should begin on Frost Watchtower floor one");
+  interiorSpawn.runtime.updateRegionSpawns(1000);
+  assert(!interiorSpawn.state.monsters.some((monster) => monster.type === "slime"), "exterior monsters should be pruned when they would consume an interior spawn budget");
+  assert(interiorSpawn.runtime.countRegionMonsters("frostTower1") >= 6, "interior should rapidly populate with monsters from its own floor");
+
+  const marketDialogue = createRuntime();
+  const marketPeople = marketDialogue.state.npcs.filter((npc) => npc.type === "villager" && npc.y > 128 * d.TILE && npc.x < 48 * d.TILE);
+  marketDialogue.runtime.handleNpc(marketPeople[0]);
+  const firstMarketLine = marketDialogue.state.message;
+  marketDialogue.runtime.handleNpc(marketPeople[marketPeople.length - 1]);
+  assert(firstMarketLine !== marketDialogue.state.message, "residents in the same town should not all repeat one generic line");
+
+  player.x = 47 * d.TILE;
+  player.y = 130 * d.TILE;
+  const catacombPortal = runtime.nearestPortal();
+  assert(catacombPortal?.id === "black-market-catacomb-entry", "black market should expose the catacomb entrance portal");
+  runtime.traversePortal(catacombPortal);
+  assert(Math.floor(player.x / d.TILE) === 83 && Math.floor(player.y / d.TILE) === 2, "catacomb portal should move the player into the interior");
+  assert(runtime.currentRegion() === "undercity", "catacomb interior should use undercity region");
+  player.x = 110 * d.TILE;
+  player.y = 115 * d.TILE;
+  const moonArchivePortal = runtime.nearestPortal();
+  assert(moonArchivePortal?.id === "moon-archive-entry", "Moon Camp should expose the Moon Archive entrance");
+  runtime.traversePortal(moonArchivePortal);
+  assert(runtime.currentRegion() === "moonArchive", "Moon Archive interior should use its own region");
+  const moonArchivePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moonArchive");
+  assert(moonArchivePool.includes("eclipseMage") && moonArchivePool.includes("summoner"), "Moon Archive should mix eclipse magic and summoners");
+  player.x = 43 * d.TILE;
+  player.y = 148 * d.TILE;
+  const towerEntry = runtime.nearestPortal();
+  assert(towerEntry?.id === "frost-tower-entry", "Frost Frontier should expose the Frost Watchtower entrance");
+  runtime.traversePortal(towerEntry);
+  assert(runtime.currentRegion() === "frostTower1", "Frost Watchtower first floor should use its own region");
+  player.x = 101 * d.TILE;
+  player.y = 31 * d.TILE;
+  const towerStairs = runtime.nearestPortal();
+  assert(towerStairs?.id === "frost-tower-up", "first-floor stairs should lead upward");
+  runtime.traversePortal(towerStairs);
+  assert(runtime.currentRegion() === "frostTower2", "Frost Watchtower second floor should use its own region");
+  player.x = 46 * d.TILE;
+  player.y = 148 * d.TILE;
+  assert(runtime.nearestPortal() === null, "tower lift should remain unavailable before activation");
+  state.discoveries.add("frost-tower-lift");
+  const towerLift = runtime.nearestPortal();
+  assert(towerLift?.id === "frost-tower-lift-entry", "activated tower lift should be usable from Frost Frontier");
+  runtime.traversePortal(towerLift);
+  assert(runtime.currentRegion() === "frostTower2", "tower lift should shortcut directly to the second floor");
+  player.x = 24 * d.TILE;
+  player.y = 148 * d.TILE;
+  assert(runtime.currentRegion() === "frost", "Frost Haven approach should use frost region");
+  player.x = 64 * d.TILE;
+  player.y = 155 * d.TILE;
+  assert(runtime.currentRegion() === "frostCave", "ice cave should use frost cave region");
+  player.x = 108 * d.TILE;
+  player.y = 156 * d.TILE;
+  assert(runtime.currentRegion() === "frostCitadel", "Frost Crown Citadel should use frost citadel region");
 
   player.x = 20 * d.TILE;
   player.y = 100 * d.TILE;
@@ -740,15 +1119,54 @@ function assertExpandedWorldContent() {
   player.x = 54 * d.TILE;
   player.y = 124 * d.TILE;
   assert(runtime.currentRegion() === "regenCave", "black market north dungeon should use regen cave region");
+  player.x = 72 * d.TILE;
+  player.y = 122 * d.TILE;
+  assert(runtime.currentRegion() === "mistShrine", "mist shrine should use its own region");
   player.x = 90 * d.TILE;
   player.y = 60 * d.TILE;
   assert(runtime.currentRegion() === "ash", "expanded east road should use ash region");
+  player.x = 48 * d.TILE;
+  player.y = 84 * d.TILE;
+  assert(runtime.currentRegion() === "highland", "three-route mountain crossing should use the highland region");
+  player.level = 14;
+  const highlandPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "highland");
+  assert(highlandPool.includes("shieldSoldier") && highlandPool.includes("sorcerer") && highlandPool.includes("boar"), "highland routes should mix frontal guards, magic, and chargers");
+  player.x = 150 * d.TILE;
+  player.y = 60 * d.TILE;
+  assert(runtime.currentRegion() === "windCoast", "east island north coast should use windCoast region");
+  const windCoastPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "windCoast");
+  assert(windCoastPool.includes("mistLancer") && windCoastPool.includes("frostMoth"), "wind coast should mix lunges and ranged pressure");
+  player.x = 165 * d.TILE;
+  player.y = 105 * d.TILE;
+  assert(runtime.currentRegion() === "eastHighland", "east island interior should use eastHighland region");
+  player.x = 58 * d.TILE;
+  player.y = 209 * d.TILE;
+  assert(runtime.currentRegion() === "southIsles", "southern archipelago should use southIsles region");
+  player.x = 214 * d.TILE;
+  player.y = 72 * d.TILE;
+  assert(runtime.currentRegion() === "dawnCoast", "eastern continent harbor should use dawnCoast region");
+  const dawnPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "dawnCoast");
+  assert(dawnPool.includes("mistLancer") && dawnPool.includes("frostBeast"), "dawn coast should mix lunges and charge pressure");
+  player.x = 238 * d.TILE;
+  player.y = 129 * d.TILE;
+  assert(runtime.currentRegion() === "sunriseHighland", "eastern continent inland should use sunriseHighland region");
+  player.x = 180 * d.TILE;
+  player.y = 10 * d.TILE;
+  assert(runtime.currentRegion() === "sunspire", "Sunspire Tower interior should use its own region");
+  const sunspirePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "sunspire");
+  assert(sunspirePool.includes("solarRunner") && sunspirePool.includes("prismBeacon"), "Sunspire Tower should mix charge and artillery pressure");
+  player.x = 222 * d.TILE;
+  player.y = 226 * d.TILE;
+  assert(runtime.currentRegion() === "emberIsles", "southeastern volcanic archipelago should use emberIsles region");
   player.x = d.ASH_KNIGHT_SITE.x * d.TILE;
   player.y = d.ASH_KNIGHT_SITE.y * d.TILE;
   assert(runtime.currentRegion() === "tower", "old tower should use tower region");
   player.x = 104 * d.TILE;
   player.y = 102 * d.TILE;
   assert(runtime.currentRegion() === "moon", "moon ruins should use moon region");
+  player.x = 150 * d.TILE;
+  player.y = 17 * d.TILE;
+  assert(runtime.currentRegion() === "moonArchive", "Moon Archive should use its own interior spawn region");
   player.x = 86 * d.TILE;
   player.y = 123 * d.TILE;
   assert(runtime.currentRegion() === "eclipse", "eclipse castle should use eclipse region");
@@ -772,11 +1190,97 @@ function assertExpandedWorldContent() {
   player.level = 16;
   const moonTrapPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
   assert(moonTrapPool.includes("trapFlower"), "moon spawn pool should include trap flowers after level 16");
+  state.elderReported = true;
+  state.ashKnightDefeated = true;
+  state.chests.add("moon-ruin-cache");
+  state.monsters = [];
+  player.level = d.MOON_ARCHIVE_WARDEN_REQUIREMENTS.level;
+  player.x = d.MOON_ARCHIVE_WARDEN_SITE.x * d.TILE;
+  player.y = d.MOON_ARCHIVE_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  const archiveWarden = state.monsters.find((monster) => monster.type === "archiveWarden");
+  assert(archiveWarden, "Moon Archive should spawn its named warden encounter after the Moon relic");
+  archiveWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.archiveWardenDefeated, "archive warden defeat should persist in state");
   player.level = 1;
   const smugglerLowPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "smuggler");
   assert(smugglerLowPool.includes("shieldSoldier") && smugglerLowPool.includes("wisp"), "smuggler shortcut should remain dangerous even at low level");
   const regenLowPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "regenCave");
   assert(regenLowPool.includes("bubbler") && regenLowPool.includes("trapFlower"), "regen cave should have special hazards even at low level");
+  player.level = d.SMUGGLER_CAPTAIN_REQUIREMENTS.level;
+  player.x = d.SMUGGLER_CAPTAIN_SITE.x * d.TILE;
+  player.y = d.SMUGGLER_CAPTAIN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.monsters.some((monster) => monster.type === "smugglerCaptain"), "smuggler shortcut should spawn its named captain encounter");
+  state.monsters = [];
+  player.level = d.REGEN_SENTINEL_REQUIREMENTS.level;
+  player.x = d.REGEN_SENTINEL_SITE.x * d.TILE;
+  player.y = d.REGEN_SENTINEL_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.monsters.some((monster) => monster.type === "regenSentinel"), "greater regen cave should spawn its guardian encounter");
+  state.monsters = [];
+  state.regenSentinelDefeated = true;
+  state.spawnedRegenSentinel = true;
+  player.level = d.MIST_KEEPER_REQUIREMENTS.level;
+  player.x = d.MIST_KEEPER_SITE.x * d.TILE;
+  player.y = d.MIST_KEEPER_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.monsters.some((monster) => monster.type === "mistKeeper"), "mist shrine should spawn its guardian encounter after regeneration cave");
+  state.monsters = [];
+  const mistPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "mistShrine");
+  assert(mistPool.includes("mistLancer") && mistPool.includes("summoner") && mistPool.includes("trapFlower"), "mist shrine spawn pool should include mist lancers, summoners, and trap flowers");
+  player.level = d.CRYPT_WARDEN_REQUIREMENTS.level;
+  const cryptPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "undercity");
+  assert(cryptPool.includes("vaultLeech") && cryptPool.includes("shieldSoldier") && cryptPool.includes("summoner"), "catacomb spawn pool should mix life drain, frontal guard, and summoning pressure");
+  state.chapter2Reported = true;
+  player.x = d.CRYPT_WARDEN_SITE.x * d.TILE;
+  player.y = d.CRYPT_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  const cryptWarden = state.monsters.find((monster) => monster.type === "cryptWarden");
+  assert(cryptWarden, "catacomb should spawn its named warden encounter after chapter 2 report");
+  cryptWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.cryptWardenDefeated, "crypt warden defeat should persist in state");
+  state.monsters = [];
+  player.level = d.CHAPTER4_REQUIREMENTS.level;
+  const frostPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frost");
+  const frostCavePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostCave");
+  const frostCitadelPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostCitadel");
+  const frostTowerPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostTower2");
+  assert(frostPool.includes("frostMoth") && frostPool.includes("frostBeast"), "frost field should use its new enemy family");
+  assert(frostCavePool.includes("frostBeast") && frostCavePool.includes("vaultLeech"), "ice cave should mix charge and drain pressure");
+  assert(frostCitadelPool.includes("frostMoth") && frostCitadelPool.includes("summoner"), "frost citadel should mix ice projectiles and summons");
+  assert(frostTowerPool.includes("frostBeacon") && frostTowerPool.includes("frostBeast"), "frost tower should mix aura hazards and charge pressure");
+
+  state.monsters = [];
+  state.chapter3Reported = true;
+  player.level = d.FROST_TOWER_WARDEN_REQUIREMENTS.level;
+  player.x = d.FROST_TOWER_WARDEN_SITE.x * d.TILE;
+  player.y = d.FROST_TOWER_WARDEN_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  const towerWarden = state.monsters.find((monster) => monster.type === "towerWarden");
+  assert(towerWarden, "Frost Watchtower should spawn its named warden encounter");
+  towerWarden.hp = towerWarden.hpMax * 0.5;
+  runtime.updateMonsters(16);
+  assert(towerWarden.summoned && state.monsters.some((monster) => monster.type === "frostBeacon"), "tower warden should activate frost beacons below half HP");
+  towerWarden.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.towerWardenDefeated, "tower warden defeat should persist in state");
+
+  state.monsters = [];
+  player.armor = 0;
+  player.equippedAccessories = [];
+  player.stamina = player.staminaMax;
+  player.slow = 0;
+  player.x = 110 * d.TILE;
+  player.y = 27 * d.TILE;
+  runtime.spawnMonster("frostBeacon", player.x + d.TILE, player.y);
+  const beacon = state.monsters.find((monster) => monster.type === "frostBeacon");
+  beacon.summonCooldown = 0;
+  const staminaBeforeBeacon = player.stamina;
+  runtime.updateMonsters(16);
+  assert(player.stamina < staminaBeforeBeacon && player.slow > 0, "frost beacon should pulse stamina and slow pressure at close range");
   player.level = 20;
   const eclipsePool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "eclipse");
   assert(eclipsePool.includes("eclipseMage") && eclipsePool.includes("moonShade") && eclipsePool.includes("summoner") && eclipsePool.includes("trapFlower"), "eclipse spawn pool should include eclipse mage, moon shade, summoner, and trap flowers");
@@ -785,6 +1289,9 @@ function assertExpandedWorldContent() {
   assert(voidPool.includes("voidWraith") && voidPool.includes("eclipseMage") && voidPool.includes("summoner") && voidPool.includes("trapFlower"), "void spawn pool should include void wraith, eclipse mage, summoner, and trap flowers");
   const obsidianPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "obsidian");
   assert(obsidianPool.includes("obsidianCrawler") && obsidianPool.includes("voidWraith") && obsidianPool.includes("summoner") && obsidianPool.includes("trapFlower"), "obsidian spawn pool should include crawler, summoner, trap flowers, and void pressure");
+  player.level = 39;
+  const suncrestArenaPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "suncrestArena");
+  assert(suncrestArenaPool.includes("solarRunner") && suncrestArenaPool.includes("sunLancer") && suncrestArenaPool.includes("prismBeacon"), "Suncrest Arena should mix rush, sniper, and artillery pressure in its local spawn pool");
 
   state.monsters = [];
   player.level = 18;
@@ -823,10 +1330,259 @@ function assertExpandedWorldContent() {
   assert(!state.monsters.some((monster) => monster.type === "trapFlower"), "trap flower should be removed after exploding");
   state.gameOver = false;
 
+  state.monsters = [];
+  state.projectiles = [];
+  player.x = 82 * d.TILE;
+  player.y = 148 * d.TILE;
+  runtime.spawnMonster("frostMoth", player.x + d.TILE * 2, player.y);
+  const frostMoth = state.monsters.find((monster) => monster.type === "frostMoth");
+  frostMoth.fireCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.source === "frostMoth"), "frost moth should fire freezing projectiles from range");
+
+  state.monsters = [];
+  state.projectiles = [];
+  runtime.spawnMonster("frostBeast", player.x + d.TILE * 2, player.y);
+  const frostBeast = state.monsters.find((monster) => monster.type === "frostBeast");
+  frostBeast.chargeCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(frostBeast.windup > 0, "frost beast should telegraph its long charge");
+
+  state.monsters = [];
+  player.x = 104 * d.TILE;
+  player.y = 156 * d.TILE;
+  runtime.spawnMonster("frostDragon", 108 * d.TILE, 156 * d.TILE);
+  const behaviorFrostDragon = state.monsters.find((monster) => monster.type === "frostDragon");
+  behaviorFrostDragon.hp = behaviorFrostDragon.hpMax * 0.4;
+  runtime.updateMonsters(16);
+  assert(behaviorFrostDragon.enraged && behaviorFrostDragon.summoned, "frost dragon should enrage and call frost reinforcements below half HP");
+  assert(state.monsters.some((monster) => monster.type === "frostMoth") && state.monsters.some((monster) => monster.type === "frostBeast"), "frost dragon should summon both frost enemy behaviors");
+  behaviorFrostDragon.patternCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorFrostDragon.patternState === "windup" && state.telegraphs.some((entry) => entry.kind === "line"), "frost dragon should telegraph its advanced boss pattern");
+  behaviorFrostDragon.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.pattern === "frostLance" && projectile.piercing), "frost dragon should fire a piercing ice lance after its warning");
+  state.monsters = [];
+  state.projectiles = [];
+
+  player.x = 232 * d.TILE;
+  player.y = 102 * d.TILE;
+  runtime.spawnMonster("sunLancer", player.x + d.TILE * 5, player.y);
+  const sunLancer = state.monsters.find((monster) => monster.type === "sunLancer");
+  sunLancer.fireCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(sunLancer.specialState === "sniper" && state.telegraphs.some((entry) => entry.kind === "line"), "sun lancer should warn a very long sniper line");
+  sunLancer.specialWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.source === "sunLancer" && projectile.pattern === "solarSniper" && projectile.piercing), "sun lancer should fire a piercing ultra-long projectile after warning");
+
+  state.monsters = [];
+  state.projectiles = [];
+  runtime.spawnMonster("mirageCaster", player.x + d.TILE * 5, player.y);
+  const mirageCaster = state.monsters.find((monster) => monster.type === "mirageCaster");
+  mirageCaster.fireCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(mirageCaster.specialState === "artillery" && state.telegraphs.filter((entry) => entry.kind === "zone").length === 3, "mirage caster should mark three artillery impact zones");
+  mirageCaster.specialWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.filter((projectile) => projectile.pattern === "solarArtillery" && projectile.persistent).length === 3, "mirage caster should create three persistent impact zones");
+
+  state.monsters = [];
+  state.projectiles = [];
+  runtime.spawnMonster("solarRunner", player.x + d.TILE * 5, player.y);
+  const solarRunner = state.monsters.find((monster) => monster.type === "solarRunner");
+  solarRunner.chargeCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(solarRunner.windup > 0 && solarRunner.chargeVector, "solar runner should telegraph a fast charge");
+
+  state.monsters = [];
+  state.projectiles = [];
+  runtime.spawnMonster("prismBeacon", player.x + d.TILE * 5, player.y);
+  const prismBeacon = state.monsters.find((monster) => monster.type === "prismBeacon");
+  prismBeacon.fireCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(prismBeacon.specialState === "artillery" && state.telegraphs.filter((entry) => entry.kind === "zone").length === 3, "prism beacon should mark three solar artillery zones");
+  prismBeacon.specialWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.filter((projectile) => projectile.source === "prismBeacon" && projectile.pattern === "solarArtillery").length === 3, "prism beacon should create solar artillery projectiles");
+
+  state.monsters = [];
+  state.projectiles = [];
+  player.x = 214 * d.TILE;
+  player.y = 17 * d.TILE;
+  runtime.spawnMonster("suncrestChampion", d.SUNCREST_CHAMPION_SITE.x * d.TILE, d.SUNCREST_CHAMPION_SITE.y * d.TILE);
+  const behaviorSuncrestChampion = state.monsters.find((monster) => monster.type === "suncrestChampion");
+  behaviorSuncrestChampion.fireCooldown = 9999;
+  behaviorSuncrestChampion.chargeCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorSuncrestChampion.windup > 0 && behaviorSuncrestChampion.chargeVector, "Suncrest Champion should open with a charge threat");
+  behaviorSuncrestChampion.windup = 0;
+  behaviorSuncrestChampion.chargeTime = 0;
+  behaviorSuncrestChampion.chargeCooldown = 9999;
+  behaviorSuncrestChampion.specialState = "idle";
+  behaviorSuncrestChampion.specialWindup = 0;
+  behaviorSuncrestChampion.fireCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorSuncrestChampion.specialState === "sniper" && state.telegraphs.some((entry) => entry.kind === "line"), "Suncrest Champion should telegraph a triple sniper line");
+  behaviorSuncrestChampion.specialWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.filter((projectile) => projectile.source === "suncrestChampion" && projectile.pattern === "solarSniper").length === 3, "Suncrest Champion should fire three piercing sniper shots");
+  behaviorSuncrestChampion.fireCooldown = 0;
+  behaviorSuncrestChampion.chargeCooldown = 9999;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorSuncrestChampion.specialState === "artillery" && state.telegraphs.filter((entry) => entry.kind === "zone").length === 3, "Suncrest Champion should alternate into artillery zones");
+  behaviorSuncrestChampion.hp = behaviorSuncrestChampion.hpMax * 0.5;
+  runtime.updateMonsters(16);
+  assert(behaviorSuncrestChampion.summoned && state.monsters.some((monster) => monster.type === "solarRunner") && state.monsters.some((monster) => monster.type === "sunLancer") && state.monsters.some((monster) => monster.type === "prismBeacon"), "Suncrest Champion should call mixed arena reinforcements below half HP");
+
+  state.monsters = [];
+  state.projectiles = [];
+  player.x = 188 * d.TILE;
+  player.y = 17 * d.TILE;
+  runtime.spawnMonster("sunspireKeeper", d.SUNSPIRE_KEEPER_SITE.x * d.TILE, d.SUNSPIRE_KEEPER_SITE.y * d.TILE);
+  const behaviorSunspireKeeper = state.monsters.find((monster) => monster.type === "sunspireKeeper");
+  behaviorSunspireKeeper.fireCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorSunspireKeeper.specialState === "sniper" && state.telegraphs.some((entry) => entry.kind === "line" && entry.length >= 500 * d.WORLD_SCALE), "Sunspire Keeper should open with a longer sniper warning");
+  behaviorSunspireKeeper.hp = behaviorSunspireKeeper.hpMax * 0.5;
+  runtime.updateMonsters(16);
+  assert(behaviorSunspireKeeper.summoned && state.monsters.some((monster) => monster.type === "prismBeacon") && state.monsters.some((monster) => monster.type === "solarRunner"), "Sunspire Keeper should summon prism and runner pressure below half HP");
+
+  state.monsters = [];
+  state.projectiles = [];
+  player.x = 232 * d.TILE;
+  player.y = 102 * d.TILE;
+  runtime.spawnMonster("emberDragon", 236 * d.TILE, 102 * d.TILE);
+  const behaviorEmberDragon = state.monsters.find((monster) => monster.type === "emberDragon");
+  behaviorEmberDragon.patternCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorEmberDragon.patternKind === "emberSniper" && state.telegraphs.some((entry) => entry.kind === "line" && entry.length >= 400 * d.WORLD_SCALE), "ember dragon should open with a near-screen-edge sniper warning");
+  behaviorEmberDragon.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.pattern === "emberSniper" && projectile.piercing && projectile.wallPiercing), "ember dragon sniper should pierce enemies and walls");
+  state.monsters = [];
+  state.projectiles = [];
+
+  const chapter5Defense = createRuntime();
+  const solarThreat = { type: "sunLancer" };
+  const unprepared = chapter5Defense.runtime.armorDamageMultiplier(solarThreat, 0, "solar");
+  chapter5Defense.player.armor = 13;
+  chapter5Defense.player.shield = 7;
+  chapter5Defense.player.horizonCharm = true;
+  chapter5Defense.player.ownedAccessories = ["horizon"];
+  chapter5Defense.player.equippedAccessories = ["horizon"];
+  const prepared = chapter5Defense.runtime.armorDamageMultiplier(solarThreat, 0, "solar");
+  assert(prepared < unprepared * 0.2, `Suncrest gear should dramatically reduce solar ranged pressure: ${prepared} vs ${unprepared}`);
+  chapter5Defense.player.ownedAccessories = ["horizon", "prismLens"];
+  chapter5Defense.player.equippedAccessories = ["horizon", "prismLens"];
+  const prismPrepared = chapter5Defense.runtime.armorDamageMultiplier({ type: "sunspireKeeper" }, 0, "solar");
+  assert(prismPrepared < prepared, "prism lens should further reduce Sunspire and Ember solar pressure when equipped");
+  const arenaPrepared = chapter5Defense.runtime.armorDamageMultiplier({ type: "suncrestChampion" }, 0, "solar");
+  assert(arenaPrepared <= prismPrepared, "Suncrest arena champion should respect chapter 5 solar counter gear");
+
+  const suncrestShop = createRuntime();
+  const suncrestMerchant = suncrestShop.state.npcs.find((npc) => npc.type === "merchant" && npc.x > 240 * d.TILE);
+  assert(suncrestMerchant, "Suncrest City should have its own large merchant");
+  suncrestShop.state.solarWardenDefeated = true;
+  suncrestShop.player.gold = 200000;
+  suncrestShop.runtime.handleNpc(suncrestMerchant);
+  assert(suncrestShop.state.shopTitle.includes("陽冠都市"), "Suncrest merchant should open the metropolis armament store");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "weapon" && row.id === 13, "Suncrest weapon should be selectable");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "armor" && row.id === 13, "Suncrest armor should be selectable");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "shield" && row.id === 7, "Suncrest shield should be selectable");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "accessory" && row.id === "horizon", "Suncrest accessory should be selectable");
+  assert(suncrestShop.player.ownedWeapons.includes(13) && suncrestShop.player.ownedArmors.includes(13) && suncrestShop.player.ownedShields.includes(7) && suncrestShop.player.ownedAccessories.includes("horizon"), "Suncrest purchases should enter the real equipment inventory");
+  const suncrestApothecary = suncrestShop.state.npcs.find((npc) => npc.type === "merchant" && Math.floor(npc.x / d.TILE) === 242);
+  assert(suncrestApothecary, "Suncrest City should have a dedicated expedition apothecary");
+  suncrestShop.runtime.handleNpc(suncrestApothecary);
+  assert(suncrestShop.state.shopTitle.includes("遠征薬舗"), "Suncrest apothecary should be a separate item shop");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "item" && row.id === "elixir", "Suncrest apothecary should sell elixir packs");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "item" && row.id === "warp", "Suncrest apothecary should sell warp packs");
+  const suncrestGuild = suncrestShop.state.npcs.find((npc) => npc.type === "merchant" && Math.floor(npc.x / d.TILE) === 230);
+  assert(suncrestGuild, "Suncrest City should have a travel gear guild");
+  suncrestShop.player.shield = 7;
+  suncrestShop.state.sunspireKeeperDefeated = true;
+  suncrestShop.player.gold = 100000;
+  suncrestShop.runtime.handleNpc(suncrestGuild);
+  assert(suncrestShop.state.shopTitle.includes("旅装ギルド"), "Suncrest travel guild should be a separate accessory and shield shop");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "accessory" && row.id === "prismLens", "Suncrest guild should sell high-end prism counter gear after the tower keeper");
+  assert(suncrestShop.player.ownedAccessories.includes("prismLens"), "Suncrest guild prism gear should enter accessory inventory");
+
+  player.x = 78 * d.TILE;
+  player.y = 140 * d.TILE;
+  runtime.spawnMonster("voidDragon", 80 * d.TILE, 140 * d.TILE);
+  const behaviorVoidDragon = state.monsters.find((monster) => monster.type === "voidDragon");
+  behaviorVoidDragon.patternCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(behaviorVoidDragon.patternState === "windup" && state.telegraphs.filter((entry) => entry.kind === "zone").length === 3, "void dragon should mark three delayed danger zones");
+  behaviorVoidDragon.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.pattern === "voidZone" && projectile.persistent), "void dragon danger zones should persist after activation");
+  state.monsters = [];
+  state.projectiles = [];
+
+  globalThis.DRAGON_HUNTER_UI.openWorldMap(contexts.ui());
+  assert(state.worldMapOpen && !state.inventoryOpen && !state.shopOpen, "world map should open as an exclusive paused overlay");
+  globalThis.DRAGON_HUNTER_UI.closeWorldMap(contexts.ui());
+  assert(!state.worldMapOpen, "world map should close cleanly");
+
   assert(runtime.inTownTile(102, 58), "ash hamlet should be a safe-zone tile");
   assert(runtime.inTownTile(102, 116), "moon camp should be a safe-zone tile");
   assert(runtime.inTownTile(98, 132), "black fort should be a safe-zone tile");
   assert(runtime.inTownTile(35, 135), "black market should be a safe-zone tile");
+  assert(runtime.inTownTile(20, 140) && runtime.inTownTile(47, 137), "expanded Black Market city districts should remain safe");
+  assert(runtime.inTownTile(150, 85) && runtime.inTownTile(168, 169), "east island harbor and cape outpost should be safe zones");
+  assert(runtime.inTownTile(214, 72) && runtime.inTownTile(238, 129), "dawn harbor and Suncrest City should be safe zones");
+  assert(runtime.inTownTile(24, 154), "Frost Haven should be a safe-zone tile");
+  player.x = 116 * d.TILE;
+  player.y = 65 * d.TILE;
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "western-ferry"));
+  assert(Math.floor(player.x / d.TILE) === 139 && Math.floor(player.y / d.TILE) === 87, "western ferry should reach the east island harbor");
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "east-ferry"));
+  assert(Math.floor(player.x / d.TILE) === 116 && Math.floor(player.y / d.TILE) === 65, "east ferry should return to the western continent");
+  player.x = 185 * d.TILE;
+  player.y = 102 * d.TILE;
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "sunrise-ferry"));
+  assert(Math.floor(player.x / d.TILE) === 204 && Math.floor(player.y / d.TILE) === 72, "outer-sea ferry should reach Dawn Harbor");
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "dawn-ferry"));
+  assert(Math.floor(player.x / d.TILE) === 185 && Math.floor(player.y / d.TILE) === 102, "Dawn Harbor ferry should return to Azure Wind Island");
+  player.x = 110 * d.TILE;
+  player.y = 115 * d.TILE;
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "moon-archive-entry"));
+  assert(runtime.currentRegion() === "moonArchive", "Moon Archive portal should enter the book vault interior");
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "moon-archive-exit"));
+  assert(Math.floor(player.x / d.TILE) === 110 && Math.floor(player.y / d.TILE) === 115, "Moon Archive exit should return to Moon Camp");
+  player.x = 246 * d.TILE;
+  player.y = 128 * d.TILE;
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "sunspire-entry"));
+  assert(runtime.currentRegion() === "sunspire", "Suncrest east gate should enter Sunspire Tower");
+  runtime.traversePortal(d.DUNGEON_PORTALS.find((portal) => portal.id === "sunspire-exit"));
+  assert(Math.floor(player.x / d.TILE) === 246 && Math.floor(player.y / d.TILE) === 128, "Sunspire exit should return to Suncrest east gate");
+  runtime.ui.zone = { textContent: "" };
+  player.x = 24 * d.TILE;
+  player.y = 154 * d.TILE;
+  globalThis.DRAGON_HUNTER_UI.updateZone(contexts.ui());
+  assert(runtime.ui.zone.textContent === "白銀宿", "Frost Haven should have its own visible zone name");
+  player.x = 42 * d.TILE;
+  player.y = 147 * d.TILE;
+  globalThis.DRAGON_HUNTER_UI.updateZone(contexts.ui());
+  assert(runtime.ui.zone.textContent === "霜原", "Frost Frontier should not be mislabeled as Black Sun Castle");
+  player.hp = 5;
+  player.x = 24 * d.TILE;
+  player.y = 154 * d.TILE;
+  runtime.updateHealCircle();
+  assert(player.hp === player.hpMax, "Frost Haven heal circle should fully heal");
+  state.healCooldown = 0;
   player.hp = 5;
   player.x = 102 * d.TILE;
   player.y = 58 * d.TILE;
@@ -894,6 +1650,45 @@ function assertExpandedWorldContent() {
   buyShopRow(runtime, state, (row) => row.type === "item" && row.id === "warp", "black market should sell return bells");
   assert(player.elixirs >= 2 && player.warps >= 2, "black market premium items should enter inventory");
 
+  const frostFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.y > 144 * d.TILE);
+  assert(frostFrontier, "Frost Haven frontier NPC should exist");
+  state.chapter3Reported = true;
+  player.hp = player.hpMax;
+  player.stamina = player.staminaMax;
+  player.gold = d.weaponCosts[12] + d.armorCosts[12] + d.shieldCosts[6] + 2000;
+  runtime.closeShop();
+  openNpcShop(runtime, state, frostFrontier);
+  buyShopRow(runtime, state, (row) => row.type === "weapon" && row.id === 12, "Frost Haven weapon should be selectable");
+  buyShopRow(runtime, state, (row) => row.type === "armor" && row.id === 12, "Frost Haven armor should be selectable");
+  buyShopRow(runtime, state, (row) => row.type === "shield" && row.id === 6, "Frost Haven shield should be selectable");
+  assert(player.ownedWeapons.includes(12) && player.ownedArmors.includes(12) && player.ownedShields.includes(6), "Frost Haven should sell complete frost-route gear");
+
+  const frostSmith = state.npcs.find((entry) => entry.type === "frostSmith");
+  assert(frostSmith, "Frost Haven shield artisan should exist");
+  player.shield = 6;
+  player.gold = d.shieldRuneData.bastion.cost + d.shieldRuneData.stride.cost + d.shieldRuneData.counter.cost;
+  runtime.closeShop();
+  openNpcShop(runtime, state, frostSmith);
+  const lockedCounter = state.shopRows.find((row) => row.type === "shieldRune" && row.id === "counter");
+  assert(lockedCounter && lockedCounter.available === false, "counter rune should be locked before Frost Golem defeat");
+  buyShopRow(runtime, state, (row) => row.type === "shieldRune" && row.id === "bastion", "bastion rune should be selectable");
+  const bastionFront = runtime.armorDamageMultiplier({ type: "frostBeast" }, 0.8, "contact");
+  player.shieldRune = "";
+  const plainFront = runtime.armorDamageMultiplier({ type: "frostBeast" }, 0.8, "contact");
+  assert(bastionFront < plainFront, "bastion rune should further reduce frontal contact damage");
+  runtime.closeShop();
+  openNpcShop(runtime, state, frostSmith);
+  buyShopRow(runtime, state, (row) => row.type === "shieldRune" && row.id === "stride", "stride rune should be selectable");
+  const strideSpeed = runtime.playerMoveSpeed();
+  const strideDash = runtime.dashCost();
+  player.shieldRune = "";
+  assert(strideSpeed > runtime.playerMoveSpeed() && strideDash < runtime.dashCost(), "stride rune should improve shield traversal tempo");
+  state.frostGolemDefeated = true;
+  runtime.closeShop();
+  openNpcShop(runtime, state, frostSmith);
+  buyShopRow(runtime, state, (row) => row.type === "shieldRune" && row.id === "counter", "counter rune should unlock after Frost Golem defeat");
+  assert(runtime.shieldRuneCounterDamage(0.8) > 0 && runtime.shieldRuneCounterDamage(-0.2) === 0, "counter rune should retaliate only on frontal contact");
+
   const porter = state.npcs.find((entry) => entry.type === "porter");
   assert(porter, "porter NPC should exist for base travel");
   state.elderReported = true;
@@ -913,6 +1708,43 @@ function assertExpandedWorldContent() {
   const memoPages = globalThis.DRAGON_HUNTER_UI.statsPanelPages(contexts.ui());
   assert(memoPages.some((page) => page.title === "旅メモ" && page.lines.some((line) => /召喚士|黒市|古塔/.test(line))), "status panel should include travel memo guidance");
 
+  const routeReadability = createRuntime();
+  routeReadability.state.guardianDefeated = true;
+  routeReadability.player.sealCrest = true;
+  routeReadability.player.scales = d.BOSS_REQUIREMENTS.scales;
+  routeReadability.player.level = d.BOSS_REQUIREMENTS.level;
+  assert(/北東の岩山|竜洞/.test(routeReadability.runtime.objectiveText()), "Dragon Cave objective should name the north-east rock landmark");
+  const dragonDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(dragonDestination?.label === "竜洞" && dragonDestination.site.x === 51, "world map should mark Dragon Cave when it is the required target");
+
+  routeReadability.state.bossDefeated = true;
+  routeReadability.state.elderReported = true;
+  routeReadability.state.ashKnightDefeated = true;
+  routeReadability.state.archiveWardenDefeated = true;
+  routeReadability.state.eclipseDragonDefeated = true;
+  routeReadability.state.chapter2Reported = true;
+  routeReadability.state.cryptWardenDefeated = true;
+  routeReadability.state.obsidianGolemDefeated = true;
+  routeReadability.state.voidDragonDefeated = true;
+  routeReadability.state.chapter3Reported = true;
+  routeReadability.state.frostGolemDefeated = true;
+  routeReadability.state.frostDragonDefeated = true;
+  routeReadability.state.chapter4Reported = true;
+  routeReadability.state.solarWardenDefeated = false;
+  routeReadability.player.level = d.SOLAR_WARDEN_REQUIREMENTS.level;
+  assert(/黎明港から北東高原|日輪砲台/.test(routeReadability.runtime.objectiveText()), "Solar Warden objective should describe the Dawn Harbor to north-east highland route");
+  const solarDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(solarDestination?.label === "日輪砲台守" && solarDestination.site.x === d.SOLAR_WARDEN_SITE.x, "world map should mark Solar Warden as the current required destination");
+  const chapter5Memo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(routeReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(chapter5Memo?.lines.some((line) => /本線: 黎明港 -> 北東高原 -> 日輪砲台守/.test(line)), "Chapter 5 travel memo should show the main Solar Warden route");
+
+  routeReadability.state.solarWardenDefeated = true;
+  routeReadability.state.suncrestChampionDefeated = false;
+  routeReadability.state.sunspireKeeperDefeated = false;
+  routeReadability.player.level = d.SUNCREST_CHAMPION_REQUIREMENTS.level;
+  const suncrestMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(routeReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(suncrestMemo?.lines[0]?.includes("本線: 陽冠都市東門 -> 日鏡塔") && suncrestMemo.lines.some((line) => /任意: 西広場の闘技場/.test(line)), "Suncrest memo should show main tower route before optional arena");
+
   const reward = createRuntime();
   reward.runtime.grantChestReward("ashGear");
   assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8), "ashGear chest should grant star gear inventory");
@@ -928,6 +1760,8 @@ function assertExpandedWorldContent() {
   assert(reward.player.wards >= 9, "trap hint should provide a ward and warning reward");
   reward.runtime.grantDiscoveryReward({ id: "test-waystone", kind: "waystone" }, 0, 0);
   assert(reward.player.wards >= 8 && reward.player.stamina === reward.player.staminaMax, "waystone discovery should restore stamina and add a ward");
+  reward.runtime.grantDiscoveryReward({ id: "test-dragon-cave-hint", kind: "dragonCaveHint" }, 0, 0);
+  assert(reward.player.wards >= 9, "Dragon Cave hint should provide a small route-preparation ward");
   reward.runtime.grantChestReward("eclipseGear");
   assert(reward.player.ownedWeapons.includes(9) && reward.player.ownedArmors.includes(9), "eclipseGear chest should grant eclipse gear");
   reward.runtime.grantChestReward("eclipseSupply");
@@ -945,11 +1779,178 @@ function assertExpandedWorldContent() {
   assert(reward.player.ownedAccessories.includes("obsidian") && reward.player.elixirs >= 2 && reward.player.warps >= 1, "obsidianGear chest should grant obsidian accessory and premium supplies");
   reward.runtime.grantChestReward("obsidianSupply");
   assert(reward.player.elixirs >= 3 && reward.player.tonics >= 4 && reward.player.warps >= 2, "obsidianSupply chest should add route-extension supplies");
+  reward.runtime.grantChestReward("smugglerSupply");
+  assert(reward.player.warps >= 3 && reward.player.bombs >= 4, "smugglerSupply should add shortcut-route supplies");
+
+  const guardedChest = createRuntime();
+  const regenChest = d.TREASURE_CHESTS.find((chest) => chest.id === "regen-cave-ring");
+  assert(regenChest, "greater regen cave chest should exist");
+  guardedChest.runtime.openChest(regenChest);
+  assert(!guardedChest.state.chests.has("regen-cave-ring") && !guardedChest.player.ownedAccessories.includes("greaterRegen"), "greater regen chest should stay locked until its guardian is defeated");
+  guardedChest.state.regenSentinelDefeated = true;
+  guardedChest.runtime.openChest(regenChest);
+  assert(guardedChest.state.chests.has("regen-cave-ring") && guardedChest.player.ownedAccessories.includes("greaterRegen"), "greater regen chest should open after Regen Sentinel defeat");
+
+  const mistChest = d.TREASURE_CHESTS.find((chest) => chest.id === "mist-shrine-cache");
+  assert(mistChest, "mist shrine accessory chest should exist");
+  const guardedMistChest = createRuntime();
+  guardedMistChest.runtime.openChest(mistChest);
+  assert(!guardedMistChest.state.chests.has("mist-shrine-cache") && !guardedMistChest.player.ownedAccessories.includes("mist"), "mist shrine cache should stay locked until Mist Keeper is defeated");
+  guardedMistChest.state.mistKeeperDefeated = true;
+  guardedMistChest.runtime.openChest(mistChest);
+  assert(guardedMistChest.state.chests.has("mist-shrine-cache") && guardedMistChest.player.ownedAccessories.includes("mist"), "mist shrine cache should open after Mist Keeper defeat");
+
+  const moonArchiveChest = d.TREASURE_CHESTS.find((chest) => chest.id === "moon-archive-reliquary");
+  assert(moonArchiveChest, "Moon Archive reliquary should exist");
+  const guardedMoonArchiveChest = createRuntime();
+  guardedMoonArchiveChest.runtime.openChest(moonArchiveChest);
+  assert(!guardedMoonArchiveChest.state.chests.has("moon-archive-reliquary") && !guardedMoonArchiveChest.player.ownedAccessories.includes("eclipse"), "Moon Archive reliquary should stay locked until Archive Warden defeat");
+  guardedMoonArchiveChest.state.archiveWardenDefeated = true;
+  guardedMoonArchiveChest.runtime.openChest(moonArchiveChest);
+  assert(guardedMoonArchiveChest.state.chests.has("moon-archive-reliquary") && guardedMoonArchiveChest.player.ownedAccessories.includes("eclipse"), "Moon Archive reliquary should grant the eclipse accessory after Archive Warden defeat");
+
+  const cryptChest = d.TREASURE_CHESTS.find((chest) => chest.id === "undercity-reliquary");
+  assert(cryptChest, "catacomb reliquary should exist");
+  const guardedCryptChest = createRuntime();
+  guardedCryptChest.runtime.openChest(cryptChest);
+  assert(!guardedCryptChest.state.chests.has("undercity-reliquary") && !guardedCryptChest.player.ownedAccessories.includes("deepLamp"), "catacomb reliquary should stay locked until Crypt Warden defeat");
+  guardedCryptChest.state.cryptWardenDefeated = true;
+  guardedCryptChest.runtime.openChest(cryptChest);
+  assert(guardedCryptChest.state.chests.has("undercity-reliquary") && guardedCryptChest.player.ownedAccessories.includes("deepLamp"), "catacomb reliquary should open after Crypt Warden defeat");
+
+  const frostChest = d.TREASURE_CHESTS.find((chest) => chest.id === "frost-core-reliquary");
+  assert(frostChest, "frost core reliquary should exist");
+  const guardedFrostChest = createRuntime();
+  guardedFrostChest.runtime.openChest(frostChest);
+  assert(!guardedFrostChest.state.chests.has("frost-core-reliquary") && !guardedFrostChest.player.ownedAccessories.includes("frost"), "frost reliquary should stay locked until Frost Golem defeat");
+  guardedFrostChest.state.frostGolemDefeated = true;
+  guardedFrostChest.runtime.openChest(frostChest);
+  assert(guardedFrostChest.state.chests.has("frost-core-reliquary") && guardedFrostChest.player.ownedAccessories.includes("frost"), "frost reliquary should open after Frost Golem defeat");
+
+  const towerChest = d.TREASURE_CHESTS.find((chest) => chest.id === "frost-tower-reliquary");
+  assert(towerChest, "frost tower reliquary should exist");
+  const guardedTowerChest = createRuntime();
+  guardedTowerChest.runtime.openChest(towerChest);
+  assert(!guardedTowerChest.state.chests.has("frost-tower-reliquary") && !guardedTowerChest.player.ownedAccessories.includes("sky"), "tower reliquary should stay locked until Tower Warden defeat");
+  guardedTowerChest.state.towerWardenDefeated = true;
+  guardedTowerChest.runtime.openChest(towerChest);
+  assert(guardedTowerChest.state.chests.has("frost-tower-reliquary") && guardedTowerChest.player.ownedAccessories.includes("sky"), "tower reliquary should grant the sky accessory after Tower Warden defeat");
+
+  const sunspireChest = d.TREASURE_CHESTS.find((chest) => chest.id === "sunspire-reliquary");
+  assert(sunspireChest, "Sunspire reliquary should exist");
+  const guardedSunspireChest = createRuntime();
+  guardedSunspireChest.runtime.openChest(sunspireChest);
+  assert(!guardedSunspireChest.state.chests.has("sunspire-reliquary") && !guardedSunspireChest.player.ownedAccessories.includes("prismLens"), "Sunspire reliquary should stay locked until Sunspire Keeper defeat");
+  guardedSunspireChest.state.sunspireKeeperDefeated = true;
+  guardedSunspireChest.runtime.openChest(sunspireChest);
+  assert(guardedSunspireChest.state.chests.has("sunspire-reliquary") && guardedSunspireChest.player.ownedAccessories.includes("prismLens"), "Sunspire reliquary should grant the prism lens after Sunspire Keeper defeat");
+
+  const arenaChest = d.TREASURE_CHESTS.find((chest) => chest.id === "suncrest-arena-reliquary");
+  assert(arenaChest, "Suncrest Arena reliquary should exist");
+  const guardedArenaChest = createRuntime();
+  guardedArenaChest.runtime.openChest(arenaChest);
+  assert(!guardedArenaChest.state.chests.has("suncrest-arena-reliquary") && !guardedArenaChest.player.ownedAccessories.includes("duelist"), "Suncrest Arena reliquary should stay locked until Champion defeat");
+  guardedArenaChest.state.suncrestChampionDefeated = true;
+  guardedArenaChest.runtime.openChest(arenaChest);
+  assert(guardedArenaChest.state.chests.has("suncrest-arena-reliquary") && guardedArenaChest.player.ownedAccessories.includes("duelist"), "Suncrest Arena reliquary should grant the duelist accessory after Champion defeat");
+
   const regenBefore = reward.runtime.regenRate();
   reward.runtime.grantChestReward("greaterRegen");
   globalThis.DRAGON_HUNTER_REWARDS.equipAccessory(reward.player, "greaterRegen");
   reward.runtime.refreshDerivedStats();
   assert(reward.player.ownedAccessories.includes("greaterRegen") && reward.runtime.regenRate() > regenBefore && reward.player.warps >= 3, "greaterRegen chest should grant the large regen accessory and return supplies");
+  reward.runtime.grantChestReward("mistSupply");
+  assert(reward.player.tonics >= 5 && reward.player.warps >= 4 && reward.player.bombs >= 6, "mist shrine supply should add route-extension supplies");
+  reward.runtime.grantChestReward("mistCharm");
+  assert(reward.player.ownedAccessories.includes("mist") && reward.player.warps >= 5, "mist shrine cache should grant the mist accessory");
+  reward.runtime.grantChestReward("cryptSupply");
+  assert(reward.player.elixirs >= 4 && reward.player.tonics >= 7, "catacomb supply should support a long interior expedition");
+  reward.runtime.grantChestReward("deepLamp");
+  assert(reward.player.ownedAccessories.includes("deepLamp"), "catacomb reliquary should grant the deep lamp accessory");
+  reward.player.equippedAccessories = ["deepLamp"];
+  reward.player.equippedAccessory = "deepLamp";
+  reward.runtime.refreshDerivedStats();
+  reward.player.slow = 1000;
+  const lampSlowSpeed = reward.runtime.playerMoveSpeed();
+  reward.player.equippedAccessories = [];
+  reward.player.equippedAccessory = "";
+  reward.runtime.refreshDerivedStats();
+  const normalSlowSpeed = reward.runtime.playerMoveSpeed();
+  assert(lampSlowSpeed > normalSlowSpeed, "deep lamp should reduce slow movement penalty");
+  reward.player.equippedAccessories = ["deepLamp"];
+  reward.player.equippedAccessory = "deepLamp";
+  reward.player.hpMax = 500;
+  reward.player.hp = 1;
+  reward.player.potions = 1;
+  reward.player.selectedItem = "potion";
+  const hpBeforeLampPotion = reward.player.hp;
+  reward.runtime.useSelectedItem();
+  assert(reward.player.hp - hpBeforeLampPotion > 30 + reward.player.level * 6, "deep lamp should strengthen herb healing");
+  reward.runtime.grantChestReward("frostSupply");
+  assert(reward.player.elixirs >= 5 && reward.player.warps >= 5, "frost supply should extend the new region expedition");
+  reward.runtime.grantChestReward("frostCharm");
+  assert(reward.player.ownedAccessories.includes("frost"), "ice cave reliquary should grant the frost accessory");
+  reward.runtime.grantChestReward("towerExpeditionSupply");
+  assert(reward.player.tonics >= 9 && reward.player.warps >= 6, "frost tower supply should support the two-floor expedition");
+  reward.runtime.grantChestReward("skyCharm");
+  assert(reward.player.ownedAccessories.includes("sky"), "frost tower reliquary should grant the sky accessory");
+  reward.runtime.grantChestReward("moonArchiveSupply");
+  assert(reward.player.tonics >= 9 && reward.player.warps >= 7, "Moon Archive supply should extend the chapter 2 interior expedition");
+  reward.runtime.grantChestReward("moonArchiveRelic");
+  assert(reward.player.ownedAccessories.includes("eclipse"), "Moon Archive reliquary should grant eclipse counter gear");
+  reward.runtime.grantChestReward("suncrestMarketSupply");
+  reward.runtime.grantChestReward("suncrestArsenalSupply");
+  assert(reward.player.elixirs >= 7 && reward.player.wards >= 9, "Suncrest city caches should provide chapter 5 expedition supplies");
+  reward.runtime.grantChestReward("arenaSupply");
+  assert(reward.player.tonics >= 9 && reward.player.warps >= 8, "Suncrest Arena supply should support the optional city challenge");
+  reward.runtime.grantChestReward("duelistMedal");
+  assert(reward.player.ownedAccessories.includes("duelist"), "Suncrest Arena reliquary should grant the duelist accessory");
+  reward.player.ownedAccessories = ["duelist"];
+  reward.player.equippedAccessories = ["duelist"];
+  reward.player.equippedAccessory = "duelist";
+  reward.runtime.refreshDerivedStats();
+  const duelistStaminaMax = reward.player.staminaMax;
+  assert(duelistStaminaMax > 100, "duelist accessory should raise stamina capacity for combo play");
+  reward.runtime.grantChestReward("sunspireSupply");
+  assert(reward.player.elixirs >= 6 && reward.player.warps >= 7, "Sunspire supply should support the chapter 5 tower expedition");
+  reward.runtime.grantChestReward("prismLens");
+  assert(reward.player.ownedAccessories.includes("prismLens"), "Sunspire reliquary should grant the prism lens accessory");
+  reward.runtime.grantDiscoveryReward({ id: "test-sunspire-hint", kind: "sunspireHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-suncrest-arena-hint", kind: "suncrestArenaHint" }, 0, 0);
+  reward.player.stamina = 1;
+  reward.runtime.grantDiscoveryReward({ id: "test-solar-warden-hint", kind: "solarWardenHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-moon-archive-hint", kind: "moonArchiveHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-suncrest-guide", kind: "suncrestGuide" }, 0, 0);
+  assert(reward.player.wards >= 9 && reward.player.stamina === reward.player.staminaMax, "Sunspire observation point should provide anti-solar preparation");
+
+  const normalDash = createRuntime();
+  normalDash.player.x = 24 * d.TILE;
+  normalDash.player.y = 148 * d.TILE;
+  normalDash.player.dir = "right";
+  normalDash.player.stamina = normalDash.player.staminaMax;
+  const normalDashStart = normalDash.player.x;
+  normalDash.runtime.dash();
+  const normalDashDistance = normalDash.player.x - normalDashStart;
+  const skyDash = createRuntime();
+  skyDash.player.x = 24 * d.TILE;
+  skyDash.player.y = 148 * d.TILE;
+  skyDash.player.dir = "right";
+  skyDash.player.skyCharm = true;
+  skyDash.player.ownedAccessories = ["sky"];
+  skyDash.player.equippedAccessory = "sky";
+  skyDash.player.equippedAccessories = ["sky"];
+  skyDash.player.stamina = skyDash.player.staminaMax;
+  const skyDashStart = skyDash.player.x;
+  skyDash.runtime.dash();
+  assert(skyDash.player.x - skyDashStart > normalDashDistance && skyDash.player.dashCooldown < normalDash.player.dashCooldown, "sky accessory should extend dash distance and shorten cooldown");
+  reward.player.armor = 0;
+  reward.player.equippedAccessories = ["frost"];
+  reward.player.equippedAccessory = "frost";
+  const frostGuardedDamage = reward.runtime.armorDamageMultiplier({ type: "frostMoth" }, 0.2, "frost");
+  reward.player.equippedAccessories = [];
+  reward.player.equippedAccessory = "";
+  const frostUnguardedDamage = reward.runtime.armorDamageMultiplier({ type: "frostMoth" }, 0.2, "frost");
+  assert(frostGuardedDamage < frostUnguardedDamage, "frost charm should reduce frost-route damage when equipped");
   reward.runtime.grantChestReward("shieldGear");
   assert(reward.player.ownedShields.includes(3), "shieldGear chest should grant a route shield");
   reward.runtime.grantChestReward("blackShieldSupply");
@@ -958,10 +1959,11 @@ function assertExpandedWorldContent() {
   reward.runtime.grantDiscoveryReward({ id: "test-shortcut-hint", kind: "shortcutHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-smuggler-hint", kind: "smugglerHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-greater-regen-hint", kind: "greaterRegenHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-mist-hint", kind: "mistHint" }, 0, 0);
   assert(reward.player.warps >= 5 && reward.player.tonics >= 6 && reward.player.wards >= 9, "route, shortcut, and cave hints should provide travel supplies");
   reward.runtime.grantChestReward("blackMarketSupply");
   assert(reward.player.potions >= 4 && reward.player.bombs >= 3 && reward.player.wards >= 9 && reward.player.warps >= 3, "blackMarketSupply chest should add deep-route supplies");
-  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", obsidianRegion: "obsidian", voidRegion: "void", blackSunGear: true };
+  return { ashRegion: "ash", towerRegion: "tower", moonRegion: "moon", eclipseRegion: "eclipse", undercityRegion: "undercity", obsidianRegion: "obsidian", voidRegion: "void", frostRegion: "frost", blackSunGear: true, frostGear: true };
 }
 
 function assertScriptLoadSmoke() {

@@ -6,15 +6,18 @@ Design truth for the RPG. Use this file to decide **what belongs in the game**.
 
 The core fun is **survival-range expansion**, not simply completing quests.
 
-At the start, the player should feel safe only near the village. Enemy contact damage should matter. As the player earns gold, buys equipment, levels up, finds rewards, and unlocks safe bases, old danger should become manageable.
+At the start, the player should feel safe only near the village. Enemy contact damage should matter. As the player earns gold, buys equipment, levels up, finds rewards, opens shortcuts, and unlocks safe bases, old danger should become manageable.
 
 Target feelings:
 
-* "This enemy used to hurt, but now I can handle it."
-* "I can stay outside longer than before."
-* "I can finally reach that farther area."
-* "Buying better equipment made a visible difference."
-* "This new base moved my safe radius outward."
+* “This enemy used to hurt, but now I can handle it.”
+* “I can stay outside longer than before.”
+* “I can finally reach that farther area.”
+* “Buying better equipment made a visible difference.”
+* “I barely made it to the new base.”
+* “This new base moved my safe radius outward.”
+
+The strongest emotional beat is not only defeating a boss. It is reaching a new safe place with low resources and realizing the map has become less hostile from that point onward.
 
 ## Core loop
 
@@ -25,8 +28,9 @@ Target feelings:
 5. Recover, restock, and improve equipment.
 6. Revisit the same area and feel stronger.
 7. Push farther into a more dangerous route.
-8. Find a new reward, shortcut, dungeon, town, or boss route.
-9. Repeat across a larger world.
+8. Find a reward, shortcut, dungeon, town, or boss route.
+9. Reach a new safe base or unlock a better route.
+10. Repeat across a larger world.
 
 ## Game identity
 
@@ -39,42 +43,422 @@ Core mechanics:
 * Enemies roam the field.
 * The player moves through compact tile-based maps.
 * Contact with enemies creates combat pressure.
-* Damage depends on facing, contact direction, equipment, and positioning.
+* Damage depends on facing, contact direction, equipment, shields, and positioning.
 * The village and later safe bases provide relief.
-* Growth comes from levels, gold, equipment, items, accessories, and exploration rewards.
-* The Red Dragon route is the current Chapter 1 endpoint, not the final world endpoint.
+* Growth comes from levels, gold, equipment, items, accessories, route knowledge, and exploration rewards.
+* The Red Dragon route is the Chapter 1 endpoint, not the final world endpoint.
 
-## Chapter 1 role
+## Current design truth from analysis and playtest
 
-The current village -> Guardian -> Red Dragon route is **Chapter 1 scale**.
+The current foundation is strong: Chapters 1-5, shops, safe bases, equipment, shields, accessories, quick slots, NPC guidance, world map, and multiple dungeons exist.
 
-It should remain a complete route, but future development should expand beyond it.
+The next quality jump should not be another empty world expansion. The current priority is to make existing chapters feel like **earned expeditions**:
 
-Current target route:
+* Required destinations must be readable.
+* New bases must feel like hard-earned relief.
+* Street-to-street travel should create resource pressure.
+* Optional content must not override main-route guidance.
+* Chapter 2 needs more sustained expedition volume.
+* Chapter 5 needs clearer route guidance and less checklist feeling.
 
-1. Start in the village and learn the dragon route is too dangerous.
-2. Farm outskirts enemies, retreat often, and buy first gear.
-3. Push into grassland, North Forest, river, mine, and east/southeast routes.
-4. Find rewards that extend survivable range.
-5. Defeat the North Forest Guardian.
-6. Enter the dragon cave, defeat the Red Dragon, and report to the elder.
+## Required route readability
 
-Ideal feeling: **"I survived farther because I prepared better."**
+Required bosses, required midbosses, required dungeon entrances, required seals, and required route unlocks should be discoverable by route breadcrumbs.
 
-## Volume expansion rules
+Required targets should be **traced**, not guessed.
 
-Future work should grow the game into a larger RPG.
+Rules:
 
-Long-term direction:
+* Objective text should name the route and landmark.
+* At least one nearby guide, resident, sign, discovery, or field clue should point toward the target.
+* The field should include a visible cue: road, ruin, scorched path, light pillar, cave wind, warning sign, military remains, shrine stone, or similar.
+* The world map should be able to mark the current required destination when the route text is not enough.
+* Hidden optional content can remain vague. Required progress should not depend on blind searching.
 
-* Keep expanding the editable world beyond the current `120x144` overworld definition.
-* Use hand-authored map data or additional hand-authored map files.
-* Add multiple regional arcs, not just one long walk from the starting village.
-* Add towns, frontier bases, caves, towers, castles, mines, ruins, roads, bridges, rivers, and dangerous wilderness.
-* Add enemy families with different behaviors: bubbles, magic, poison, slow, summons, charge attacks, territorial guarding, ranged pressure, and area denial.
-* Add equipment tiers, sidegrades, accessories, shop stock, and inventory decisions.
+Initial priority targets:
 
-Volume expansion must not mean empty walking space. Each new region should provide at least one of:
+* Chapter 1: 竜洞 / Red Dragon.
+* Chapter 5: 日輪砲台守.
+
+Implemented route-readability support:
+
+* 竜洞 now has objective text naming the north-east rock landmark, scorched field breadcrumbs, elder guidance, and a whole-world map required-destination marker once the player has the seal and scales.
+* 日輪砲台守 now has objective text naming the 黎明港 -> 北東高原 route, burned highland breadcrumbs, Dawn/Suncrest guide lines, Chapter 5 travel memo support, and a whole-world map required-destination marker.
+
+## Safe-base arrival and expedition tension
+
+A new safe base is a reward.
+
+A required base should ideally feel like:
+
+> I was not sure I could make it, but now this place is mine.
+
+Design rules:
+
+* The player should usually arrive after visible resource pressure.
+* The final approach should show the base before it is fully safe.
+* The last stretch may contain danger, but it must remain readable and fair.
+* First arrival should trigger a clear safe-radius expansion message.
+* The base should change future travel or preparation: recovery, shop, travel point, shortcut, local guide, route supplies, or new equipment access.
+
+Avoid creating tension through empty distance. Use enemy pressure, route shape, supplies, discoveries, retreat decisions, and landmarks.
+
+## Street-to-street attrition route pattern
+
+Town-to-town routes are often where this game can become most exciting.
+
+Good pattern:
+
+```text
+Safe base A
+↓
+known danger
+↓
+resource-draining route or dungeon
+↓
+mid-route supply / shortcut / decision
+↓
+final approach where base B is visible but not free
+↓
+Safe base B first-arrival payoff
+```
+
+A good attrition route should include:
+
+* An identifiable entrance.
+* Early retreat possibility.
+* Mid-route pressure and resource decisions.
+* Local enemy behavior.
+* A supply or discovery that affects the continue/retreat decision.
+* Optional fork when space allows: safer/longer vs risky/shorter.
+* Persistent change after success: new base, shortcut, travel point, or route reward.
+
+A required attrition dungeon should not demand perfect first-clear. It is good if the player retreats once, buys better gear, and pushes deeper next time.
+
+## Main route vs optional content
+
+Optional content should be attractive because the reward is useful, not because guidance makes it look mandatory.
+
+UI and guidance priority:
+
+1. Main route objective.
+2. Survival hint for the current area.
+3. Required preparation.
+4. Optional activity or side dungeon.
+5. Treasure / rumor cleanup.
+
+The travel memo should usually present:
+
+```text
+本線: ...
+今: ...
+準備: ...
+任意: ...
+```
+
+This is especially important in Chapter 3 and Chapter 5.
+
+## Equipment and reward design
+
+Equipment should expand survivable range or change route decisions.
+
+Good rewards:
+
+* Let the player survive an area that was previously too dangerous.
+* Make a route shorter, safer, or more profitable.
+* Change combat tempo or movement.
+* Make an optional challenge feel worth doing.
+* Create a meaningful choice between defense, sustain, movement, and aggression.
+
+Weak rewards:
+
+* Pure number increases with no route meaning.
+* Rewards that arrive after the route they counter is already irrelevant.
+* One-time rewards that are easy to miss but required for progress without clear hints.
+
+## Chapter 1 role: village, north forest, and Red Dragon
+
+Chapter 1 teaches the game grammar.
+
+The player should learn:
+
+* The village is safe.
+* Outside hurts.
+* Retreat is correct.
+* Gold and equipment matter.
+* Landmarks and NPC hints point to required destinations.
+* A required boss is not hidden content.
+
+Current issue:
+
+* Red Dragon / 竜洞 can be missed if the player does not notice the entrance or map marker.
+
+Desired improvement:
+
+* Objective and NPC text now point to the north-east rock/cave landmark.
+* Field breadcrumbs now use heat, scorched stones, and an old sign to lead toward 竜洞.
+* Keep Chapter 1 compact; do not overbuild it.
+* First remote base/camp arrival should demonstrate “safe radius expanded.”
+
+## Chapter 2 role: moonlit expedition and missing attrition volume
+
+Chapter 2 begins after the Red Dragon report. It should feel like the first real journey away from the original village.
+
+Current structure:
+
+```text
+灰道の宿場
+↓
+古塔 / 灰騎士
+↓
+月影廃墟
+↓
+月見砦
+↓
+月の書庫 / 月書庫の番人
+↓
+月蝕城
+↓
+月蝕竜
+```
+
+Current issue:
+
+* The chapter has good pieces, but 灰道の宿場 -> 月見砦 can feel too short or too low-pressure.
+* 月見砦 should feel like a hard-earned safe base, not simply the next nearby stop.
+* 月の書庫 adds volume, but it can read like an extra checklist step if the route before 月見砦 is not memorable.
+
+Leading improvement candidate:
+
+Add a required attrition route such as `月影洞窟` / `月下坑道` before 月見砦.
+
+Desired route:
+
+```text
+灰道の宿場
+↓
+古塔 / 灰騎士
+↓
+月影廃墟
+↓
+月影洞窟 or 月下坑道
+  - moon pressure
+  - summons / traps
+  - mid-route supply
+  - route choice or shortcut
+  - named guardian or gate
+↓
+月見砦 first-arrival safe-radius payoff
+↓
+月の書庫
+↓
+月蝕城
+```
+
+Intended feeling:
+
+> The old tower was only the beginning. I had to cross a dangerous moonlit route to make 月見砦 my new base.
+
+## Chapter 3 role: black routes, market city, and side-route clarity
+
+Chapter 3 is content-rich and can support several optional routes.
+
+Core required route should read as:
+
+```text
+黒市都 / 黒門方面
+↓
+黒曜洞 / 黒曜巨人
+↓
+黒門砦
+↓
+黒陽城
+↓
+黒陽竜
+```
+
+Optional or side content includes:
+
+* 黒市地下墓所.
+* 密輸道.
+* 再生洞窟.
+* 霧灯の祠.
+
+Current issue:
+
+* The amount of content is good, but the player can lose track of what is main route vs optional.
+
+Desired improvement:
+
+* Travel memo and guides should clearly separate 本線 and 任意.
+* Black Market City should function as a hub for preparation and rumors, not just a large safe zone.
+* If 黒市都 -> 黒門砦 feels too short, consider a compact 黒門関所 / 影道 route.
+
+## Chapter 4 role: frozen frontier and route preparation
+
+Chapter 4 is structurally solid.
+
+Core route:
+
+```text
+黒陽城後
+↓
+霜原
+↓
+白銀宿
+↓
+氷窟 / 氷窟巨人 / 霜心の護符
+↓
+霜冠城
+↓
+霜冠竜
+```
+
+Optional route:
+
+* 霜見塔: movement-focused optional dungeon with Sky Emblem and shortcut value.
+
+Current issue:
+
+* 白銀宿 can deliver stronger “finally reached shelter in the frozen frontier” payoff.
+* 氷窟 and 霜見塔 should be clearly distinguished: main-route preparation vs optional movement/reward content.
+
+Desired improvement:
+
+* Strengthen the approach to 白銀宿 with cold-route pressure and final-approach tension.
+* Add or revise first-arrival message for 白銀宿.
+* Keep 霜見塔 optional but attractive.
+
+## Chapter 5 role: horizon-fire expedition
+
+Chapter 5 has the strongest late-game structure and should feel like crossing into a hostile continent.
+
+Core route:
+
+```text
+黎明港
+↓
+日出高原
+↓
+日輪砲台守
+↓
+陽冠都市
+↓
+日鏡塔 / 反射水晶
+↓
+陽光封印碑
+↓
+熾火聖域補給箱
+↓
+熾火群島
+↓
+熾火天竜
+```
+
+Optional city activity:
+
+* 陽冠闘技場 / 陽冠闘士の徽章.
+
+Current issues:
+
+* 日輪砲台守 can be hard to locate.
+* Optional 陽冠闘技場 can appear too prominent if guidance priority is wrong.
+* Chapter 5 can become a checklist if UI does not present it as one expedition.
+* 陽冠都市 should feel like reaching civilization after hostile terrain, not only a shop stop.
+
+Desired improvement:
+
+* Route breadcrumbs and current-objective world-map marker for 日輪砲台守 are now implemented.
+* Main route now appears before optional arena advice in Suncrest/Dawn guidance and Chapter 5 travel memo.
+* Chapter 5 travel memo lines now use 本線 / 今 / 準備 / 任意.
+* Add strong first-arrival payoff for 陽冠都市.
+* Browser-check Suncrest east gate, west plaza, and south gate readability.
+
+Intended feeling:
+
+> The highland was oppressive. The city made survival possible. The tower earned the final countermeasure. The southern islands are the final push.
+
+## 蒼風島 role: future regional arc candidate
+
+蒼風島 already has geography, ports, roads, and route identity.
+
+Current role:
+
+* Broadens the world laterally.
+* Offers sea-crossing geography and additional safe anchors.
+* Helps the world feel like continents and islands rather than a single corridor.
+
+Future candidate:
+
+* Turn 蒼風島 from a region into a full expedition arc only after route readability, safe-base arrival tension, and Chapter 2/5 polish are addressed.
+
+Potential future additions:
+
+* Local named midboss.
+* One interior dungeon.
+* Region-specific reward.
+* Lighthouse / ridge / south-cape route climax.
+
+## Area roles
+
+| Area | Role |
+|---|---|
+| Village | Starting safe base: recovery, smith, supplies, elder guidance, clear safety boundary. |
+| Grassland / Outskirts | First gold loop and retreat training. |
+| North Forest | First serious survival gate and Guardian route. |
+| Dragon Cave | Chapter 1 final danger route; needs readable entrance breadcrumbs. |
+| Southwest Frontier Camp | Early remote safety anchor; should demonstrate safe-radius expansion. |
+| Ash Hamlet / 灰道の宿場 | Chapter 2 launch base. |
+| Old Tower / 古塔 | Chapter 2 early danger pocket and Ash Knight step. |
+| Moon Ruins / 月影廃墟 | Moon pressure and relic route. |
+| Moon Cavern / 月影洞窟 | Candidate required attrition route before 月見砦. |
+| Moon Camp / 月見砦 | Chapter 2 safe base that should feel hard-earned. |
+| Moon Archive / 月の書庫 | Deeper Chapter 2 interior after 月見砦. |
+| Eclipse Castle / 月蝕城 | Chapter 2 final route and boss. |
+| Black Market City / 黒市都 | Chapter 3 hub for main route and optional rumors. |
+| Black Fort / 黒門砦 | Chapter 3 remote safety anchor before Black Sun pressure. |
+| Black Sun Castle / 黒陽城 | Chapter 3 final danger route. |
+| Frost Haven / 白銀宿 | Chapter 4 safe base; should feel like shelter in a hostile frozen frontier. |
+| Ice Cave / 氷窟 | Chapter 4 main preparation dungeon. |
+| Frost Watchtower / 霜見塔 | Optional Chapter 4 movement/reward dungeon. |
+| Frost Crown Citadel / 霜冠城 | Chapter 4 final route. |
+| Dawn Harbor / 黎明港 | Chapter 5 arrival hub before hostile highland pressure. |
+| Suncrest City / 陽冠都市 | Chapter 5 major preparation city and civilization payoff. |
+| Suncrest Arena / 陽冠闘技場 | Optional city combat activity; must not override main-route guidance. |
+| Sunspire Tower / 日鏡塔 | Required Chapter 5 expedition for 反射水晶. |
+| Ember Isles / 熾火群島 | Chapter 5 final volcanic route. |
+
+## Enemy and encounter principles
+
+Enemy variety should create route decisions, not just color/stat changes.
+
+Use enemies to create:
+
+* Contact pressure.
+* Ranged line reading.
+* Artillery zone movement.
+* Summon priority.
+* Trap and area denial.
+* Charge evasion.
+* Sustain drain.
+* Shield/facing decisions.
+
+A route should usually have a local pressure identity. If the route does not change how the player moves, prepares, or retreats, it likely needs stronger encounter design.
+
+## Long-term direction
+
+The editable overworld is already `256x256`. Deepen existing regions before increasing size again.
+
+Future growth should focus on:
+
+* Better route readability.
+* More meaningful street-to-street expeditions.
+* Stronger safe-base arrival payoff.
+* Chapter 2 attrition volume.
+* Chapter 5 route polish.
+* Future 蒼風島 regional arc only after the above.
+
+World expansion must not mean empty walking space. Each new region or dungeon should provide at least one of:
 
 * New survival threat.
 * Reward that changes survivable range.
@@ -82,221 +466,3 @@ Volume expansion must not mean empty walking space. Each new region should provi
 * New enemy behavior.
 * Equipment or inventory decision.
 * Route toward a boss, dungeon, town, or major treasure.
-
-## Growth curve
-
-### Early game
-
-* Nearby enemies hurt.
-* The player retreats often.
-* Shop armor/weapons give obvious value.
-* The village feels like relief.
-
-### Mid game
-
-* The player survives longer outside.
-* Regeneration or stamina bonuses extend exploration.
-* Stronger areas add ranged attacks, status effects, stamina pressure, or region-specific hazards.
-* Optional dangerous routes offer rewards that make later routes easier.
-
-### Late game
-
-* Strong defense, regeneration, resistance, and equipment choices make old enemies much less threatening.
-* The player can travel far from the original village with confidence.
-* Bosses still retain minimum threat.
-
-Most important growth feeling: **reversal of power**.
-
-## Area roles
-
-| Area | Role |
-|---|---|
-| Village | Starting safe base: recovery, smith, supplies, elder guidance, clear safety boundary. |
-| Grassland / Outskirts | First gold loop and retreat training. Weak enemies stay near village even later. |
-| Wilds | Farther grassland-like danger beyond the village safe radius. |
-| North Forest | First serious survival gate with Guardian pressure and seal crest progression. |
-| River / East Route | Mid-game exploration, ranged danger, hidden discoveries, sustain rewards. |
-| East / Southeast | Risky expansion route: traveler bell, Southeast Warden, Aegis Charm; should grow into a larger named route. |
-| Southwest Mine | Optional route with Bubbler pressure, slow/stamina drain, mine charm counterplay. |
-| Southwest Frontier Camp | First remote survival anchor: recovery, supplies, readable camp, outward safe radius. |
-| Ash Road / 灰の街道 | First larger eastward volume-expansion route beyond the Chapter 1 footprint; stronger magic pressure, farther rewards, and a route toward the old tower. |
-| Ash Hamlet / 灰道の宿場 | Second remote survival anchor: full recovery, supplies, and post-Ash-Knight star gear. |
-| Old Tower / 古塔 | Late optional danger pocket with dense magic pressure, Ash Knight midboss, and star-gear preparation. |
-| Moon Ruins / 月影廃墟 | Post-Old-Tower southern danger pocket with dense late enemies, moon relic rewards, and another reason to push beyond the Red Dragon route. |
-| Moon Camp / 月見砦 | Chapter 2 remote survival anchor: recovery, supplies, eclipse gear, and the feeling that the safe radius moved far beyond the village. |
-| Eclipse Castle / 月蝕城 | Chapter 2 final danger route: eclipse magic pressure, seal tablet, final supplies, and Eclipse Dragon arena. |
-| Black Gate / 黒門 | Chapter 3 transition route south of Eclipse Castle; the map becomes darker, enemy pressure rises, and retreat distance matters again. |
-| Black Fort / 黒門砦 | Chapter 3 remote survival anchor: recovery, supplies, Black Sun gear, and a new safe radius before the final southern push. |
-| Black Sun Castle / 黒陽城 | Chapter 3 high-danger route: void pressure, Black Sun seal, final cache, and the Black Sun Dragon arena. |
-| Dragon Cave | Chapter 1 final danger route and Red Dragon arena. |
-
-## Enemy roles
-
-| Enemy | Purpose |
-|---|---|
-| Slime | Slow early enemy; teaches contact damage. |
-| Bat | Fast low-HP enemy; pressures movement/stamina. |
-| Boar | Charge enemy; rewards avoiding frontal contact. |
-| Wisp | Ranged fire enemy; makes fire/projectile resistance meaningful. |
-| Bubbler / 泡吐き | Mine enemy; bubble projectiles slow and drain stamina. |
-| Ash Sorcerer / 灰術師 | Farther-road magic enemy; fires faster magic shots and applies slow/stamina pressure. |
-| Moon Shade / 月影の亡霊 | Far-south magic enemy; faster magic shots and stamina pressure make star gear and wards matter. |
-| Eclipse Mage / 月蝕術師 | Chapter 2 caster; stronger magic shots and stamina pressure make eclipse gear/accessory meaningful. |
-| Void Wraith / 黒陽の影 | Chapter 3 high-pressure caster; dark projectiles apply heavier slow/stamina pressure and reward Black Sun gear/accessory preparation. |
-| Summoner / 召喚士 | Late-route pressure enemy. If ignored, it calls reinforcements and turns a safe-looking road into a losing fight. The intended answer is to prioritize it, spend a ward/tonic, or retreat before the field fills up. |
-| Trap Flower / 地雷花 | Area-denial trap enemy for Moon Ruins / Eclipse / Obsidian / Black Sun routes. It stays still, warns briefly, then explodes for HP/stamina/slow pressure. The intended answer is to cut it before entering, route around it, or prepare wards/return bells for risky shortcuts. |
-| Dragonling | Late stronger enemy; signals dragon-route danger. |
-| North Forest Guardian | Midboss gatekeeper for North Forest survivability. |
-| Southeast Warden | Optional midboss after traveler bell + level 3; rewards deeper defense. |
-| Old Tower Ash Knight | Optional late midboss after Southeast Warden + level 14; unlocks stronger magic-route preparation and tests the expanded-world route. |
-| Red Dragon | Chapter 1 final boss: enrage, spread shots, summons, preparation check. |
-| Eclipse Dragon / 月蝕竜 | Chapter 2 major boss after Red Dragon report, Ash Knight, moon relic, eclipse seal, and level 20; enrages into wider magic shots and summons late enemies. |
-| Black Sun Dragon / 黒陽竜 | Chapter 3 major boss after Chapter 2 report, Eclipse Castle cache, Black Fort armory, Black Sun seal, and level 26; uses heavy void projectiles, wider enraged spreads, and summons. |
-
-Enemies should differ by gameplay, not only appearance or stats.
-
-## Rewards
-
-Rewards should change where the player can safely go.
-
-Good reward types:
-
-* Better equipment.
-* Area resistance.
-* HP regeneration.
-* Stamina or movement improvement.
-* Safe base or shortcut access.
-* Hidden recovery point.
-* Stronger shop access.
-* Boss preparation.
-
-Plain gold is useful near the village. Deeper rewards should feel like survivability, route access, sustain, resistance, or preparation.
-
-One-time rewards must persist across save/load and must never downgrade current equipment.
-
-## Equipment and inventory
-
-Inventory is now a core RPG system.
-
-Current direction:
-
-* Weapons and armor are owned as lists.
-* The player can choose equipped weapon and armor.
-* Consumables can be inspected, used, and sold.
-* Accessories are owned, and up to two accessories can be equipped.
-* Only equipped accessories provide their active survival effects.
-* Sidegrade equipment now exists for route preparation:
-  * `泡割り槍` and `鉱夫服` help against Bubbler pressure in the southwest mine.
-  * `火返しの剣` and `耐火マント` prepare for fire enemies and eastern/dragon-route pressure.
-  * `竜狩りの刃` and `巡礼鎧` are late route preparation gear for dragon cave pressure.
-  * `星見の杖` and `星織りの衣` prepare for Ash Sorcerer / Ash Knight magic pressure.
-  * `月蝕の刃` and `月蝕の外套` prepare for Eclipse Mage / Eclipse Dragon pressure.
-* The southwest frontier camp is becoming the first remote equipment hub, not only a healing point.
-* The ash hamlet is the second remote equipment hub and sells star gear after the Ash Knight is defeated.
-* Moon Camp is the third remote equipment hub and sells/grants eclipse preparation after the player reaches the Chapter 2 route.
-* Black Fort is the fourth remote equipment hub and sells/grants Black Sun preparation after the player reaches the Chapter 3 route.
-* `黒陽の剣`, `黒陽の鎧`, and `黒陽の護符` prepare for Void Wraith / Black Sun Dragon pressure.
-* Inventory and status displays show ATK/DEF totals and per-item comparison deltas so equipment strength is visible.
-* Accessory pairing is now part of route preparation: e.g. movement bell + resistance charm, or large regeneration + route resistance.
-* `大再生の指輪` is a high-value route-extension accessory found in the Black Market north regeneration cave.
-
-Future direction:
-
-* Add more sidegrade weapons/armor.
-* Add meaningful accessory identities.
-* Add additional remote shop stock and later-town stock.
-* Expand comparison text into route recommendations and special-effect previews.
-* Decide buyback or lock rules for unique accessories.
-
-Equipment should alter survivability, exploration range, route preparation, or contact-combat incentives, not only numbers.
-
-## UI, feedback, and visual direction
-
-## Latest design truth: selectable shops and Chapter 3 long expedition
-
-The Chapter 3 route should now read as a longer expedition rather than a short final lane.
-
-Current added structure:
-
-* Black Fort remains the first Chapter 3 remote base.
-* Black Market is the Chapter 3 second town: safe zone, recovery, late shop, NPC guidance, and supplies.
-* Obsidian Cave is a Chapter 3 branch dungeon between Black Market and Black Sun Castle.
-* Obsidian Crawler adds ranged obsidian pressure.
-* Obsidian Golem is a Chapter 3 midboss after Chapter 2 report, Black Fort armory, and level 24.
-* Obsidian gear and Obsidian Bracelet are rewards that make the final Black Sun push safer.
-* Black Sun Dragon remains the Chapter 3 major boss, now after Obsidian Golem preparation.
-
-Shop and reward rules:
-
-* Shops are selectable menus. They must not force fixed weak-to-strong purchase order.
-* The player should choose weapons, armor, accessories, and consumables directly.
-* Weaker found equipment must be added to inventory when new.
-* Weaker found equipment must not auto-equip over stronger current gear.
-* Shop UI and inventory UI should make ATK/DEF and special equipment value visible.
-
-Latest balance adjustment:
-
-* The strongest obsidian weapon/armor should be bought at Black Market after Obsidian Golem, not granted directly from a route chest.
-* Obsidian route treasure now gives the Obsidian Bracelet and premium expedition supplies instead of bypassing the weapon/armor economy.
-* Gold should remain useful deep into the game through high-tier gear, elixirs, return bells, tonics, wards, and wagon travel.
-* Remote bases now support wagon travel between unlocked safe bases. This reduces repetitive walking while preserving survival-range expansion.
-* Bases should feel inhabited. A base is not only a heal tile; it should have guards, travelers, merchants, porters, and readable role markers.
-* Dense late regions are preferred over long empty roads. Farther regions should have higher spawn pressure and more route-extension rewards.
-
-The player must understand why they became stronger.
-
-Prioritize clear feedback for:
-
-* Current objective and area danger.
-* HP, damage taken, damage reduction.
-* Equipment effects.
-* Regeneration, stamina, and movement bonuses.
-* Boss requirements.
-* Save/clear state.
-* Inventory/accessory effects.
-
-Keep the old mobile RPG feel:
-
-* Compact screen.
-* Dense tile-based maps.
-* Simple readable sprites.
-* Left command menu / RPG status feel.
-* Clear safe-vs-danger contrast.
-* Browser/mobile usability.
-
-## Content acceptance checklist
-
-A content pass is good if it improves at least one:
-
-* Survival-range expansion.
-* Clearer damage reduction.
-* Better equipment progression.
-* Safer village or remote-base recovery loop.
-* Better exploration reward.
-* Stronger power reversal.
-* Meaningful enemy difference.
-* Better route balance.
-* Larger world with density and purpose.
-
-A content pass is weak if it only adds empty walking space, cosmetic terrain, stat/color-swap enemies, rewards that do not change decisions, or UI that hides important survival information.
-
-## Latest Design Truth: Dense Routes, Shields, and Landmarks
-
-The next content direction is to deepen the current `120x144` overworld before expanding map size again.
-
-Current design additions:
-
-* Rigid wall corridors should become readable terrain: broken walls, side openings, ruined watchtowers, market alleys, old gates, roads, bridges, and landmark caches.
-* Major late routes should offer at least a small choice: safer main road, risky shortcut, or side reward pocket.
-* The western smuggler road is a dangerous shortcut toward Black Market. It can be entered early, but shield soldiers, wisps, and trap flowers make it a risk/reward route rather than a normal road.
-* Black Market north now has a regeneration cave side dungeon. It should feel like a dangerous optional expedition whose reward extends survival range.
-* Light side objectives can be implemented through chests, discoveries, NPC hints, and route rumors. They do not need a large quest framework if they teach geography or extend survival range.
-* Shields are now a formal equipment slot. They reduce frontal contact damage and make contact direction a preparation choice, not only a stat race.
-* Shield soldiers are a contact-combat lesson enemy: attacking their front is inefficient, while side/back attacks are rewarded.
-* Deeper route rewards should include route-extension supplies, shields, return bells, tonics, elixirs, and hint discoveries rather than only gold.
-* Remote bases and Black Market should continue gaining NPCs, signs, stalls, and small reward pockets so they feel like lived-in survival anchors.
-* Summoners are now part of late-route identity. They should be placed where "clear this threat first" matters, especially Moon Ruins, Eclipse, Obsidian, and Black Sun routes.
-* Trap Flowers are now part of late-route identity. They should mark dangerous shortcuts, ruined courtyards, and narrow castle approaches where route choice matters. Their warning time should remain readable enough that attentive players can react.
-* Route hints, shortcut hints, obsidian waystones, and summoner warning markers should be visibly drawn in the field, not only exist as invisible interaction data.
-* `旅メモ` is a status-panel guidance page. Future region, boss, and route additions should update it so the player can understand destinations without coordinate-style instructions.
-* Current `120x144` map work should keep converting rigid wall boxes into readable broken ruins, side courts, alleys, and shortcut-like terrain before another size jump.

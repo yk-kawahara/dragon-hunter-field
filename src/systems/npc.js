@@ -23,6 +23,11 @@
     ASH_KNIGHT_REQUIREMENTS,
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
+    CHAPTER4_REQUIREMENTS,
+    CHAPTER5_REQUIREMENTS,
+    SOLAR_WARDEN_REQUIREMENTS,
+    SUNCREST_CHAMPION_REQUIREMENTS,
+    SUNSPIRE_KEEPER_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -35,6 +40,7 @@
     shieldTraits,
     shieldCosts,
     shieldGuard,
+    shieldRuneData,
     itemNames,
     itemSellValues,
     accessoryData,
@@ -42,6 +48,81 @@
 
   const { centerOf } = mathHelpers;
   const { addOwnedWeapon, addOwnedArmor, grantAccessory, availableTravelPoints } = rewardHelpers;
+
+  function localDialogue(npc, lines) {
+    const tx = Math.floor(npc.x / TILE);
+    const ty = Math.floor(npc.y / TILE);
+    return lines[Math.abs(tx * 7 + ty * 11) % lines.length];
+  }
+
+  const townDialogue = {
+    village: [
+      "村人「北門の外は近くても危険だ。傷を見たら魔法陣まで戻れ」",
+      "門番「門を閉じれば魔物も魔法も入れない。出発前に向きを確かめろ」",
+      "木こり「北森の木は風向きが違う。守護者の縄張りが近い印だ」",
+      "旅支度の娘「もちものでは武器の振り方も読めるよ。速い武器も便利」",
+    ],
+    camp: [
+      "坑夫「泡吐きは追うより弾を横へ避けてから詰めるんだ」",
+      "見張り「このキャンプの灯が、村から届く最初の安全圏だ」",
+      "荷運び「鉱夫服と泡除けがあれば、廃坑で粘れる時間が違う」",
+      "採掘師「古鉄は南西の壁際に出る。帰る体力まで掘るなよ」",
+    ],
+    ash: [
+      "宿場の客「古塔へは南。灰術師の弾を壁際で受けるな」",
+      "宿の女将「星装備目当ての旅人で、今夜も寝床が足りないよ」",
+      "灰道衛兵「東の旧街道は速いが、盾兵の正面を抜くのは骨だ」",
+      "行商人「月影まで行くなら帰還鈴を一つ残しておけ」",
+    ],
+    moon: [
+      "砦兵「月影の亡霊より、放置した召喚士の方が戦線を壊す」",
+      "斥候「廃墟の花が膨らんだら斬るか離れろ。迷う時間はない」",
+      "旅人「ここから村の灯は見えない。でもこの砦の灯なら見える」",
+      "料理番「月蝕城帰りは皆、護符より先に温かい汁を頼むんだ」",
+    ],
+    market: [
+      "黒市商人「正規品かは聞くな。黒曜巨人に効くかだけ聞け」",
+      "地下案内人「東端の階段は墓所だ。吸命鬼に囲まれる前に戻れ」",
+      "露店主「霊薬と帰還鈴は高い。でも全滅よりは安いだろ」",
+      "用心棒「路地の北は密輸道、東は黒曜洞。どちらも近道ではない」",
+      "旅芸人「黒市には国境も昼夜もない。財布だけは閉じておけ」",
+    ],
+    fort: [
+      "黒門兵「黒陽城の影弾は鎧だけでなく、横移動で減らせ」",
+      "補給兵「砦から先は戻り道も戦場だ。帰還鈴を最後まで残せ」",
+      "斥候「城壁の割れ目は二つある。正門だけが道ではない」",
+      "鍛冶助手「黒曜大盾は重いが、正面を受けるなら別物だ」",
+    ],
+    frost: [
+      "白銀宿の猟師「霜牙獣は踏み込む前に肩が下がる。そこで横へ飛べ」",
+      "宿の住人「塔の昇降機を動かせば、二度目の登頂はずっと短い」",
+      "氷商人「霊薬は凍る前に懐へ。外袋に入れた旅人は皆泣いたよ」",
+      "白銀衛兵「霜冠城へは本道、氷窟へは南道。準備で道を選べ」",
+      "盾刻師の弟子「刻印は盾を替えても残る。戦い方で彫り直すんだ」",
+    ],
+    island: [
+      "港の船員「西の大陸が霞む日は、中央峠に嵐が来る」",
+      "島の衛兵「海岸道は長いが退路が広い。峠は近いが盾兵と突進獣が待つ」",
+      "高原商人「山向こうの南風岬まで行くなら帰還鈴を残しておけ」",
+      "漁師「南の小島には古い祠がある。橋を渡るなら術師を先に倒せ」",
+      "旅人「蒼風港の灯が見える範囲と、岬砦の灯が見える範囲は別の生存圏だ」",
+    ],
+    dawn: [
+      "船乗り「蒼風島の東は外洋だ。黎明港まで着けば、帰りの航路は確保できる」",
+      "高原商人「陽冠都市へは西海岸道が安全だ。中央山道は近いが魔物が濃い」",
+      "都市衛兵「南門の先は熾火群島へ続く。回復薬と帰還鈴を惜しむな」",
+      "巡礼者「北の遺跡、谷の祠、南の群島。どの道にも旅の理由がある」",
+      "住民「陽冠都市は港町より大きい。鍛冶、物資、旅人の噂が集まる東方の中心だ」",
+    ],
+    suncrest: [
+      "都市商人「大武装商会は東門側、旅装ギルドは中央広場、薬舗は南市だ」",
+      "情報屋「日輪砲台守を倒すと、都市の高額装備が本格的に解禁される」",
+      "巡礼騎士「日鏡塔は東門。走者を先に処理し、着弾円が重なったら欲張るな」",
+      "市場の娘「熾火聖域へ行く前に帰還鈴を二つ。高いけど命より安いよ」",
+      "都市衛兵「南門を出れば陽光碑、さらに先が熾火群島。戻る体力を残せ」",
+      "遠征隊長「陽冠の装備は高い。だが光圧を受けた時、値段の意味が分かる」",
+    ],
+  };
 
   const worldPx = (value) => value * WORLD_SCALE;
 
@@ -124,6 +205,20 @@
     };
   }
 
+  function shieldRuneRow(id, player, available = true, lockedReason = "") {
+    const rune = shieldRuneData[id];
+    return {
+      type: "shieldRune",
+      id,
+      name: rune?.name || id,
+      detail: rune?.trait || "",
+      cost: rune?.cost || 0,
+      available,
+      lockedReason,
+      owned: player.shieldRune === id,
+    };
+  }
+
   function openShop(context, title, rows) {
     const { state, say } = requireNpcContext(context);
     state.shopOpen = true;
@@ -164,13 +259,27 @@
   function handleNpc(context, npc) {
     const { state, player, say, guardianReady } = requireNpcContext(context);
     if (npc.type === "elder") {
-      if (state.voidDragonDefeated && !state.chapter3Reported) {
+      if (state.emberDragonDefeated && !state.chapter5Reported) {
+        state.chapter5Reported = true;
+        state.chapter5Victory = false;
+        state.clearPanelOpen = true;
+        say("長老「地平線を射抜く熾火天竜まで封じたか。第5章の大遠征は成った」", 6400);
+      } else if (state.chapter5Reported) {
+        say("長老「陽冠都市の光は、我らの村まで新しい交易路を照らしている」", 4800);
+      } else if (state.frostDragonDefeated && !state.chapter4Reported) {
+        state.chapter4Reported = true;
+        state.chapter4Victory = false;
+        state.clearPanelOpen = true;
+        say("長老「霜冠竜を越えたか。第4章の遠征は新たな国への道となる」", 5800);
+      } else if (state.chapter4Reported) {
+        say(`長老「黎明港から北東高原へ進め。光の砲声を追い日輪砲台守を破り、陽冠都市で備えよ」`, 5200);
+      } else if (state.voidDragonDefeated && !state.chapter3Reported) {
         state.chapter3Reported = true;
         state.chapter3Victory = false;
         state.clearPanelOpen = true;
         say("長老「黒陽竜まで封じたか。第3章の遠征は伝説になる」", 5600);
       } else if (state.chapter3Reported) {
-        say("長老「黒陽の先にあるものは、まだ誰も知らぬ」", 4200);
+        say(`長老「黒陽城の南門から霜境へ。氷窟巨人と封印碑、LV${CHAPTER4_REQUIREMENTS.level}が鍵だ」`, 4800);
       } else if (state.eclipseDragonDefeated && !state.chapter2Reported) {
         state.chapter2Reported = true;
         state.chapter2Victory = false;
@@ -188,7 +297,7 @@
       } else if (state.elderReported) {
         say(`長老「灰道の宿場から古塔へ進め。灰騎士を越えれば第2章の道が開く」`, 4600);
       } else if (canChallengeDragon(context)) {
-        say("長老「封印は解けた。北東の竜洞へ向かえ」");
+        say("長老「封印は解けた。村の北東、焦げた岩山の竜洞へ向かえ」");
       } else if (!state.guardianDefeated && guardianReady()) {
         say("長老「北森の守護者を越え、紋章を得よ」");
       } else if (player.scales < BOSS_REQUIREMENTS.scales) {
@@ -238,6 +347,56 @@
     }
 
     if (npc.type === "merchant") {
+      if (npc.x > 244 * TILE && npc.y > 120 * TILE) {
+        openShop(context, "陽冠都市・大武装商会", [
+          weaponRow(12),
+          armorRow(12),
+          weaponRow(13, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+          armorRow(13, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+          shieldRow(7, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+          accessoryRow("horizon", 32000, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+        ]);
+        return;
+      }
+      if (npc.x > 238 * TILE && npc.y > 120 * TILE) {
+        openShop(context, "陽冠都市・遠征薬舗", [
+          itemRow("elixir", 2, 760 + player.level * 20),
+          itemRow("elixir", 3, 980 + player.level * 24),
+          itemRow("tonic", 3, 360 + player.level * 12),
+          itemRow("tonic", 5, 560 + player.level * 18),
+          itemRow("ward", 3, 390 + player.level * 14),
+          itemRow("ward", 6, 620 + player.level * 20),
+          itemRow("bomb", 5, 540 + player.level * 18),
+          itemRow("warp", 3, 760 + player.level * 20),
+        ]);
+        return;
+      }
+      if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
+        const hasShield = player.shield > 0;
+        openShop(context, "陽冠都市・旅装ギルド", [
+          accessoryRow("sky", 18000),
+          accessoryRow("horizon", 32000, state.solarWardenDefeated, "日輪砲台守を倒せ"),
+          accessoryRow("prismLens", 42000, state.sunspireKeeperDefeated, "日鏡塔の守主を倒せ"),
+          shieldRuneRow("stride", player, hasShield, "盾を装備せよ"),
+          shieldRuneRow("bastion", player, hasShield, "盾を装備せよ"),
+          shieldRuneRow("counter", player, hasShield && state.solarWardenDefeated, hasShield ? "日輪砲台守を倒せ" : "盾を装備せよ"),
+          itemRow("warp", 2, 640 + player.level * 16),
+        ]);
+        return;
+      }
+      if (npc.x > 198 * TILE) {
+        openShop(context, "黎明港・外洋交易所", [
+          weaponRow(12),
+          armorRow(12),
+          shieldRow(6),
+          accessoryRow("sky", 18000),
+          itemRow("elixir", 2, 620 + player.level * 18),
+          itemRow("tonic", 4, 380 + player.level * 14),
+          itemRow("ward", 5, 420 + player.level * 15),
+          itemRow("warp", 2, 520 + player.level * 16),
+        ]);
+        return;
+      }
       openShop(context, "黒市の大商館", [
         weaponRow(11, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
         armorRow(11, state.obsidianGolemDefeated, "黒曜巨人を倒せ"),
@@ -252,6 +411,17 @@
       return;
     }
 
+    if (npc.type === "frostSmith") {
+      const hasShield = player.shield > 0;
+      const shieldReason = hasShield ? "" : "盾を装備せよ";
+      openShop(context, "白銀宿の盾刻工房", [
+        shieldRuneRow("bastion", player, hasShield, shieldReason),
+        shieldRuneRow("stride", player, hasShield, shieldReason),
+        shieldRuneRow("counter", player, hasShield && state.frostGolemDefeated, hasShield ? "氷窟巨人を倒せ" : shieldReason),
+      ]);
+      return;
+    }
+
     if (npc.type === "porter") {
       const rows = availableTravelPoints(state, player).map(travelRow);
       openShop(context, "拠点馬車", rows.length ? rows : [travelRow({ id: "village", name: "村", x: 10, y: 48, cost: 0 })]);
@@ -259,7 +429,35 @@
     }
 
     if (npc.type === "guide") {
-      if (!state.obsidianGolemDefeated) {
+      if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
+        if (!state.solarWardenDefeated) say(`案内人「第5章の本線は黎明港から北東高原の日輪砲台守へ。焼けた街道と砲声を追え」`, 5400);
+        else if (!state.sunspireKeeperDefeated) say(`案内人「本線は東門の日鏡塔だ。西広場の闘技場は任意、守主はLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}級だ」`, 5600);
+        else if (!state.suncrestChampionDefeated && player.level >= SUNCREST_CHAMPION_REQUIREMENTS.level) say(`案内人「本線を進めた後の任意挑戦なら、西広場の陽冠闘技場で連撃装飾を狙える」`, 5200);
+        else if (!state.chests.has("sunspire-reliquary")) say("案内人「塔奥の遺物庫に反射水晶がある。都市の旅装ギルドでも同系統の対策を聞ける」", 4800);
+        else if (!state.discoveries.has("sunrise-seal")) say("案内人「南門から街道を下り、陽光封印碑を読め。碑の先は熾火群島への前哨路だ」", 5000);
+        else if (!state.chests.has("ember-sanctum-cache")) say("案内人「熾火聖域の補給箱を先に取れ。天竜戦は物資の余裕が勝敗を分ける」", 4800);
+        else say(`案内人「陽冠装備、反射水晶、LV${CHAPTER5_REQUIREMENTS.level}。揃ったら南の熾火聖域へ」`, 4800);
+      } else if (npc.x > 198 * TILE) {
+        if (!state.solarWardenDefeated) say(`案内人「日輪砲台守は北東高原。焼けた街道と光の柱を追い、射線を横切って砲台を壊せ」`, 5200);
+        else if (!state.sunspireKeeperDefeated && player.level < SUNSPIRE_KEEPER_REQUIREMENTS.level) say(`案内人「次は陽冠都市の東門、日鏡塔だ。守主にはLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}と光砲対策が欲しい」`, 4800);
+        else if (!state.sunspireKeeperDefeated) say("案内人「日鏡塔では反射鏡の着弾円が重なる。走者を先に処理して守主へ詰めろ」", 4800);
+        else if (!state.suncrestChampionDefeated && player.level >= SUNCREST_CHAMPION_REQUIREMENTS.level) say("案内人「本線後の寄り道なら、西広場の闘技場だ。突進を避けて闘技王の背後を取れ」", 5200);
+        else if (!state.chests.has("sunspire-reliquary")) say("案内人「守主を倒したなら塔奥の遺物庫を調べろ。反射水晶が熾火聖域の備えになる」", 4600);
+        else if (!state.discoveries.has("sunrise-seal")) say("案内人「南街道の陽光封印碑を読め。陽冠装備は大武装商会で選べる」", 4400);
+        else if (!state.chests.has("ember-sanctum-cache")) say("案内人「熾火群島の聖域で天竜戦の補給箱を確保せよ」", 4400);
+        else if (npc.y > 118 * TILE) say(`案内人「陽冠装備を整え、LV${CHAPTER5_REQUIREMENTS.level}で南の熾火聖域へ」`, 4400);
+        else say("案内人「北回りは遺跡、西海岸は安全、中央山道は光槍兵が狙う危険な近道だ」", 4400);
+      } else if (npc.x > 132 * TILE) {
+        if (npc.y > 154 * TILE) say("案内人「北は蒼風港、南西の橋は群島祠、東は海岸の強敵地帯だ」", 4200);
+        else say("案内人「北道は灯台、中央は峠、南道は岬砦。峠が最短だが最も危険だ」", 4200);
+      } else if (npc.y > 144 * TILE) {
+        if (!state.frostGolemDefeated) say("案内人「本道は霜冠城、南の氷窟は危険だが霜心の護符が眠る」", 4200);
+        else if (!state.towerWardenDefeated) say("案内人「白銀宿の東に霜見塔がある。二階の塔守はLV32向けだ」", 4200);
+        else if (!state.discoveries.has("frost-seal")) say("案内人「霜冠城の中庭で封印碑を探せ。氷窟巨人の核が道を開く」", 4200);
+        else say(`案内人「霜冠竜へ挑むならLV${CHAPTER4_REQUIREMENTS.level}と白銀装備を整えろ」`, 4200);
+      } else if (state.chapter2Reported && !state.cryptWardenDefeated) {
+        say("案内人「黒市東端の地下口は古い墓所へ続く。LV22以上、帰還鈴を持って入れ」", 4400);
+      } else if (!state.obsidianGolemDefeated) {
         say(`案内人「黒市の東、黒曜洞に巨人がいる。LV24以上と黒門砦の装備が欲しい」`, 4200);
       } else if (!state.voidDragonDefeated) {
         say(`案内人「黒曜の備えがあれば、黒陽城の奥まで踏み込める」`, 3600);
@@ -270,14 +468,30 @@
     }
 
     if (npc.type === "villager" || npc.type === "guard") {
-      if (npc.y > 128 * TILE) {
-        say(npc.type === "guard" ? "衛兵「黒市の外は黒陽の影が濃い。門の外で油断するな」" : "住人「ここまで来た旅人は少ない。物資を整えていきな」", 3600);
+      if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
+        say(localDialogue(npc, townDialogue.suncrest), 4400);
+      } else if (npc.x > 198 * TILE) {
+        say(localDialogue(npc, townDialogue.dawn), 4000);
+      } else if (npc.x > 132 * TILE) {
+        say(localDialogue(npc, townDialogue.island), 4000);
+      } else if (npc.y > 144 * TILE) {
+        say(localDialogue(npc, townDialogue.frost), 3800);
+      } else if (npc.y > 128 * TILE) {
+        if (npc.x > 44 * TILE && !state.cryptWardenDefeated) {
+          say("衛兵「この先の地下口は墓所だ。吸命鬼に囲まれたら入口まで退け」", 3800);
+        } else if (npc.x > 80 * TILE) {
+          say(localDialogue(npc, townDialogue.fort), 3800);
+        } else {
+          say(localDialogue(npc, townDialogue.market), 3800);
+        }
       } else if (npc.y > 110 * TILE) {
-        say("旅人「月見砦から先は戻る判断が命を分ける」", 3200);
-      } else if (npc.x > 90 * TILE) {
-        say("旅人「灰道の宿場から南へ行けば、古塔と月影の道だ」", 3200);
+        say(localDialogue(npc, townDialogue.moon), 3600);
+      } else if (npc.x > 90 * TILE && npc.y > 50 * TILE && npc.y < 65 * TILE) {
+        say(localDialogue(npc, townDialogue.ash), 3600);
+      } else if (npc.x > 23 * TILE && npc.x < 38 * TILE && npc.y > 54 * TILE && npc.y < 64 * TILE) {
+        say(localDialogue(npc, townDialogue.camp), 3600);
       } else {
-        say("村人「遠くへ行くなら、帰れるだけのHPを残しておくんだ」", 3200);
+        say(localDialogue(npc, townDialogue.village), 3600);
       }
       return;
     }
@@ -288,6 +502,20 @@
         player.stamina = player.staminaMax;
         player.guard = Math.max(player.guard, npc.y > 128 * TILE ? 1500 : npc.y > 110 * TILE ? 1200 : npc.x > 90 * TILE ? 900 : 700);
         say("拠点で休んだ。遠征を続けられる");
+        return;
+      }
+      if (npc.y > 144 * TILE) {
+        openShop(context, "白銀宿の工房", [
+          weaponRow(12, state.chapter3Reported, "第3章を報告せよ"),
+          armorRow(12, state.chapter3Reported, "第3章を報告せよ"),
+          shieldRow(6, state.chapter3Reported, "第3章を報告せよ"),
+          itemRow("potion", 5, 150 + player.level * 12),
+          itemRow("tonic", 4, 180 + player.level * 10),
+          itemRow("elixir", 2, 360 + player.level * 14),
+          itemRow("warp", 2, 300 + player.level * 12),
+          itemRow("bomb", 4, 190 + player.level * 12),
+          itemRow("ward", 5, 210 + player.level * 12),
+        ]);
         return;
       }
       if (npc.y > 128 * TILE) {

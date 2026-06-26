@@ -61,6 +61,8 @@
     if (point.unlock === "elderReported") return Boolean(state.elderReported || state.chapter2Reported || state.chapter3Reported);
     if (point.unlock === "ashKnightDefeated") return Boolean(state.ashKnightDefeated || state.chapter2Reported || state.chapter3Reported);
     if (point.unlock === "chapter2Reported") return Boolean(state.chapter2Reported || state.chapter3Reported);
+    if (point.unlock === "chapter3Reported") return Boolean(state.chapter3Reported || state.chapter4Reported || state.chapter5Reported);
+    if (point.unlock === "chapter4Reported") return Boolean(state.chapter4Reported || state.chapter5Reported);
     if (point.unlock === "blackMarket") return Boolean(state.chapter2Reported && (state.chests?.has?.("black-fort-armory") || state.obsidianGolemDefeated || state.chapter3Reported));
     return false;
   }
@@ -126,6 +128,7 @@
   }
 
   function accessoryActive(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories)) return player.equippedAccessories.includes(id);
     const equipped = equippedAccessoryIds(player);
     if (equipped.length > 0) return equipped.includes(id);
     return Boolean(player[legacyFlag]);
@@ -164,7 +167,7 @@
     }
     const desired = equippedAccessoryIds(player).filter((id) => owned.has(id));
     if (desired.length <= 0) {
-      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
+      desired.push(...["trail", "regen", "greaterRegen", "aegis", "mine", "mist", "deepLamp", "frost", "sky", "eclipse", "void", "obsidian", "hunter"].filter((id) => owned.has(id)).slice(0, ACCESSORY_SLOT_COUNT));
     }
     setEquippedAccessories(player, desired);
   }
@@ -177,7 +180,38 @@
     player.ownedArmors = normalizeRankInventory(player.ownedArmors, player.armor, armorNames.length);
     player.ownedShields = normalizeRankInventory(player.ownedShields, player.shield, shieldNames.length);
     normalizeAccessoryInventory(player);
+    normalizeQuickItems(player);
     return player;
+  }
+
+  function normalizeQuickItems(player) {
+    const quick = [];
+    for (const id of Array.isArray(player.quickItems) ? player.quickItems : []) {
+      if (itemOrder.includes(id) && !quick.includes(id)) quick.push(id);
+      if (quick.length >= 3) break;
+    }
+    for (const id of ["potion", "bomb", "ward", ...itemOrder]) {
+      if (quick.length >= 3) break;
+      if (!quick.includes(id)) quick.push(id);
+    }
+    player.quickItems = quick;
+    player.activeQuickSlot = clamp(Math.floor(Number(player.activeQuickSlot) || 0), 0, quick.length - 1);
+    player.selectedItem = quick[player.activeQuickSlot] || "potion";
+    return quick;
+  }
+
+  function setQuickItem(player, item, slot) {
+    normalizeQuickItems(player);
+    if (!itemOrder.includes(item)) return false;
+    const target = clamp(Math.floor(Number(slot) || 0), 0, player.quickItems.length - 1);
+    const existing = player.quickItems.indexOf(item);
+    if (existing >= 0 && existing !== target) {
+      player.quickItems[existing] = player.quickItems[target];
+    }
+    player.quickItems[target] = item;
+    player.activeQuickSlot = target;
+    player.selectedItem = item;
+    return true;
   }
 
   function addOwnedWeapon(player, rank) {
@@ -284,7 +318,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -357,6 +391,24 @@
       player.bombs = Math.min(9, player.bombs + 3);
       player.wards = Math.min(9, player.wards + 3);
       say("月影街道の補給箱を回収した");
+      return true;
+    }
+    if (reward === "moonArchiveSupply") {
+      player.gold += 760;
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      say("月の書庫で対術師用の補給を得た");
+      return true;
+    }
+    if (reward === "moonArchiveRelic") {
+      player.gold += 980;
+      addItem(player, "elixir", 1);
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 3);
+      grantAccessory(context, "eclipse", "月蝕の指輪を得た。装備すると月蝕魔法を軽くする");
+      say("月の書庫の遺物庫から月蝕の指輪と決戦物資を得た");
       return true;
     }
     if (reward === "summonerSupply") {
@@ -439,6 +491,144 @@
       say("黒市北の再生洞窟で大再生の指輪と遠征物資を得た");
       return true;
     }
+    if (reward === "mistCharm") {
+      player.gold += 980;
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      grantAccessory(context, "mist", "霧灯の護符を見つけた。装備すると罠・召喚・魔法圧を軽くする");
+      say("霧灯の祠で護符と遠征物資を得た");
+      return true;
+    }
+    if (reward === "mistSupply") {
+      player.gold += 620;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      say("霧灯の祠の補給箱から遠征物資を得た");
+      return true;
+    }
+    if (reward === "cryptSupply") {
+      player.gold += 780;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.potions = Math.min(9, player.potions + 3);
+      say("地下墓所の補給庫から長期遠征用の物資を得た");
+      return true;
+    }
+    if (reward === "deepLamp") {
+      player.gold += 1200;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      grantAccessory(context, "deepLamp", "深層灯の護符を得た。装備すると鈍足を軽くし、薬草回復が強くなる");
+      say("地下墓所の遺物庫から深層灯の護符を得た");
+      return true;
+    }
+    if (reward === "frostSupply") {
+      player.gold += 1100;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.potions = Math.min(9, player.potions + 3);
+      player.wards = Math.min(9, player.wards + 2);
+      say("霜境の補給箱から凍土遠征の物資を得た");
+      return true;
+    }
+    if (reward === "frostCharm") {
+      player.gold += 1600;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      grantAccessory(context, "frost", "霜心の護符を得た。装備すると氷弾・凍結・スタミナ低下を軽くする");
+      say("氷窟の遺物庫から霜心の護符を得た");
+      return true;
+    }
+    if (reward === "towerExpeditionSupply") {
+      player.gold += 920;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.wards = Math.min(9, player.wards + 3);
+      say("霜見塔の補給庫から登頂用の物資を得た");
+      return true;
+    }
+    if (reward === "skyCharm") {
+      player.gold += 1800;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 2);
+      grantAccessory(context, "sky", "天駆けの徽章を得た。装備すると回避距離と再使用速度が伸びる");
+      say("霜見塔の最上階で天駆けの徽章を得た");
+      return true;
+    }
+    if (reward === "solarSupply") {
+      player.gold += 6800;
+      addItem(player, "elixir", 2);
+      addItem(player, "tonic", 3);
+      addItem(player, "ward", 4);
+      addItem(player, "warp", 2);
+      say("日輪砲台守の金庫から6800Gと陽冠都市の決戦物資を得た");
+      return true;
+    }
+    if (reward === "suncrestMarketSupply") {
+      player.gold += 2400;
+      addItem(player, "tonic", 3);
+      addItem(player, "warp", 2);
+      addItem(player, "ward", 3);
+      say("陽冠都市の市場台帳から遠征割引券と物資を得た");
+      return true;
+    }
+    if (reward === "suncrestArsenalSupply") {
+      player.gold += 3200;
+      addItem(player, "elixir", 2);
+      addItem(player, "bomb", 3);
+      addItem(player, "ward", 4);
+      say("陽冠都市の武装庫から高原決戦の物資を得た");
+      return true;
+    }
+    if (reward === "arenaSupply") {
+      player.gold += 3800;
+      addItem(player, "tonic", 3);
+      addItem(player, "elixir", 1);
+      addItem(player, "ward", 3);
+      addItem(player, "warp", 1);
+      say("陽冠闘技場の控え室から連戦用の物資を得た");
+      return true;
+    }
+    if (reward === "duelistMedal") {
+      player.gold += 4600;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 2);
+      grantAccessory(context, "duelist", "陽冠闘士の徽章を得た。装備すると通常攻撃が素早くなり、連撃でスタミナを取り戻しやすい");
+      say("陽冠闘技場の遺物庫から陽冠闘士の徽章を得た");
+      return true;
+    }
+    if (reward === "sunspireSupply") {
+      player.gold += 3600;
+      addItem(player, "elixir", 1);
+      addItem(player, "tonic", 3);
+      addItem(player, "ward", 3);
+      addItem(player, "warp", 1);
+      say("日鏡塔の補給庫から塔攻略用の物資を得た");
+      return true;
+    }
+    if (reward === "prismLens") {
+      player.gold += 2400;
+      addItem(player, "elixir", 2);
+      addItem(player, "ward", 3);
+      grantAccessory(context, "prismLens", "反射水晶を得た。装備すると光弾と熾火の広域攻撃に備えやすい");
+      say("日鏡塔の遺物庫で反射水晶を得た");
+      return true;
+    }
+    if (reward === "emberSupply") {
+      player.gold += 4200;
+      addItem(player, "elixir", 3);
+      addItem(player, "tonic", 3);
+      addItem(player, "ward", 5);
+      addItem(player, "warp", 2);
+      say("熾火聖域の秘庫から天竜戦用の物資を得た");
+      return true;
+    }
     if (reward === "shieldSupply") {
       player.gold += 520;
       grantShieldAtLeast(context, 3, "星盾を手に入れた。盾兵や魔法道を正面から受けやすい");
@@ -461,6 +651,15 @@
       addItem(player, "tonic", 1);
       addItem(player, "warp", 1);
       say("黒市の隠し倉庫から遠征物資を得た");
+      return true;
+    }
+    if (reward === "smugglerSupply") {
+      player.gold += 360;
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
+      player.bombs = Math.min(9, player.bombs + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      say("密輸道の隠し荷を見つけた。危険な近道用の物資を得た");
       return true;
     }
     return false;
@@ -547,6 +746,115 @@
       addItem(player, "ward", 1);
       burst(x, y, "#ff5e9f", 18);
       say("石碑: 地雷花は近づくと爆ぜる。先に斬るか広く避けろ");
+      return;
+    }
+    if (discovery.kind === "mistHint") {
+      player.gold += 200;
+      addItem(player, "ward", 1);
+      addItem(player, "tonic", 1);
+      burst(x, y, "#9fd6c7", 18);
+      say("霧灯の碑文: 召喚と罠をしのぎ、守を倒せば護符に届く");
+      return;
+    }
+    if (discovery.kind === "cryptHint") {
+      player.gold += 260;
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
+      burst(x, y, "#d7b26d", 20);
+      say("墓碑: 吸命鬼は接触で力を奪う。薬草と帰還鈴を残して墓守へ挑め");
+      return;
+    }
+    if (discovery.kind === "frostHint") {
+      player.gold += 320;
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
+      burst(x, y, "#b9f4ff", 20);
+      say("霜境の道標: 氷窟の巨人を倒し、霜心の護符を持って霜冠城へ進め");
+      return;
+    }
+    if (discovery.kind === "frostSeal") {
+      player.gold += 760;
+      player.stamina = player.staminaMax;
+      addItem(player, "elixir", 1);
+      player.wards = Math.min(9, player.wards + 3);
+      burst(x, y, "#d9f7ff", 26);
+      say("霜冠の封印碑を読んだ。氷窟巨人を倒せば霜冠竜への道が開く");
+      return;
+    }
+    if (discovery.kind === "sunriseSeal") {
+      player.gold += 1800;
+      player.stamina = player.staminaMax;
+      addItem(player, "elixir", 1);
+      addItem(player, "warp", 1);
+      player.wards = Math.min(9, player.wards + 4);
+      burst(x, y, "#fff0a6", 28);
+      say("陽光の封印碑を読んだ。日輪砲台守を破れば熾火天竜への道が開く");
+      return;
+    }
+    if (discovery.kind === "solarWardenHint") {
+      player.gold += 420;
+      player.stamina = player.staminaMax;
+      addItem(player, "ward", 1);
+      addItem(player, "tonic", 1);
+      burst(x, y, "#fff0a6", 22);
+      say("焼けた道標: 黎明港から北東高原へ。光の砲声を追えば日輪砲台守に届く");
+      return;
+    }
+    if (discovery.kind === "dragonCaveHint") {
+      player.gold += 90;
+      addItem(player, "ward", 1);
+      burst(x, y, "#ff8a3d", 18);
+      say("焦げた石碑: 村の北東、岩山の熱い洞が赤竜の巣だ");
+      return;
+    }
+    if (discovery.kind === "sunspireHint") {
+      player.gold += 520;
+      player.stamina = player.staminaMax;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 2);
+      burst(x, y, "#fff0a6", 22);
+      say("日鏡塔の観測記録を読んだ。光柱鏡を先に壊すと塔の圧力を減らせる");
+      return;
+    }
+    if (discovery.kind === "moonArchiveHint") {
+      player.gold += 240;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#b08cff", 20);
+      say("月の書庫の記録: 召喚士を放置せず、番人を倒して遺物庫を開け");
+      return;
+    }
+    if (discovery.kind === "suncrestGuide") {
+      player.gold += 520;
+      addItem(player, "warp", 1);
+      addItem(player, "ward", 1);
+      burst(x, y, "#fff0a6", 20);
+      say("陽冠都市の攻略掲示を読んだ。北東高原、日鏡塔、南街道の順に準備を進めよう");
+      return;
+    }
+    if (discovery.kind === "suncrestArenaHint") {
+      player.gold += 680;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#ffd166", 22);
+      say("陽冠闘技場の作戦札を読んだ。走者を横にかわし、砲撃円から離れて闘技王へ詰めよう");
+      return;
+    }
+    if (discovery.kind === "frostTowerHint") {
+      player.gold += 260;
+      addItem(player, "tonic", 1);
+      player.wards = Math.min(9, player.wards + 1);
+      burst(x, y, "#9de8ff", 20);
+      say("塔の記録: 凍気灯を先に壊し、二階の塔守へ進め");
+      return;
+    }
+    if (discovery.kind === "frostTowerLift") {
+      player.stamina = player.staminaMax;
+      addItem(player, "warp", 1);
+      burst(x, y, "#d9f7ff", 24);
+      say("霜見塔の昇降機を起動した。霜原から二階へ直行できる");
       return;
     }
     if (discovery.kind === "routeHint") {
@@ -636,6 +944,15 @@
     if (player.selectedItem === "warp") useWarp(context);
   }
 
+  function useQuickItem(context, slot) {
+    const { player } = requireItemContext(context);
+    normalizeQuickItems(player);
+    const target = clamp(Math.floor(Number(slot) || 0), 0, player.quickItems.length - 1);
+    player.activeQuickSlot = target;
+    player.selectedItem = player.quickItems[target];
+    useSelectedItem(context);
+  }
+
   function usePotion(context) {
     const { player, say, burst } = requireItemContext(context);
     if (player.hp <= 0) return;
@@ -648,7 +965,8 @@
       return;
     }
     player.potions -= 1;
-    player.hp = Math.min(player.hpMax, player.hp + 30 + player.level * 6);
+    const deepLampBonus = accessoryActive(player, "deepLamp", "deepLampCharm") ? 18 + player.level * 2 : 0;
+    player.hp = Math.min(player.hpMax, player.hp + 30 + player.level * 6 + deepLampBonus);
     burst(player.x + player.w / 2, player.y + player.h / 2, "#74ff8f", 10);
     say("薬を使った");
   }
@@ -772,15 +1090,18 @@
   function selectItem(context, item) {
     const { player } = requireItemContext(context);
     if (!itemOrder.includes(item)) return;
+    normalizeQuickItems(player);
+    const slot = player.quickItems.indexOf(item);
+    if (slot >= 0) player.activeQuickSlot = slot;
     player.selectedItem = item;
   }
 
   function cycleItem(context, step) {
     const { player, say } = requireItemContext(context);
-    const index = itemOrder.indexOf(player.selectedItem);
-    player.selectedItem = itemOrder[(index + step + itemOrder.length) % itemOrder.length];
-    const names = { potion: "薬", tonic: "活力薬", bomb: "火瓶", ward: "護符", elixir: "霊薬", warp: "帰還鈴" };
-    say(`${names[player.selectedItem]}を選んだ`, 900);
+    normalizeQuickItems(player);
+    player.activeQuickSlot = (player.activeQuickSlot + step + player.quickItems.length) % player.quickItems.length;
+    player.selectedItem = player.quickItems[player.activeQuickSlot];
+    say(`短縮${player.activeQuickSlot + 1}: ${itemNames[player.selectedItem]}を選んだ`, 900);
   }
 
   function selectedItemCount(context) {
@@ -792,6 +1113,8 @@
     rewardIds,
     savedIdSet,
     normalizeInventory,
+    normalizeQuickItems,
+    setQuickItem,
     addOwnedWeapon,
     addOwnedArmor,
     addOwnedShield,
@@ -807,6 +1130,7 @@
     grantDiscoveryReward,
     gainFoundItem,
     useSelectedItem,
+    useQuickItem,
     usePotion,
     useTonic,
     useBomb,

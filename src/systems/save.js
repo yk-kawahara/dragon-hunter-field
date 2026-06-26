@@ -18,6 +18,7 @@
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     itemOrder,
+    shieldRuneOrder,
   } = definitions;
 
   const {
@@ -52,6 +53,7 @@
         weapon: player.weapon,
         armor: player.armor,
         shield: player.shield,
+        shieldRune: player.shieldRune,
         ownedWeapons: player.ownedWeapons,
         ownedArmors: player.ownedArmors,
         ownedShields: player.ownedShields,
@@ -65,6 +67,8 @@
         elixirs: player.elixirs,
         warps: player.warps,
         selectedItem: player.selectedItem,
+        quickItems: player.quickItems,
+        activeQuickSlot: player.activeQuickSlot,
         scales: player.scales,
         sealCrest: player.sealCrest,
         hunterCharm: player.hunterCharm,
@@ -73,9 +77,16 @@
         trailCharm: player.trailCharm,
         aegisCharm: player.aegisCharm,
         mineCharm: player.mineCharm,
+        mistCharm: player.mistCharm,
         eclipseCharm: player.eclipseCharm,
         voidCharm: player.voidCharm,
         obsidianCharm: player.obsidianCharm,
+        deepLampCharm: player.deepLampCharm,
+        frostCharm: player.frostCharm,
+        skyCharm: player.skyCharm,
+        horizonCharm: player.horizonCharm,
+        prismLensCharm: player.prismLensCharm,
+        duelistCharm: player.duelistCharm,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -85,6 +96,30 @@
       wardenDefeated: state.wardenDefeated,
       spawnedAshKnight: state.spawnedAshKnight,
       ashKnightDefeated: state.ashKnightDefeated,
+      spawnedArchiveWarden: state.spawnedArchiveWarden,
+      archiveWardenDefeated: state.archiveWardenDefeated,
+      spawnedSmugglerCaptain: state.spawnedSmugglerCaptain,
+      smugglerCaptainDefeated: state.smugglerCaptainDefeated,
+      spawnedRegenSentinel: state.spawnedRegenSentinel,
+      regenSentinelDefeated: state.regenSentinelDefeated,
+      spawnedMistKeeper: state.spawnedMistKeeper,
+      mistKeeperDefeated: state.mistKeeperDefeated,
+      spawnedCryptWarden: state.spawnedCryptWarden,
+      cryptWardenDefeated: state.cryptWardenDefeated,
+      spawnedFrostGolem: state.spawnedFrostGolem,
+      frostGolemDefeated: state.frostGolemDefeated,
+      spawnedTowerWarden: state.spawnedTowerWarden,
+      towerWardenDefeated: state.towerWardenDefeated,
+      spawnedFrostDragon: state.spawnedFrostDragon,
+      frostDragonDefeated: state.frostDragonDefeated,
+      spawnedSolarWarden: state.spawnedSolarWarden,
+      solarWardenDefeated: state.solarWardenDefeated,
+      spawnedSuncrestChampion: state.spawnedSuncrestChampion,
+      suncrestChampionDefeated: state.suncrestChampionDefeated,
+      spawnedSunspireKeeper: state.spawnedSunspireKeeper,
+      sunspireKeeperDefeated: state.sunspireKeeperDefeated,
+      spawnedEmberDragon: state.spawnedEmberDragon,
+      emberDragonDefeated: state.emberDragonDefeated,
       spawnedEclipseDragon: state.spawnedEclipseDragon,
       eclipseDragonDefeated: state.eclipseDragonDefeated,
       spawnedVoidDragon: state.spawnedVoidDragon,
@@ -96,6 +131,10 @@
       chapter2Reported: state.chapter2Reported,
       chapter3Victory: state.chapter3Victory,
       chapter3Reported: state.chapter3Reported,
+      chapter4Victory: state.chapter4Victory,
+      chapter4Reported: state.chapter4Reported,
+      chapter5Victory: state.chapter5Victory,
+      chapter5Reported: state.chapter5Reported,
       chests: Array.from(state.chests),
       discoveries: Array.from(state.discoveries),
     };
@@ -114,6 +153,7 @@
       player.bombs ??= 1;
       player.wards ??= 0;
       player.shield ??= 0;
+      player.shieldRune = shieldRuneOrder.includes(player.shieldRune) ? player.shieldRune : "";
       player.ownedShields ??= [player.shield || 0];
       player.tonics ??= 0;
       player.elixirs ??= 0;
@@ -125,9 +165,16 @@
       player.trailCharm = Boolean(player.trailCharm);
       player.aegisCharm = Boolean(player.aegisCharm);
       player.mineCharm = Boolean(player.mineCharm);
+      player.mistCharm = Boolean(player.mistCharm);
       player.eclipseCharm = Boolean(player.eclipseCharm);
       player.voidCharm = Boolean(player.voidCharm);
       player.obsidianCharm = Boolean(player.obsidianCharm);
+      player.deepLampCharm = Boolean(player.deepLampCharm);
+      player.frostCharm = Boolean(player.frostCharm);
+      player.skyCharm = Boolean(player.skyCharm);
+      player.horizonCharm = Boolean(player.horizonCharm);
+      player.prismLensCharm = Boolean(player.prismLensCharm);
+      player.duelistCharm = Boolean(player.duelistCharm);
       normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
@@ -144,6 +191,18 @@
       state.guardianDefeated = Boolean(data.guardianDefeated);
       state.wardenDefeated = Boolean(data.wardenDefeated);
       state.ashKnightDefeated = Boolean(data.ashKnightDefeated);
+      state.archiveWardenDefeated = Boolean(data.archiveWardenDefeated);
+      state.smugglerCaptainDefeated = Boolean(data.smugglerCaptainDefeated);
+      state.regenSentinelDefeated = Boolean(data.regenSentinelDefeated);
+      state.mistKeeperDefeated = Boolean(data.mistKeeperDefeated);
+      state.cryptWardenDefeated = Boolean(data.cryptWardenDefeated);
+      state.frostGolemDefeated = Boolean(data.frostGolemDefeated);
+      state.towerWardenDefeated = Boolean(data.towerWardenDefeated);
+      state.frostDragonDefeated = Boolean(data.frostDragonDefeated);
+      state.solarWardenDefeated = Boolean(data.solarWardenDefeated);
+      state.suncrestChampionDefeated = Boolean(data.suncrestChampionDefeated);
+      state.sunspireKeeperDefeated = Boolean(data.sunspireKeeperDefeated);
+      state.emberDragonDefeated = Boolean(data.emberDragonDefeated);
       state.eclipseDragonDefeated = Boolean(data.eclipseDragonDefeated);
       state.voidDragonDefeated = Boolean(data.voidDragonDefeated);
       state.obsidianGolemDefeated = Boolean(data.obsidianGolemDefeated);
@@ -151,6 +210,18 @@
       state.spawnedGuardian = state.guardianDefeated ? Boolean(data.spawnedGuardian) : false;
       state.spawnedWarden = state.wardenDefeated ? Boolean(data.spawnedWarden) : false;
       state.spawnedAshKnight = state.ashKnightDefeated ? Boolean(data.spawnedAshKnight) : false;
+      state.spawnedArchiveWarden = state.archiveWardenDefeated ? Boolean(data.spawnedArchiveWarden) : false;
+      state.spawnedSmugglerCaptain = state.smugglerCaptainDefeated ? Boolean(data.spawnedSmugglerCaptain) : false;
+      state.spawnedRegenSentinel = state.regenSentinelDefeated ? Boolean(data.spawnedRegenSentinel) : false;
+      state.spawnedMistKeeper = state.mistKeeperDefeated ? Boolean(data.spawnedMistKeeper) : false;
+      state.spawnedCryptWarden = state.cryptWardenDefeated ? Boolean(data.spawnedCryptWarden) : false;
+      state.spawnedFrostGolem = state.frostGolemDefeated ? Boolean(data.spawnedFrostGolem) : false;
+      state.spawnedTowerWarden = state.towerWardenDefeated ? Boolean(data.spawnedTowerWarden) : false;
+      state.spawnedFrostDragon = state.frostDragonDefeated ? Boolean(data.spawnedFrostDragon) : false;
+      state.spawnedSolarWarden = state.solarWardenDefeated ? Boolean(data.spawnedSolarWarden) : false;
+      state.spawnedSuncrestChampion = state.suncrestChampionDefeated ? Boolean(data.spawnedSuncrestChampion) : false;
+      state.spawnedSunspireKeeper = state.sunspireKeeperDefeated ? Boolean(data.spawnedSunspireKeeper) : false;
+      state.spawnedEmberDragon = state.emberDragonDefeated ? Boolean(data.spawnedEmberDragon) : false;
       state.spawnedEclipseDragon = state.eclipseDragonDefeated ? Boolean(data.spawnedEclipseDragon) : false;
       state.spawnedVoidDragon = state.voidDragonDefeated ? Boolean(data.spawnedVoidDragon) : false;
       state.spawnedObsidianGolem = state.obsidianGolemDefeated ? Boolean(data.spawnedObsidianGolem) : false;
@@ -159,6 +230,10 @@
       state.chapter2Victory = Boolean(data.eclipseDragonDefeated) && !state.chapter2Reported;
       state.chapter3Reported = Boolean(data.chapter3Reported);
       state.chapter3Victory = Boolean(data.voidDragonDefeated) && !state.chapter3Reported;
+      state.chapter4Reported = Boolean(data.chapter4Reported);
+      state.chapter4Victory = Boolean(data.frostDragonDefeated) && !state.chapter4Reported;
+      state.chapter5Reported = Boolean(data.chapter5Reported);
+      state.chapter5Victory = Boolean(data.emberDragonDefeated) && !state.chapter5Reported;
       state.clearPanelOpen = false;
       state.gameOver = false;
       state.inventoryOpen = false;
@@ -193,6 +268,7 @@
       weapon: 0,
       armor: 0,
       shield: 0,
+      shieldRune: "",
       ownedWeapons: [0],
       ownedArmors: [0],
       ownedShields: [0],
@@ -206,6 +282,8 @@
       elixirs: 0,
       warps: 0,
       selectedItem: "potion",
+      quickItems: ["potion", "bomb", "ward"],
+      activeQuickSlot: 0,
       sealCrest: false,
       hunterCharm: false,
       regenCharm: false,
@@ -213,9 +291,16 @@
       trailCharm: false,
       aegisCharm: false,
       mineCharm: false,
+      mistCharm: false,
       eclipseCharm: false,
       voidCharm: false,
       obsidianCharm: false,
+      deepLampCharm: false,
+      frostCharm: false,
+      skyCharm: false,
+      horizonCharm: false,
+      prismLensCharm: false,
+      duelistCharm: false,
       invuln: 0,
       guard: 0,
       slow: 0,
@@ -247,6 +332,30 @@
     state.wardenDefeated = false;
     state.spawnedAshKnight = false;
     state.ashKnightDefeated = false;
+    state.spawnedArchiveWarden = false;
+    state.archiveWardenDefeated = false;
+    state.spawnedSmugglerCaptain = false;
+    state.smugglerCaptainDefeated = false;
+    state.spawnedRegenSentinel = false;
+    state.regenSentinelDefeated = false;
+    state.spawnedMistKeeper = false;
+    state.mistKeeperDefeated = false;
+    state.spawnedCryptWarden = false;
+    state.cryptWardenDefeated = false;
+    state.spawnedFrostGolem = false;
+    state.frostGolemDefeated = false;
+    state.spawnedTowerWarden = false;
+    state.towerWardenDefeated = false;
+    state.spawnedFrostDragon = false;
+    state.frostDragonDefeated = false;
+    state.spawnedSolarWarden = false;
+    state.solarWardenDefeated = false;
+    state.spawnedSuncrestChampion = false;
+    state.suncrestChampionDefeated = false;
+    state.spawnedSunspireKeeper = false;
+    state.sunspireKeeperDefeated = false;
+    state.spawnedEmberDragon = false;
+    state.emberDragonDefeated = false;
     state.spawnedEclipseDragon = false;
     state.eclipseDragonDefeated = false;
     state.spawnedVoidDragon = false;
@@ -258,6 +367,10 @@
     state.chapter2Reported = false;
     state.chapter3Victory = false;
     state.chapter3Reported = false;
+    state.chapter4Victory = false;
+    state.chapter4Reported = false;
+    state.chapter5Victory = false;
+    state.chapter5Reported = false;
     state.clearPanelOpen = false;
     state.gameOver = false;
     state.shopOpen = false;

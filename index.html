@@ -30,6 +30,7 @@
           <button type="button" data-command="search">採取</button>
           <button type="button" data-command="items">道具</button>
           <button type="button" data-command="stats">もちもの</button>
+          <button type="button" data-command="map">全体地図</button>
           <button type="button" data-command="save">保存</button>
           <div class="gold-box" id="goldBox">0G</div>
         </aside>
@@ -49,9 +50,9 @@
           <div class="status-row"><span>鱗</span><strong id="scaleText">0/3</strong></div>
           <div class="zone" id="zoneText">草原</div>
           <div class="item-dock" aria-label="Items">
-            <button type="button" data-item="potion"><span>薬</span><strong id="potionText">2</strong></button>
-            <button type="button" data-item="bomb"><span>爆</span><strong id="bombText">1</strong></button>
-            <button type="button" data-item="ward"><span>護</span><strong id="wardText">0</strong></button>
+            <button type="button" data-quick-slot="0" aria-label="Quick item 1"><small>1</small><span class="quick-name">薬</span><strong class="quick-count">2</strong></button>
+            <button type="button" data-quick-slot="1" aria-label="Quick item 2"><small>2</small><span class="quick-name">爆</span><strong class="quick-count">1</strong></button>
+            <button type="button" data-quick-slot="2" aria-label="Quick item 3"><small>3</small><span class="quick-name">護</span><strong class="quick-count">0</strong></button>
           </div>
         </aside>
       </section>

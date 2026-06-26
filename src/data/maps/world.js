@@ -1,6 +1,8 @@
 "use strict";
 
 (() => {
+  const WORLD_WIDTH = 256;
+  const WORLD_HEIGHT = 256;
   // Human-editable fixed world map for DRAGON HUNTER.
   // Edit BASE_MAP / EAST_EXPANSION / SOUTH_EXPANSION rows directly to change terrain.
   // Legend:
@@ -10,7 +12,7 @@
   //   T forest / tree wall
   //   # stone wall / ridge
   //   ^ roof
-  //   _ village floor
+  //   _ village / interior stone floor
   //   C cave entrance
   //   * flowers
   //   = harvest field
@@ -58,8 +60,8 @@
     "T...._^^^^^_______...................TTTTTTTTTTTTTTTTTTT+++++++++TTTTTT........T",
     "T...._#___#__^^^^^...................TTTTTTTTTTTTTTTTTTT+++T++++TTTTTTT........T",
     "T...._#___#__#___#...................TTTTTTTTTTTTTTTTTT++++++++++TTTTTTT.......T",
-    "T...._#___#__#___#..................TTTTTTTTTTTTTTTTTTT++++++++++TTTTTT........T",
-    "T...._##_##__#___#......====.........TTTTTTTTTTTTTTTTTT++++++++++TTTTTT........T",
+    "T...._#___#______#..................TTTTTTTTTTTTTTTTTTT++++++++++TTTTTT........T",
+    "T...._##_##______#......====.........TTTTTTTTTTTTTTTTTT++++++++++TTTTTT........T",
     "T....________##_##......====.........TTTTTTTTTTTTTTTTTT++++++++TTTTTTTT........T",
     "T....__________+++......====.........TTTTTTTTTTTTTTTT++++++++TTTTTTTTT.........T",
     "T....__________+++......====..........TTTTTTTTTTTTT++++++++TTTTTTTTTT..........T",
@@ -67,7 +69,7 @@
     "T....__+++++++++++++++++++++++++++++++++++++++++++++++++++++..T................T",
     "T....__+++++++++++++++++++++++++++++++++++++++++++++++++++++++.................T",
     "T....__________+++...++......................~~T~.......++++++++...............T",
-    "T....__^^^^^^__+++...++......................~~~~.........++++++++.............T",
+    "T....__^^^_^^__+++...++......................~~~~.........++++++++.............T",
     "T....__#____#_____...++......................~~~~...........++++++++...........T",
     "T....__#____#_____...++++.........*****......~~~~.............++++++++.........T",
     "T....__###_##_____.....+++++......*****.......~~~~..........====++++++++.......T",
@@ -91,20 +93,20 @@
 
   const EAST_EXPANSION = [
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
-    "+.................T.TTTT.TTTT.TTTT.TTTTT",
-    "+..................TTTT.TTTT.TTTT.TTTT.T",
-    "+.................TTTT.TTTT.TTTT.TTTT.TT",
-    "+.................TTT.TTTT.TTTT.TTTT.TTT",
-    "+.................TT.TTTT.TTTT.TTTT.TTTT",
-    "+.###..##.........T.TTTT.TTTT.TTTT.TTTTT",
-    "+.###..##..........TTTT.TTTT.TTTT.TTTT.T",
-    "+.##....#.........TTTT.TTTT.TTTT.TTTT.TT",
-    "+.##....#.........TTT.TTTT.TTTT.TTTT.TTT",
-    "+.###..##.........TT.TTTT.TTTT.TTTT.TTTT",
-    "+.###++##.........T.TTTT.TTTT.TTTT.TTTTT",
-    "+.###++##..........TTTT.TTTT.TTTT.TTTT.T",
-    "+.................TTTT.TTTT.TTTT.TTTT.TT",
-    "+.................TTT.TTTT.TTTT.TTTT.TTT",
+    "T######################################T",
+    "T#C+++++++____#______+++++++__________#T",
+    "T#+++++++____#______+#####+++_________#T",
+    "T#+++####++++#______+#___#++++________#T",
+    "T#+++#__#++++++++++++#___#+++++_______#T",
+    "T#+++#__######+++++++#___#+++++_______#T",
+    "T#+++____#____#+++++++___#++####++____#T",
+    "T#+++____#____#+++++++___#++#__#++____#T",
+    "T###++++#____#####++++++#++#__#++_____#T",
+    "T#__#++++#________++++++++++#__#++____#T",
+    "T#__#++++######____++++++####__#++____#T",
+    "T#__++++++++++#____++++++++++++#++____#T",
+    "T#__++++++++++#____+++++########++____#T",
+    "T######################################T",
     "++++++++++++++....TT.TTTT.TTTT.TTTT.TTTT",
     "++++++++++++++....T.TTTT.TTTT.TTTT.TTTTT",
     "++++++++++++++.....TTTT.TTTT.TTTT.TTTT.T",
@@ -239,8 +241,8 @@
     "TTTTTTTTTTTTTTTTTT+++++...............................~~~~~~~~~~~~................+++++++++++++++++++++++..............T",
     "TTTTTTTTTTTTTTTTTTTT____^^^^^_____+++++____^^^^^......~~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
     "TTTTTTTTTTTTTTTTTTTT____^___^_____+++++____^___^..#####~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
-    "TTTTTTTTTTTTTTTTTTT.____^___^__+++++++++___^___^..#___#~~~~~~~~~~~................++++++__^^^^^_+++++++____............T",
-    "TTTTTTTTTTTTTTTTTT..++++_____++#########++_____+.+#_+_#~~~~~~~~~~~................++++++__^^^^^_+++++^^____............T",
+    "TTTTTTTTTTTTTTTTTTT.____^___^__+++++++++___^____..#___#~~~~~~~~~~~................++++++__+++++++++++++____............T",
+    "TTTTTTTTTTTTTTTTTT..++++_____++#########++_____+.+#_+_#~~~~~~~~~~~................++++++__+++++++++++^^____............T",
     "TTTTTTTTTTTTTTTTT...++++_____++#_______#++_____+.+#___#~~~~~~~~~~~....*..*..*..*..*+++++__^^^^^_+++++^^____............T",
     "TTTTTTTTTTTTTTTT....++++_____++#___+___#++_____+.+##+##~~~~~~~~~~~....*..*..*..*..*.....__^^^^^_+++++^^____............T",
     "TTTTTTTTTTTTTTTT....+++++++++++#___+___#+++++++++++++++++++++++++++++++++++++++++++++...........+++++..................T",
@@ -254,12 +256,556 @@
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
   ];
 
+  const FROST_GATE_ROW = "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT+++++++TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT";
+
+  const CHAPTER4_EXPANSION = [
+    "T.............................................................................+++++++..................................T",
+    "T.TTTTTTTT..........................~~~~~~~~~.................................+++++++..................................T",
+    "T.TTTTTTTT........=======...........~~~~~~~~~.=======.........................+++++++..................................T",
+    "T.TT..............=======...........~~~~~~~~~.=======.........................+++++++..................................T",
+    "T.TT..............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++......T",
+    "T.TT...................++.........++~~~~~~+++............++..........+.................+...............++..............T",
+    "T.TTTTTTTT.._______________________.~~~~~~~~~.............+.............TTTTTTT.........................+..............T",
+    "T.TTTTTTTT..__^^^^^^^_____^^^^^^^__.~~~~~~~~~.....########C############.TTTTTTT.............###########++++##########..T",
+    "T.TTTTTTTT..__^^^^^^^_____^^^^^^^__.~~~~~~~~~.....########+############.TTTTTTT.********....###########++++##########..T",
+    "T.TTTTTTTT.._______________________.~~~~~~~~~.....+#______+_____+____##.TTTTTTT.********....##_____________________##..T",
+    "T.TTTTTTTT.._______________________.~~~~~~~~~.....+#______+_____+____##.TTTTTTT.********....+#_____________________##..T",
+    "T.TTTTTTTT.._______________________.~~~~~~~~~.....+#+++++++++++++++++##.TTTTTTT.............+#+++++++++++++++++++++##..T",
+    "T.TTTTTTTT..________++++++++++++++++++++++++++++++##______+_____+____##++++++++++++++++++++++#_____________________##..T",
+    "T.TTTTTTTT.........................+~~~~~~~~~....+##______+_____+____##.TTTTTTT...........++##_____________________##..T",
+    "T...................................~~~~~~~~~.....#####################.....................#########################..T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+  ];
+
+  // Fixed, human-editable coastlines. Move/add polygon points to reshape the
+  // continents without touching gameplay code or returning to random terrain.
+  const WORLD_LANDMASSES = [
+    {
+      id: "western-continent",
+      preserveExisting: true,
+      points: [[18, 2], [38, 1], [56, 5], [73, 1], [119, 1], [119, 35], [119, 45], [119, 56], [116, 70], [111, 79], [118, 91], [115, 105], [119, 121], [115, 136], [119, 148], [118, 162], [98, 171], [84, 181], [65, 182], [49, 177], [33, 171], [18, 163], [9, 151], [4, 137], [7, 122], [2, 106], [5, 91], [2, 75], [6, 60], [3, 44], [7, 29], [5, 16]],
+    },
+    {
+      id: "azure-wind-island",
+      tile: ".",
+      points: [[151, 24], [166, 25], [179, 32], [188, 44], [190, 58], [186, 72], [190, 88], [187, 102], [191, 118], [187, 134], [190, 150], [185, 166], [190, 182], [184, 199], [174, 214], [158, 221], [142, 220], [128, 214], [116, 205], [119, 191], [127, 178], [124, 163], [130, 149], [126, 134], [132, 120], [128, 104], [132, 91], [127, 76], [132, 60], [129, 47], [138, 34]],
+    },
+    {
+      id: "southwestern-shrine-island",
+      tile: ".",
+      points: [[27, 195], [43, 190], [59, 194], [72, 200], [87, 207], [93, 217], [83, 222], [65, 222], [50, 219], [36, 223], [22, 218], [17, 207]],
+    },
+    {
+      id: "middle-sea-isle",
+      tile: ".",
+      points: [[96, 186], [108, 188], [117, 198], [120, 211], [113, 220], [101, 217], [94, 205]],
+    },
+    {
+      id: "sunrise-continent",
+      tile: ".",
+      points: [[215, 14], [233, 16], [247, 28], [253, 45], [250, 61], [254, 78], [251, 95], [254, 112], [249, 129], [253, 146], [247, 166], [234, 181], [216, 184], [201, 176], [195, 160], [198, 143], [193, 126], [198, 108], [194, 91], [199, 74], [195, 58], [201, 41], [202, 26]],
+    },
+    {
+      id: "ember-archipelago",
+      tile: ".",
+      points: [[207, 195], [224, 188], [242, 194], [253, 207], [251, 226], [243, 244], [225, 253], [205, 249], [191, 237], [189, 220], [196, 205]],
+    },
+    {
+      id: "north-sea-isle",
+      tile: ".",
+      points: [[139, 6], [151, 3], [165, 7], [170, 16], [162, 23], [146, 21], [135, 15]],
+    },
+  ];
+
+  // Fixed, human-editable geography. Each feature is a named polyline with a
+  // tile and width. Terrain is painted first; roads are carved last.
+  const GEOGRAPHY_FEATURES = {
+    terrain: [
+      { id: "legacy-north-seam-valley", tile: ".", width: 5, points: [[5, 69], [28, 68], [48, 71], [69, 72], [91, 69], [115, 73]] },
+      { id: "legacy-frostline-valley", tile: ".", width: 4, points: [[7, 142], [29, 145], [51, 142], [75, 146], [96, 142], [115, 146]] },
+      { id: "skyspine-west-ridge", tile: "#", width: 4, points: [[3, 74], [10, 76], [16, 80], [21, 86], [25, 94]] },
+      { id: "skyspine-east-ridge", tile: "#", width: 3, points: [[36, 73], [42, 76], [47, 81], [53, 86], [60, 94]] },
+      { id: "highland-south-ridge", tile: "#", width: 3, points: [[28, 97], [35, 100], [42, 105], [49, 111]] },
+      { id: "highland-pine-belt", tile: "T", width: 4, points: [[5, 91], [11, 96], [15, 103], [17, 111]] },
+      { id: "moon-west-woods", tile: "T", width: 3, points: [[27, 111], [32, 115], [36, 119]] },
+      { id: "black-sun-crags", tile: "#", width: 2, points: [[51, 128], [57, 133], [64, 137], [71, 142]] },
+      { id: "world-river", tile: "~", width: 2, points: [[68, 72], [70, 79], [67, 87], [69, 95], [62, 102], [63, 110], [60, 118], [61, 126], [60, 134], [61, 142]] },
+      { id: "east-crown-range", tile: "#", width: 4, points: [[153, 38], [163, 52], [168, 69], [160, 88], [166, 108], [160, 127], [170, 146], [166, 166], [157, 188]] },
+      { id: "east-north-forest", tile: "T", width: 6, points: [[137, 43], [144, 53], [145, 64]] },
+      { id: "east-coast-forest", tile: "T", width: 4, points: [[184, 74], [185, 91], [181, 108], [185, 126]] },
+      { id: "east-river", tile: "~", width: 1, points: [[181, 50], [184, 67], [180, 83], [183, 101], [177, 120], [180, 137]] },
+      { id: "east-north-meadows", tile: "=", width: 5, points: [[169, 35], [177, 42], [183, 52]] },
+      { id: "east-west-terraces", tile: "=", width: 4, points: [[136, 105], [141, 116], [143, 129]] },
+      { id: "east-south-heath", tile: "*", width: 4, points: [[179, 148], [183, 159], [178, 173]] },
+      { id: "east-cape-forest", tile: "T", width: 5, points: [[144, 174], [149, 188], [141, 200]] },
+      { id: "east-valley-lake", tile: "~", width: 3, points: [[137, 143], [141, 150], [139, 157]] },
+      { id: "east-south-meadows", tile: "=", width: 4, points: [[171, 184], [176, 195], [169, 207]] },
+      { id: "east-northwest-foothills", tile: "T", width: 3, points: [[132, 73], [137, 82], [135, 94]] },
+      { id: "sunrise-crown-range", tile: "#", width: 4, points: [[224, 24], [235, 39], [241, 57], [232, 76], [238, 96], [229, 116], [239, 139], [234, 160]] },
+      { id: "sunrise-western-forest", tile: "T", width: 5, points: [[203, 43], [205, 59], [201, 78], [204, 98]] },
+      { id: "sunrise-eastern-forest", tile: "T", width: 4, points: [[247, 83], [247, 101], [244, 119]] },
+      { id: "sunrise-river", tile: "~", width: 1, points: [[247, 32], [249, 50], [245, 69], [249, 87], [245, 107], [248, 126]] },
+      { id: "sunrise-north-fields", tile: "=", width: 5, points: [[237, 24], [246, 35], [249, 47]] },
+      { id: "sunrise-valley-fields", tile: "=", width: 4, points: [[207, 111], [213, 126], [207, 142]] },
+      { id: "sunrise-south-heath", tile: "*", width: 4, points: [[243, 147], [247, 158], [240, 171]] },
+      { id: "ember-ridge", tile: "#", width: 4, points: [[201, 211], [215, 219], [230, 216], [244, 226]] },
+      { id: "ember-grove", tile: "T", width: 5, points: [[205, 231], [218, 244]] },
+      { id: "north-sea-grove", tile: "T", width: 3, points: [[143, 12], [153, 9], [163, 14]] },
+      { id: "western-cape-fields", tile: "=", width: 4, points: [[76, 165], [88, 168], [100, 164]] },
+      { id: "south-island-grove", tile: "T", width: 4, points: [[31, 207], [43, 216]] },
+      { id: "south-cape-woods", tile: "T", width: 4, points: [[31, 168], [45, 177], [58, 181]] },
+      { id: "south-island-ridge", tile: "#", width: 3, points: [[39, 202], [52, 207], [66, 205], [78, 214]] },
+      { id: "frostline-west-woods", tile: "T", width: 2, points: [[6, 144], [17, 147], [28, 145]] },
+      { id: "frostline-central-woods", tile: "T", width: 2, points: [[41, 143], [53, 146], [64, 144]] },
+      { id: "frostline-east-crags", tile: "#", width: 2, points: [[80, 145], [92, 142], [105, 145], [116, 143]] },
+    ],
+    roads: [
+      { id: "village-north-road", tile: "+", width: 1, points: [[10, 48], [14, 42], [18, 34], [17, 25], [11, 13]] },
+      { id: "village-east-road", tile: "+", width: 1, points: [[12, 49], [24, 46], [37, 42], [49, 36], [58, 27], [69, 18]] },
+      { id: "dragon-cave-branch", tile: "+", width: 1, points: [[49, 36], [48, 28], [51, 18]] },
+      { id: "southwest-camp-road", tile: "+", width: 1, points: [[10, 51], [18, 56], [31, 59], [43, 58]] },
+      { id: "river-fork-road", tile: "+", width: 1, points: [[37, 42], [48, 46], [60, 51], [72, 57], [86, 59], [102, 58], [116, 65]] },
+      { id: "northern-forest-loop", tile: "+", width: 1, points: [[11, 13], [20, 16], [31, 20], [43, 24], [58, 27]] },
+      { id: "highland-main-road", tile: "+", width: 2, points: [[30, 71], [31, 78], [38, 83], [48, 84], [58, 83], [69, 84], [81, 84], [94, 82], [102, 82]] },
+      { id: "highland-valley-road", tile: "+", width: 1, points: [[30, 71], [34, 82], [38, 91], [48, 94], [58, 92], [69, 90], [82, 91], [96, 90], [103, 89]] },
+      { id: "highland-ridge-shortcut", tile: "+", width: 1, points: [[32, 73], [40, 76], [49, 78], [58, 78], [67, 82], [79, 84]] },
+      { id: "moon-east-road", tile: "+", width: 2, points: [[103, 94], [102, 103], [103, 111], [102, 116]] },
+      { id: "moon-west-pilgrim-road", tile: "+", width: 1, points: [[103, 94], [94, 98], [86, 101], [76, 103], [69, 109], [81, 113], [94, 116], [102, 116]] },
+      { id: "mist-shrine-branch", tile: "+", width: 1, points: [[76, 103], [71, 110], [68, 117], [72, 122]] },
+      { id: "black-market-north-road", tile: "+", width: 2, points: [[102, 119], [98, 124], [98, 129], [88, 132], [78, 132], [68, 134], [58, 132], [48, 132]] },
+      { id: "black-market-south-road", tile: "+", width: 1, points: [[48, 138], [58, 140], [70, 140], [80, 140], [88, 135], [98, 133]] },
+      { id: "obsidian-bridge-road", tile: "+", width: 1, points: [[48, 135], [54, 135], [61, 136], [68, 136], [75, 135], [82, 133], [88, 132]] },
+      { id: "east-harbor-road", tile: "+", width: 2, points: [[139, 87], [150, 88], [158, 80], [154, 68], [150, 54], [151, 45]] },
+      { id: "east-mountain-pass", tile: "+", width: 1, points: [[150, 88], [158, 91], [166, 92], [174, 87], [183, 82]] },
+      { id: "east-coast-road", tile: "+", width: 1, points: [[150, 88], [148, 106], [154, 121], [160, 139], [166, 157], [168, 170], [166, 188]] },
+      { id: "east-ridge-shortcut", tile: "+", width: 1, points: [[150, 88], [162, 103], [174, 116], [171, 133], [160, 139]] },
+      { id: "east-river-road", tile: "+", width: 1, points: [[183, 82], [184, 101], [178, 120], [181, 138], [170, 146]] },
+      { id: "east-west-coast-road", tile: "+", width: 1, points: [[150, 88], [141, 98], [136, 112], [140, 129], [147, 144], [155, 158], [168, 170]] },
+      { id: "east-north-lighthouse-loop", tile: "+", width: 1, points: [[150, 88], [140, 77], [136, 63], [141, 51], [150, 48]] },
+      { id: "east-south-cape-loop", tile: "+", width: 1, points: [[168, 170], [180, 176], [181, 190], [173, 202], [158, 210], [142, 211], [128, 205]] },
+      { id: "east-cape-crossing", tile: "+", width: 1, points: [[155, 158], [149, 172], [145, 188], [149, 202], [158, 210]] },
+      { id: "sunrise-ferry-road", tile: "+", width: 1, points: [[185, 102], [196, 92], [205, 72]] },
+      { id: "sunrise-main-road", tile: "+", width: 1, points: [[205, 72], [219, 73], [231, 87], [241, 102], [236, 118], [238, 129]] },
+      { id: "sunrise-north-loop", tile: "+", width: 1, points: [[205, 72], [207, 56], [217, 42], [229, 32], [240, 40]] },
+      { id: "sunrise-pilgrim-road", tile: "+", width: 2, points: [[214, 72], [220, 60], [229, 50], [237, 43]] },
+      { id: "sunrise-west-coast-road", tile: "+", width: 1, points: [[205, 72], [201, 90], [203, 109], [212, 127], [229, 130]] },
+      { id: "sunrise-ridge-shortcut", tile: "+", width: 1, points: [[219, 73], [230, 58], [243, 71], [241, 102]] },
+      { id: "sunspire-tower-road", tile: "+", width: 1, points: [[238, 129], [246, 128]] },
+      { id: "sunrise-south-road", tile: "+", width: 1, points: [[238, 129], [245, 148], [238, 166], [221, 175]] },
+      { id: "ember-causeway", tile: "+", width: 1, points: [[221, 175], [218, 192], [220, 207], [222, 226]] },
+      { id: "ember-island-loop", tile: "+", width: 1, points: [[222, 226], [207, 218], [199, 229], [212, 242], [230, 246], [244, 233], [242, 214], [222, 207]] },
+      { id: "western-cape-road", tile: "+", width: 2, points: [[24, 154], [35, 163], [46, 171], [61, 177], [78, 178], [96, 170], [112, 165]] },
+      { id: "south-island-bridge", tile: "+", width: 1, points: [[62, 180], [64, 190], [63, 200], [58, 205]] },
+      { id: "south-island-loop", tile: "+", width: 1, points: [[58, 205], [46, 207], [40, 214], [53, 217], [68, 212], [80, 216]] },
+      { id: "middle-isle-causeway", tile: "+", width: 1, points: [[96, 170], [98, 183], [101, 193], [108, 202], [116, 214]] },
+      { id: "frost-frontier-road", tile: "+", width: 1, points: [[24, 154], [42, 151], [64, 155], [83, 152], [103, 154], [108, 156]] },
+      { id: "frost-watchtower-branch", tile: "+", width: 1, points: [[24, 154], [34, 150], [43, 148]] },
+      { id: "frost-waystone-spur", tile: "+", width: 1, points: [[24, 154], [24, 148]] },
+      { id: "frost-waystone-plaza", tile: "+", width: 2, points: [[22, 148], [30, 148]] },
+    ],
+  };
+
+  const TERRAIN_DETAILS = [
+    { id: "grassland-camp", x: 20, y: 33, rows: ["....==....", "..****.."] },
+    { id: "river-fork-farm", x: 22, y: 50, rows: ["..==..***.."] },
+    { id: "river-fork-marker", x: 72, y: 50, rows: ["..==.."] },
+    { id: "smuggler-north-camp", x: 28, y: 96, rows: ["..==..**.."] },
+    { id: "smuggler-broken-wall", x: 72, y: 96, rows: ["..####.."] },
+    { id: "smuggler-thorn-field", x: 34, y: 100, rows: ["..****.."] },
+    { id: "smuggler-old-stall", x: 84, y: 100, rows: ["..==.."] },
+    { id: "regen-cave-ruin", x: 30, y: 104, rows: ["..####.."] },
+    { id: "regen-cave-garden", x: 78, y: 104, rows: ["..****.."] },
+    { id: "regen-side-supply", x: 34, y: 122, rows: ["..==.."] },
+    { id: "regen-moss-field", x: 58, y: 122, rows: ["..****.."] },
+    { id: "mist-shrine-court", x: 64, y: 118, rows: [
+      "....######++++######....",
+      "..##....++++++++....##..",
+      "..#..**..++++..**..#....",
+      "..#....++++++++....#....",
+      "..#....++++++++....#....",
+      "..#..++++++++++..#......",
+      "..#..**..++++..**..#....",
+      "..##....++++++++....##..",
+      "....######++++++++++....",
+    ] },
+    { id: "black-market-city", x: 15, y: 128, rows: [
+      "#####+++++########+++++###########",
+      "#^^^^_____#^^^^^^#_____#^^^^^____#",
+      "#^__^__+++#__++_#+++++#^___^_+++#",
+      "#____++++++++++++++++++++++++____#",
+      "#_+++++____+++++++____+++++++____#",
+      "#_+++++____+++++++____+++++++____#",
+      "#_++++++++++++++++++++++++++++++_#",
+      "#_+++++____+++++++____+++++++____#",
+      "#____++++++++++++++++++++++++____#",
+      "#_^^^__++++#^^^^^#++++__^^^^^___#",
+      "#_^_^__++++#^___^#++++__^___^___#",
+      "#_____+++++_______+++++__________#",
+      "#####+++++########+++++###########",
+      "....+++++..........+++++...........",
+      "....+++++..........+++++...........",
+    ] },
+    { id: "western-ferry-harbor", x: 108, y: 61, rows: [
+      "..####++++####..",
+      "..#___++++___#..",
+      "..#___++++___#..",
+      "..#___++++___#..",
+      "..#___++C+___#..",
+      "..#####+++####..",
+      "......++++......",
+      "......++++......",
+    ] },
+    { id: "east-harbor-city", x: 136, y: 78, rows: [
+      "######++++++##############",
+      "#^^^^#++++++#^^^^^^#_____#",
+      "#^__^#++++++#^____^#_____#",
+      "#____++++++++++++++++____#",
+      "#____++++______++++++____#",
+      "#_+++++++++____++++++++__#",
+      "#_+++++++++++++++++++++__#",
+      "#____++++______++++++____#",
+      "#____++++______++++++____#",
+      "#++C+++++++++++++++++++++#",
+      "#____++++______++++++____#",
+      "#^^^^#++++++#^^^^^^#_____#",
+      "######++++++##############",
+      "......++++++..............",
+      "......++++++..............",
+      "......++++++..............",
+      "......++++++..............",
+      "......++++++..............",
+    ] },
+    { id: "southwind-outpost", x: 157, y: 163, rows: [
+      "....###+++++###.......",
+      "...##__+++++__##......",
+      "..##_^^+++++^^_##.....",
+      "..#___++++++++__#.....",
+      "..#___++++++++__#.....",
+      "..#___++++++++__#.....",
+      "..#___++++++++__#.....",
+      "..#___++++++++__#.....",
+      "..#___++++++++__#.....",
+      "..##__++++++++_##.....",
+      "...###++++++++##......",
+      "......++++++++.........",
+      "......++++++++.........",
+      "......++++++++.........",
+    ] },
+    { id: "east-north-lighthouse", x: 146, y: 45, rows: [
+      "..#####..",
+      "..#___#..",
+      "..#_^_#..",
+      "..#_+_#..",
+      "..##+##..",
+      "....+....",
+    ] },
+    { id: "east-ridge-ruin", x: 163, y: 103, rows: [
+      "##++#####",
+      "#++++...#",
+      "#..+++..#",
+      "##..++###",
+    ] },
+    { id: "east-terrace-ruins", x: 134, y: 114, rows: [
+      "..##+++++###....",
+      "..#..++++..#....",
+      "..#..++++..#....",
+      "..##.++++.##....",
+      ".....++++.......",
+    ] },
+    { id: "east-south-camp", x: 151, y: 145, rows: [
+      "....==....",
+      "..==++==..",
+      "....++....",
+      "..**++**..",
+    ] },
+    { id: "east-cape-stones", x: 151, y: 188, rows: [
+      "..###+++###..",
+      "..#...+...#..",
+      "..##..+..##..",
+      ".....+++.....",
+    ] },
+    { id: "western-cape-farmstead", x: 82, y: 163, rows: [
+      "..=====..=====..",
+      "..=====..=====..",
+      "....++++++++....",
+      "....++++++++....",
+    ] },
+    { id: "south-island-shrine", x: 51, y: 207, rows: [
+      "..###+++###..",
+      "..#..+++..#..",
+      "..#..+++..#..",
+      "..###+++###..",
+    ] },
+    { id: "dawn-harbor-city", x: 202, y: 64, rows: [
+      "######++++++############",
+      "#^^^^#++++++#^^^^^#____#",
+      "#^__^#++++++#^___^#____#",
+      "#____++++++++++++++++__#",
+      "#____++++______++++++__#",
+      "#_+++++++++____+++++++_#",
+      "#_++++++++++++++++++++_#",
+      "#____++++______++++++__#",
+      "#++C+++++++++++++++++++#",
+      "#____++++______++++++__#",
+      "#^^^^#++++++#^^^^^#____#",
+      "######++++++############",
+      "......++++++............",
+      "......++++++............",
+      "......++++++............",
+    ] },
+    { id: "suncrest-city", x: 224, y: 120, rows: [
+      "########++++++#############",
+      "#^^^^^_#++++++#_^^^^^#____#",
+      "#^___^_#++++++#_^___^#____#",
+      "#______++++++++++++++++___#",
+      "#_+++++____++++++____++++_#",
+      "#_+++++____++++++____++++_#",
+      "#_+++++++++++++++++++++++_#",
+      "#_+++++____++++++____++++_#",
+      "#______++++++++++++++++___#",
+      "#_^__^_#++++++#_^___^#____#",
+      "#_^^^^_#++++++#_^^^^^#____#",
+      "#______++++++++++++++++___#",
+      "########++++++#############",
+      "........++++++.............",
+      "........++++++.............",
+    ] },
+    { id: "suncrest-arena-gate", x: 229, y: 131, rows: ["C"] },
+    { id: "suncrest-arena", x: 198, y: 1, rows: [
+      "############################",
+      "#C_________++++____________#",
+      "#_######_++____++_######__#",
+      "#_#....#_+_####_+_#....#__#",
+      "#_######_+______+_######__#",
+      "#________++++++++_________#",
+      "#___++++____##____++++____#",
+      "#___+__+____##____+__+____#",
+      "#___++++__________++++____#",
+      "#__________++++___________#",
+      "#_####_____+__+_____####__#",
+      "#_#..#_____++++_____#..#__#",
+      "#_####______________####__#",
+      "#________++++++++_________#",
+      "#___++++_+______+_++++____#",
+      "#___+__+_+_####_+_+__+____#",
+      "#___++++_+______+_++++____#",
+      "#________+++C++++_________#",
+      "#_####______________####__#",
+      "#_#..#______________#..#__#",
+      "#_________________________#",
+      "############################",
+    ] },
+    { id: "moon-archive-door", x: 110, y: 115, rows: ["C"] },
+    { id: "moon-archive", x: 122, y: 1, rows: [
+      "###################################",
+      "#C________________________________#",
+      "#_#######_#######_#######_#####__#",
+      "#_________________________________#",
+      "#___C_____________________________#",
+      "#_____++++______++++______++++___#",
+      "#_____+__+______+__+______+__+___#",
+      "#_____++++______++++______++++___#",
+      "#_________________________________#",
+      "#____####____++++++____####______#",
+      "#____#..#____+____+____#..#______#",
+      "#____####____++++++____####______#",
+      "#_________________________________#",
+      "#______+++++++____+++++++________#",
+      "#______+____#+____+#____+________#",
+      "#______+++++++____+++++++________#",
+      "#_________________________________#",
+      "#____####__________++++++________#",
+      "#____#..#__________+____+________#",
+      "#____####__________++++++________#",
+      "#_________________________________#",
+      "###################################",
+    ] },
+    { id: "sunspire-gate", x: 246, y: 128, rows: ["C"] },
+    { id: "sunspire-observatory", x: 160, y: 1, rows: [
+      "###################################",
+      "#C________________________________#",
+      "#_#######_#######_#######_#####__#",
+      "#_________________________________#",
+      "#___C_____________________________#",
+      "#_____++++______++++______++++___#",
+      "#_____+__+______+__+______+__+___#",
+      "#_____++++______++++______++++___#",
+      "#_________________________________#",
+      "#____####____++++++____####______#",
+      "#____#..#____+____+____#..#______#",
+      "#____####____++++++____####______#",
+      "#_________________________________#",
+      "#______+++++++____+++++++________#",
+      "#______+____#+____+#____+________#",
+      "#______+++++++____+++++++________#",
+      "#_________________________________#",
+      "#____####__________++++++________#",
+      "#____#..#__________+____+________#",
+      "#____####__________++++++________#",
+      "#_________________________________#",
+      "###################################",
+    ] },
+    { id: "sunrise-north-ruin", x: 232, y: 43, rows: [
+      "..##++++###..",
+      "..#..++...#..",
+      "..#..++...#..",
+      "..###++++##..",
+    ] },
+    { id: "sunrise-valley-shrine", x: 206, y: 108, rows: [
+      "..###+++###..",
+      "..#..+++..#..",
+      "..#..+++..#..",
+      "..###+++###..",
+    ] },
+    { id: "ember-island-sanctum", x: 216, y: 222, rows: [
+      "..####+++####..",
+      "..#...+++...#..",
+      "..#...+C+...#..",
+      "..##..+++..##..",
+      ".....+++++.....",
+    ] },
+    { id: "black-market-catacomb-door", x: 47, y: 130, rows: ["C"] },
+    { id: "frost-tower-doors", x: 43, y: 148, rows: ["C++C"] },
+    { id: "frost-watchtower-floors", x: 88, y: 18, rows: [
+      "###############T###############",
+      "#C____________#T#C____________#",
+      "#_#######_###_#T#_###########_#",
+      "#_____#_______#T#_____#_______#",
+      "#####_#_#####_#T#####_#_#####_#",
+      "#_____#_____#_#T#_____#_____#_#",
+      "#_#########_#_#T#_###_#####_#_#",
+      "#_________#___#T#_#_________#_#",
+      "#_#####_#_###_#T#_#_#######_#_#",
+      "#_#_____#_____#T#___#_____#___#",
+      "#_#_#########_#T###_#_###_###_#",
+      "#_#___________#T#___#___#_____#",
+      "#_###########_#T#_#####_#####_#",
+      "#____________C#T#_________C_CC#",
+      "###############T###############",
+    ] },
+    { id: "black-sun-thorn-field", x: 60, y: 136, rows: ["..****.."] },
+    { id: "black-sun-muster-ground", x: 68, y: 136, rows: ["..==.."] },
+    { id: "black-sun-bone-yard", x: 110, y: 136, rows: ["..**.."] },
+  ];
+
+  function applyTerrainDetails(rows) {
+    const detailed = rows.slice();
+    for (const detail of TERRAIN_DETAILS) {
+      for (let dy = 0; dy < detail.rows.length; dy += 1) {
+        const y = detail.y + dy;
+        const row = detailed[y];
+        if (!row) continue;
+        const chars = row.split("");
+        const pattern = detail.rows[dy];
+        for (let dx = 0; dx < pattern.length; dx += 1) {
+          const x = detail.x + dx;
+          if (x > 0 && x < chars.length - 1) chars[x] = pattern[dx];
+        }
+        detailed[y] = chars.join("");
+      }
+    }
+    return detailed;
+  }
+
+  function paintFeatureDisc(grid, cx, cy, radius, tile) {
+    for (let y = Math.floor(cy - radius); y <= Math.ceil(cy + radius); y += 1) {
+      if (y <= 0 || y >= grid.length - 1) continue;
+      for (let x = Math.floor(cx - radius); x <= Math.ceil(cx + radius); x += 1) {
+        if (x <= 0 || x >= grid[y].length - 1) continue;
+        if (Math.hypot(x - cx, y - cy) <= radius + 0.25) grid[y][x] = tile;
+      }
+    }
+  }
+
+  function paintFeatureLine(grid, feature) {
+    for (let index = 1; index < feature.points.length; index += 1) {
+      const [x1, y1] = feature.points[index - 1];
+      const [x2, y2] = feature.points[index];
+      const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+      for (let step = 0; step <= steps; step += 1) {
+        const t = steps === 0 ? 0 : step / steps;
+        paintFeatureDisc(
+          grid,
+          Math.round(x1 + (x2 - x1) * t),
+          Math.round(y1 + (y2 - y1) * t),
+          feature.width,
+          feature.tile,
+        );
+      }
+    }
+  }
+
+  function pointInPolygon(x, y, points) {
+    let inside = false;
+    for (let current = 0, previous = points.length - 1; current < points.length; previous = current, current += 1) {
+      const [currentX, currentY] = points[current];
+      const [previousX, previousY] = points[previous];
+      const crosses = ((currentY > y) !== (previousY > y))
+        && x < ((previousX - currentX) * (y - currentY)) / ((previousY - currentY) || 1) + currentX;
+      if (crosses) inside = !inside;
+    }
+    return inside;
+  }
+
+  function applyLandmassMask(rows) {
+    const source = rows.map((row) => row.split(""));
+    const masked = Array.from({ length: WORLD_HEIGHT }, () => Array(WORLD_WIDTH).fill("~"));
+    for (const landmass of WORLD_LANDMASSES) {
+      for (let y = 1; y < WORLD_HEIGHT - 1; y += 1) {
+        for (let x = 1; x < WORLD_WIDTH - 1; x += 1) {
+          if (!pointInPolygon(x + 0.5, y + 0.5, landmass.points)) continue;
+          masked[y][x] = landmass.preserveExisting ? source[y][x] : (landmass.tile || ".");
+        }
+      }
+    }
+    return masked.map((row) => row.join(""));
+  }
+
+  const LEGACY_PATH_PRESERVE_AREAS = [
+    [4, 38, 20, 57],
+    [24, 55, 36, 62],
+    [93, 51, 120, 70],
+    [88, 1, 120, 33],
+    [95, 84, 116, 96],
+    [93, 111, 113, 121],
+    [64, 117, 120, 145],
+    [14, 127, 51, 143],
+    [11, 147, 120, 159],
+  ];
+
+  function naturalizeLegacyPaths(rows) {
+    return rows.map((row, y) => {
+      const chars = row.split("");
+      for (let x = 1; x < Math.min(120, chars.length - 1); x += 1) {
+        if (chars[x] !== "+") continue;
+        const preserved = LEGACY_PATH_PRESERVE_AREAS.some(([x1, y1, x2, y2]) => x >= x1 && x <= x2 && y >= y1 && y <= y2);
+        if (!preserved) chars[x] = ".";
+      }
+      return chars.join("");
+    });
+  }
+
+  function applyGeographyFeatures(rows) {
+    const grid = rows.map((row) => row.split(""));
+    for (const feature of GEOGRAPHY_FEATURES.terrain) paintFeatureLine(grid, feature);
+    for (const feature of GEOGRAPHY_FEATURES.roads) paintFeatureLine(grid, feature);
+    return grid.map((row) => row.join(""));
+  }
+
+  function expandWorldCanvas(rows) {
+    const canvas = Array.from({ length: WORLD_HEIGHT }, () => Array(WORLD_WIDTH).fill("~"));
+    for (let y = 0; y < rows.length; y += 1) {
+      for (let x = 0; x < rows[y].length; x += 1) canvas[y][x] = rows[y][x];
+    }
+    return canvas.map((row) => row.join(""));
+  }
+
   function connectEastEdge(row, y) {
     const open = (y >= 15 && y <= 21) || (y >= 28 && y <= 35) || (y >= 49 && y <= 51) || (y >= 58 && y <= 66);
     return open ? `${row.slice(0, -1)}+` : row;
   }
 
-  const WORLD_MAP = [
+  const ASSEMBLED_WORLD = [
     ...BASE_MAP.map((row, y) => connectEastEdge(row, y) + EAST_EXPANSION[y]),
     ...SOUTH_EXPANSION.slice(0, -1),
     SOUTH_GATE_ROW,
@@ -267,8 +813,94 @@
     ECLIPSE_GATE_ROW,
     ...CHAPTER2_EXPANSION.slice(0, -1),
     VOID_GATE_ROW,
-    ...CHAPTER3_EXPANSION,
+    ...CHAPTER3_EXPANSION.slice(0, -1),
+    FROST_GATE_ROW,
+    ...CHAPTER4_EXPANSION,
   ];
+  const WORLD_MAP = applyTerrainDetails(applyGeographyFeatures(naturalizeLegacyPaths(applyLandmassMask(expandWorldCanvas(ASSEMBLED_WORLD)))));
+
+  const OVERVIEW_CLEAR_AREAS = [
+    { x1: 80, y1: 1, x2: 119, y2: 32, tile: "." },
+    { x1: 122, y1: 1, x2: 156, y2: 22, tile: "." },
+    { x1: 4, y1: 38, x2: 20, y2: 57, tile: "." },
+    { x1: 93, y1: 51, x2: 112, y2: 62, tile: "." },
+    { x1: 93, y1: 112, x2: 112, y2: 120, tile: "." },
+    { x1: 24, y1: 120, x2: 58, y2: 127, tile: "." },
+    { x1: 62, y1: 116, x2: 119, y2: 159, tile: "." },
+    { x1: 14, y1: 127, x2: 51, y2: 143, tile: "." },
+    { x1: 11, y1: 149, x2: 36, y2: 159, tile: "." },
+    { x1: 136, y1: 78, x2: 161, y2: 95, tile: "." },
+    { x1: 157, y1: 163, x2: 179, y2: 176, tile: "." },
+    { x1: 202, y1: 64, x2: 226, y2: 79, tile: "." },
+    { x1: 224, y1: 120, x2: 253, y2: 136, tile: "." },
+    { x1: 160, y1: 1, x2: 195, y2: 23, tile: "." },
+    { x1: 198, y1: 1, x2: 226, y2: 23, tile: "." },
+  ];
+
+  const OVERVIEW_TERRAIN = [
+    { id: "north-crown-range", tile: "#", width: 3, points: [[82, 8], [94, 12], [105, 18], [116, 25]] },
+    { id: "north-crown-pines", tile: "T", width: 3, points: [[83, 25], [94, 29], [108, 31]] },
+    { id: "eclipse-crown-ridge", tile: "#", width: 2, points: [[68, 120], [78, 124], [89, 122], [101, 126]] },
+    { id: "black-sun-highlands", tile: "#", width: 3, points: [[67, 136], [80, 140], [94, 138], [108, 145]] },
+    { id: "frost-frontier-pines", tile: "T", width: 3, points: [[42, 151], [55, 154], [70, 151]] },
+    { id: "frost-crown-range", tile: "#", width: 3, points: [[84, 151], [97, 154], [111, 157]] },
+    { id: "moon-archive-overview-range", tile: "#", width: 2, points: [[124, 10], [136, 4], [154, 13]] },
+    { id: "sunspire-overview-range", tile: "#", width: 2, points: [[163, 8], [175, 3], [189, 10]] },
+    { id: "suncrest-arena-overview-ring", tile: "#", width: 2, points: [[201, 14], [210, 5], [222, 13]] },
+  ];
+
+  const OVERVIEW_LANDMARKS = [
+    { id: "village", x: 10, y: 48, rows: [".^^^.", "^___^", "__+__", ".+++."] },
+    { id: "ash-hamlet", x: 102, y: 58, rows: [".^^^.", "^___^", "__+__", ".+++."] },
+    { id: "moon-camp", x: 102, y: 116, rows: [".^^^.", "^___^", "__+__", ".+++."] },
+    { id: "black-market", x: 35, y: 135, rows: [".^^^^^.", "^_____^", "__+++__", "^_____^", ".+++++."] },
+    { id: "black-fort", x: 98, y: 132, rows: [".#####.", "#^___^#", "#__+__#", ".##+##."] },
+    { id: "frost-haven", x: 24, y: 154, rows: [".^^^^^.", "^_____^", "__+++__", ".+++++."] },
+    { id: "east-harbor", x: 150, y: 86, rows: [".^^^^^.", "^_____^", "__+++__", "^_____^", ".+++++."] },
+    { id: "southwind-outpost", x: 168, y: 169, rows: [".#####.", "#^___^#", "#__+__#", ".##+##."] },
+    { id: "dawn-harbor", x: 214, y: 72, rows: [".^^^^^.", "^_____^", "__+++__", "^_____^", ".+++++."] },
+    { id: "suncrest-city", x: 238, y: 129, rows: [".^^^^^^^.", "^_______^", "__+++++__", "^_______^", "__+++++__", ".+++++++."] },
+    { id: "sunspire", x: 180, y: 10, rows: [".###.", "#_^_#", "#_C_#", ".#+#."] },
+    { id: "suncrest-arena", x: 212, y: 12, rows: [".###.", "#+++#", "#+C+#", ".###."] },
+    { id: "moon-archive", x: 140, y: 12, rows: [".###.", "#^.^#", "#.C.#", ".#+#."] },
+    { id: "ember-sanctum", x: 222, y: 226, rows: [".#####.", "#^___^#", "#__C__#", ".##+##."] },
+    { id: "dragon-cave", x: 51, y: 18, rows: [".###.", "#_C_#", ".+++."] },
+    { id: "old-tower", x: 104, y: 90, rows: [".###.", "#_^_#", "#_+_#", ".#+#."] },
+    { id: "eclipse-castle", x: 82, y: 123, rows: [".#####.", "#^___^#", "#__C__#", ".##+##."] },
+    { id: "black-sun-castle", x: 80, y: 140, rows: [".#####.", "#^___^#", "#__C__#", ".##+##."] },
+    { id: "frost-citadel", x: 108, y: 156, rows: [".#####.", "#^___^#", "#__C__#", ".##+##."] },
+  ];
+
+  function stampOverview(grid, landmark) {
+    const startY = landmark.y - Math.floor(landmark.rows.length / 2);
+    for (let dy = 0; dy < landmark.rows.length; dy += 1) {
+      const pattern = landmark.rows[dy];
+      const startX = landmark.x - Math.floor(pattern.length / 2);
+      for (let dx = 0; dx < pattern.length; dx += 1) {
+        const x = startX + dx;
+        const y = startY + dy;
+        if (x <= 0 || x >= WORLD_WIDTH - 1 || y <= 0 || y >= WORLD_HEIGHT - 1 || grid[y][x] === "~") continue;
+        grid[y][x] = pattern[dx];
+      }
+    }
+  }
+
+  function buildOverviewRows(rows) {
+    const grid = rows.map((row) => row.split(""));
+    for (const area of OVERVIEW_CLEAR_AREAS) {
+      for (let y = area.y1; y <= area.y2; y += 1) {
+        for (let x = area.x1; x <= area.x2; x += 1) {
+          if (grid[y]?.[x] && grid[y][x] !== "~") grid[y][x] = area.tile;
+        }
+      }
+    }
+    for (const feature of OVERVIEW_TERRAIN) paintFeatureLine(grid, feature);
+    for (const feature of GEOGRAPHY_FEATURES.roads) paintFeatureLine(grid, feature);
+    for (const landmark of OVERVIEW_LANDMARKS) stampOverview(grid, landmark);
+    return grid.map((row) => row.join(""));
+  }
+
+  const WORLD_OVERVIEW_MAP = buildOverviewRows(WORLD_MAP);
 
   const WORLD_OBJECTS = [
     { type: "npc", npcType: "elder", x: 9, y: 47, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
@@ -297,7 +929,7 @@
     { type: "npc", npcType: "porter", x: 99, y: 116, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
     { type: "npc", npcType: "guard", x: 105, y: 117, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "porter", x: 93, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
-    { type: "npc", npcType: "villager", x: 101, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 103, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
     { type: "npc", npcType: "porter", x: 31, y: 135, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
     { type: "npc", npcType: "guard", x: 21, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
     { type: "npc", npcType: "villager", x: 43, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
@@ -311,12 +943,94 @@
     { type: "npc", npcType: "guard", x: 47, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
     { type: "npc", npcType: "guard", x: 96, y: 114, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
     { type: "npc", npcType: "villager", x: 104, y: 59, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "guard", x: 23, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 25, y: 135, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 46, y: 134, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 17, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 20, y: 137, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 24, y: 140, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 29, y: 138, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 34, y: 140, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 40, y: 138, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 44, y: 139, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 48, y: 137, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 95, y: 54, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 109, y: 55, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 95, y: 115, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 109, y: 117, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 90, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 105, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 24, y: 153, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "frostSmith", x: 21, y: 154, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "porter", x: 16, y: 154, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 31, y: 151, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 33, y: 154, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 13, y: 150, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 21, y: 151, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 29, y: 154, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "healer", x: 150, y: 85, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "merchant", x: 155, y: 84, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "porter", x: 143, y: 87, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 157, y: 87, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 138, y: 82, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 159, y: 88, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 145, y: 83, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 151, y: 82, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 145, y: 90, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 153, y: 88, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 158, y: 83, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "frontier", x: 168, y: 169, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "porter", x: 164, y: 170, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 172, y: 170, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 160, y: 167, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 176, y: 171, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 164, y: 166, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 172, y: 167, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 161, y: 171, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "healer", x: 214, y: 72, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "merchant", x: 220, y: 70, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "porter", x: 207, y: 72, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 222, y: 74, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 203, y: 68, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 224, y: 73, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 210, y: 68, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 216, y: 67, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 211, y: 75, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 219, y: 76, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "healer", x: 238, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "merchant", x: 246, y: 126, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "frontier", x: 229, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "porter", x: 233, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 248, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 225, y: 124, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guard", x: 249, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 231, y: 124, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 239, y: 124, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 244, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 230, y: 133, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 249, y: 125, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "merchant", x: 242, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "merchant", x: 230, y: 126, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "merchant", x: 245, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guide", x: 235, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "guide", x: 228, y: 123, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "guard", x: 236, y: 126, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "guard", x: 249, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 232, y: 126, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 235, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 236, y: 132, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "up" },
+    { type: "npc", npcType: "villager", x: 247, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "villager", x: 227, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "right" },
+    { type: "npc", npcType: "villager", x: 234, y: 123, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "down" },
+    { type: "npc", npcType: "villager", x: 240, y: 128, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
+    { type: "npc", npcType: "guard", x: 245, y: 131, offsetX: 3, offsetY: 2, w: 10, h: 12, dir: "left" },
   ];
 
   globalThis.DRAGON_HUNTER_WORLD_MAP = {
-    width: 120,
-    height: 144,
+    width: WORLD_WIDTH,
+    height: WORLD_HEIGHT,
     rows: WORLD_MAP,
+    overviewRows: WORLD_OVERVIEW_MAP,
     objects: WORLD_OBJECTS,
   };
 })();

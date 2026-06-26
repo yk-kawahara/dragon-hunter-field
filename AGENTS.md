@@ -63,8 +63,9 @@ The current village -> Guardian -> Red Dragon route is **Chapter 1 scale**, not 
 
 Expand the game into a larger RPG while preserving density and purpose:
 
-* Expand the map size definition beyond the current `120x144` overworld.
+* The current overworld is `256x256`, organized as a western continent, 蒼風島, 日出大陸, southern islands, and 熾火群島. Expand again only when a named regional arc justifies it.
 * Do not create large empty terrain.
+* Read the world as geography, not a rectangle: preserve coastlines, mountain spines, valleys, rivers, ports, settlements, and multiple route silhouettes.
 * Add named regions, remote towns, dungeons, roads, bridges, caves, towers, castles, mines, ruins, and frontier bases.
 * Add monsters with behavior differences, not only stat/color changes.
 * Add equipment tiers, sidegrades, accessories, inventory decisions, and route preparation.
@@ -78,6 +79,10 @@ Expand the game into a larger RPG while preserving density and purpose:
 * Terrain edits belong in `src/data/maps/world.js`.
 * Continue using human-editable fixed map data.
 * Do not return to random/noise terrain generation.
+* Prefer named fixed geography features (ridges, rivers, roads, districts, and landmarks) over long straight bands or repeated rectangular wall corridors. Organic shapes may be assembled from explicit editable points/stamps, but must remain deterministic and human-authored.
+* Continental coastlines belong in the editable `WORLD_LANDMASSES` polygons. Do not recreate rectangular map borders or brush-stroke "sausage islands."
+* The whole-world map is cartographic, not a raw debug dump. Embedded interior floors must be represented as mountain, town, cave, tower, or castle landmarks instead of exposing their room mazes at overworld scale.
+* Major routes should usually offer a readable main road plus at least one safer/longer or riskier/rewarding alternative when space allows.
 * If map dimensions change, update map size definitions and dependent placement intentionally.
 * After terrain edits, regenerate:
   * `docs/world-map-preview.png`
@@ -109,6 +114,17 @@ Expand the game into a larger RPG while preserving density and purpose:
 * Danger should come from enemy behavior, damage, positioning, and area design, not sluggish controls or excessive walking.
 * Functional readability beats decoration.
 * The player should quickly understand where to heal, buy gear/items, get guidance, exit to danger, and check equipment effects.
+
+### Playtest-driven quality bar
+
+* Preserve contact combat, but increase action depth through weapon-specific reach, speed, movement, arcs, boss patterns, and readable evasion demands.
+* A weapon is not acceptable as a mere lower number. Sidegrades need a distinct attack profile or route purpose that remains useful after stronger gear appears.
+* Dungeon population must be local to the dungeon. Enemies behind unrelated exterior walls must not consume the dungeon's active spawn budget.
+* Avoid short box mazes and repeated wall corridors. New geography should read as mountains, highlands, coasts, islands, valleys, rivers, roads, ruins, or settlements with memorable silhouettes.
+* Future world expansion should include at least one major city with multiple services and distinct residents, not only small recovery camps.
+* NPC dialogue should vary by person, location, and progression where practical. Repeated generic lines across a town are a visible quality defect.
+* The quick-access UI must represent the real item system. Players should be able to assign owned consumable types to shortcuts instead of seeing a permanently fixed subset.
+* Add a readable whole-world map before geography grows beyond what route text can communicate.
 
 ## Verification
 

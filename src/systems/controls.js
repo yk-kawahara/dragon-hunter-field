@@ -22,16 +22,19 @@
       "contextAction",
       "dash",
       "useSelectedItem",
+      "useQuickItem",
       "cycleItem",
       "resetGame",
       "interact",
       "searchGround",
       "showStats",
       "toggleInventory",
+      "toggleWorldMap",
       "closeInventory",
       "moveInventory",
       "confirmInventory",
       "sellInventorySelection",
+      "assignInventoryQuickSlot",
       "closeShop",
       "moveShop",
       "confirmShop",
@@ -47,12 +50,13 @@
   }
 
   function command(context, name) {
-    const { interact, searchGround, useSelectedItem, showStats, saveGame } = requireControlsContext(context);
+    const { interact, searchGround, useSelectedItem, showStats, saveGame, toggleWorldMap } = requireControlsContext(context);
     if (name === "talk") interact();
     if (name === "search") searchGround();
     if (name === "items") useSelectedItem();
     if (name === "stats") showStats();
     if (name === "save") saveGame();
+    if (name === "map") toggleWorldMap();
   }
 
   function bindControls(context) {
@@ -62,14 +66,17 @@
       contextAction,
       dash,
       useSelectedItem,
+      useQuickItem,
       cycleItem,
       resetGame,
       selectItem,
       toggleInventory,
+      toggleWorldMap,
       closeInventory,
       moveInventory,
       confirmInventory,
       sellInventorySelection,
+      assignInventoryQuickSlot,
       closeShop,
       moveShop,
       confirmShop,
@@ -78,6 +85,13 @@
     window.addEventListener("keydown", (event) => {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "ShiftLeft", "ShiftRight"].includes(event.code)) {
         event.preventDefault();
+      }
+      if (state.worldMapOpen) {
+        if (event.code === "KeyP" || event.code === "Escape") {
+          event.preventDefault();
+          toggleWorldMap();
+        }
+        return;
       }
       if (state.shopOpen) {
         if (["ArrowUp", "ArrowDown", "Enter", "Space", "Escape", "KeyS"].includes(event.code)) {
@@ -90,7 +104,7 @@
         return;
       }
       if (state.inventoryOpen) {
-        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Space", "Escape", "KeyI", "KeyM", "KeyS"].includes(event.code)) {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Space", "Escape", "KeyI", "KeyM", "KeyS", "Digit1", "Digit2", "Digit3"].includes(event.code)) {
           event.preventDefault();
         }
         if (event.code === "ArrowUp") moveInventory(0, -1);
@@ -99,6 +113,7 @@
         if (event.code === "ArrowRight") moveInventory(1, 0);
         if (event.code === "Enter" || event.code === "Space") confirmInventory();
         if (event.code === "KeyS") sellInventorySelection();
+        if (["Digit1", "Digit2", "Digit3"].includes(event.code)) assignInventoryQuickSlot(Number(event.code.slice(-1)) - 1);
         if (event.code === "Escape" || event.code === "KeyI" || event.code === "KeyM") closeInventory();
         return;
       }
@@ -106,7 +121,9 @@
       if (event.code === "Enter" || event.code === "Space") contextAction();
       if (event.code === "ShiftLeft" || event.code === "ShiftRight") dash();
       if (event.code === "KeyH") useSelectedItem();
+      if (["Digit1", "Digit2", "Digit3"].includes(event.code)) useQuickItem(Number(event.code.slice(-1)) - 1);
       if (event.code === "KeyI" || event.code === "KeyM") toggleInventory();
+      if (event.code === "KeyP") toggleWorldMap();
       if (event.code === "KeyQ") cycleItem(-1);
       if (event.code === "KeyE") cycleItem(1);
       if (event.code === "KeyR" && state.gameOver) resetGame();
@@ -121,8 +138,8 @@
       button.addEventListener("click", () => command(context, button.dataset.command));
     });
 
-    document.querySelectorAll("[data-item]").forEach((button) => {
-      button.addEventListener("click", () => selectItem(button.dataset.item));
+    document.querySelectorAll("[data-quick-slot]").forEach((button) => {
+      button.addEventListener("click", () => useQuickItem(Number(button.dataset.quickSlot)));
     });
 
     document.querySelectorAll("[data-key], [data-keys]").forEach((button) => {

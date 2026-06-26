@@ -25,8 +25,9 @@ The game loads that file before `src/systems/map.js`.
 
 Change `WORLD_MAP` rows directly.
 
-Each row must be exactly 80 characters.
-There must be exactly 72 rows.
+The assembled world is currently 120 tiles wide and 160 tiles high.
+Base region rows and the named expansion blocks are combined in `world.js`, then
+`TERRAIN_DETAILS` applies small hand-authored landmarks and interior floors.
 
 Legend:
 
@@ -81,7 +82,8 @@ Use:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-map-preview.ps1
 ```
 
-The Node version updates the SVG preview only:
+The Node version updates both PNG and SVG from the fully assembled map, including
+`TERRAIN_DETAILS`:
 
 ```powershell
 $node='C:\Users\nanai\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'

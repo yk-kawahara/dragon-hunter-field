@@ -31,6 +31,12 @@
 
   const worldPx = (value) => value * WORLD_SCALE;
 
+  function accessoryActive(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories)) return player.equippedAccessories.includes(id);
+    if (player.equippedAccessory) return player.equippedAccessory === id;
+    return Boolean(player[legacyFlag]);
+  }
+
   function requirePlayerContext(context) {
     if (!context?.state || !context?.player) {
       throw new Error("player helpers require { state, player }");
@@ -210,15 +216,16 @@
     if (state.gameOver || player.hp <= 0 || player.dashCooldown > 0 || player.stamina < cost) return;
     const input = inputMoveVector(context);
     const dir = input.x || input.y ? input : facingVector(context);
+    const skyStep = accessoryActive(player, "sky", "skyCharm");
     player.stamina = Math.max(0, player.stamina - cost);
-    player.dashCooldown = 320;
-    player.invuln = Math.max(player.invuln, 260);
+    player.dashCooldown = skyStep ? 220 : 320;
+    player.invuln = Math.max(player.invuln, skyStep ? 300 : 260);
     player.step += 1;
-    for (let i = 0; i < 5; i += 1) {
+    for (let i = 0; i < (skyStep ? 7 : 5); i += 1) {
       moveActor(context, player, dir.x * worldPx(7), dir.y * worldPx(7));
       burst(player.x + player.w / 2 - dir.x * worldPx(4), player.y + player.h / 2 - dir.y * worldPx(4), "#6de4ff", 1);
     }
-    addRing(player.x + player.w / 2, player.y + player.h / 2, "#6de4ff", worldPx(18));
+    addRing(player.x + player.w / 2, player.y + player.h / 2, skyStep ? "#d9f7ff" : "#6de4ff", worldPx(skyStep ? 24 : 18));
   }
 
   globalThis.DRAGON_HUNTER_PLAYER = {

@@ -13,13 +13,10 @@ const ui = {
   exp: document.getElementById("expText"),
   weapon: document.getElementById("weaponText"),
   armor: document.getElementById("armorText"),
-  potion: document.getElementById("potionText"),
-  bomb: document.getElementById("bombText"),
-  ward: document.getElementById("wardText"),
   combo: document.getElementById("comboText"),
   scale: document.getElementById("scaleText"),
   zone: document.getElementById("zoneText"),
-  items: Array.from(document.querySelectorAll("[data-item]")),
+  items: Array.from(document.querySelectorAll("[data-quick-slot]")),
 };
 
 const startUi = {
@@ -182,6 +179,17 @@ function respawnAtVillage() {
   if (!state.guardianDefeated) state.spawnedGuardian = false;
   if (!state.wardenDefeated) state.spawnedWarden = false;
   if (!state.ashKnightDefeated) state.spawnedAshKnight = false;
+  if (!state.smugglerCaptainDefeated) state.spawnedSmugglerCaptain = false;
+  if (!state.regenSentinelDefeated) state.spawnedRegenSentinel = false;
+  if (!state.mistKeeperDefeated) state.spawnedMistKeeper = false;
+  if (!state.cryptWardenDefeated) state.spawnedCryptWarden = false;
+  if (!state.frostGolemDefeated) state.spawnedFrostGolem = false;
+  if (!state.towerWardenDefeated) state.spawnedTowerWarden = false;
+  if (!state.frostDragonDefeated) state.spawnedFrostDragon = false;
+  if (!state.solarWardenDefeated) state.spawnedSolarWarden = false;
+  if (!state.suncrestChampionDefeated) state.spawnedSuncrestChampion = false;
+  if (!state.sunspireKeeperDefeated) state.spawnedSunspireKeeper = false;
+  if (!state.emberDragonDefeated) state.spawnedEmberDragon = false;
   if (!state.eclipseDragonDefeated) state.spawnedEclipseDragon = false;
   if (!state.voidDragonDefeated) state.spawnedVoidDragon = false;
   if (!state.obsidianGolemDefeated) state.spawnedObsidianGolem = false;
@@ -310,6 +318,7 @@ const contexts = contextHelpers.createContextFactory({
   canChallengeDragon,
   guardianReady,
   nearestNpc,
+  nearestPortal,
   nearestChest,
   nearestDiscovery,
   playerNearCave,
@@ -323,6 +332,7 @@ const contexts = contextHelpers.createContextFactory({
   dashCost,
   weaponDamageMultiplier,
   armorDamageMultiplier,
+  shieldRuneCounterDamage,
   regenRate,
   refreshDerivedStats,
   say,
@@ -341,16 +351,19 @@ const contexts = contextHelpers.createContextFactory({
   contextAction,
   dash,
   useSelectedItem,
+  useQuickItem,
   cycleItem,
   resetGame,
   interact,
   searchGround,
   showStats,
   toggleInventory,
+  toggleWorldMap,
   closeInventory,
   moveInventory,
   confirmInventory,
   sellInventorySelection,
+  assignInventoryQuickSlot,
   closeShop,
   moveShop,
   confirmShop,
@@ -492,6 +505,10 @@ function armorDamageMultiplier(monster, pDot, source = "contact") {
   return combatHelpers.armorDamageMultiplier(contexts.combat(), monster, pDot, source);
 }
 
+function shieldRuneCounterDamage(pDot) {
+  return combatHelpers.shieldRuneCounterDamage(contexts.combat(), pDot);
+}
+
 function refreshDerivedStats() {
   return combatHelpers.refreshDerivedStats(contexts.combat());
 }
@@ -593,8 +610,8 @@ function updateMonsters(dt) {
 }
 
 // Projectile facade --------------------------------------------------------
-function shootProjectile(monster, target, angleOffset = 0) {
-  return projectileHelpers.shootProjectile(contexts.projectile(), monster, target, angleOffset);
+function shootProjectile(monster, target, angleOffset = 0, options = {}) {
+  return projectileHelpers.shootProjectile(contexts.projectile(), monster, target, angleOffset, options);
 }
 
 function updateProjectiles(dt) {
@@ -622,6 +639,11 @@ function resolveContact(monster) {
   if (player.guard > 0) hurt = Math.floor(hurt * 0.35);
 
   monster.hp -= hit;
+  const runeCounter = shieldRuneCounterDamage(pDot);
+  if (runeCounter > 0) {
+    monster.hp -= runeCounter;
+    addFloater(monster.x + monster.w / 2, monster.y - 7, `反${runeCounter}`, "#8dd7ff");
+  }
   monster.hurt = 120;
   addFloater(monster.x + monster.w / 2, monster.y, crit ? `${hit}!` : String(hit), crit ? "#ffd166" : "#ffffff");
   addSlash(monster.x + monster.w / 2, monster.y + monster.h / 2, player.dir, crit ? "#ffd166" : "#f8fbff");
@@ -754,6 +776,10 @@ function interact() {
 function nearestChest() {
   return actionHelpers.nearestChest(contexts.action());
 }
+
+function nearestPortal() {
+  return actionHelpers.nearestPortal(contexts.action());
+}
 function openChest(chest) {
   return actionHelpers.openChest(contexts.action(), chest);
 }
@@ -802,6 +828,10 @@ function useSelectedItem() {
   return rewardHelpers.useSelectedItem(contexts.reward());
 }
 
+function useQuickItem(slot) {
+  return rewardHelpers.useQuickItem(contexts.reward(), slot);
+}
+
 function usePotion() {
   return rewardHelpers.usePotion(contexts.reward());
 }
@@ -832,6 +862,10 @@ function toggleInventory() {
   return uiHelpers.toggleInventory(contexts.ui());
 }
 
+function toggleWorldMap() {
+  return uiHelpers.toggleWorldMap(contexts.ui());
+}
+
 function closeInventory() {
   return uiHelpers.closeInventory(contexts.ui());
 }
@@ -846,6 +880,10 @@ function confirmInventory() {
 
 function sellInventorySelection() {
   return uiHelpers.sellInventorySelection(contexts.ui());
+}
+
+function assignInventoryQuickSlot(slot) {
+  return uiHelpers.assignInventoryQuickSlot(contexts.ui(), slot);
 }
 
 function closeShop() {
@@ -1007,7 +1045,7 @@ function loop(now) {
   const dt = Math.min(40, now - state.last);
   state.last = now;
 
-  if (!state.gameOver) {
+  if (!state.gameOver && !state.worldMapOpen) {
     updatePlayer(dt);
     updateStoryEvents();
     updateRegionSpawns(dt);

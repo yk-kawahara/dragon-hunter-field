@@ -19,6 +19,9 @@
     TILE: WORLD_TILE,
     BASE_TILE,
     WORLD_SCALE,
+    MAP_W,
+    MAP_H,
+    SAFE_ZONES,
     HEAL_POINTS,
     TOWN_GATES,
     TREASURE_CHESTS,
@@ -34,9 +37,20 @@
     CHAPTER3_REQUIREMENTS,
     OBSIDIAN_GOLEM_SITE,
     OBSIDIAN_GOLEM_REQUIREMENTS,
+    FROST_GOLEM_SITE,
+    FROST_GOLEM_REQUIREMENTS,
+    FROST_DRAGON_SITE,
+    CHAPTER4_REQUIREMENTS,
+    SOLAR_WARDEN_SITE,
+    SUNCREST_CHAMPION_SITE,
+    SUNSPIRE_KEEPER_SITE,
+    EMBER_DRAGON_SITE,
+    CHAPTER5_REQUIREMENTS,
+    BOSS_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponAttackProfiles,
     armorTraits,
     weaponAttack,
     armorDefense,
@@ -230,6 +244,7 @@ function draw(context) {
 
   drawWorld(cam);
   drawWorldAtmosphere(cam);
+  drawCatacombDetails(cam);
   drawFieldDetails(cam);
   drawTownDetails(cam);
   drawFrontierCampDetails(cam);
@@ -237,6 +252,11 @@ function draw(context) {
   drawMoonCampDetails(cam);
   drawBlackMarketDetails(cam);
   drawBlackFortDetails(cam);
+  drawFrostHavenDetails(cam);
+  drawEastHarborDetails(cam);
+  drawSouthwindOutpostDetails(cam);
+  drawDawnHarborDetails(cam);
+  drawSuncrestCityDetails(cam);
   drawVillageRoleMarkers(cam);
   drawTravelMarkers(cam);
   drawHealCircle(cam);
@@ -250,6 +270,8 @@ function draw(context) {
   drawEclipseDragonSite(cam);
   drawObsidianGolemSite(cam);
   drawVoidDragonSite(cam);
+  drawFrostGolemSite(cam);
+  drawFrostDragonSite(cam);
   drawNpcs(cam);
   drawEntities(cam);
   drawEffects(cam);
@@ -260,13 +282,145 @@ function draw(context) {
   drawInfoPanel();
   drawShopOverlay();
   drawInventoryOverlay();
+  drawWorldMapOverlay();
 
   if (state.gameOver) drawOverlay("GAME OVER", "R");
-  if ((state.victory && !state.elderReported) || state.chapter2Victory || state.chapter3Victory) drawVictoryBanner();
+  if ((state.victory && !state.elderReported) || state.chapter2Victory || state.chapter3Victory || state.chapter4Victory || state.chapter5Victory) drawVictoryBanner();
   if (state.clearPanelOpen) drawEndingOverlay();
 
   ctx.restore();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function worldMapTileColor(tile) {
+  if (tile === TILE_WATER) return "#27698a";
+  if (tile === TILE_TREE) return "#1f6236";
+  if (tile === TILE_WALL) return "#5c626b";
+  if (tile === TILE_ROOF) return "#8c3f3f";
+  if (tile === TILE_FLOOR) return "#a49a7e";
+  if (tile === TILE_CAVE) return "#3a3146";
+  if (tile === TILE_PATH) return "#ad8752";
+  if (tile === TILE_FIELD) return "#8aa640";
+  if (tile === TILE_FLOWER) return "#55a953";
+  return "#3b914d";
+}
+
+const worldOverviewRows = globalThis.DRAGON_HUNTER_WORLD_MAP?.overviewRows;
+const worldOverviewTileByChar = {
+  ".": TILE_GRASS,
+  "+": TILE_PATH,
+  "~": TILE_WATER,
+  T: TILE_TREE,
+  "#": TILE_WALL,
+  "^": TILE_ROOF,
+  _: TILE_FLOOR,
+  C: TILE_CAVE,
+  "*": TILE_FLOWER,
+  "=": TILE_FIELD,
+};
+
+function worldOverviewTileAt(tx, ty) {
+  const character = worldOverviewRows?.[ty]?.[tx];
+  return worldOverviewTileByChar[character] ?? tileAt(tx, ty);
+}
+
+function drawWorldMapMarker(mapX, mapY, scale, tx, ty, color, size = 3) {
+  const x = Math.round(mapX + tx * scale);
+  const y = Math.round(mapY + ty * scale);
+  ctx.fillStyle = "#07111c";
+  ctx.fillRect(x - size, y - size, size * 2 + 1, size * 2 + 1);
+  ctx.fillStyle = color;
+  ctx.fillRect(x - size + 1, y - size + 1, Math.max(1, size * 2 - 1), Math.max(1, size * 2 - 1));
+}
+
+function currentWorldMapDestinationFor(stateArg, playerArg) {
+  if (stateArg?.chapter4Reported && !stateArg.solarWardenDefeated) {
+    return { site: SOLAR_WARDEN_SITE, label: "日輪砲台守" };
+  }
+  if (!stateArg?.bossDefeated && stateArg?.guardianDefeated && playerArg?.sealCrest && (playerArg.scales || 0) >= BOSS_REQUIREMENTS.scales) {
+    return { site: { x: 51, y: 15 }, label: "竜洞" };
+  }
+  return null;
+}
+
+function drawWorldMapOverlay() {
+  if (!state.worldMapOpen) return;
+  const panelX = 5;
+  const panelY = 5;
+  const panelW = W - 10;
+  const panelH = VIEW_H - 10;
+  const mapX = 11;
+  const mapY = 20;
+  const mapScale = Math.min(0.7, 86 / MAP_W, 111 / MAP_H);
+
+  ctx.fillStyle = "rgba(3, 8, 18, 0.97)";
+  ctx.fillRect(panelX, panelY, panelW, panelH);
+  ctx.strokeStyle = "#6de4ff";
+  ctx.strokeRect(panelX, panelY, panelW, panelH);
+  ctx.fillStyle = "#fff2a6";
+  ctx.font = "9px monospace";
+  ctx.textAlign = "left";
+  ctx.fillText("世界全体地図", 11, 15);
+
+  for (let ty = 0; ty < MAP_H; ty += 1) {
+    for (let tx = 0; tx < MAP_W; tx += 1) {
+      ctx.fillStyle = worldMapTileColor(worldOverviewTileAt(tx, ty));
+      ctx.fillRect(mapX + tx * mapScale, mapY + ty * mapScale, mapScale + 0.35, mapScale + 0.35);
+    }
+  }
+
+  for (const zone of SAFE_ZONES || []) {
+    drawWorldMapMarker(mapX, mapY, mapScale, (zone.x1 + zone.x2) / 2, (zone.y1 + zone.y2) / 2, "#74ff8f", 2);
+  }
+
+  const bosses = [
+    { site: { x: 51, y: 15 }, defeated: state.bossDefeated },
+    { site: ECLIPSE_DRAGON_SITE, defeated: state.eclipseDragonDefeated },
+    { site: VOID_DRAGON_SITE, defeated: state.voidDragonDefeated },
+    { site: FROST_DRAGON_SITE, defeated: state.frostDragonDefeated },
+    { site: SUNCREST_CHAMPION_SITE, defeated: state.suncrestChampionDefeated },
+    { site: SUNSPIRE_KEEPER_SITE, defeated: state.sunspireKeeperDefeated },
+    { site: EMBER_DRAGON_SITE, defeated: state.emberDragonDefeated },
+  ];
+  for (const boss of bosses) {
+    drawWorldMapMarker(mapX, mapY, mapScale, boss.site.x, boss.site.y, boss.defeated ? "#69727c" : "#ff5f5f", 2);
+  }
+
+  const destination = currentWorldMapDestinationFor(state, player);
+  if (destination?.site) {
+    drawWorldMapMarker(mapX, mapY, mapScale, destination.site.x, destination.site.y, "#ffe66d", 4);
+  }
+
+  const playerTileX = (player.x + player.w / 2) / WORLD_TILE;
+  const playerTileY = (player.y + player.h / 2) / WORLD_TILE;
+  drawWorldMapMarker(mapX, mapY, mapScale, playerTileX, playerTileY, "#ffffff", 3);
+
+  const infoX = 105;
+  const regionNames = {
+    grassland: "始まりの草原", north: "北森", east: "東の森", mine: "廃鉱山", cave: "竜洞",
+    ash: "灰の街道", highland: "天脊高原", windCoast: "蒼風海岸", eastHighland: "蒼風島高原", southIsles: "南岬群島", dawnCoast: "黎明海岸", sunriseHighland: "日出高原", emberIsles: "熾火群島", tower: "古塔", moon: "月影廃墟", eclipse: "月蝕城",
+    obsidian: "黒曜地帯", void: "黒陽城", undercity: "地下墓所", frost: "霜原",
+    frostCave: "氷窟", frostCitadel: "霜冠城", frostTower1: "霜見塔一階", frostTower2: "霜見塔二階", suncrestArena: "陽冠闘技場", sunspire: "日鏡塔",
+  };
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "8px monospace";
+  ctx.fillText(`現在地: ${regionNames[currentRegion()] || "辺境"}`, infoX, 28);
+  ctx.fillStyle = "#74ff8f";
+  ctx.fillText("■ 安全な拠点", infoX, 43);
+  ctx.fillStyle = "#ff6b6b";
+  ctx.fillText("■ 未討伐の大ボス", infoX, 55);
+  ctx.fillStyle = "#69727c";
+  ctx.fillText("■ 討伐済み", infoX, 67);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("□ 現在地", infoX, 79);
+  ctx.fillStyle = "#ffe66d";
+  ctx.fillText("■ 現在目的地", infoX, 91);
+  ctx.fillStyle = "#d7e2ea";
+  ctx.fillText(destination ? `次: ${destination.label}` : "次: 旅メモを確認", infoX, 103);
+  ctx.fillText("西方: 村 / 黒市 / 霜原", infoX, 115);
+  ctx.fillText("東方: 日出大陸 / 熾火群島", infoX, 126);
+  ctx.fillStyle = "#8dd7ff";
+  ctx.fillText("P / Esc: 閉じる", infoX, 137);
 }
 
 function drawInfoPanel() {
@@ -339,7 +493,7 @@ function drawShopOverlay() {
     ctx.fillText(selectedRow.available === false ? (selectedRow.lockedReason || selectedRow.detail || "") : (selectedRow.detail || ""), x + 7, y + h - 17, w - 14);
   }
   ctx.fillStyle = "#8dd7ff";
-  ctx.fillText("↑↓選択  Enter:買う  Esc/S:閉じる", x + 7, y + h - 7);
+  ctx.fillText(selectedRow?.type === "shieldRune" ? "↑↓選択  Enter:刻む  Esc/S:閉じる" : "↑↓選択  Enter:買う  Esc/S:閉じる", x + 7, y + h - 7);
 }
 
 function drawInventoryOverlay() {
@@ -394,7 +548,10 @@ function drawInventoryOverlay() {
 
   ctx.fillStyle = "#8dd7ff";
   ctx.font = "7px monospace";
-  ctx.fillText("←→カテゴリ  ↑↓選択  Enter:使う/装備  S:売る  Esc:閉じる", x + 7, y + h - 7);
+  const help = state.inventoryTab === "items"
+    ? "←→分類 ↑↓選択 Enter:現在枠へ登録 1-3:枠指定 S:売る"
+    : "←→分類  ↑↓選択  Enter:装備  S:売る  Esc:閉じる";
+  ctx.fillText(help, x + 7, y + h - 7);
 }
 
 function inventoryRenderRows(tab) {
@@ -406,7 +563,7 @@ function inventoryRenderRows(tab) {
   if (tab === "items") {
     return itemOrder.map((id) => ({
       name: itemNames[id] || id,
-      detail: `${itemRenderDetails[id] || ""} x${playerItemCount(id)}`,
+      detail: `${itemRenderDetails[id] || ""} x${playerItemCount(id)}${player.quickItems?.includes(id) ? ` 短縮${player.quickItems.indexOf(id) + 1}` : ""}`,
       sell: itemSellValues[id] || 0,
     }));
   }
@@ -414,7 +571,7 @@ function inventoryRenderRows(tab) {
     const owned = Array.isArray(player.ownedWeapons) ? player.ownedWeapons : [player.weapon || 0];
     return owned.map((rank) => ({
       name: weaponNames[rank] || `武器${rank}`,
-      detail: `${weaponTraits[rank] || ""} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - currentAttack)})`,
+      detail: `${weaponAttackProfiles[rank]?.style || weaponTraits[rank] || ""} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - currentAttack)})`,
       sell: weaponSellValues[rank] || 0,
       equipped: player.weapon === rank,
     }));
@@ -464,7 +621,34 @@ function drawWorldAtmosphere(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
 
-  if (ty >= 128 && tx <= 58) {
+  if (tx >= 88 && tx <= 118 && ty >= 18 && ty <= 32) {
+    ctx.fillStyle = "rgba(42, 74, 96, 0.38)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 14; i += 1) {
+      const x = (i * 31 + Math.floor(time / 140)) % W;
+      const y = (i * 19 + Math.floor(time / 210)) % VIEW_H;
+      ctx.fillStyle = i % 3 ? "#d9f7ff" : "#9de8ff";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (ty >= 144) {
+    ctx.fillStyle = "rgba(190, 232, 248, 0.22)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 18; i += 1) {
+      const x = (i * 23 + Math.floor(time / 75)) % W;
+      const y = (i * 31 + Math.floor(time / 120)) % VIEW_H;
+      ctx.fillStyle = i % 3 ? "#d9f7ff" : "#8dd7ff";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) {
+    ctx.fillStyle = "rgba(18, 9, 14, 0.46)";
+    ctx.fillRect(0, 0, W, VIEW_H);
+    for (let i = 0; i < 12; i += 1) {
+      const x = (i * 29 + Math.floor(time / 180)) % W;
+      const y = (i * 17 + Math.floor(time / 240)) % VIEW_H;
+      ctx.fillStyle = i % 3 ? "#d7b26d" : "#d78ab7";
+      ctx.fillRect(x, y, 1, 1);
+    }
+  } else if (ty >= 128 && tx <= 58) {
     ctx.fillStyle = "rgba(16, 14, 20, 0.28)";
     ctx.fillRect(0, 0, W, VIEW_H);
     for (let i = 0; i < 16; i += 1) {
@@ -510,6 +694,28 @@ function drawWorldAtmosphere(cam) {
       ctx.fillRect(x, y, 1, 1);
     }
   }
+}
+
+function drawCatacombDetails(cam) {
+  const tx = worldTileX(player.x + player.w / 2);
+  const ty = worldTileY(player.y + player.h / 2);
+  if (tx < 80 || tx > 119 || ty < 1 || ty > 14) return;
+  drawLamp(85 * TILE - cam.x, 2 * TILE - cam.y);
+  drawLamp(101 * TILE - cam.x, 6 * TILE - cam.y);
+  drawLamp(114 * TILE - cam.x, 11 * TILE - cam.y);
+  drawCrates(90 * TILE - cam.x, 7 * TILE - cam.y);
+  drawSign(99 * TILE - cam.x, 10 * TILE - cam.y);
+}
+
+function drawFrostHavenDetails(cam) {
+  const ty = worldTileY(player.y + player.h / 2);
+  if (ty < 144) return;
+  drawWell(24 * TILE - cam.x, 152 * TILE - cam.y);
+  drawLamp(14 * TILE - cam.x, 153 * TILE - cam.y);
+  drawLamp(33 * TILE - cam.x, 153 * TILE - cam.y);
+  drawCrates(29 * TILE - cam.x, 151 * TILE - cam.y);
+  drawSign(24 * TILE - cam.x, 149 * TILE - cam.y);
+  drawCampfire(20 * TILE - cam.x, 154 * TILE - cam.y);
 }
 
 function drawTownDetails(cam) {
@@ -572,6 +778,15 @@ function drawBlackMarketDetails(cam) {
   drawRoleMarker(35 * TILE - cam.x, 134 * TILE - cam.y, "H", "#6de4ff");
   drawRoleMarker(47 * TILE - cam.x, 134 * TILE - cam.y, "G", "#8dd7ff");
   drawSign(28 * TILE - cam.x, 136 * TILE - cam.y);
+  drawTent(19 * TILE - cam.x, 138 * TILE - cam.y, "#d9704c");
+  drawTent(27 * TILE - cam.x, 139 * TILE - cam.y, "#55c7a0");
+  drawTent(41 * TILE - cam.x, 139 * TILE - cam.y, "#8b5cff");
+  drawCrates(22 * TILE - cam.x, 140 * TILE - cam.y);
+  drawCrates(45 * TILE - cam.x, 140 * TILE - cam.y);
+  drawLamp(17 * TILE - cam.x, 136 * TILE - cam.y);
+  drawLamp(33 * TILE - cam.x, 139 * TILE - cam.y);
+  drawLamp(48 * TILE - cam.x, 137 * TILE - cam.y);
+  drawBench(31 * TILE - cam.x, 137 * TILE - cam.y, "horizontal");
 }
 
 function drawBlackFortDetails(cam) {
@@ -583,6 +798,57 @@ function drawBlackFortDetails(cam) {
   drawRoleMarker(98 * TILE - cam.x, 131 * TILE - cam.y, "回", "#6de4ff");
   drawRoleMarker(104 * TILE - cam.x, 131 * TILE - cam.y, "黒", "#d8d8ff");
   drawSign(93 * TILE - cam.x, 133 * TILE - cam.y);
+}
+
+function drawEastHarborDetails(cam) {
+  drawTent(142 * TILE - cam.x, 83 * TILE - cam.y, "#55c7a0");
+  drawTent(156 * TILE - cam.x, 83 * TILE - cam.y, "#8dd7ff");
+  drawCrates(140 * TILE - cam.x, 89 * TILE - cam.y);
+  drawCrates(158 * TILE - cam.x, 89 * TILE - cam.y);
+  drawCampfire(151 * TILE - cam.x, 89 * TILE - cam.y);
+  drawLamp(138 * TILE - cam.x, 86 * TILE - cam.y);
+  drawLamp(160 * TILE - cam.x, 86 * TILE - cam.y);
+  drawRoleMarker(150 * TILE - cam.x, 84 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(155 * TILE - cam.x, 83 * TILE - cam.y, "商", "#ffd166");
+  drawRoleMarker(139 * TILE - cam.x, 86 * TILE - cam.y, "船", "#8dd7ff");
+}
+
+function drawSouthwindOutpostDetails(cam) {
+  drawTent(162 * TILE - cam.x, 166 * TILE - cam.y, "#d9704c");
+  drawTent(173 * TILE - cam.x, 166 * TILE - cam.y, "#5f668f");
+  drawCrates(160 * TILE - cam.x, 172 * TILE - cam.y);
+  drawCrates(175 * TILE - cam.x, 172 * TILE - cam.y);
+  drawCampfire(168 * TILE - cam.x, 171 * TILE - cam.y);
+  drawLamp(160 * TILE - cam.x, 168 * TILE - cam.y);
+  drawLamp(176 * TILE - cam.x, 168 * TILE - cam.y);
+  drawRoleMarker(168 * TILE - cam.x, 168 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(173 * TILE - cam.x, 169 * TILE - cam.y, "?", "#fff2a6");
+}
+
+function drawDawnHarborDetails(cam) {
+  drawTent(207 * TILE - cam.x, 68 * TILE - cam.y, "#f0c36b");
+  drawTent(221 * TILE - cam.x, 68 * TILE - cam.y, "#8dd7ff");
+  drawCrates(204 * TILE - cam.x, 75 * TILE - cam.y);
+  drawCrates(223 * TILE - cam.x, 75 * TILE - cam.y);
+  drawCampfire(214 * TILE - cam.x, 75 * TILE - cam.y);
+  drawLamp(203 * TILE - cam.x, 71 * TILE - cam.y);
+  drawLamp(225 * TILE - cam.x, 71 * TILE - cam.y);
+  drawRoleMarker(214 * TILE - cam.x, 71 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(220 * TILE - cam.x, 69 * TILE - cam.y, "商", "#ffd166");
+  drawRoleMarker(205 * TILE - cam.x, 71 * TILE - cam.y, "船", "#8dd7ff");
+}
+
+function drawSuncrestCityDetails(cam) {
+  drawTent(229 * TILE - cam.x, 124 * TILE - cam.y, "#d99b45");
+  drawTent(246 * TILE - cam.x, 124 * TILE - cam.y, "#d9704c");
+  drawCrates(227 * TILE - cam.x, 132 * TILE - cam.y);
+  drawCrates(249 * TILE - cam.x, 132 * TILE - cam.y);
+  drawCampfire(238 * TILE - cam.x, 133 * TILE - cam.y);
+  drawLamp(225 * TILE - cam.x, 128 * TILE - cam.y);
+  drawLamp(251 * TILE - cam.x, 128 * TILE - cam.y);
+  drawRoleMarker(238 * TILE - cam.x, 127 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(246 * TILE - cam.x, 125 * TILE - cam.y, "商", "#ffd166");
+  drawRoleMarker(229 * TILE - cam.x, 127 * TILE - cam.y, "鍛", "#f0c36b");
 }
 
 function drawCampBoundary(cam) {
@@ -1014,6 +1280,49 @@ function drawObsidianGolemSite(cam) {
   }
 }
 
+function drawFrostGolemSite(cam) {
+  if (state.frostGolemDefeated) return;
+  const sx = FROST_GOLEM_SITE.x * TILE - cam.x;
+  const sy = FROST_GOLEM_SITE.y * TILE - cam.y;
+  if (sx < -32 || sy < -32 || sx > W || sy > VIEW_H) return;
+  const ready = state.chapter3Reported && player.level >= FROST_GOLEM_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 160) % 2;
+  ctx.fillStyle = "rgba(185, 244, 255, 0.28)";
+  ctx.fillRect(sx - 4, sy + 1 - pulse, 28, 20);
+  ctx.fillStyle = ready ? "#8dd7ff" : "#53606f";
+  ctx.fillRect(sx + 3, sy + 3, 17, 15);
+  ctx.fillStyle = ready ? "#d9f7ff" : "#26384a";
+  ctx.fillRect(sx + 7, sy, 9, 6);
+  ctx.fillRect(sx + 8, sy + 9, 7, 8);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#d9f7ff" : "#8dd7ff";
+    ctx.strokeRect(sx, sy - 2, 24, 22);
+  }
+}
+
+function drawFrostDragonSite(cam) {
+  if (state.frostDragonDefeated) return;
+  const sx = FROST_DRAGON_SITE.x * TILE - cam.x;
+  const sy = FROST_DRAGON_SITE.y * TILE - cam.y;
+  if (sx < -32 || sy < -32 || sx > W || sy > VIEW_H) return;
+  const ready = state.chapter3Reported
+    && state.frostGolemDefeated
+    && state.discoveries.has("frost-seal")
+    && player.level >= CHAPTER4_REQUIREMENTS.level;
+  const pulse = Math.floor(performance.now() / 140) % 2;
+  ctx.fillStyle = "rgba(217, 247, 255, 0.3)";
+  ctx.fillRect(sx - 5, sy + 1 - pulse, 31, 22);
+  ctx.fillStyle = ready ? "#d9f7ff" : "#53606f";
+  ctx.fillRect(sx + 3, sy + 3, 18, 16);
+  ctx.fillStyle = ready ? "#8dd7ff" : "#26384a";
+  ctx.fillRect(sx + 7, sy, 10, 6);
+  ctx.fillRect(sx + 9, sy + 9, 7, 8);
+  if (ready) {
+    ctx.strokeStyle = pulse ? "#ffffff" : "#8dd7ff";
+    ctx.strokeRect(sx, sy - 2, 25, 23);
+  }
+}
+
 function drawDiscoveries(cam) {
   for (const discovery of DISCOVERY_POINTS) {
     const sx = discovery.x * TILE - cam.x;
@@ -1059,6 +1368,22 @@ function drawDiscoveries(cam) {
       ctx.fillStyle = found ? "#6de4ff" : "#fff2a6";
       ctx.fillRect(sx + 8, sy + 1, 2, 2);
       if (!found) drawGlint(sx + 9, sy + 3, "#d8d8ff");
+    } else if (discovery.kind === "frostSeal") {
+      ctx.fillStyle = found ? "#4d6a78" : "#243f52";
+      ctx.fillRect(sx + 3, sy + 2, 11, 13);
+      ctx.fillStyle = found ? "#8dd7ff" : "#d9f7ff";
+      ctx.fillRect(sx + 6, sy + 4, 4, 8);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(sx + 8, sy + 1, 2, 2);
+      if (!found) drawGlint(sx + 10, sy + 3, "#d9f7ff");
+    } else if (discovery.kind === "sunriseSeal") {
+      ctx.fillStyle = found ? "#9b8150" : "#fff0a6";
+      ctx.fillRect(sx + 3, sy + 2, 11, 13);
+      ctx.fillStyle = found ? "#5d5138" : "#ff9f3f";
+      ctx.fillRect(sx + 6, sy + 4, 4, 8);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(sx + 8, sy + 1, 2, 2);
+      if (!found) drawGlint(sx + 10, sy + 3, "#fff0a6");
     } else if (discovery.kind === "obsidianWaystone") {
       ctx.fillStyle = found ? "#3d465a" : "#111522";
       ctx.fillRect(sx + 4, sy + 3, 8, 12);
@@ -1079,14 +1404,14 @@ function drawDiscoveries(cam) {
       ctx.fillRect(sx + 6, sy + 3, 4, 4);
       ctx.fillRect(sx + 7, sy + 8, 2, 5);
       if (!found) drawGlint(sx + 11, sy + 4, "#ff5e9f");
-    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint") {
+    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint" || discovery.kind === "mistHint" || discovery.kind === "cryptHint" || discovery.kind === "frostHint" || discovery.kind === "sunspireHint") {
       ctx.fillStyle = found ? "#604622" : "#7b4b25";
       ctx.fillRect(sx + 5, sy + 5, 7, 8);
-      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : "#ffd166";
+      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : "#ffd166";
       ctx.fillRect(sx + 3, sy + 4, 10, 3);
       ctx.fillStyle = "#2a1d12";
       ctx.fillRect(sx + 8, sy + 8, 2, 6);
-      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : "#ffd166");
+      if (!found) drawGlint(sx + 12, sy + 3, discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" ? "#8dd7ff" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : "#ffd166");
     }
   }
 }
@@ -1364,6 +1689,7 @@ function npcColor(type) {
   if (type === "smith") return "#d14f2b";
   if (type === "healer") return "#40c6ff";
   if (type === "frontier") return "#9ad16f";
+  if (type === "frostSmith") return "#79d8ff";
   if (type === "merchant") return "#ffd166";
   if (type === "porter") return "#d7e2ea";
   if (type === "guide") return "#b990ff";
@@ -1499,7 +1825,7 @@ function drawActorShadow(sx, sy, w) {
 }
 
 function drawWeapon(sx, sy) {
-  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166", "#8dd7ff", "#ff9a3d", "#f8fbff", "#b990ff", "#e36dff", "#d8d8ff", "#b8c0cc"];
+  const colors = ["#a86132", "#c9783d", "#d7e2ea", "#b5f2ff", "#ffd166", "#8dd7ff", "#ff9a3d", "#f8fbff", "#b990ff", "#e36dff", "#d8d8ff", "#b8c0cc", "#d9f7ff", "#fff0a6"];
   ctx.fillStyle = colors[player.weapon] || "#ffd166";
   if (player.dir === "up") ctx.fillRect(sx + 5, sy - 4, 2, 7);
   if (player.dir === "down") ctx.fillRect(sx + 5, sy + 10, 2, 7);
@@ -1517,7 +1843,7 @@ function drawMonster(monster, sx, sy) {
     ctx.strokeStyle = "#ffef8a";
     ctx.strokeRect(sx - 2, sy - 2, spriteW + 4, spriteH + 4);
   }
-  if (monster.type === "dragon" || monster.type === "eclipseDragon" || monster.type === "voidDragon") {
+  if (monster.type === "dragon" || monster.type === "eclipseDragon" || monster.type === "voidDragon" || monster.type === "frostDragon" || monster.type === "emberDragon") {
     drawDragon(monster, sx, sy);
     return;
   }
@@ -1538,6 +1864,20 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#ffd166";
     ctx.fillRect(sx + 6, sy + 8, 1, 2);
     ctx.fillRect(sx + 8, sy + 8, 1, 2);
+  } else if (monster.type === "frostMoth") {
+    const flap = Math.floor(monster.age / 130) % 2;
+    ctx.fillStyle = "rgba(185, 244, 255, 0.32)";
+    ctx.fillRect(sx - 2, sy + 2 - flap, 16, 11);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx - 1, sy + 4 + flap, 6, 7);
+    ctx.fillRect(sx + 9, sy + 4 + flap, 6, 7);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 6, 10);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(sx + 5, sy + 5, 2, 2);
+    ctx.fillRect(sx + 9, sy + 5, 2, 2);
+    ctx.fillStyle = "#8dd7ff";
+    ctx.fillRect(sx + 6, sy, 3, 3);
   } else if (monster.type === "wisp") {
     ctx.fillStyle = "rgba(255, 219, 82, 0.36)";
     ctx.fillRect(sx + 1, sy + 3, 10, 9);
@@ -1565,6 +1905,67 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(sx + 11, sy + 1 - pulse, 3, 3);
     ctx.fillRect(sx + 13, sy + 6, 2, 2);
+  } else if (monster.type === "vaultLeech") {
+    const pulse = Math.floor(monster.age / 130) % 2;
+    ctx.fillStyle = "rgba(215, 138, 183, 0.24)";
+    ctx.fillRect(sx - 1 - pulse, sy + 2 - pulse, 15 + pulse * 2, 12 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 7, 12, 6);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 2, 8, 10);
+    ctx.fillRect(sx + 1, sy + 6, 12, 5);
+    ctx.fillStyle = "#fff2ff";
+    ctx.fillRect(sx + 4, sy + 5, 2, 2);
+    ctx.fillRect(sx + 9, sy + 5, 2, 2);
+    ctx.fillStyle = "#ffef8a";
+    ctx.fillRect(sx + 5, sy + 10, 2, 3);
+    ctx.fillRect(sx + 9, sy + 10, 2, 3);
+  } else if (monster.type === "cryptWarden") {
+    const pulse = Math.floor(monster.age / 150) % 2;
+    ctx.fillStyle = "rgba(215, 178, 109, 0.24)";
+    ctx.fillRect(sx - 3 - pulse, sy - pulse, 25 + pulse * 2, 21 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 7, 17, 13);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 11, 15);
+    ctx.fillRect(sx + 1, sy + 8, 17, 8);
+    ctx.fillStyle = "#fff2a6";
+    ctx.fillRect(sx + 6, sy + 5, 2, 2);
+    ctx.fillRect(sx + 12, sy + 5, 2, 2);
+    ctx.fillStyle = "#49351f";
+    ctx.fillRect(sx + 4, sy + 17, 5, 3);
+    ctx.fillRect(sx + 11, sy + 17, 5, 3);
+    ctx.fillStyle = "#d78ab7";
+    ctx.fillRect(sx + 18, sy + 3, 2, 14);
+    ctx.fillRect(sx + 16, sy + 2 + pulse, 6, 2);
+  } else if (monster.type === "frostBeacon") {
+    const pulse = Math.floor(monster.age / 150) % 2;
+    ctx.fillStyle = "rgba(157, 232, 255, 0.32)";
+    ctx.fillRect(sx - 3 - pulse, sy - 2 - pulse, 20 + pulse * 2, 19 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 3, sy + 9, 9, 5);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 5, sy + 2, 5, 11);
+    ctx.fillRect(sx + 3, sy + 5, 9, 5);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(sx + 6, sy + 4, 3, 5);
+    ctx.fillStyle = "#315d7a";
+    ctx.fillRect(sx + 5, sy + 13, 5, 2);
+  } else if (monster.type === "towerWarden") {
+    const pulse = Math.floor(monster.age / 130) % 2;
+    ctx.fillStyle = "rgba(217, 247, 255, 0.25)";
+    ctx.fillRect(sx - 4 - pulse, sy - 2 - pulse, 27 + pulse * 2, 24 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 7, 18, 13);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 12, 16);
+    ctx.fillRect(sx + 1, sy + 8, 18, 8);
+    ctx.fillStyle = "#315d7a";
+    ctx.fillRect(sx + 6, sy + 6, 3, 2);
+    ctx.fillRect(sx + 12, sy + 6, 3, 2);
+    ctx.fillStyle = "#9de8ff";
+    ctx.fillRect(sx + 18, sy + 2 + pulse, 3, 16);
+    ctx.fillRect(sx + 16, sy + 1 + pulse, 7, 3);
   } else if (monster.type === "shieldSoldier") {
     const guardX = monster.dir === "left" ? sx + 1 : monster.dir === "right" ? sx + 8 : sx + 3;
     const guardY = monster.dir === "up" ? sy + 1 : sy + 5;
@@ -1659,6 +2060,19 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#352013";
     ctx.fillRect(sx + 3, sy + 10, 2, 2);
     ctx.fillRect(sx + 8, sy + 10, 2, 2);
+  } else if (monster.type === "frostBeast") {
+    ctx.fillStyle = "rgba(185, 244, 255, 0.2)";
+    ctx.fillRect(sx - 2, sy + 2, 18, 13);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 1, sy + 6, 13, 8);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 2, sy + 3, 11, 9);
+    ctx.fillRect(sx + 11, sy + 5, 5, 5);
+    ctx.fillStyle = "#d9f7ff";
+    ctx.fillRect(sx + 3, sy, 3, 5);
+    ctx.fillRect(sx + 10, sy, 3, 5);
+    ctx.fillStyle = "#315d7a";
+    ctx.fillRect(sx + 12, sy + 6, 2, 2);
   } else if (monster.type === "guardian") {
     const pulse = Math.floor(monster.age / 180) % 2;
     ctx.fillStyle = "rgba(85, 199, 160, 0.28)";
@@ -1698,6 +2112,21 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#8dd7ff";
     ctx.fillRect(sx + 8, sy, 4, 4);
     ctx.fillRect(sx + 19, sy + 8, 4 + pulse, 2);
+  } else if (monster.type === "frostGolem") {
+    const pulse = Math.floor(monster.age / 130) % 2;
+    ctx.fillStyle = "rgba(185, 244, 255, 0.3)";
+    ctx.fillRect(sx - 4 - pulse, sy - pulse, 27 + pulse * 2, 22 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 7, 16, 14);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 3, sy + 3, 14, 15);
+    ctx.fillRect(sx, sy + 9, 21, 8);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(sx + 6, sy + 6, 2, 2);
+    ctx.fillRect(sx + 13, sy + 6, 2, 2);
+    ctx.fillStyle = "#315d7a";
+    ctx.fillRect(sx + 4, sy + 18, 5, 3);
+    ctx.fillRect(sx + 12, sy + 18, 5, 3);
   } else if (monster.type === "warden") {
     const pulse = Math.floor(monster.age / 150) % 2;
     ctx.fillStyle = "rgba(109, 228, 255, 0.26)";
@@ -1753,7 +2182,13 @@ function drawDragon(monster, sx, sy) {
   const pulse = Math.floor(monster.age / 140) % 2;
   const eclipse = monster.type === "eclipseDragon";
   const voidBoss = monster.type === "voidDragon";
-  ctx.fillStyle = voidBoss
+  const frostBoss = monster.type === "frostDragon";
+  const emberBoss = monster.type === "emberDragon";
+  ctx.fillStyle = emberBoss
+    ? (monster.enraged ? "rgba(255, 207, 90, 0.52)" : "rgba(255, 125, 46, 0.32)")
+    : frostBoss
+    ? (monster.enraged ? "rgba(217, 247, 255, 0.48)" : "rgba(141, 215, 255, 0.3)")
+    : voidBoss
     ? (monster.enraged ? "rgba(109, 228, 255, 0.36)" : "rgba(216, 216, 255, 0.22)")
     : eclipse
     ? (monster.enraged ? "rgba(227, 109, 255, 0.42)" : "rgba(127, 140, 255, 0.28)")
@@ -1768,22 +2203,22 @@ function drawDragon(monster, sx, sy) {
   ctx.fillRect(sx + 18, sy + 7, 8, 7);
   ctx.fillRect(sx + 5, sy + 4, 13, 14);
   ctx.fillRect(sx + 16, sy + 8, 8, 8);
-  ctx.fillStyle = voidBoss ? "#d8d8ff" : eclipse ? "#7f8cff" : "#ff8c3e";
+  ctx.fillStyle = emberBoss ? "#fff0a6" : frostBoss ? "#b9f4ff" : voidBoss ? "#d8d8ff" : eclipse ? "#7f8cff" : "#ff8c3e";
   ctx.fillRect(sx + 1, sy + 6, 7, 6);
   ctx.fillRect(sx + 10, sy, 3, 5);
   ctx.fillRect(sx + 16, sy, 3, 5);
-  ctx.fillStyle = voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ffd166";
+  ctx.fillStyle = emberBoss ? "#ff7a2f" : frostBoss ? "#ffffff" : voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ffd166";
   ctx.fillRect(sx + 11, sy - 2, 2, 3);
   ctx.fillRect(sx + 17, sy - 2, 2, 3);
   ctx.fillRect(sx + 9, sy + 9, 2, 2);
   ctx.fillRect(sx + 13, sy + 12, 2, 2);
-  ctx.fillStyle = voidBoss ? "#ffffff" : eclipse ? "#fff2ff" : "#fff2a6";
+  ctx.fillStyle = emberBoss ? "#ffffff" : frostBoss ? "#315d7a" : voidBoss ? "#ffffff" : eclipse ? "#fff2ff" : "#fff2a6";
   ctx.fillRect(sx + 18, sy + 10, 2, 2);
   ctx.fillStyle = "#211010";
   ctx.fillRect(sx + 21, sy + 11, 2, 1);
-  ctx.fillStyle = voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ff4e36";
+  ctx.fillStyle = frostBoss ? "#8dd7ff" : voidBoss ? "#6de4ff" : eclipse ? "#e36dff" : "#ff4e36";
   ctx.fillRect(sx + 24, sy + 10, 4 + pulse, 2);
-  ctx.fillStyle = voidBoss ? "#d8d8ff" : eclipse ? "#9fb3ff" : "#fff2a6";
+  ctx.fillStyle = frostBoss ? "#ffffff" : voidBoss ? "#d8d8ff" : eclipse ? "#9fb3ff" : "#fff2a6";
   ctx.fillRect(sx + 26, sy + 10, 2, 1);
   drawMonsterHp(monster, sx, sy - 3);
 }
@@ -1808,14 +2243,50 @@ function drawEffects(cam) {
     ctx.fillRect(pointerX - 1, pointerY - 1, 2, 2);
   }
 
+  for (const telegraph of state.telegraphs || []) {
+    const alpha = clamp(0.22 + (telegraph.life / telegraph.max) * 0.58, 0, 1);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = telegraph.color;
+    if (telegraph.kind === "zone") {
+      const x = Math.round(screenX(telegraph.x, cam));
+      const y = Math.round(screenY(telegraph.y, cam));
+      const radius = Math.max(3, Math.round(worldToDraw(telegraph.radius)));
+      ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+      ctx.strokeRect(x - Math.floor(radius * 0.55), y - Math.floor(radius * 0.55), Math.floor(radius * 1.1), Math.floor(radius * 1.1));
+    } else {
+      const x1 = screenX(telegraph.x, cam);
+      const y1 = screenY(telegraph.y, cam);
+      const x2 = x1 + worldToDraw(telegraph.dx * telegraph.length);
+      const y2 = y1 + worldToDraw(telegraph.dy * telegraph.length);
+      ctx.lineWidth = Math.max(2, worldToDraw(telegraph.width));
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+    }
+    ctx.globalAlpha = 1;
+  }
+
   for (const p of state.projectiles) {
     const sx = Math.round(screenX(p.x, cam));
     const sy = Math.round(screenY(p.y, cam));
     const radius = worldToDraw(p.r);
-    ctx.fillStyle = "rgba(255, 120, 58, 0.32)";
+    ctx.fillStyle = p.persistent ? "rgba(127, 105, 217, 0.32)" : p.piercing ? "rgba(255, 242, 166, 0.38)" : "rgba(255, 120, 58, 0.32)";
     ctx.fillRect(sx - radius - 1, sy - radius - 1, radius * 2 + 2, radius * 2 + 2);
     ctx.fillStyle = p.color;
     ctx.fillRect(sx - radius, sy - radius, radius * 2, radius * 2);
+    if (p.persistent) {
+      const pulse = 2 + (Math.floor(performance.now() / 160) % 3);
+      ctx.strokeStyle = p.color;
+      ctx.strokeRect(sx - radius - pulse, sy - radius - pulse, (radius + pulse) * 2, (radius + pulse) * 2);
+    } else if (p.piercing) {
+      const trailX = Math.abs(p.vx) >= Math.abs(p.vy) ? -Math.sign(p.vx) * 10 : 0;
+      const trailY = Math.abs(p.vy) > Math.abs(p.vx) ? -Math.sign(p.vy) * 10 : 0;
+      ctx.globalAlpha = 0.55;
+      ctx.fillRect(sx + trailX - 1, sy + trailY - 1, Math.abs(trailX) + 2, Math.abs(trailY) + 2);
+      ctx.globalAlpha = 1;
+    }
     ctx.fillStyle = "#fff2a6";
     ctx.fillRect(sx - 1, sy - 1, 2, 2);
   }
@@ -1869,7 +2340,7 @@ function drawEffects(cam) {
 function drawScreenGrade(cam) {
   const tx = worldTileX(player.x + player.w / 2);
   const ty = worldTileY(player.y + player.h / 2);
-  const inCave = tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19;
+  const inCave = (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 19) || (tx >= 80 && tx <= 119 && ty >= 1 && ty <= 14) || (tx >= 88 && tx <= 118 && ty >= 18 && ty <= 32) || (tx >= 160 && tx <= 195 && ty >= 1 && ty <= 23);
   const gradient = ctx.createLinearGradient(0, 0, 0, VIEW_H);
   gradient.addColorStop(0, inCave ? "rgba(35, 10, 8, 0.18)" : "rgba(255, 244, 192, 0.08)");
   gradient.addColorStop(0.52, "rgba(0, 0, 0, 0)");
@@ -1996,9 +2467,9 @@ function drawEndingOverlay() {
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.font = "16px monospace";
-  const title = state.chapter3Reported ? "CHAPTER 3 CLEAR" : state.chapter2Reported ? "CHAPTER 2 CLEAR" : "QUEST CLEAR";
-  const line1 = state.chapter3Reported ? "黒陽竜は封じられた" : state.chapter2Reported ? "月蝕竜は封じられた" : "赤竜は封じられた";
-  const line2 = state.chapter3Reported ? "黒門砦からさらに遠征路が開く" : state.chapter2Reported ? "月見砦の灯がさらに南を照らす" : "村に朝が戻り 旅は語り継がれる";
+  const title = state.chapter5Reported ? "CHAPTER 5 CLEAR" : state.chapter4Reported ? "CHAPTER 4 CLEAR" : state.chapter3Reported ? "CHAPTER 3 CLEAR" : state.chapter2Reported ? "CHAPTER 2 CLEAR" : "QUEST CLEAR";
+  const line1 = state.chapter5Reported ? "熾火天竜は封じられた" : state.chapter4Reported ? "霜冠竜は封じられた" : state.chapter3Reported ? "黒陽竜は封じられた" : state.chapter2Reported ? "月蝕竜は封じられた" : "赤竜は封じられた";
+  const line2 = state.chapter5Reported ? "陽冠都市と西方の村を結ぶ航路が開く" : state.chapter4Reported ? "白銀宿から新たな国への道が続く" : state.chapter3Reported ? "黒門砦からさらに遠征路が開く" : state.chapter2Reported ? "月見砦の灯がさらに南を照らす" : "村に朝が戻り 旅は語り継がれる";
   ctx.fillText(title, W / 2, 52);
   ctx.font = "8px monospace";
   ctx.fillStyle = "#fff2a6";
@@ -2017,12 +2488,13 @@ function drawVictoryBanner() {
   ctx.textAlign = "center";
   ctx.fillStyle = "#fff2a6";
   ctx.font = "10px monospace";
-  ctx.fillText(state.chapter3Victory ? "BLACK SUN SEALED" : state.chapter2Victory ? "ECLIPSE SEALED" : "DRAGON SEALED", W / 2, 39);
+  ctx.fillText(state.chapter5Victory ? "EMBER WYRM SEALED" : state.chapter4Victory ? "FROST CROWN SEALED" : state.chapter3Victory ? "BLACK SUN SEALED" : state.chapter2Victory ? "ECLIPSE SEALED" : "DRAGON SEALED", W / 2, 39);
   ctx.font = "7px monospace";
   ctx.fillStyle = "#ffffff";
-  ctx.fillText(state.chapter3Victory ? "長老へ第3章の報告" : state.chapter2Victory ? "長老へ第2章の報告" : "村へ戻り長老に報告", W / 2, 52);
+  ctx.fillText(state.chapter5Victory ? "長老へ第5章の報告" : state.chapter4Victory ? "長老へ第4章の報告" : state.chapter3Victory ? "長老へ第3章の報告" : state.chapter2Victory ? "長老へ第2章の報告" : "村へ戻り長老に報告", W / 2, 52);
 }
   globalThis.DRAGON_HUNTER_RENDER = {
     draw,
+    currentWorldMapDestinationFor,
   };
 })();

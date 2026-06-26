@@ -8,8 +8,8 @@
   const VIEW_H = 144 * WORLD_SCALE;
   const HUD_H = H - VIEW_H;
   const TILE = BASE_TILE * WORLD_SCALE;
-  const MAP_W = 120;
-  const MAP_H = 144;
+  const MAP_W = 256;
+  const MAP_H = 256;
   const SAVE_KEY = "dragon-hunter-field-save-v2-32px";
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const SAFE_ZONES = [
@@ -17,8 +17,13 @@
     { id: "southwest-camp", name: "前線キャンプ", x1: 25, y1: 56, x2: 35, y2: 61, outerX1: 24, outerY1: 55, outerX2: 36, outerY2: 62 },
     { id: "ash-hamlet", name: "灰道の宿場", x1: 94, y1: 52, x2: 110, y2: 60, outerX1: 93, outerY1: 51, outerX2: 111, outerY2: 61 },
     { id: "moon-camp", name: "月見砦", x1: 94, y1: 113, x2: 110, y2: 118, outerX1: 93, outerY1: 112, outerX2: 111, outerY2: 119 },
-    { id: "black-market", name: "黒市", x1: 20, y1: 129, x2: 48, y2: 136, outerX1: 19, outerY1: 128, outerX2: 49, outerY2: 137 },
+    { id: "black-market", name: "黒市都", x1: 15, y1: 128, x2: 49, y2: 142, outerX1: 14, outerY1: 127, outerX2: 50, outerY2: 143 },
     { id: "black-fort", name: "黒門砦", x1: 88, y1: 129, x2: 106, y2: 134, outerX1: 87, outerY1: 128, outerX2: 107, outerY2: 135 },
+    { id: "frost-haven", name: "白銀宿", x1: 12, y1: 150, x2: 34, y2: 156, outerX1: 11, outerY1: 149, outerX2: 35, outerY2: 157 },
+    { id: "east-harbor", name: "蒼風港", x1: 137, y1: 79, x2: 160, y2: 94, outerX1: 136, outerY1: 78, outerX2: 161, outerY2: 95 },
+    { id: "southwind-outpost", name: "南風岬砦", x1: 160, y1: 165, x2: 176, y2: 173, outerX1: 159, outerY1: 164, outerX2: 178, outerY2: 175 },
+    { id: "dawn-harbor", name: "黎明港", x1: 203, y1: 65, x2: 225, y2: 77, outerX1: 202, outerY1: 64, outerX2: 226, outerY2: 79 },
+    { id: "suncrest-city", name: "陽冠都市", x1: 225, y1: 121, x2: 252, y2: 134, outerX1: 224, outerY1: 120, outerX2: 253, outerY2: 136 },
   ];
   const HEAL_POINTS = [
     { ...HEAL_CIRCLE, id: "village-circle", name: "村の回復陣" },
@@ -27,6 +32,11 @@
     { x: 102, y: 116, id: "moon-camp-circle", name: "月見砦の回復陣" },
     { x: 35, y: 135, id: "black-market-circle", name: "黒市の回復陣" },
     { x: 98, y: 132, id: "black-fort-circle", name: "黒門砦の回復陣" },
+    { x: 24, y: 154, id: "frost-haven-circle", name: "白銀宿の回復陣" },
+    { x: 150, y: 85, id: "east-harbor-circle", name: "蒼風港の回復陣" },
+    { x: 168, y: 169, id: "southwind-circle", name: "南風岬砦の回復陣" },
+    { x: 214, y: 72, id: "dawn-harbor-circle", name: "黎明港の回復陣" },
+    { x: 238, y: 128, id: "suncrest-circle", name: "陽冠都市の回復陣" },
   ];
   const TRAVEL_POINTS = [
     { id: "village", name: "村", x: 10, y: 48, cost: 0, unlock: "always" },
@@ -35,6 +45,31 @@
     { id: "moon-camp", name: "月見砦", x: 102, y: 116, cost: 170, unlock: "ashKnightDefeated" },
     { id: "black-fort", name: "黒門砦", x: 98, y: 132, cost: 260, unlock: "chapter2Reported" },
     { id: "black-market", name: "黒市", x: 35, y: 135, cost: 320, unlock: "blackMarket" },
+    { id: "frost-haven", name: "白銀宿", x: 24, y: 154, cost: 420, unlock: "chapter3Reported" },
+    { id: "east-harbor", name: "蒼風港", x: 150, y: 85, cost: 560, unlock: "chapter3Reported" },
+    { id: "southwind-outpost", name: "南風岬砦", x: 168, y: 169, cost: 720, unlock: "chapter3Reported" },
+    { id: "dawn-harbor", name: "黎明港", x: 214, y: 72, cost: 900, unlock: "chapter4Reported" },
+    { id: "suncrest-city", name: "陽冠都市", x: 238, y: 128, cost: 1150, unlock: "chapter4Reported" },
+  ];
+  const DUNGEON_PORTALS = [
+    { id: "black-market-catacomb-entry", name: "黒市地下墓所", x: 47, y: 130, toX: 83, toY: 2, prompt: "入る: 黒市地下墓所" },
+    { id: "black-market-catacomb-exit", name: "黒市", x: 82, y: 2, toX: 47, toY: 131, prompt: "戻る: 黒市" },
+    { id: "frost-tower-entry", name: "霜見塔・一階", x: 43, y: 148, toX: 89, toY: 19, prompt: "入る: 霜見塔" },
+    { id: "frost-tower-exit", name: "霜原", x: 89, y: 19, toX: 43, toY: 149, prompt: "戻る: 霜原" },
+    { id: "frost-tower-up", name: "霜見塔・二階", x: 101, y: 31, toX: 105, toY: 19, prompt: "上る: 霜見塔二階" },
+    { id: "frost-tower-down", name: "霜見塔・一階", x: 105, y: 19, toX: 101, toY: 31, prompt: "下りる: 霜見塔一階" },
+    { id: "frost-tower-lift-exit", name: "霜原", x: 117, y: 31, toX: 46, toY: 149, prompt: "昇降機: 霜原へ" },
+    { id: "frost-tower-lift-entry", name: "霜見塔・二階", x: 46, y: 148, toX: 117, toY: 31, prompt: "昇降機: 霜見塔二階へ", unlock: "frostTowerLift" },
+    { id: "western-ferry", name: "蒼風港", x: 116, y: 65, toX: 139, toY: 87, prompt: "渡船: 蒼風島へ" },
+    { id: "east-ferry", name: "西方大陸", x: 139, y: 87, toX: 116, toY: 65, prompt: "渡船: 西方大陸へ" },
+    { id: "sunrise-ferry", name: "黎明港", x: 185, y: 102, toX: 204, toY: 72, prompt: "外洋船: 日出大陸へ" },
+    { id: "dawn-ferry", name: "蒼風島", x: 204, y: 72, toX: 185, toY: 102, prompt: "外洋船: 蒼風島へ" },
+    { id: "moon-archive-entry", name: "月の書庫", x: 110, y: 115, toX: 123, toY: 2, prompt: "入る: 月の書庫" },
+    { id: "moon-archive-exit", name: "月見砦", x: 123, y: 2, toX: 110, toY: 115, prompt: "戻る: 月見砦" },
+    { id: "sunspire-entry", name: "日鏡塔", x: 246, y: 128, toX: 164, toY: 5, prompt: "入る: 日鏡塔" },
+    { id: "sunspire-exit", name: "陽冠都市", x: 164, y: 5, toX: 246, toY: 128, prompt: "戻る: 陽冠都市" },
+    { id: "suncrest-arena-entry", name: "陽冠闘技場", x: 229, y: 131, toX: 199, toY: 2, prompt: "入る: 陽冠闘技場" },
+    { id: "suncrest-arena-exit", name: "陽冠都市", x: 199, y: 2, toX: 229, toY: 131, prompt: "戻る: 陽冠都市" },
   ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
@@ -44,6 +79,8 @@
     { id: "town-cache", x: 17, y: 53, reward: "starter" },
     { id: "north-ruin", x: 18, y: 17, reward: "weapon" },
     { id: "river-shrine", x: 42, y: 33, reward: "ward" },
+    { id: "grassland-camp-supply", x: 34, y: 34, reward: "starter" },
+    { id: "river-fork-supply", x: 61, y: 50, reward: "ward" },
     { id: "east-grove", x: 56, y: 43, reward: "armor" },
     { id: "south-outpost", x: 72, y: 58, reward: "trail" },
     { id: "dragon-cache", x: 50, y: 16, reward: "scale" },
@@ -51,14 +88,26 @@
     { id: "southwest-mine-cache", x: 39, y: 67, reward: "mineGold" },
     { id: "ash-road-cache", x: 111, y: 41, reward: "ashGear" },
     { id: "ash-watchtower-cache", x: 112, y: 45, reward: "shieldGear" },
+    { id: "ash-road-shrine-cache", x: 90, y: 44, reward: "shieldSupply" },
     { id: "south-quarry-cache", x: 58, y: 78, reward: "mineGold" },
+    { id: "highland-ridge-cache", x: 46, y: 78, reward: "shieldSupply" },
+    { id: "highland-valley-cache", x: 54, y: 92, reward: "towerSupply" },
+    { id: "moon-pass-cache", x: 70, y: 109, reward: "moonSupply" },
     { id: "old-tower-cache", x: 104, y: 90, reward: "towerSupply" },
     { id: "old-tower-side-cache", x: 97, y: 92, reward: "shieldSupply" },
     { id: "moon-ruin-cache", x: 97, y: 99, reward: "moonRelic" },
     { id: "moon-road-supply", x: 102, y: 106, reward: "moonSupply" },
     { id: "moon-summoner-cache", x: 84, y: 106, reward: "summonerSupply" },
     { id: "moon-thorn-cache", x: 86, y: 105, reward: "trapSupply" },
+    { id: "moon-west-camp-cache", x: 76, y: 103, reward: "moonSupply" },
     { id: "moon-camp-armory", x: 106, y: 116, reward: "eclipseGear" },
+    { id: "moon-archive-supply", x: 132, y: 6, reward: "moonArchiveSupply" },
+    { id: "moon-archive-side-vault", x: 144, y: 12, reward: "moonArchiveSupply" },
+    { id: "moon-archive-reliquary", x: 151, y: 17, reward: "moonArchiveRelic" },
+    { id: "regen-side-cache", x: 34, y: 125, reward: "smugglerSupply" },
+    { id: "mist-shrine-cache", x: 68, y: 123, reward: "mistCharm" },
+    { id: "mist-shrine-supply", x: 77, y: 121, reward: "mistSupply" },
+    { id: "eclipse-approach-cache", x: 71, y: 123, reward: "trapSupply" },
     { id: "eclipse-side-cache", x: 80, y: 126, reward: "summonerSupply" },
     { id: "eclipse-castle-cache", x: 86, y: 124, reward: "eclipseSupply" },
     { id: "black-fort-armory", x: 103, y: 132, reward: "voidGear" },
@@ -67,22 +116,65 @@
     { id: "black-market-stash", x: 43, y: 135, reward: "blackMarketSupply" },
     { id: "black-market-alley-cache", x: 47, y: 132, reward: "blackMarketSupply" },
     { id: "obsidian-side-cache", x: 58, y: 135, reward: "obsidianSupply" },
+    { id: "smuggler-north-cache", x: 21, y: 106, reward: "smugglerSupply" },
+    { id: "smuggler-south-cache", x: 22, y: 122, reward: "smugglerSupply" },
     { id: "regen-cave-ring", x: 54, y: 124, reward: "greaterRegen" },
     { id: "black-gate-shield-cache", x: 73, y: 134, reward: "blackShieldSupply" },
+    { id: "black-sun-ditch-cache", x: 66, y: 136, reward: "trapSupply" },
     { id: "black-sun-thorn-cache", x: 79, y: 139, reward: "trapSupply" },
     { id: "black-sun-cache", x: 76, y: 140, reward: "voidSupply" },
+    { id: "undercity-supply", x: 91, y: 7, reward: "cryptSupply" },
+    { id: "undercity-reliquary", x: 117, y: 13, reward: "deepLamp" },
+    { id: "frost-haven-supply", x: 30, y: 153, reward: "frostSupply" },
+    { id: "frost-core-reliquary", x: 68, y: 155, reward: "frostCharm" },
+    { id: "frost-citadel-cache", x: 114, y: 156, reward: "frostSupply" },
+    { id: "frost-tower-supply", x: 95, y: 27, reward: "towerExpeditionSupply" },
+    { id: "frost-tower-reliquary", x: 115, y: 29, reward: "skyCharm" },
+    { id: "east-harbor-supply", x: 154, y: 84, reward: "frostSupply" },
+    { id: "east-lighthouse-cache", x: 150, y: 49, reward: "towerSupply" },
+    { id: "east-ridge-cache", x: 168, y: 105, reward: "voidSupply" },
+    { id: "east-coast-cache", x: 179, y: 121, reward: "frostSupply" },
+    { id: "southwind-supply", x: 172, y: 169, reward: "frostSupply" },
+    { id: "south-island-cache", x: 57, y: 209, reward: "blackMarketSupply" },
+    { id: "middle-isle-cache", x: 108, y: 202, reward: "voidSupply" },
+    { id: "dawn-harbor-supply", x: 220, y: 68, reward: "frostSupply" },
+    { id: "sunrise-north-cache", x: 237, y: 43, reward: "towerExpeditionSupply" },
+    { id: "sunrise-valley-cache", x: 211, y: 111, reward: "voidSupply" },
+    { id: "suncrest-city-cache", x: 246, y: 127, reward: "blackMarketSupply" },
+    { id: "suncrest-market-ledger", x: 231, y: 126, reward: "suncrestMarketSupply" },
+    { id: "suncrest-arsenal-vault", x: 247, y: 130, reward: "suncrestArsenalSupply" },
+    { id: "sunrise-south-cache", x: 240, y: 166, reward: "frostSupply" },
+    { id: "ember-sanctum-cache", x: 222, y: 226, reward: "towerExpeditionSupply" },
+    { id: "ember-east-cache", x: 243, y: 233, reward: "voidSupply" },
+    { id: "solar-warden-cache", x: 241, y: 104, reward: "solarSupply" },
+    { id: "sunspire-supply", x: 175, y: 6, reward: "sunspireSupply" },
+    { id: "sunspire-reliquary", x: 190, y: 17, reward: "prismLens" },
+    { id: "suncrest-arena-supply", x: 205, y: 8, reward: "arenaSupply" },
+    { id: "suncrest-arena-reliquary", x: 216, y: 18, reward: "duelistMedal" },
+    { id: "ember-dragon-cache", x: 235, y: 232, reward: "emberSupply" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
     { id: "north-ore", x: 23, y: 20, kind: "ore" },
     { id: "hunter-cache", x: 57, y: 28, kind: "cache" },
+    { id: "dragon-cave-sign", x: 48, y: 24, kind: "dragonCaveHint" },
+    { id: "dragon-cave-heat", x: 51, y: 20, kind: "dragonCaveHint" },
+    { id: "grassland-campfire", x: 34, y: 33, kind: "routeHint" },
+    { id: "river-fork-marker", x: 62, y: 50, kind: "shortcutHint" },
     { id: "ash-spring", x: 101, y: 55, kind: "spring" },
+    { id: "ash-road-shrine", x: 90, y: 44, kind: "waystone" },
     { id: "tower-cache", x: 99, y: 88, kind: "cache" },
+    { id: "skyspine-cairn", x: 40, y: 76, kind: "routeHint" },
+    { id: "highland-spring", x: 64, y: 90, kind: "spring" },
+    { id: "moon-gorge-marker", x: 72, y: 106, kind: "shortcutHint" },
     { id: "moon-waystone", x: 86, y: 101, kind: "waystone" },
     { id: "moon-field-cache", x: 108, y: 104, kind: "cache" },
+    { id: "moon-west-cairn", x: 76, y: 103, kind: "routeHint" },
     { id: "moon-grave-note", x: 91, y: 103, kind: "routeHint" },
     { id: "summoner-warning", x: 82, y: 107, kind: "summonerHint" },
     { id: "thorn-warning", x: 86, y: 104, kind: "trapHint" },
+    { id: "moon-archive-map", x: 130, y: 4, kind: "moonArchiveHint" },
+    { id: "moon-archive-lens-note", x: 145, y: 14, kind: "moonArchiveHint" },
     { id: "eclipse-seal", x: 82, y: 121, kind: "eclipseSeal" },
     { id: "eclipse-side-road", x: 78, y: 126, kind: "routeHint" },
     { id: "void-seal", x: 82, y: 138, kind: "voidSeal" },
@@ -90,21 +182,79 @@
     { id: "black-market-rumor", x: 41, y: 132, kind: "routeHint" },
     { id: "black-market-alley-map", x: 47, y: 133, kind: "shortcutHint" },
     { id: "smuggler-road-sign", x: 20, y: 100, kind: "smugglerHint" },
+    { id: "smuggler-ambush-note", x: 22, y: 116, kind: "smugglerHint" },
     { id: "regen-cave-note", x: 32, y: 121, kind: "greaterRegenHint" },
+    { id: "regen-side-note", x: 34, y: 123, kind: "greaterRegenHint" },
+    { id: "mist-shrine-tablet", x: 68, y: 122, kind: "mistHint" },
+    { id: "mist-shrine-warning", x: 76, y: 121, kind: "trapHint" },
+    { id: "eclipse-approach-warning", x: 71, y: 122, kind: "trapHint" },
     { id: "broken-gate-marker", x: 74, y: 136, kind: "shortcutHint" },
+    { id: "black-sun-ditch-marker", x: 66, y: 136, kind: "shortcutHint" },
     { id: "black-sun-trap-note", x: 75, y: 139, kind: "trapHint" },
+    { id: "undercity-inscription", x: 101, y: 10, kind: "cryptHint" },
+    { id: "frost-road-waystone", x: 24, y: 148, kind: "frostHint" },
+    { id: "frost-cave-warning", x: 54, y: 153, kind: "frostHint" },
+    { id: "frost-seal", x: 103, y: 154, kind: "frostSeal" },
+    { id: "frost-tower-map", x: 96, y: 23, kind: "frostTowerHint" },
+    { id: "frost-tower-warning", x: 111, y: 25, kind: "frostTowerHint" },
+    { id: "frost-tower-lift", x: 114, y: 31, kind: "frostTowerLift" },
+    { id: "east-harbor-chart", x: 141, y: 87, kind: "shortcutHint" },
+    { id: "east-lighthouse", x: 150, y: 48, kind: "waystone" },
+    { id: "east-ridge-marker", x: 166, y: 104, kind: "routeHint" },
+    { id: "east-river-marker", x: 178, y: 120, kind: "routeHint" },
+    { id: "southwind-map", x: 162, y: 171, kind: "shortcutHint" },
+    { id: "south-island-altar", x: 57, y: 208, kind: "cache" },
+    { id: "dawn-harbor-chart", x: 208, y: 74, kind: "shortcutHint" },
+    { id: "sunrise-north-ruin", x: 236, y: 44, kind: "waystone" },
+    { id: "sunrise-ridge-marker", x: 232, y: 87, kind: "routeHint" },
+    { id: "solar-battery-warning", x: 237, y: 94, kind: "solarWardenHint" },
+    { id: "solar-battery-scorch", x: 241, y: 99, kind: "solarWardenHint" },
+    { id: "sunrise-valley-shrine", x: 211, y: 110, kind: "cache" },
+    { id: "suncrest-road-map", x: 228, y: 131, kind: "shortcutHint" },
+    { id: "suncrest-tactics-board", x: 234, y: 123, kind: "suncrestGuide" },
+    { id: "suncrest-market-rumor", x: 241, y: 131, kind: "suncrestGuide" },
+    { id: "suncrest-arena-rules", x: 202, y: 2, kind: "suncrestArenaHint" },
+    { id: "suncrest-arena-tactics", x: 209, y: 13, kind: "suncrestArenaHint" },
+    { id: "sunspire-observatory", x: 180, y: 10, kind: "sunspireHint" },
+    { id: "sunrise-seal", x: 240, y: 165, kind: "sunriseSeal" },
+    { id: "ember-causeway-marker", x: 220, y: 207, kind: "routeHint" },
+    { id: "ember-sanctum", x: 222, y: 225, kind: "waystone" },
   ];
   const GUARDIAN_SITE = { x: 20, y: 16 };
   const WARDEN_SITE = { x: 70, y: 58 };
   const WARDEN_REQUIREMENTS = { level: 10 };
   const ASH_KNIGHT_SITE = { x: 103, y: 89 };
   const ASH_KNIGHT_REQUIREMENTS = { level: 14 };
+  const MOON_ARCHIVE_WARDEN_SITE = { x: 150, y: 17 };
+  const MOON_ARCHIVE_WARDEN_REQUIREMENTS = { level: 18 };
   const ECLIPSE_DRAGON_SITE = { x: 82, y: 123 };
   const CHAPTER2_REQUIREMENTS = { level: 20 };
   const VOID_DRAGON_SITE = { x: 80, y: 140 };
   const CHAPTER3_REQUIREMENTS = { level: 26 };
   const OBSIDIAN_GOLEM_SITE = { x: 52, y: 132 };
   const OBSIDIAN_GOLEM_REQUIREMENTS = { level: 24 };
+  const SMUGGLER_CAPTAIN_SITE = { x: 21, y: 115 };
+  const SMUGGLER_CAPTAIN_REQUIREMENTS = { level: 8 };
+  const REGEN_SENTINEL_SITE = { x: 43, y: 124 };
+  const REGEN_SENTINEL_REQUIREMENTS = { level: 16 };
+  const MIST_KEEPER_SITE = { x: 72, y: 122 };
+  const MIST_KEEPER_REQUIREMENTS = { level: 18 };
+  const CRYPT_WARDEN_SITE = { x: 116, y: 12 };
+  const CRYPT_WARDEN_REQUIREMENTS = { level: 22 };
+  const FROST_GOLEM_SITE = { x: 64, y: 155 };
+  const FROST_GOLEM_REQUIREMENTS = { level: 30 };
+  const FROST_TOWER_WARDEN_SITE = { x: 112, y: 27 };
+  const FROST_TOWER_WARDEN_REQUIREMENTS = { level: 32 };
+  const FROST_DRAGON_SITE = { x: 108, y: 156 };
+  const CHAPTER4_REQUIREMENTS = { level: 34 };
+  const SOLAR_WARDEN_SITE = { x: 241, y: 102 };
+  const SOLAR_WARDEN_REQUIREMENTS = { level: 38 };
+  const SUNCREST_CHAMPION_SITE = { x: 213, y: 17 };
+  const SUNCREST_CHAMPION_REQUIREMENTS = { level: 39 };
+  const SUNSPIRE_KEEPER_SITE = { x: 189, y: 17 };
+  const SUNSPIRE_KEEPER_REQUIREMENTS = { level: 40 };
+  const EMBER_DRAGON_SITE = { x: 232, y: 232 };
+  const CHAPTER5_REQUIREMENTS = { level: 42 };
   const BOSS_REQUIREMENTS = { level: 15, scales: 3 };
   const REGION_SPAWNS = {
     grassland: { danger: 1, maxBonus: 0, pool: ["slime", "slime", "bat"] },
@@ -114,13 +264,30 @@
     mine: { danger: 3, maxBonus: 3, pool: ["bubbler", "bubbler", "wisp", "boar"] },
     cave: { danger: 4, maxBonus: 4, pool: ["dragonling", "wisp", "dragonling"] },
     ash: { danger: 4, maxBonus: 5, pool: ["sorcerer", "wisp", "dragonling", "boar"] },
+    highland: { danger: 5, maxBonus: 6, pool: ["shieldSoldier", "boar", "sorcerer", "wisp", "dragonling"] },
     tower: { danger: 5, maxBonus: 6, pool: ["shieldSoldier", "sorcerer", "sorcerer", "dragonling", "wisp"] },
     moon: { danger: 6, maxBonus: 7, pool: ["moonShade", "summoner", "trapFlower", "sorcerer", "dragonling", "wisp"] },
+    moonArchive: { danger: 8, maxBonus: 10, pool: ["moonShade", "eclipseMage", "summoner", "shieldSoldier", "trapFlower"] },
     eclipse: { danger: 7, maxBonus: 8, pool: ["shieldSoldier", "summoner", "trapFlower", "eclipseMage", "moonShade", "sorcerer", "dragonling"] },
     smuggler: { danger: 8, maxBonus: 8, pool: ["shieldSoldier", "trapFlower", "summoner", "wisp", "boar", "dragonling"] },
     regenCave: { danger: 8, maxBonus: 9, pool: ["bubbler", "trapFlower", "summoner", "obsidianCrawler", "shieldSoldier", "moonShade"] },
     obsidian: { danger: 8, maxBonus: 9, pool: ["shieldSoldier", "obsidianCrawler", "summoner", "trapFlower", "voidWraith", "eclipseMage", "dragonling"] },
     void: { danger: 8, maxBonus: 10, pool: ["shieldSoldier", "summoner", "trapFlower", "voidWraith", "eclipseMage", "moonShade", "dragonling"] },
+    mistShrine: { danger: 8, maxBonus: 9, pool: ["mistLancer", "summoner", "trapFlower", "moonShade", "bubbler", "shieldSoldier"] },
+    undercity: { danger: 8, maxBonus: 10, pool: ["vaultLeech", "shieldSoldier", "summoner", "trapFlower", "eclipseMage", "mistLancer"] },
+    frost: { danger: 9, maxBonus: 11, pool: ["frostMoth", "frostBeast", "shieldSoldier", "voidWraith", "mistLancer"] },
+    frostCave: { danger: 9, maxBonus: 12, pool: ["frostBeast", "frostMoth", "vaultLeech", "shieldSoldier", "summoner"] },
+    frostCitadel: { danger: 10, maxBonus: 13, pool: ["frostMoth", "frostBeast", "summoner", "shieldSoldier", "voidWraith", "eclipseMage"] },
+    frostTower1: { danger: 9, maxBonus: 11, pool: ["frostBeacon", "shieldSoldier", "frostMoth", "mistLancer"] },
+    frostTower2: { danger: 10, maxBonus: 13, pool: ["frostBeacon", "frostBeast", "frostMoth", "shieldSoldier", "summoner"] },
+    windCoast: { danger: 8, maxBonus: 9, pool: ["mistLancer", "frostMoth", "sorcerer", "shieldSoldier", "bubbler", "boar"] },
+    eastHighland: { danger: 9, maxBonus: 11, pool: ["frostBeast", "mistLancer", "shieldSoldier", "summoner", "voidWraith", "frostMoth"] },
+    southIsles: { danger: 9, maxBonus: 10, pool: ["frostMoth", "bubbler", "mistLancer", "summoner", "moonShade", "shieldSoldier"] },
+    dawnCoast: { danger: 9, maxBonus: 11, pool: ["mistLancer", "frostMoth", "shieldSoldier", "sorcerer", "bubbler", "frostBeast"] },
+    sunriseHighland: { danger: 10, maxBonus: 13, pool: ["sunLancer", "mirageCaster", "frostBeast", "summoner", "shieldSoldier", "eclipseMage"] },
+    suncrestArena: { danger: 12, maxBonus: 14, pool: ["solarRunner", "sunLancer", "mirageCaster", "prismBeacon", "shieldSoldier"] },
+    sunspire: { danger: 12, maxBonus: 14, pool: ["solarRunner", "prismBeacon", "sunLancer", "mirageCaster", "shieldSoldier"] },
+    emberIsles: { danger: 11, maxBonus: 14, pool: ["sunLancer", "mirageCaster", "trapFlower", "summoner", "voidWraith", "shieldSoldier"] },
   };
 
   const TILE_GRASS = 0;
@@ -145,21 +312,55 @@
   const ATTACK_WIDTH = 20 * WORLD_SCALE;
   const DASH_COST = 34;
 
-  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣", "黒曜の槌"];
-  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧"];
-  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し"];
-  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御"];
-  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 3400, 5600, 9800];
-  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34];
-  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 3200, 5200, 9200];
-  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42];
+  const weaponNames = ["わりばし", "たけやり", "粘土の剣", "木刀", "鉄の剣", "泡割り槍", "火返しの剣", "竜狩りの刃", "星見の杖", "月蝕の刃", "黒陽の剣", "黒曜の槌", "霜砕きの剣", "暁光の長槍"];
+  const armorNames = ["綿服", "布鎧", "木鎧", "竹鎧", "鎖鎧", "鉱夫服", "耐火マント", "巡礼鎧", "星織りの衣", "月蝕の外套", "黒陽の鎧", "黒曜重鎧", "白銀の外套", "陽冠の光鎧"];
+  const weaponTraits = ["基本", "正面", "側撃", "背撃", "特効", "泡特効", "火霊特効", "竜洞特効", "魔術師特効", "月蝕竜特効", "黒竜特効", "重装崩し", "凍土特効", "光砲兵・熾火特効"];
+  const weaponAttackProfiles = [
+    { style: "小振り", cooldown: 205, range: 0.9, width: 0.9, power: 0.92, lunge: 0, knockback: 5, color: "#f8fbff" },
+    { style: "高速突き", cooldown: 155, range: 1.35, width: 0.58, power: 0.8, lunge: 4, knockback: 5, color: "#fff2a6" },
+    { style: "大薙ぎ", cooldown: 285, range: 0.92, width: 1.65, power: 1.12, lunge: 0, knockback: 9, color: "#f2c7a6" },
+    { style: "高速連斬", cooldown: 135, range: 1, width: 0.82, power: 0.76, lunge: 3, knockback: 4, color: "#ffffff" },
+    { style: "均衡斬", cooldown: 215, range: 1.08, width: 1.05, power: 1.05, lunge: 1, knockback: 7, color: "#d7e2ea" },
+    { style: "長槍突進", cooldown: 170, range: 1.62, width: 0.64, power: 0.94, lunge: 6, knockback: 7, color: "#8dd7ff" },
+    { style: "火輪薙ぎ", cooldown: 245, range: 1.08, width: 1.55, power: 1.12, lunge: 1, knockback: 9, color: "#ff8a3d" },
+    { style: "竜牙踏込", cooldown: 205, range: 1.34, width: 1, power: 1.14, lunge: 5, knockback: 10, color: "#ffef8a" },
+    { style: "星光貫通", cooldown: 300, range: 2.05, width: 0.68, power: 1.1, lunge: 0, knockback: 6, color: "#b990ff" },
+    { style: "月影連斬", cooldown: 165, range: 1.3, width: 0.9, power: 0.96, lunge: 6, knockback: 7, color: "#e36dff" },
+    { style: "黒陽大円斬", cooldown: 235, range: 1.42, width: 1.38, power: 1.17, lunge: 2, knockback: 11, color: "#7b80d8" },
+    { style: "重装粉砕", cooldown: 390, range: 1.08, width: 1.62, power: 1.55, lunge: 0, knockback: 18, color: "#aab0c8" },
+    { style: "霜刃滑走", cooldown: 190, range: 1.48, width: 1.45, power: 1.12, lunge: 5, knockback: 12, color: "#b9f4ff" },
+    { style: "暁光突貫", cooldown: 165, range: 2.2, width: 0.72, power: 1.2, lunge: 8, knockback: 14, color: "#fff0a6" },
+  ];
+  const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御", "凍結軽減", "狙撃・光熱・着弾軽減"];
+  const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 7400, 9600, 12800, 18500, 42000];
+  const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 20, 22, 30, 34, 40, 52];
+  const armorCosts = [0, 60, 290, 660, 900, 480, 720, 1320, 1900, 6200, 12200, 15200, 21500, 48000];
+  const armorDefense = [0, 2, 5, 11, 17, 7, 9, 23, 19, 25, 34, 42, 50, 64];
   const weaponSellValues = weaponCosts.map((cost) => Math.floor(cost * 0.5));
   const armorSellValues = armorCosts.map((cost) => Math.floor(cost * 0.5));
-  const shieldNames = ["なし", "木盾", "鉄盾", "星盾", "黒陽盾", "黒曜大盾"];
-  const shieldTraits = ["盾なし", "正面接触を少し軽減", "正面接触を軽減", "魔法敵にも構えやすい", "黒陽領の正面圧を軽減", "重いが正面戦闘に強い"];
-  const shieldCosts = [0, 120, 520, 1700, 3600, 6200];
-  const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48];
+  const shieldNames = ["なし", "木盾", "鉄盾", "星盾", "黒陽盾", "黒曜大盾", "霜鏡盾", "日輪大盾"];
+  const shieldTraits = ["盾なし", "正面接触を少し軽減", "正面接触を軽減", "魔法敵にも構えやすい", "黒陽領の正面圧を軽減", "重いが正面戦闘に強い", "凍土の正面圧を軽減", "正面射撃と光砲を大幅軽減"];
+  const shieldCosts = [0, 120, 520, 1700, 6600, 26200, 32000, 36000];
+  const shieldGuard = [0, 0.9, 0.78, 0.68, 0.58, 0.48, 0.42, 0.34];
   const shieldSellValues = shieldCosts.map((cost) => Math.floor(cost * 0.45));
+  const shieldRuneOrder = ["bastion", "stride", "counter"];
+  const shieldRuneData = {
+    bastion: {
+      name: "城壁の刻印",
+      trait: "盾の正面接触ダメージをさらに18%軽減",
+      cost: 5200,
+    },
+    stride: {
+      name: "疾走の刻印",
+      trait: "盾装備中は移動速度上昇・回避消費-6",
+      cost: 6200,
+    },
+    counter: {
+      name: "反撃の刻印",
+      trait: "正面接触時に防御力の24%で反撃",
+      cost: 7800,
+    },
+  };
   const itemOrder = ["potion", "tonic", "bomb", "ward", "elixir", "warp"];
   const itemNames = {
     tonic: "活力薬",
@@ -177,7 +378,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "eclipse", "void", "obsidian"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens", "duelist"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -215,6 +416,12 @@
       sell: 120,
       flag: "mineCharm",
     },
+    mist: {
+      name: "霧灯の護符",
+      trait: "罠・召喚・魔法圧を軽減",
+      sell: 0,
+      flag: "mistCharm",
+    },
     eclipse: {
       name: "月蝕の指輪",
       trait: "月蝕魔法を軽減",
@@ -232,6 +439,42 @@
       trait: "正面接触と黒曜衝撃を軽減",
       sell: 0,
       flag: "obsidianCharm",
+    },
+    deepLamp: {
+      name: "深層灯の護符",
+      trait: "鈍足を軽減・薬草回復を強化",
+      sell: 0,
+      flag: "deepLampCharm",
+    },
+    frost: {
+      name: "霜心の護符",
+      trait: "氷弾・凍結・スタミナ低下を軽減",
+      sell: 0,
+      flag: "frostCharm",
+    },
+    sky: {
+      name: "天駆けの徽章",
+      trait: "回避距離+40%・再使用時間短縮",
+      sell: 0,
+      flag: "skyCharm",
+    },
+    horizon: {
+      name: "遠見の護符",
+      trait: "狙撃線・光砲・着弾術を軽減",
+      sell: 14000,
+      flag: "horizonCharm",
+    },
+    prismLens: {
+      name: "反射水晶",
+      trait: "光弾を軽減し、熾火戦の回避余裕を伸ばす",
+      sell: 0,
+      flag: "prismLensCharm",
+    },
+    duelist: {
+      name: "陽冠闘士の徽章",
+      trait: "通常攻撃の間隔を短縮し、連撃中のスタミナ回収を強める",
+      sell: 0,
+      flag: "duelistCharm",
     },
   };
 
@@ -388,11 +631,150 @@
       atk: 116,
       def: 36,
       speed: 0,
-      xp: 130,
+      xp: 330,
       gold: 38,
       color: "#ff5e9f",
       shadow: "#3b5d24",
       drop: 0.12,
+    },
+    smugglerCaptain: {
+      name: "密輸隊長",
+      hp: 980,
+      atk: 144,
+      def: 68,
+      speed: 30 * WORLD_SCALE,
+      xp: 520,
+      gold: 420,
+      color: "#c28b42",
+      shadow: "#4a2812",
+      midboss: true,
+      drop: 0.6,
+    },
+    regenSentinel: {
+      name: "再生洞の守護者",
+      hp: 2100,
+      atk: 146,
+      def: 88,
+      speed: 19 * WORLD_SCALE,
+      xp: 1450,
+      gold: 760,
+      color: "#74ff8f",
+      shadow: "#214d31",
+      midboss: true,
+      drop: 0.8,
+    },
+    mistLancer: {
+      name: "霧槍兵",
+      hp: 620,
+      atk: 116,
+      def: 58,
+      speed: 27 * WORLD_SCALE,
+      xp: 520,
+      gold: 210,
+      color: "#9fd6c7",
+      shadow: "#264a4a",
+      drop: 0.22,
+    },
+    mistKeeper: {
+      name: "霧灯の守",
+      hp: 2400,
+      atk: 152,
+      def: 92,
+      speed: 21 * WORLD_SCALE,
+      xp: 1600,
+      gold: 900,
+      color: "#b7f4dc",
+      shadow: "#24564b",
+      midboss: true,
+      drop: 0.85,
+    },
+    vaultLeech: {
+      name: "吸命鬼",
+      hp: 320,
+      atk: 142,
+      def: 52,
+      speed: 35 * WORLD_SCALE,
+      xp: 210,
+      gold: 68,
+      color: "#8f4f78",
+      shadow: "#2d1027",
+      drop: 0.28,
+    },
+    cryptWarden: {
+      name: "地下墓所の番人",
+      hp: 2900,
+      atk: 142,
+      def: 155,
+      speed: 24 * WORLD_SCALE,
+      xp: 1900,
+      gold: 1100,
+      color: "#d7b26d",
+      shadow: "#49351f",
+      midboss: true,
+      drop: 0.9,
+    },
+    frostMoth: {
+      name: "氷晶蛾",
+      hp: 340,
+      atk: 191,
+      def: 70,
+      speed: 31 * WORLD_SCALE,
+      xp: 320,
+      gold: 105,
+      color: "#b9f4ff",
+      shadow: "#315d7a",
+      drop: 0.3,
+      flying: true,
+    },
+    frostBeast: {
+      name: "霜牙獣",
+      hp: 520,
+      atk: 182,
+      def: 146,
+      speed: 30 * WORLD_SCALE,
+      xp: 420,
+      gold: 145,
+      color: "#d7e8ef",
+      shadow: "#42596a",
+      drop: 0.34,
+    },
+    frostGolem: {
+      name: "氷窟巨人",
+      hp: 4200,
+      atk: 242,
+      def: 150,
+      speed: 17 * WORLD_SCALE,
+      xp: 3100,
+      gold: 1500,
+      color: "#8dd7ff",
+      shadow: "#1c4966",
+      midboss: true,
+      drop: 1,
+    },
+    frostBeacon: {
+      name: "凍気灯",
+      hp: 620,
+      atk: 182,
+      def: 92,
+      speed: 0,
+      xp: 460,
+      gold: 165,
+      color: "#9de8ff",
+      shadow: "#315d7a",
+      drop: 0.42,
+    },
+    towerWarden: {
+      name: "霜見の塔守",
+      hp: 5100,
+      atk: 241,
+      def: 148,
+      speed: 21 * WORLD_SCALE,
+      xp: 3900,
+      gold: 1900,
+      color: "#d8f7ff",
+      shadow: "#405d7a",
+      midboss: true,
+      drop: 1,
     },
     dragonling: {
       name: "小竜",
@@ -445,6 +827,19 @@
       midboss: true,
       drop: 0,
     },
+    archiveWarden: {
+      name: "月書庫の番人",
+      hp: 2650,
+      atk: 132,
+      def: 98,
+      speed: 23 * WORLD_SCALE,
+      xp: 1550,
+      gold: 820,
+      color: "#b08cff",
+      shadow: "#2d174f",
+      midboss: true,
+      drop: 0.85,
+    },
     dragon: {
       name: "赤竜",
       hp: 2000,
@@ -488,12 +883,125 @@
       name: "黒陽竜",
       hp: 5600,
       atk: 154,
-      def: 118,
+      def: 128,
       speed: 23 * WORLD_SCALE,
       xp: 4200,
       gold: 2200,
       color: "#191c38",
       shadow: "#05040d",
+      boss: true,
+      drop: 1,
+    },
+    sunLancer: {
+      name: "光槍兵",
+      hp: 760,
+      atk: 218,
+      def: 132,
+      speed: 24 * WORLD_SCALE,
+      xp: 610,
+      gold: 280,
+      color: "#ffe57a",
+      shadow: "#7a5318",
+      drop: 0.38,
+    },
+    mirageCaster: {
+      name: "陽炎術師",
+      hp: 680,
+      atk: 225,
+      def: 106,
+      speed: 22 * WORLD_SCALE,
+      xp: 690,
+      gold: 310,
+      color: "#ff9f5a",
+      shadow: "#732c1c",
+      drop: 0.42,
+    },
+    solarRunner: {
+      name: "閃光走者",
+      hp: 920,
+      atk: 232,
+      def: 118,
+      speed: 33 * WORLD_SCALE,
+      xp: 780,
+      gold: 340,
+      color: "#fff7a6",
+      shadow: "#7a5a18",
+      drop: 0.42,
+    },
+    prismBeacon: {
+      name: "光柱鏡",
+      hp: 880,
+      atk: 238,
+      def: 150,
+      speed: 0,
+      xp: 840,
+      gold: 360,
+      color: "#d7f6ff",
+      shadow: "#315d7a",
+      drop: 0.45,
+    },
+    solarWarden: {
+      name: "日輪砲台守",
+      hp: 6800,
+      atk: 282,
+      def: 220,
+      speed: 18 * WORLD_SCALE,
+      xp: 5200,
+      gold: 5200,
+      color: "#fff0a6",
+      shadow: "#704717",
+      midboss: true,
+      drop: 1,
+    },
+    sunspireKeeper: {
+      name: "日鏡塔の守主",
+      hp: 7600,
+      atk: 292,
+      def: 226,
+      speed: 20 * WORLD_SCALE,
+      xp: 6600,
+      gold: 6800,
+      color: "#ffeab0",
+      shadow: "#6b481b",
+      midboss: true,
+      drop: 1,
+    },
+    suncrestChampion: {
+      name: "陽冠闘技王",
+      hp: 7000,
+      atk: 286,
+      def: 218,
+      speed: 27 * WORLD_SCALE,
+      xp: 6200,
+      gold: 6200,
+      color: "#ffd166",
+      shadow: "#7a4a18",
+      midboss: true,
+      drop: 1,
+    },
+    frostDragon: {
+      name: "霜冠竜",
+      hp: 7600,
+      atk: 255,
+      def: 200,
+      speed: 24 * WORLD_SCALE,
+      xp: 6000,
+      gold: 3200,
+      color: "#d9f7ff",
+      shadow: "#315d7a",
+      boss: true,
+      drop: 1,
+    },
+    emberDragon: {
+      name: "熾火天竜",
+      hp: 11200,
+      atk: 308,
+      def: 248,
+      speed: 28 * WORLD_SCALE,
+      xp: 9200,
+      gold: 8800,
+      color: "#ffcf5a",
+      shadow: "#8a2518",
       boss: true,
       drop: 1,
     },
@@ -514,6 +1022,7 @@
     SAFE_ZONES,
     HEAL_POINTS,
     TRAVEL_POINTS,
+    DUNGEON_PORTALS,
     TOWN_GATES,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
@@ -522,12 +1031,36 @@
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_SITE,
     ASH_KNIGHT_REQUIREMENTS,
+    MOON_ARCHIVE_WARDEN_SITE,
+    MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     ECLIPSE_DRAGON_SITE,
     CHAPTER2_REQUIREMENTS,
     VOID_DRAGON_SITE,
     CHAPTER3_REQUIREMENTS,
     OBSIDIAN_GOLEM_SITE,
     OBSIDIAN_GOLEM_REQUIREMENTS,
+    SMUGGLER_CAPTAIN_SITE,
+    SMUGGLER_CAPTAIN_REQUIREMENTS,
+    REGEN_SENTINEL_SITE,
+    REGEN_SENTINEL_REQUIREMENTS,
+    MIST_KEEPER_SITE,
+    MIST_KEEPER_REQUIREMENTS,
+    CRYPT_WARDEN_SITE,
+    CRYPT_WARDEN_REQUIREMENTS,
+    FROST_GOLEM_SITE,
+    FROST_GOLEM_REQUIREMENTS,
+    FROST_TOWER_WARDEN_SITE,
+    FROST_TOWER_WARDEN_REQUIREMENTS,
+    FROST_DRAGON_SITE,
+    CHAPTER4_REQUIREMENTS,
+    SOLAR_WARDEN_SITE,
+    SOLAR_WARDEN_REQUIREMENTS,
+    SUNCREST_CHAMPION_SITE,
+    SUNCREST_CHAMPION_REQUIREMENTS,
+    SUNSPIRE_KEEPER_SITE,
+    SUNSPIRE_KEEPER_REQUIREMENTS,
+    EMBER_DRAGON_SITE,
+    CHAPTER5_REQUIREMENTS,
     BOSS_REQUIREMENTS,
     REGION_SPAWNS,
     TILE_GRASS,
@@ -547,6 +1080,7 @@
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponAttackProfiles,
     armorTraits,
     weaponCosts,
     weaponAttack,
@@ -559,6 +1093,8 @@
     shieldCosts,
     shieldGuard,
     shieldSellValues,
+    shieldRuneOrder,
+    shieldRuneData,
     itemOrder,
     itemNames,
     itemSellValues,

@@ -14,6 +14,7 @@
   const {
     TILE,
     WORLD_SCALE,
+    DUNGEON_PORTALS,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     TILE_GRASS,
@@ -21,6 +22,7 @@
     TILE_FIELD,
     ATTACK_RANGE,
     ATTACK_WIDTH,
+    weaponAttackProfiles,
   } = definitions;
 
   const {
@@ -30,6 +32,12 @@
   } = mathHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
+
+  function activeAccessory(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories)) return player.equippedAccessories.includes(id);
+    if (player.equippedAccessory) return player.equippedAccessory === id;
+    return Boolean(player[legacyFlag]);
+  }
 
   function requireActionContext(context) {
     if (!context?.state || !context?.player) {
@@ -71,7 +79,7 @@
       performAttack(context);
       return;
     }
-    if (nearestNpc() || nearestChest(context) || playerNearCave()) {
+    if (nearestNpc() || nearestPortal(context) || nearestChest(context) || playerNearCave()) {
       interact(context);
       return;
     }
@@ -103,14 +111,20 @@
   }
 
   function performAttack(context) {
-    const { state, player, facingVector, addSlash } = requireActionContext(context);
+    const { state, player, facingVector, moveActor, addSlash, addRing } = requireActionContext(context);
     if (player.attackCooldown > 0 || state.gameOver || player.hp <= 0) return;
-    player.attackCooldown = 230;
-    const pc = centerOf(player);
+    const profile = weaponAttackProfiles[player.weapon] || weaponAttackProfiles[0];
+    const duelist = activeAccessory(player, "duelist", "duelistCharm");
+    player.attackCooldown = Math.max(92, Math.round(profile.cooldown * (duelist ? 0.84 : 1)));
     const dir = facingVector();
-    const slashX = pc.x + dir.x * worldPx(14);
-    const slashY = pc.y + dir.y * worldPx(14);
-    addSlash(slashX, slashY, player.dir, "#f8fbff");
+    if (profile.lunge > 0) moveActor(player, dir.x * worldPx(profile.lunge), dir.y * worldPx(profile.lunge));
+    const pc = centerOf(player);
+    const attackRange = ATTACK_RANGE * profile.range;
+    const attackWidth = ATTACK_WIDTH * profile.width;
+    const slashX = pc.x + dir.x * Math.min(attackRange, worldPx(28));
+    const slashY = pc.y + dir.y * Math.min(attackRange, worldPx(28));
+    addSlash(slashX, slashY, player.dir, profile.color);
+    if (profile.width >= 1.35 || profile.power >= 1.4) addRing(pc.x, pc.y, profile.color, attackWidth * 0.72);
 
     let hitCount = 0;
     for (const monster of state.monsters) {
@@ -120,27 +134,30 @@
       const relY = mc.y - pc.y;
       const forward = relX * dir.x + relY * dir.y;
       const side = Math.abs(relX * -dir.y + relY * dir.x);
-      if (forward < -worldPx(2) || forward > ATTACK_RANGE + monster.w) continue;
-      if (side > ATTACK_WIDTH / 2 + monster.w / 2) continue;
-      hitMonster(context, monster, 1.08 + hitCount * 0.08, "#ffffff");
+      if (forward < -worldPx(2) || forward > attackRange + monster.w) continue;
+      if (side > attackWidth / 2 + monster.w / 2) continue;
+      hitMonster(context, monster, profile.power * (1 + Math.min(hitCount, 3) * 0.04), profile.color, profile.knockback);
       hitCount += 1;
     }
 
     if (hitCount) {
-      player.comboTimer = 2400;
+      player.combo += hitCount;
+      player.comboTimer = duelist ? 3200 : 2400;
+      if (duelist) player.stamina = Math.min(player.staminaMax, player.stamina + 2 + hitCount * 3);
       state.shake = Math.max(state.shake, 60);
     } else {
       player.combo = Math.max(0, player.combo - 1);
     }
   }
 
-  function hitMonster(context, monster, power = 1, color = "#ffffff") {
+  function hitMonster(context, monster, power = 1, color = "#ffffff", knockback = 7) {
     const { player, rand, playerAttack, weaponDamageMultiplier, addFloater, burst, moveActor } = requireActionContext(context);
     const pDot = facingDot(player, monster);
     const mDot = facingDot(monster, player);
     const crit = Math.random() < 0.12 + player.weapon * 0.03;
     const critMult = crit ? 1.55 : 1;
-    const hit = Math.max(1, Math.round((playerAttack() - monster.def + rand(0, 4)) * power * critMult * weaponDamageMultiplier(monster, pDot, mDot)));
+    const gearMult = weaponDamageMultiplier(monster, pDot, mDot);
+    const hit = Math.max(1, Math.round(((playerAttack() + rand(0, 4)) * gearMult - monster.def) * power * critMult));
     monster.hp -= hit;
     monster.hurt = 150;
     player.stamina = Math.min(player.staminaMax, player.stamina + 5);
@@ -149,7 +166,7 @@
     const away = normalize(mc.x - pc.x, mc.y - pc.y);
     addFloater(mc.x, monster.y, crit ? `${hit}!` : String(hit), crit ? "#ffd166" : color);
     burst(mc.x, mc.y, crit ? "#ffd166" : "#f8fbff", monster.boss ? 10 : 6);
-    moveActor(monster, away.x * 7, away.y * 7);
+    moveActor(monster, away.x * knockback, away.y * knockback);
   }
 
   function interact(context) {
@@ -158,6 +175,12 @@
     const npc = nearestNpc();
     if (npc) {
       handleNpc(npc);
+      return;
+    }
+
+    const portal = nearestPortal(context);
+    if (portal) {
+      traversePortal(context, portal);
       return;
     }
 
@@ -175,6 +198,33 @@
     searchGround(context);
   }
 
+  function nearestPortal(context) {
+    const { state, player } = requireActionContext(context);
+    const pc = centerOf(player);
+    for (const portal of DUNGEON_PORTALS || []) {
+      if (portal.unlock === "frostTowerLift" && !state.discoveries.has("frost-tower-lift")) continue;
+      const px = (portal.x + 0.5) * TILE;
+      const py = (portal.y + 0.5) * TILE;
+      if (Math.hypot(pc.x - px, pc.y - py) < worldPx(22)) return portal;
+    }
+    return null;
+  }
+
+  function traversePortal(context, portal) {
+    const { state, player, say, addRing, burst } = requireActionContext(context);
+    state.monsters = state.monsters.filter((monster) => monster.boss || monster.midboss);
+    state.projectiles = [];
+    state.regionSpawnTimer = 0;
+    state.spawnTimer = 0;
+    player.x = Math.floor((portal.toX + 0.5) * TILE - player.w / 2);
+    player.y = Math.floor((portal.toY + 0.5) * TILE - player.h / 2);
+    player.invuln = Math.max(player.invuln, 900);
+    player.slow = 0;
+    addRing(player.x + player.w / 2, player.y + player.h / 2, "#d7b26d", worldPx(34));
+    burst(player.x + player.w / 2, player.y + player.h / 2, "#d7b26d", 18);
+    say(`${portal.name}へ移動した`, 1800);
+  }
+
   function nearestChest(context) {
     const { state, player } = requireActionContext(context);
     const pc = centerOf(player);
@@ -188,8 +238,40 @@
   }
 
   function openChest(context, chest) {
-    const { state, addRing, burst, grantChestReward } = requireActionContext(context);
+    const { state, say, addRing, burst, grantChestReward } = requireActionContext(context);
     if (state.chests.has(chest.id)) return;
+    if (chest.id === "regen-cave-ring" && !state.regenSentinelDefeated) {
+      say("再生洞の守護者を倒さないと宝箱に近づけない", 2200);
+      return;
+    }
+    if (chest.id === "mist-shrine-cache" && !state.mistKeeperDefeated) {
+      say("霧灯の守を倒さないと奥の護符に近づけない", 2200);
+      return;
+    }
+    if (chest.id === "undercity-reliquary" && !state.cryptWardenDefeated) {
+      say("地下墓所の番人を倒さないと遺物庫は開かない", 2200);
+      return;
+    }
+    if (chest.id === "moon-archive-reliquary" && !state.archiveWardenDefeated) {
+      say("月の書庫の番人を倒さないと遺物庫は開かない", 2200);
+      return;
+    }
+    if (chest.id === "frost-core-reliquary" && !state.frostGolemDefeated) {
+      say("氷窟巨人を倒さないと霜心の遺物庫は開かない", 2200);
+      return;
+    }
+    if (chest.id === "frost-tower-reliquary" && !state.towerWardenDefeated) {
+      say("霜見の塔守を倒さないと最上階の遺物庫は開かない", 2200);
+      return;
+    }
+    if (chest.id === "sunspire-reliquary" && !state.sunspireKeeperDefeated) {
+      say("日鏡塔の守主を倒さないと反射水晶には触れられない", 2200);
+      return;
+    }
+    if (chest.id === "suncrest-arena-reliquary" && !state.suncrestChampionDefeated) {
+      say("陽冠闘技王を倒さないと闘技場の遺物庫は開かない", 2200);
+      return;
+    }
     state.chests.add(chest.id);
     const cx = (chest.x + 0.5) * TILE;
     const cy = (chest.y + 0.5) * TILE;
@@ -254,6 +336,8 @@
     performAttack,
     hitMonster,
     interact,
+    nearestPortal,
+    traversePortal,
     nearestChest,
     openChest,
     searchGround,
