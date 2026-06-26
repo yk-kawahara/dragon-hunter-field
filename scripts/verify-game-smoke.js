@@ -734,11 +734,13 @@ function assertStoryClearFlow() {
   assert(runtime.canChallengeDragon(), "Dragon challenge should be available after requirements");
   runtime.handleCave();
   assert(state.spawnedBoss, "Cave interaction should spawn dragon");
+  runtime.spawnMonster("dragon", 51 * d.TILE + d.TILE, 14 * d.TILE);
   const dragon = state.monsters.find((monster) => monster.boss);
   assert(dragon, "Dragon monster should exist");
   dragon.hp = 0;
   runtime.updateMonsters(16);
   assert(state.bossDefeated && state.victory, "Dragon defeat should set victory state");
+  assert(!state.spawnedBoss && !state.monsters.some((monster) => monster.type === "dragon"), "Red Dragon defeat should clear duplicate live dragons in the same update");
 
   state.ashKnightDefeated = false;
   state.spawnedAshKnight = false;
@@ -892,12 +894,12 @@ function assertStoryClearFlow() {
   player.y = d.EMBER_DRAGON_SITE.y * d.TILE;
   runtime.updateStoryEvents();
   assert(state.spawnedEmberDragon, "Ember Dragon should spawn after chapter 5 requirements");
+  runtime.spawnMonster("emberDragon", d.EMBER_DRAGON_SITE.x * d.TILE + d.TILE, d.EMBER_DRAGON_SITE.y * d.TILE);
   const emberDragon = state.monsters.find((monster) => monster.type === "emberDragon");
   assert(emberDragon, "Ember Dragon monster should exist");
   emberDragon.hp = 0;
   runtime.updateMonsters(16);
   assert(state.emberDragonDefeated && state.chapter5Victory, "Ember Dragon defeat should set chapter 5 victory");
-  runtime.updateStoryEvents();
   assert(!state.spawnedEmberDragon && !state.monsters.some((monster) => monster.type === "emberDragon"), "defeated Ember Dragon should not remain spawned or reappear");
   runtime.handleNpc(elder);
   assert(state.chapter5Reported, "Elder report should complete chapter 5 clear state");
@@ -2061,6 +2063,23 @@ function assertScriptLoadSmoke() {
   };
 }
 
+function assertDiscoveryReread() {
+  const { definitions: d, state, player, runtime } = createRuntime();
+  const discovery = d.DISCOVERY_POINTS.find((entry) => entry.kind === "dragonCaveHint");
+  assert(discovery, "dragon cave guidance discovery should exist");
+  player.x = discovery.x * d.TILE;
+  player.y = discovery.y * d.TILE;
+  runtime.searchGround();
+  assert(state.discoveries.has(discovery.id), "first discovery interaction should record the discovery");
+  const afterFirst = { gold: player.gold, wards: player.wards, message: state.message };
+  state.searchCooldown = 0;
+  runtime.searchGround();
+  assert(player.gold === afterFirst.gold && player.wards === afterFirst.wards, "rereading a discovery should not grant rewards again");
+  assert(state.message !== afterFirst.message && /読み返/.test(state.message), "rereading a discovery should show guidance again");
+  assert(runtime.nearestDiscovery()?.id === discovery.id, "already-read discoveries should remain interactable as field guidance");
+  return { discovery: discovery.id, reread: true };
+}
+
 function main() {
   assertScriptOrder();
   installBrowserStubs();
@@ -2072,6 +2091,7 @@ function main() {
   const mine = assertMineContent();
   const camp = assertFrontierCamp();
   const expanded = assertExpandedWorldContent();
+  const discovery = assertDiscoveryReread();
 
   // Run full script-load smoke last in a fresh Node process context is not possible here,
   // but it is useful after the logic-only tests because it also loads src/game.js.
@@ -2091,7 +2111,7 @@ function main() {
   assert(child.status === 0, child.stderr || child.stdout || "script load smoke failed");
   const scriptLoad = JSON.parse(child.stdout.trim());
 
-  console.log(JSON.stringify({ ok: true, map, save, inventory, story, mine, camp, expanded, scriptLoad }, null, 2));
+  console.log(JSON.stringify({ ok: true, map, save, inventory, story, mine, camp, expanded, discovery, scriptLoad }, null, 2));
 }
 
 main();

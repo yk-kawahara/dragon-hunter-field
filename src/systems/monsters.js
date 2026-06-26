@@ -84,6 +84,40 @@
     player.equippedAccessory = player.equippedAccessories[0] || "";
   }
 
+  const defeatedEncounterFlags = [
+    ["dragon", "spawnedBoss", "bossDefeated"],
+    ["guardian", "spawnedGuardian", "guardianDefeated"],
+    ["warden", "spawnedWarden", "wardenDefeated"],
+    ["ashKnight", "spawnedAshKnight", "ashKnightDefeated"],
+    ["archiveWarden", "spawnedArchiveWarden", "archiveWardenDefeated"],
+    ["eclipseDragon", "spawnedEclipseDragon", "eclipseDragonDefeated"],
+    ["voidDragon", "spawnedVoidDragon", "voidDragonDefeated"],
+    ["obsidianGolem", "spawnedObsidianGolem", "obsidianGolemDefeated"],
+    ["smugglerCaptain", "spawnedSmugglerCaptain", "smugglerCaptainDefeated"],
+    ["regenSentinel", "spawnedRegenSentinel", "regenSentinelDefeated"],
+    ["mistKeeper", "spawnedMistKeeper", "mistKeeperDefeated"],
+    ["cryptWarden", "spawnedCryptWarden", "cryptWardenDefeated"],
+    ["frostGolem", "spawnedFrostGolem", "frostGolemDefeated"],
+    ["towerWarden", "spawnedTowerWarden", "towerWardenDefeated"],
+    ["frostDragon", "spawnedFrostDragon", "frostDragonDefeated"],
+    ["solarWarden", "spawnedSolarWarden", "solarWardenDefeated"],
+    ["suncrestChampion", "spawnedSuncrestChampion", "suncrestChampionDefeated"],
+    ["sunspireKeeper", "spawnedSunspireKeeper", "sunspireKeeperDefeated"],
+    ["emberDragon", "spawnedEmberDragon", "emberDragonDefeated"],
+  ];
+
+  function cleanupDefeatedEncounters(state) {
+    const defeatedTypes = new Set();
+    for (const [typeName, spawnedKey, defeatedKey] of defeatedEncounterFlags) {
+      if (!state[defeatedKey]) continue;
+      state[spawnedKey] = false;
+      defeatedTypes.add(typeName);
+    }
+    if (defeatedTypes.size > 0) {
+      state.monsters = state.monsters.filter((monster) => !defeatedTypes.has(monster.type));
+    }
+  }
+
   function resetStrongMonsterToHome(context, monster) {
     const { state, say } = requireMonsterContext(context);
     monster.x = monster.homeX;
@@ -612,6 +646,7 @@
       }
       return false;
     });
+    cleanupDefeatedEncounters(state);
   }
 
   function resolveContact(context, monster) {
@@ -956,10 +991,10 @@
     while (player.xp >= player.xpNext) {
       player.xp -= player.xpNext;
       player.level += 1;
-      player.xpNext = Math.floor(player.xpNext * 1.15 + 18);
-      player.hpMax += 9;
-      player.strength += 3;
-      player.resilience += 2;
+      player.xpNext = Math.floor(player.xpNext * 1.2 + 18);
+      player.hpMax += 14;
+      player.strength += 5;
+      player.resilience += 3;
       player.hp = player.hpMax;
       burst(player.x + 5, player.y + 4, "#fff36b", 18);
       say(`LEVEL UP! LV ${player.level}`);

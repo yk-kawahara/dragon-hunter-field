@@ -79,6 +79,28 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
+### 2026-06-26: Immediate boss cleanup and rereadable field guidance fix
+
+Goal: address two playtest findings: a boss could appear to remain or reappear at full HP immediately after defeat, and field guidance could not be reread after first discovery.
+
+Implemented:
+
+* Added same-update cleanup for defeated story encounter types in `updateMonsters`, clearing spawned flags and removing duplicate live boss/midboss bodies immediately after a defeat.
+* Kept discovery points interactable after first discovery.
+* Added no-repeat-reward reread messages for discovered signs, seals, route hints, springs, ore, and caches.
+* Added smoke tests for duplicate Red Dragon and Ember Dragon cleanup, plus discovery reread without repeated rewards.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS.
+* `git diff --check`: PASS with existing CRLF normalization warnings only.
+
+Known risks / next work:
+
+* Real-browser/manual QA was not performed in this pass.
+* Manual checks should confirm the reread messages display correctly in the browser and that boss cleanup is visually immediate.
+
 ### 2026-06-26: Boss persistence and earned wagon travel fix
 
 Goal: fix two playtest issues that broke survival-range expansion: defeated bosses could appear to return, and wagon travel could reach towns before the player had earned them by arrival.

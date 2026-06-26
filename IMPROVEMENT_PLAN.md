@@ -35,6 +35,21 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-06-26: Immediate boss cleanup and rereadable field guidance fix
+
+Implemented:
+
+* Added same-update cleanup for defeated boss/midboss encounter types so duplicate live bosses cannot remain at full HP after the player kills one.
+* Changed discovered field guidance points so they remain interactable after first discovery.
+* Rereading a discovered guide/sign/seal now shows guidance text again without granting gold/items a second time.
+* Extended smoke coverage for duplicate Red Dragon and Ember Dragon cleanup plus discovery reread/no-repeat-reward behavior.
+
+Next:
+
+1. Browser/manual check defeated boss sites immediately after kill to confirm no full-HP duplicate remains visible.
+2. Browser/manual check field guide readability, especially route signs and required seal stones.
+3. Continue with Pass 8: 逋ｽ驫螳ｿ arrival and Chapter 4 role clarity, unless another progression-breaking bug is found.
+
 ## Completed 2026-06-26: Boss persistence and earned wagon travel fix
 
 Implemented:
