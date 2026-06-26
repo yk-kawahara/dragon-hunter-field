@@ -21,64 +21,32 @@ Deprecated documents:
 Current project status:
 
 * Browser-based contact-combat action RPG.
-* Current village -> Guardian -> Red Dragon route is Chapter 1 scale.
 * Core design: survival-range expansion.
-* Code structure is split across `src/data`, `src/core`, and `src/systems`.
-* Fixed hand-editable world map lives in `src/data/maps/world.js`.
-* Current map size is `256x256`; it now reads as a western continent, 蒼風島, 日出大陸, and multiple island chains rather than one rectangular route stack.
-* Real `もちもの` inventory exists with item, weapon, armor, and accessory handling.
-* Accessories are moving from permanent passive flags into equipment choices.
-* Southwest mine + southwest frontier camp are the first concrete volume-expansion pilot.
-* Southeast outpost + traveler bell + Southeast Warden + Aegis Charm make the southeast route a meaningful optional direction.
-* Ash Road + Ash Hamlet + Old Tower are the first larger map-size expansion beyond the old `80x72` footprint.
-* Ash Sorcerer and Old Tower Ash Knight add magic-pressure content beyond the Southeast Warden route.
-* Moon Ruins extend the Old Tower route southward with Moon Shade pressure, late supplies, and moon relic rewards.
-* Moon Camp + Eclipse Castle are the first Chapter 2 boss route beyond Moon Ruins.
-* Moon Archive is now a Chapter 2 interior from Moon Camp, with a LV18 Archive Warden, guarded reliquary, Eclipse Ring reward, and a required step before Eclipse Dragon.
-* Eclipse Mage, eclipse gear, Eclipse Ring, and Eclipse Dragon add the first post-Red-Dragon major boss arc.
-* Black Gate + Black Fort + Black Sun Castle are the first Chapter 3 route beyond Eclipse Castle.
-* Void Wraith, Black Sun gear, Void Charm, and Black Sun Dragon add a harder post-Chapter-2 major boss arc.
-* Black Market is now a Chapter 3 second town with recovery, selectable shop stock, guide/guards/villagers, and supplies.
-* Obsidian Cave + Obsidian Crawler + Obsidian Golem add a Chapter 3 branch dungeon and midboss before the Black Sun Dragon route.
-* Black Market Catacombs add the first portal-linked compact interior dungeon, with Vault Leech pressure, Crypt Warden, and Deep Lamp Charm progression.
-* Western Smuggler Road now has Smuggler Captain, extra supply caches, and route guidance so the early Black Market shortcut has a danger climax and reward reason.
-* Black Market north regeneration cave now has Regen Sentinel guarding the Greater Regeneration Ring, turning the strongest sustain accessory into an earned side-dungeon reward.
-* A density pass has added hand-authored small terrain landmarks, extra caches, discovery points, and more NPCs around remote bases to reduce sparse walking.
-* Shops now use selectable buy menus instead of fixed-order auto-buying.
-* Equipment/HUD now exposes ATK/DEF values and inventory comparison deltas.
-* Frost Frontier + Frost Haven + Ice Cave + Frost Crown Citadel form a complete Chapter 4 route after the Chapter 3 report.
-* Frost Moth, Frost Beast, Frost Golem, frost equipment, Frost Heart Charm, and Frost Crown Dragon add a higher-difficulty frozen expedition arc.
-* Frost Haven now has a unique shield-engraving service with defensive, traversal, and counterattack build choices.
-* Frost Watchtower adds a two-floor Chapter 4 side dungeon with Frost Beacon aura hazards, a named warden, a persistent elevator shortcut, and the dash-focused Sky Emblem reward.
-* All weapons now have distinct attack profiles, the field UI has three configurable all-item quick slots, and interior enemy density is isolated from exterior spawn budgets.
-* Settlement NPC dialogue now varies by location and resident instead of repeating one generic line.
-* Major bosses now use telegraphed piercing attacks, delayed multi-wave patterns, or persistent arena zones in addition to their previous spreads and summons.
-* A live whole-world map can be opened with `P` or the command panel; it reflects fixed terrain and marks the player, bases, and major bosses.
-* Skyspine Highlands replaces a large straight/corridor section with mountain ridges, a meandering river, three crossing routes, route rewards, and a distinct enemy mix.
-* Black Market is now Black Market City: a larger multi-district safe zone with streets, buildings, several entrances, and eight additional residents/guards.
-* 蒼風島 adds a second major landmass with a mountain spine, lighthouse coast, river valley, terraces, multiple crossing routes, 蒼風港, and 南風岬砦.
-* Southern capes and island routes add bridges, a causeway, shrine island, caches, and a second long-range direction beyond the western chapter corridor.
-* The world now uses editable polygon coastlines, naturalized curved roads, and a cartographic overview layer that hides embedded interior mazes behind readable terrain/landmark symbols.
-* 日出大陸 adds 黎明港, 陽冠都市, a northern mountain route, western coast road, central ridge shortcut, valley shrine, southern road, and access to 熾火群島.
-* The world now contains 121 NPCs and 11 safe/travel anchors, allowing recovery and restock radius to move across the outer sea.
-* Chapter 5 now runs from the Chapter 4 report through 日出高原, 日輪砲台守, 陽冠都市's high-price countermeasure shop, 日鏡塔, 反射水晶, 熾火群島, 熾火天竜, and an elder-report ending.
-* 陽冠都市 now functions more like a metropolis: separate armament, expedition apothecary, and travel-gear guild shops, extra city NPCs, city caches, and route-specific guide/resident information.
-* 光槍兵, 陽炎術師, 閃光走者, 光柱鏡, 日輪砲台守, 日鏡塔の守主, and 熾火天竜 introduce long sniper lines, delayed artillery zones, charges, piercing shots, broad multi-wave attacks, and mixed reinforcements.
+* Current village -> Guardian -> Red Dragon route is Chapter 1 scale.
+* Current map size is `256x256`; the world reads as a western continent, 蒼風島, 日出大陸, southern islands, and 熾火群島.
+* Real `もちもの` inventory exists with items, weapons, armor, shields, accessories, quick slots, shops, and travel services.
+* Accessories are equipment choices with two slots.
+* Shields are first-class contact-combat equipment and include shield-engraving choices.
+* Whole-world map exists and marks player, safe bases, and major bosses.
+* Settlement NPC dialogue varies by location/progression.
+* Major boss and high-level enemy patterns include piercing lines, delayed zones, persistent hazards, charges, summons, and reinforcements.
+* Chapters 1-5 are structurally implemented.
+* Chapter 5 currently has the most complete late-game structure: 黎明港 -> 日出高原 -> 日輪砲台守 -> 陽冠都市 -> 日鏡塔 -> 反射水晶 -> 熾火群島 -> 熾火天竜.
 
-Current high-priority risks:
+Current high-priority design risks:
 
-* Full real-browser desktop/mobile play QA is still needed.
-* Browser QA in this session was blocked by the in-app browser local-file URL policy; VM smoke coverage is current, but real visual/mobile checks remain needed.
-* Full fresh-save manual playthrough to elder report is still needed.
-* Mobile UI and inventory overlay need real-browser confirmation.
-* Future map expansion must avoid empty terrain and preserve reachability; the new `256x256` space now needs complete 蒼風島 / 日出大陸 enemy, reward, dungeon, and boss arcs rather than another size increase.
-* Gold/EXP/shop price balance should be checked after route expansion.
-* Chapter 4 LV30/LV34 pacing, rank-12 gear economy, and boss reinforcement pressure need a real playtest from a Chapter 3 clear save.
-* Frost Watchtower attrition, beacon pulse pressure, warden phase pacing, elevator usefulness, and Sky Emblem strength need a real Chapter 4 playtest.
-* Existing routes and dungeons are often too short and too wall-corridor-heavy to create a convincing journey through a world.
-* Black Market City now provides the physical urban footprint and whole-world navigation, but specialist shops, optional city activities, and progression-sensitive urban services still need expansion.
-* New weapon profiles, quick-slot UX, interior population, and settlement dialogue variation need hands-on browser playtesting after this pass.
-* New boss movement checks need hands-on balance testing so warnings are readable and defense/level cannot trivialize every pattern.
+* Required route targets can be hard to locate if the player misses landmarks. Confirmed concern: 日輪砲台守; similar concern exists for Chapter 1 竜洞 / Red Dragon.
+* Chapter 1 竜洞 and Chapter 5 日輪砲台守 now have stronger objective text, route breadcrumbs, guide dialogue, travel memo support, and current-destination map markers; browser/manual readability still needs confirmation.
+* Several town-to-town routes are short or low-pressure enough that the next safe base may not feel like a hard-earned survival-range breakthrough.
+* Chapter 2 can still feel short; 灰道の宿場 -> 月見砦 is the leading candidate for a required attrition route such as 月影洞窟.
+* Chapter 5 has strong content but can become checklist-like if UI guidance, travel memo, and map markers do not present it as one expedition.
+* Optional 陽冠闘技場 can appear too prominent compared with the main 日鏡塔 route if guidance priority is not fixed.
+* Travel memo needs to become a route plan with main/optional/preparation sections.
+* First arrival at new safe bases needs stronger payoff messaging.
+* Browser desktop/mobile QA is still needed.
+* Full fresh-save manual playthrough to Chapter 5 elder report is still needed.
+* Gold/EXP/shop price balance still needs hands-on playtest.
+* Warning readability for advanced boss/projectile patterns still needs browser/manual confirmation.
 
 Next verification target:
 
@@ -86,7 +54,11 @@ Next verification target:
 2. `scripts/verify-game-smoke.js`.
 3. `git diff --check`.
 4. Browser desktop/mobile smoke QA if possible.
-5. Fresh-save route playthrough when feasible.
+5. Manual route-readability tests:
+   * 竜洞 / Red Dragon.
+   * 日輪砲台守.
+   * 陽冠都市 east/west/south exits.
+6. Fresh-save route playthrough when feasible.
 
 ## Log maintenance rule
 
@@ -106,6 +78,116 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-26: Required route readability micro-pass
+
+Goal: make two mandatory targets, Chapter 1 竜洞 and Chapter 5 日輪砲台守, traceable through route text, in-world breadcrumbs, travel memo, NPC guidance, and the whole-world map.
+
+Implemented:
+
+* Revised objective and guidance text so 竜洞 is described as the north-east scorched rock/cave route and 日輪砲台守 as the 黎明港 -> 北東高原 artillery route.
+* Added two 竜洞 breadcrumb discoveries and two 日輪砲台守 breadcrumb discoveries with small preparation rewards and route-specific messages.
+* Added a current-required-destination marker to the whole-world map for 竜洞 and 日輪砲台守.
+* Updated Chapter 5 travel memo into 本線 / 今 / 準備 / 任意 phases and kept 陽冠闘技場 below the main 日鏡塔 route.
+* Updated elder, Dawn Harbor guide, and Suncrest guide lines so mandatory route guidance appears before optional arena advice.
+* Extended VM smoke coverage for route objectives, world-map destination markers, travel memo priority, breadcrumb rewards, and reachability of the added discoveries.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS, including added discovery reachability and route-readability assertions.
+
+Known risks / next work:
+
+* Real-browser visual/manual QA is still needed to confirm that the map marker, field breadcrumbs, and Suncrest guidance are readable during actual play.
+* Next player-facing pass should either add safe-base arrival payoff for 陽冠都市 / 月見砦 or begin the Chapter 2 attrition route prototype.
+
+### 2026-06-26: Polished roadmap around route readability and expedition tension
+
+Goal: tighten the previous documentation update so the next AI/Codex pass has a clearer implementation order and does not drift toward unnecessary world expansion.
+
+Refined direction:
+
+* Current mission is now stated as: make existing chapters readable, tense expeditions where new safe bases feel hard-earned.
+* `AGENTS.md` now separates required-route readability, safe-base arrival, street-to-street expedition tension, guidance hierarchy, and staged separate-map rules.
+* `GAME_DESIGN_NOTES.md` now frames each chapter around its player-facing weakness and desired emotional beat.
+* `IMPROVEMENT_PLAN.md` now provides a recommended implementation sequence:
+  1. Route readability micro-pass for 日輪砲台守 and 竜洞.
+  2. Chapter 5 guidance polish.
+  3. Safe-base first-arrival payoff system.
+  4. Street-to-street expedition tension review.
+  5. Chapter 2 attrition dungeon prototype.
+  6. Chapter 1 teaching pass.
+  7. Chapter 3 clarity pass.
+  8. Chapter 4 arrival/role clarity pass.
+  9. Low-risk cleanup.
+* The first recommended implementation package is intentionally small: text/guidance breadcrumbs, Chapter 5 travel memo, guidance priority, and first-arrival messaging before the larger 月影洞窟 prototype.
+
+Verification:
+
+* Documentation-only pass. No code verification required.
+
+Known risks / next work:
+
+* The actual gameplay changes still need implementation and verification.
+* Separate map files remain a staged future option, not the first implementation step.
+### 2026-06-26: Documentation update from code analysis, headless playtest, and user playtest feedback
+
+Goal: update the active documents before the next implementation pass so the roadmap reflects actual playtest concerns, not only feature volume.
+
+Findings:
+
+* The game has a solid Chapter 1-5 structure, but route readability and expedition tension are now higher-value than further world-size expansion.
+* User playtest feedback confirmed 日輪砲台守 is hard to locate.
+* Chapter 1 竜洞 / Red Dragon has the same class of issue: required boss entrance discovery depends too much on noticing the location.
+* The next base often needs to feel more like “I barely made it” rather than “the next town is nearby.”
+* A street-to-street attrition dungeon is a strong candidate for fixing short chapter pacing, especially Chapter 2 before 月見砦.
+* Optional content must not appear above the main route in guidance; 陽冠闘技場 should remain clearly optional.
+* Travel memo should be rewritten as a route plan: main route, current step, preparation, optional content.
+
+Documentation changes:
+
+* Updated `AGENTS.md` with required route readability, safe-base arrival rules, street-to-street attrition rules, guidance hierarchy, and staged separate-map-file rules.
+* Updated `GAME_DESIGN_NOTES.md` with chapter-by-chapter issues, safe-base arrival design, attrition dungeon pattern, and Chapter 2 / Chapter 5 priorities.
+* Rewrote `IMPROVEMENT_PLAN.md` around immediate player-facing priorities instead of completed historical passes.
+* Updated `DEVELOPMENT_LOG.md` current summary and risks.
+
+Verification:
+
+* Documentation-only pass.
+* Earlier headless VM checks confirmed uploaded JS syntax and simulated route/UI observations, but this pass did not perform new browser QA.
+
+Known risks / next work:
+
+* Real browser QA remains required.
+* Route-readability fixes should be implemented and manually checked before larger content work.
+* Chapter 2 attrition dungeon should be staged carefully; separate map files require save/load and portal migration planning.
+
+---
+
+### 2026-06-26: Suncrest Arena optional city activity pass
+
+Goal: make Chapter 5's super-city more playable by adding an optional combat activity and action-focused reward, not just more shops or streets.
+
+Implemented:
+
+* Added 陽冠闘技場 as a portal-linked interior from 陽冠都市's west plaza.
+* Added arena-local spawn pressure, supplies, discovery hints, guarded reliquary, and world-map preview/marker support.
+* Added 陽冠闘技王 as a LV39 optional midboss after Chapter 4 report and Solar Warden defeat. It mixes charge pressure, triple sniper lanes, artillery zones, and half-HP reinforcements.
+* Added 陽冠闘士の徽章, a two-slot accessory choice that speeds normal attacks and improves combo stamina recovery.
+* Added save/load/reset migration, objective/guidance text, Suncrest guide dialogue, projectile/combat counter handling, reward locks, and expanded VM smoke coverage.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS, including arena reachability, overview hiding, story spawn/defeat, guarded reliquary, duelist save/load/reward/effect, champion behavior, and Chapter 5 counter-gear handling.
+* `scripts/generate-map-preview.ps1`: PASS and regenerated `docs/world-map-preview.png` / `docs/world-map-preview.svg`.
+
+Known risks / next work:
+
+* Real-browser visual/manual QA is still needed for the arena entrance, combat readability, and reward flow.
+* 陽冠闘技王 HP, warning windows, reinforcement timing, and `陽冠闘士の徽章` strength need manual tuning from a real Chapter 5 save.
+* Next city content should add another playable service only if it changes route preparation or action play, not just more duplicated shops.
 
 ### 2026-06-26: Chapter 1-5 guidance, Chapter 2 Moon Archive, and Suncrest metropolis pass
 

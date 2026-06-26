@@ -318,7 +318,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
+    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -586,6 +586,23 @@
       say("陽冠都市の武装庫から高原決戦の物資を得た");
       return true;
     }
+    if (reward === "arenaSupply") {
+      player.gold += 3800;
+      addItem(player, "tonic", 3);
+      addItem(player, "elixir", 1);
+      addItem(player, "ward", 3);
+      addItem(player, "warp", 1);
+      say("陽冠闘技場の控え室から連戦用の物資を得た");
+      return true;
+    }
+    if (reward === "duelistMedal") {
+      player.gold += 4600;
+      addItem(player, "tonic", 2);
+      addItem(player, "elixir", 2);
+      grantAccessory(context, "duelist", "陽冠闘士の徽章を得た。装備すると通常攻撃が素早くなり、連撃でスタミナを取り戻しやすい");
+      say("陽冠闘技場の遺物庫から陽冠闘士の徽章を得た");
+      return true;
+    }
     if (reward === "sunspireSupply") {
       player.gold += 3600;
       addItem(player, "elixir", 1);
@@ -774,6 +791,22 @@
       say("陽光の封印碑を読んだ。日輪砲台守を破れば熾火天竜への道が開く");
       return;
     }
+    if (discovery.kind === "solarWardenHint") {
+      player.gold += 420;
+      player.stamina = player.staminaMax;
+      addItem(player, "ward", 1);
+      addItem(player, "tonic", 1);
+      burst(x, y, "#fff0a6", 22);
+      say("焼けた道標: 黎明港から北東高原へ。光の砲声を追えば日輪砲台守に届く");
+      return;
+    }
+    if (discovery.kind === "dragonCaveHint") {
+      player.gold += 90;
+      addItem(player, "ward", 1);
+      burst(x, y, "#ff8a3d", 18);
+      say("焦げた石碑: 村の北東、岩山の熱い洞が赤竜の巣だ");
+      return;
+    }
     if (discovery.kind === "sunspireHint") {
       player.gold += 520;
       player.stamina = player.staminaMax;
@@ -798,6 +831,15 @@
       addItem(player, "ward", 1);
       burst(x, y, "#fff0a6", 20);
       say("陽冠都市の攻略掲示を読んだ。北東高原、日鏡塔、南街道の順に準備を進めよう");
+      return;
+    }
+    if (discovery.kind === "suncrestArenaHint") {
+      player.gold += 680;
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#ffd166", 22);
+      say("陽冠闘技場の作戦札を読んだ。走者を横にかわし、砲撃円から離れて闘技王へ詰めよう");
       return;
     }
     if (discovery.kind === "frostTowerHint") {

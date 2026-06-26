@@ -11,6 +11,11 @@
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     TILE_WATER,
+    BOSS_REQUIREMENTS,
+    SOLAR_WARDEN_REQUIREMENTS,
+    SUNCREST_CHAMPION_REQUIREMENTS,
+    SUNSPIRE_KEEPER_REQUIREMENTS,
+    CHAPTER5_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -342,7 +347,7 @@
       detail: `${accessoryData[id]?.trait || ""} ${equippedIds.includes(id) ? `装備中 ${equippedIds.indexOf(id) + 1}/2` : "未装備"}`,
       equipped: equippedIds.includes(id),
       sell: 0,
-      currentValue: id === "regen" || id === "greaterRegen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "mist" ? "罠/召喚耐性" : id === "deepLamp" ? "鈍足軽減/薬草+" : id === "frost" ? "凍結/氷弾耐性" : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : "",
+      currentValue: id === "regen" || id === "greaterRegen" ? `回復${regenRate().toFixed(1)}` : id === "trail" ? `ダッシュ${dashCost()}ST` : id === "mist" ? "罠/召喚耐性" : id === "deepLamp" ? "鈍足軽減/薬草+" : id === "frost" ? "凍結/氷弾耐性" : id === "eclipse" ? "月蝕耐性" : id === "void" ? "黒陽耐性" : id === "obsidian" ? "黒陽/接触耐性" : id === "horizon" ? "光弾耐性" : id === "prismLens" ? "反射光耐性" : id === "duelist" ? "攻撃テンポ/連撃ST" : "",
     }));
   }
 
@@ -522,9 +527,9 @@
     const { state, player } = requireUiStatusContext(context);
     if (!state.elderReported) {
       return [
-        "村近くで金と装備を整える",
-        "北森で紋章、竜洞で赤竜",
-        "危険なら拠点へ戻る",
+        state.bossDefeated ? "本線: 村へ戻って長老に報告" : "本線: 北森の紋章 -> 北東岩山の竜洞",
+        state.spawnedBoss ? "今: 赤竜の正面を避けて接触" : `今: 鱗${player.scales}/${BOSS_REQUIREMENTS.scales} LV${player.level}/${BOSS_REQUIREMENTS.level}`,
+        "準備: 焦げた道標を追い、薬と防具を整える",
       ];
     }
     if (!state.ashKnightDefeated) {
@@ -588,6 +593,55 @@
         "霜冠竜撃破を長老へ報告",
         "白銀宿の馬車で村へ戻れる",
         "第4章の遠征記録を完成させる",
+      ];
+    }
+    if (!state.solarWardenDefeated) {
+      return [
+        "本線: 黎明港 -> 北東高原 -> 日輪砲台守",
+        `今: 焼けた街道と光の砲声を追う LV${player.level}/${SOLAR_WARDEN_REQUIREMENTS.level}`,
+        "準備: 帰還鈴・護符・霊薬を残して高原へ",
+      ];
+    }
+    if (!state.sunspireKeeperDefeated) {
+      return [
+        "本線: 陽冠都市東門 -> 日鏡塔",
+        `今: 守主LV${SUNSPIRE_KEEPER_REQUIREMENTS.level} 光砲対策を確認`,
+        !state.suncrestChampionDefeated && player.level >= SUNCREST_CHAMPION_REQUIREMENTS.level ? `任意: 西広場の闘技場LV${SUNCREST_CHAMPION_REQUIREMENTS.level}` : "準備: 大武装商会/遠征薬舗で補給",
+      ];
+    }
+    if (!state.chests.has("sunspire-reliquary")) {
+      return [
+        "本線: 日鏡塔奥の遺物庫",
+        "今: 反射水晶を受け取る",
+        "準備: 受け取ったら南街道の封印碑へ",
+      ];
+    }
+    if (!state.discoveries.has("sunrise-seal")) {
+      return [
+        "本線: 陽冠都市南街道 -> 陽光封印碑",
+        "今: 南へ下り、碑を読んで聖域を開く",
+        "準備: 光弾耐性と帰還鈴を確認",
+      ];
+    }
+    if (!state.chests.has("ember-sanctum-cache")) {
+      return [
+        "本線: 熾火聖域の補給箱",
+        "今: 天竜戦前の物資を確保",
+        "任意: 闘技場の連撃装飾で火力を補う",
+      ];
+    }
+    if (!state.emberDragonDefeated) {
+      return [
+        "本線: 熾火群島 -> 熾火天竜",
+        `今: LV${player.level}/${CHAPTER5_REQUIREMENTS.level}で最奥へ`,
+        "準備: 反射水晶・陽冠装備・霊薬を確認",
+      ];
+    }
+    if (!state.chapter5Reported) {
+      return [
+        "本線: 村へ戻って長老に報告",
+        "今: 熾火天竜討伐を伝える",
+        "陽冠都市の馬車で長距離帰還できる",
       ];
     }
     return [

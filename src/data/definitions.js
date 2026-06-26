@@ -68,6 +68,8 @@
     { id: "moon-archive-exit", name: "月見砦", x: 123, y: 2, toX: 110, toY: 115, prompt: "戻る: 月見砦" },
     { id: "sunspire-entry", name: "日鏡塔", x: 246, y: 128, toX: 164, toY: 5, prompt: "入る: 日鏡塔" },
     { id: "sunspire-exit", name: "陽冠都市", x: 164, y: 5, toX: 246, toY: 128, prompt: "戻る: 陽冠都市" },
+    { id: "suncrest-arena-entry", name: "陽冠闘技場", x: 229, y: 131, toX: 199, toY: 2, prompt: "入る: 陽冠闘技場" },
+    { id: "suncrest-arena-exit", name: "陽冠都市", x: 199, y: 2, toX: 229, toY: 131, prompt: "戻る: 陽冠都市" },
   ];
   const TOWN_GATES = [
     { name: "北門", x: 10, y: 39, w: 3, h: 1, axis: "x" },
@@ -147,12 +149,16 @@
     { id: "solar-warden-cache", x: 241, y: 104, reward: "solarSupply" },
     { id: "sunspire-supply", x: 175, y: 6, reward: "sunspireSupply" },
     { id: "sunspire-reliquary", x: 190, y: 17, reward: "prismLens" },
+    { id: "suncrest-arena-supply", x: 205, y: 8, reward: "arenaSupply" },
+    { id: "suncrest-arena-reliquary", x: 216, y: 18, reward: "duelistMedal" },
     { id: "ember-dragon-cache", x: 235, y: 232, reward: "emberSupply" },
   ];
   const DISCOVERY_POINTS = [
     { id: "river-spring", x: 43, y: 36, kind: "spring" },
     { id: "north-ore", x: 23, y: 20, kind: "ore" },
     { id: "hunter-cache", x: 57, y: 28, kind: "cache" },
+    { id: "dragon-cave-sign", x: 48, y: 24, kind: "dragonCaveHint" },
+    { id: "dragon-cave-heat", x: 51, y: 20, kind: "dragonCaveHint" },
     { id: "grassland-campfire", x: 34, y: 33, kind: "routeHint" },
     { id: "river-fork-marker", x: 62, y: 50, kind: "shortcutHint" },
     { id: "ash-spring", x: 101, y: 55, kind: "spring" },
@@ -201,10 +207,14 @@
     { id: "dawn-harbor-chart", x: 208, y: 74, kind: "shortcutHint" },
     { id: "sunrise-north-ruin", x: 236, y: 44, kind: "waystone" },
     { id: "sunrise-ridge-marker", x: 232, y: 87, kind: "routeHint" },
+    { id: "solar-battery-warning", x: 237, y: 94, kind: "solarWardenHint" },
+    { id: "solar-battery-scorch", x: 241, y: 99, kind: "solarWardenHint" },
     { id: "sunrise-valley-shrine", x: 211, y: 110, kind: "cache" },
     { id: "suncrest-road-map", x: 228, y: 131, kind: "shortcutHint" },
     { id: "suncrest-tactics-board", x: 234, y: 123, kind: "suncrestGuide" },
     { id: "suncrest-market-rumor", x: 241, y: 131, kind: "suncrestGuide" },
+    { id: "suncrest-arena-rules", x: 202, y: 2, kind: "suncrestArenaHint" },
+    { id: "suncrest-arena-tactics", x: 209, y: 13, kind: "suncrestArenaHint" },
     { id: "sunspire-observatory", x: 180, y: 10, kind: "sunspireHint" },
     { id: "sunrise-seal", x: 240, y: 165, kind: "sunriseSeal" },
     { id: "ember-causeway-marker", x: 220, y: 207, kind: "routeHint" },
@@ -239,6 +249,8 @@
   const CHAPTER4_REQUIREMENTS = { level: 34 };
   const SOLAR_WARDEN_SITE = { x: 241, y: 102 };
   const SOLAR_WARDEN_REQUIREMENTS = { level: 38 };
+  const SUNCREST_CHAMPION_SITE = { x: 213, y: 17 };
+  const SUNCREST_CHAMPION_REQUIREMENTS = { level: 39 };
   const SUNSPIRE_KEEPER_SITE = { x: 189, y: 17 };
   const SUNSPIRE_KEEPER_REQUIREMENTS = { level: 40 };
   const EMBER_DRAGON_SITE = { x: 232, y: 232 };
@@ -273,6 +285,7 @@
     southIsles: { danger: 9, maxBonus: 10, pool: ["frostMoth", "bubbler", "mistLancer", "summoner", "moonShade", "shieldSoldier"] },
     dawnCoast: { danger: 9, maxBonus: 11, pool: ["mistLancer", "frostMoth", "shieldSoldier", "sorcerer", "bubbler", "frostBeast"] },
     sunriseHighland: { danger: 10, maxBonus: 13, pool: ["sunLancer", "mirageCaster", "frostBeast", "summoner", "shieldSoldier", "eclipseMage"] },
+    suncrestArena: { danger: 12, maxBonus: 14, pool: ["solarRunner", "sunLancer", "mirageCaster", "prismBeacon", "shieldSoldier"] },
     sunspire: { danger: 12, maxBonus: 14, pool: ["solarRunner", "prismBeacon", "sunLancer", "mirageCaster", "shieldSoldier"] },
     emberIsles: { danger: 11, maxBonus: 14, pool: ["sunLancer", "mirageCaster", "trapFlower", "summoner", "voidWraith", "shieldSoldier"] },
   };
@@ -365,7 +378,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens", "duelist"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -456,6 +469,12 @@
       trait: "光弾を軽減し、熾火戦の回避余裕を伸ばす",
       sell: 0,
       flag: "prismLensCharm",
+    },
+    duelist: {
+      name: "陽冠闘士の徽章",
+      trait: "通常攻撃の間隔を短縮し、連撃中のスタミナ回収を強める",
+      sell: 0,
+      flag: "duelistCharm",
     },
   };
 
@@ -947,6 +966,19 @@
       midboss: true,
       drop: 1,
     },
+    suncrestChampion: {
+      name: "陽冠闘技王",
+      hp: 7000,
+      atk: 286,
+      def: 218,
+      speed: 27 * WORLD_SCALE,
+      xp: 6200,
+      gold: 6200,
+      color: "#ffd166",
+      shadow: "#7a4a18",
+      midboss: true,
+      drop: 1,
+    },
     frostDragon: {
       name: "霜冠竜",
       hp: 7600,
@@ -1023,6 +1055,8 @@
     CHAPTER4_REQUIREMENTS,
     SOLAR_WARDEN_SITE,
     SOLAR_WARDEN_REQUIREMENTS,
+    SUNCREST_CHAMPION_SITE,
+    SUNCREST_CHAMPION_REQUIREMENTS,
     SUNSPIRE_KEEPER_SITE,
     SUNSPIRE_KEEPER_REQUIREMENTS,
     EMBER_DRAGON_SITE,

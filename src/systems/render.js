@@ -41,9 +41,12 @@
     FROST_GOLEM_REQUIREMENTS,
     FROST_DRAGON_SITE,
     CHAPTER4_REQUIREMENTS,
+    SOLAR_WARDEN_SITE,
+    SUNCREST_CHAMPION_SITE,
     SUNSPIRE_KEEPER_SITE,
     EMBER_DRAGON_SITE,
     CHAPTER5_REQUIREMENTS,
+    BOSS_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
@@ -330,6 +333,16 @@ function drawWorldMapMarker(mapX, mapY, scale, tx, ty, color, size = 3) {
   ctx.fillRect(x - size + 1, y - size + 1, Math.max(1, size * 2 - 1), Math.max(1, size * 2 - 1));
 }
 
+function currentWorldMapDestinationFor(stateArg, playerArg) {
+  if (stateArg?.chapter4Reported && !stateArg.solarWardenDefeated) {
+    return { site: SOLAR_WARDEN_SITE, label: "日輪砲台守" };
+  }
+  if (!stateArg?.bossDefeated && stateArg?.guardianDefeated && playerArg?.sealCrest && (playerArg.scales || 0) >= BOSS_REQUIREMENTS.scales) {
+    return { site: { x: 51, y: 15 }, label: "竜洞" };
+  }
+  return null;
+}
+
 function drawWorldMapOverlay() {
   if (!state.worldMapOpen) return;
   const panelX = 5;
@@ -365,11 +378,17 @@ function drawWorldMapOverlay() {
     { site: ECLIPSE_DRAGON_SITE, defeated: state.eclipseDragonDefeated },
     { site: VOID_DRAGON_SITE, defeated: state.voidDragonDefeated },
     { site: FROST_DRAGON_SITE, defeated: state.frostDragonDefeated },
+    { site: SUNCREST_CHAMPION_SITE, defeated: state.suncrestChampionDefeated },
     { site: SUNSPIRE_KEEPER_SITE, defeated: state.sunspireKeeperDefeated },
     { site: EMBER_DRAGON_SITE, defeated: state.emberDragonDefeated },
   ];
   for (const boss of bosses) {
     drawWorldMapMarker(mapX, mapY, mapScale, boss.site.x, boss.site.y, boss.defeated ? "#69727c" : "#ff5f5f", 2);
+  }
+
+  const destination = currentWorldMapDestinationFor(state, player);
+  if (destination?.site) {
+    drawWorldMapMarker(mapX, mapY, mapScale, destination.site.x, destination.site.y, "#ffe66d", 4);
   }
 
   const playerTileX = (player.x + player.w / 2) / WORLD_TILE;
@@ -381,7 +400,7 @@ function drawWorldMapOverlay() {
     grassland: "始まりの草原", north: "北森", east: "東の森", mine: "廃鉱山", cave: "竜洞",
     ash: "灰の街道", highland: "天脊高原", windCoast: "蒼風海岸", eastHighland: "蒼風島高原", southIsles: "南岬群島", dawnCoast: "黎明海岸", sunriseHighland: "日出高原", emberIsles: "熾火群島", tower: "古塔", moon: "月影廃墟", eclipse: "月蝕城",
     obsidian: "黒曜地帯", void: "黒陽城", undercity: "地下墓所", frost: "霜原",
-    frostCave: "氷窟", frostCitadel: "霜冠城", frostTower1: "霜見塔一階", frostTower2: "霜見塔二階", sunspire: "日鏡塔",
+    frostCave: "氷窟", frostCitadel: "霜冠城", frostTower1: "霜見塔一階", frostTower2: "霜見塔二階", suncrestArena: "陽冠闘技場", sunspire: "日鏡塔",
   };
   ctx.fillStyle = "#ffffff";
   ctx.font = "8px monospace";
@@ -394,12 +413,14 @@ function drawWorldMapOverlay() {
   ctx.fillText("■ 討伐済み", infoX, 67);
   ctx.fillStyle = "#ffffff";
   ctx.fillText("□ 現在地", infoX, 79);
+  ctx.fillStyle = "#ffe66d";
+  ctx.fillText("■ 現在目的地", infoX, 91);
   ctx.fillStyle = "#d7e2ea";
-  ctx.fillText("西方: 村 / 黒市 / 霜原", infoX, 96);
-  ctx.fillText("中央: 蒼風島 / 南岬群島", infoX, 107);
-  ctx.fillText("東方: 日出大陸 / 熾火群島", infoX, 118);
+  ctx.fillText(destination ? `次: ${destination.label}` : "次: 旅メモを確認", infoX, 103);
+  ctx.fillText("西方: 村 / 黒市 / 霜原", infoX, 115);
+  ctx.fillText("東方: 日出大陸 / 熾火群島", infoX, 126);
   ctx.fillStyle = "#8dd7ff";
-  ctx.fillText("P / Esc: 閉じる", infoX, 132);
+  ctx.fillText("P / Esc: 閉じる", infoX, 137);
 }
 
 function drawInfoPanel() {
@@ -2474,5 +2495,6 @@ function drawVictoryBanner() {
 }
   globalThis.DRAGON_HUNTER_RENDER = {
     draw,
+    currentWorldMapDestinationFor,
   };
 })();

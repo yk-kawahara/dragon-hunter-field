@@ -330,6 +330,10 @@ function assertMapReachability() {
     ["frost-seal", 103, 154],
     ["frostDragon", d.FROST_DRAGON_SITE.x, d.FROST_DRAGON_SITE.y],
     ["solarWarden", d.SOLAR_WARDEN_SITE.x, d.SOLAR_WARDEN_SITE.y],
+    ["suncrest-arena-entry", 229, 131],
+    ["suncrest-arena-supply", 205, 8],
+    ["suncrestChampion", d.SUNCREST_CHAMPION_SITE.x, d.SUNCREST_CHAMPION_SITE.y],
+    ["suncrest-arena-reliquary", 216, 18],
     ["sunspire-entry", 246, 128],
     ["sunspire-observatory", 180, 10],
     ["sunspireKeeper", d.SUNSPIRE_KEEPER_SITE.x, d.SUNSPIRE_KEEPER_SITE.y],
@@ -360,6 +364,7 @@ function assertMapReachability() {
   assert(overviewRows.every((row) => typeof row === "string" && row.length === d.MAP_W), "world overview rows should match map dimensions");
   assert(!overviewRows.slice(1, 15).some((row) => row.slice(80, 120).includes("_")), "world overview should hide embedded catacomb room layouts");
   assert(!overviewRows.slice(1, 22).some((row) => row.slice(122, 157).includes("_")), "world overview should hide embedded Moon Archive room layouts");
+  assert(!overviewRows.slice(1, 23).some((row) => row.slice(198, 227).includes("_")), "world overview should hide embedded Suncrest Arena room layouts");
   assert(state.npcs.length === 121, "expected 121 NPCs after Suncrest City service pass");
   const blockedNpcs = state.npcs.filter((npc) => !passable(Math.floor(npc.x / d.TILE), Math.floor(npc.y / d.TILE)));
   assert(blockedNpcs.length === 0, `NPCs must stand on reachable terrain: ${JSON.stringify(blockedNpcs.map((npc) => ({ type: npc.type, x: Math.floor(npc.x / d.TILE), y: Math.floor(npc.y / d.TILE) })))}`);
@@ -403,7 +408,8 @@ function assertSaveLoadAndEquipment() {
   player.skyCharm = true;
   player.horizonCharm = true;
   player.prismLensCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens"];
+  player.duelistCharm = true;
+  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens", "duelist"];
   player.equippedAccessory = "trail";
   player.equippedAccessories = ["trail", "greaterRegen"];
   state.chests.add("town-cache");
@@ -444,6 +450,8 @@ function assertSaveLoadAndEquipment() {
   state.chapter4Reported = true;
   state.solarWardenDefeated = true;
   state.spawnedSolarWarden = true;
+  state.suncrestChampionDefeated = true;
+  state.spawnedSuncrestChampion = true;
   state.sunspireKeeperDefeated = true;
   state.spawnedSunspireKeeper = true;
   state.emberDragonDefeated = true;
@@ -474,10 +482,11 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.skyCharm, "sky charm should persist");
   assert(restored.player.horizonCharm, "horizon charm should persist");
   assert(restored.player.prismLensCharm, "prism lens charm should persist");
+  assert(restored.player.duelistCharm, "duelist charm should persist");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost") && restored.player.ownedAccessories.includes("sky") && restored.player.ownedAccessories.includes("horizon") && restored.player.ownedAccessories.includes("prismLens"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost") && restored.player.ownedAccessories.includes("sky") && restored.player.ownedAccessories.includes("horizon") && restored.player.ownedAccessories.includes("prismLens") && restored.player.ownedAccessories.includes("duelist"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
@@ -501,7 +510,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.frostGolemDefeated, "frost golem defeat flag should persist");
   assert(restored.state.towerWardenDefeated, "frost tower warden defeat flag should persist");
   assert(restored.state.frostDragonDefeated && restored.state.chapter4Reported, "chapter 4 flags should persist");
-  assert(restored.state.solarWardenDefeated && restored.state.sunspireKeeperDefeated && restored.state.emberDragonDefeated && restored.state.chapter5Reported, "chapter 5 flags should persist");
+  assert(restored.state.solarWardenDefeated && restored.state.suncrestChampionDefeated && restored.state.sunspireKeeperDefeated && restored.state.emberDragonDefeated && restored.state.chapter5Reported, "chapter 5 flags should persist");
   assert(restored.state.eclipseDragonDefeated && restored.state.chapter2Reported, "chapter 2 flags should persist");
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.obsidianGolemDefeated, "obsidian golem defeat flag should persist");
@@ -834,6 +843,18 @@ function assertStoryClearFlow() {
   runtime.updateMonsters(16);
   assert(state.solarWardenDefeated, "Solar Warden defeat should unlock Suncrest decisive gear");
 
+  player.level = d.SUNCREST_CHAMPION_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.SUNCREST_CHAMPION_SITE.x * d.TILE;
+  player.y = d.SUNCREST_CHAMPION_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedSuncrestChampion, "Suncrest Champion should spawn after Solar Warden and level gate");
+  const suncrestChampion = state.monsters.find((monster) => monster.type === "suncrestChampion");
+  assert(suncrestChampion, "Suncrest Champion monster should exist");
+  suncrestChampion.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.suncrestChampionDefeated, "Suncrest Champion defeat should unlock the arena reliquary");
+
   player.level = d.SUNSPIRE_KEEPER_REQUIREMENTS.level;
   player.hp = player.hpMax;
   player.x = d.SUNSPIRE_KEEPER_SITE.x * d.TILE;
@@ -999,11 +1020,13 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.solarRunner), "solar runner monster definition should exist");
   assert(Boolean(d.monsterTypes.prismBeacon), "prism beacon monster definition should exist");
   assert(Boolean(d.monsterTypes.solarWarden), "solar warden monster definition should exist");
+  assert(Boolean(d.monsterTypes.suncrestChampion), "suncrest arena champion monster definition should exist");
   assert(Boolean(d.monsterTypes.sunspireKeeper), "sunspire keeper monster definition should exist");
   assert(Boolean(d.monsterTypes.emberDragon), "ember dragon monster definition should exist");
   assert(d.weaponNames[13] === "暁光の長槍" && d.armorNames[13] === "陽冠の光鎧" && d.shieldNames[7] === "日輪大盾", "chapter 5 city gear should define all combat slots");
   assert(d.accessoryData.horizon?.name === "遠見の護符", "chapter 5 should define the anti-sniper accessory");
   assert(d.accessoryData.prismLens?.name === "反射水晶", "chapter 5 tower should define the prism lens accessory");
+  assert(d.accessoryData.duelist?.name === "陽冠闘士の徽章", "Suncrest Arena should define the duelist accessory");
   assert(d.weaponAttackProfiles.length === d.weaponNames.length, "every weapon should define an attack profile");
   assert(d.weaponAttackProfiles[1].cooldown < d.weaponAttackProfiles[11].cooldown && d.weaponAttackProfiles[8].range > d.weaponAttackProfiles[2].range, "weapon profiles should create visible speed and reach tradeoffs");
 
@@ -1015,6 +1038,18 @@ function assertExpandedWorldContent() {
   const attackStartX = attackStyle.player.x;
   attackStyle.runtime.performAttack();
   assert(attackStyle.player.attackCooldown === d.weaponAttackProfiles[1].cooldown && attackStyle.player.x > attackStartX, "spear attack should use its quick lunging profile");
+
+  const duelistAttack = createRuntime();
+  duelistAttack.player.x = 30 * d.TILE;
+  duelistAttack.player.y = 40 * d.TILE;
+  duelistAttack.player.dir = "right";
+  duelistAttack.player.weapon = 1;
+  duelistAttack.player.ownedAccessories = ["duelist"];
+  duelistAttack.player.equippedAccessories = ["duelist"];
+  duelistAttack.player.equippedAccessory = "duelist";
+  duelistAttack.runtime.refreshDerivedStats();
+  duelistAttack.runtime.performAttack();
+  assert(duelistAttack.player.attackCooldown < d.weaponAttackProfiles[1].cooldown, "duelist accessory should speed normal attack cadence");
 
   const interiorSpawn = createRuntime();
   interiorSpawn.player.level = 30;
@@ -1254,6 +1289,9 @@ function assertExpandedWorldContent() {
   assert(voidPool.includes("voidWraith") && voidPool.includes("eclipseMage") && voidPool.includes("summoner") && voidPool.includes("trapFlower"), "void spawn pool should include void wraith, eclipse mage, summoner, and trap flowers");
   const obsidianPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "obsidian");
   assert(obsidianPool.includes("obsidianCrawler") && obsidianPool.includes("voidWraith") && obsidianPool.includes("summoner") && obsidianPool.includes("trapFlower"), "obsidian spawn pool should include crawler, summoner, trap flowers, and void pressure");
+  player.level = 39;
+  const suncrestArenaPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "suncrestArena");
+  assert(suncrestArenaPool.includes("solarRunner") && suncrestArenaPool.includes("sunLancer") && suncrestArenaPool.includes("prismBeacon"), "Suncrest Arena should mix rush, sniper, and artillery pressure in its local spawn pool");
 
   state.monsters = [];
   player.level = 18;
@@ -1375,6 +1413,38 @@ function assertExpandedWorldContent() {
 
   state.monsters = [];
   state.projectiles = [];
+  player.x = 214 * d.TILE;
+  player.y = 17 * d.TILE;
+  runtime.spawnMonster("suncrestChampion", d.SUNCREST_CHAMPION_SITE.x * d.TILE, d.SUNCREST_CHAMPION_SITE.y * d.TILE);
+  const behaviorSuncrestChampion = state.monsters.find((monster) => monster.type === "suncrestChampion");
+  behaviorSuncrestChampion.fireCooldown = 9999;
+  behaviorSuncrestChampion.chargeCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorSuncrestChampion.windup > 0 && behaviorSuncrestChampion.chargeVector, "Suncrest Champion should open with a charge threat");
+  behaviorSuncrestChampion.windup = 0;
+  behaviorSuncrestChampion.chargeTime = 0;
+  behaviorSuncrestChampion.chargeCooldown = 9999;
+  behaviorSuncrestChampion.specialState = "idle";
+  behaviorSuncrestChampion.specialWindup = 0;
+  behaviorSuncrestChampion.fireCooldown = 0;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorSuncrestChampion.specialState === "sniper" && state.telegraphs.some((entry) => entry.kind === "line"), "Suncrest Champion should telegraph a triple sniper line");
+  behaviorSuncrestChampion.specialWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.filter((projectile) => projectile.source === "suncrestChampion" && projectile.pattern === "solarSniper").length === 3, "Suncrest Champion should fire three piercing sniper shots");
+  behaviorSuncrestChampion.fireCooldown = 0;
+  behaviorSuncrestChampion.chargeCooldown = 9999;
+  state.telegraphs = [];
+  runtime.updateMonsters(16);
+  assert(behaviorSuncrestChampion.specialState === "artillery" && state.telegraphs.filter((entry) => entry.kind === "zone").length === 3, "Suncrest Champion should alternate into artillery zones");
+  behaviorSuncrestChampion.hp = behaviorSuncrestChampion.hpMax * 0.5;
+  runtime.updateMonsters(16);
+  assert(behaviorSuncrestChampion.summoned && state.monsters.some((monster) => monster.type === "solarRunner") && state.monsters.some((monster) => monster.type === "sunLancer") && state.monsters.some((monster) => monster.type === "prismBeacon"), "Suncrest Champion should call mixed arena reinforcements below half HP");
+
+  state.monsters = [];
+  state.projectiles = [];
   player.x = 188 * d.TILE;
   player.y = 17 * d.TILE;
   runtime.spawnMonster("sunspireKeeper", d.SUNSPIRE_KEEPER_SITE.x * d.TILE, d.SUNSPIRE_KEEPER_SITE.y * d.TILE);
@@ -1417,6 +1487,8 @@ function assertExpandedWorldContent() {
   chapter5Defense.player.equippedAccessories = ["horizon", "prismLens"];
   const prismPrepared = chapter5Defense.runtime.armorDamageMultiplier({ type: "sunspireKeeper" }, 0, "solar");
   assert(prismPrepared < prepared, "prism lens should further reduce Sunspire and Ember solar pressure when equipped");
+  const arenaPrepared = chapter5Defense.runtime.armorDamageMultiplier({ type: "suncrestChampion" }, 0, "solar");
+  assert(arenaPrepared <= prismPrepared, "Suncrest arena champion should respect chapter 5 solar counter gear");
 
   const suncrestShop = createRuntime();
   const suncrestMerchant = suncrestShop.state.npcs.find((npc) => npc.type === "merchant" && npc.x > 240 * d.TILE);
@@ -1636,6 +1708,43 @@ function assertExpandedWorldContent() {
   const memoPages = globalThis.DRAGON_HUNTER_UI.statsPanelPages(contexts.ui());
   assert(memoPages.some((page) => page.title === "旅メモ" && page.lines.some((line) => /召喚士|黒市|古塔/.test(line))), "status panel should include travel memo guidance");
 
+  const routeReadability = createRuntime();
+  routeReadability.state.guardianDefeated = true;
+  routeReadability.player.sealCrest = true;
+  routeReadability.player.scales = d.BOSS_REQUIREMENTS.scales;
+  routeReadability.player.level = d.BOSS_REQUIREMENTS.level;
+  assert(/北東の岩山|竜洞/.test(routeReadability.runtime.objectiveText()), "Dragon Cave objective should name the north-east rock landmark");
+  const dragonDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(dragonDestination?.label === "竜洞" && dragonDestination.site.x === 51, "world map should mark Dragon Cave when it is the required target");
+
+  routeReadability.state.bossDefeated = true;
+  routeReadability.state.elderReported = true;
+  routeReadability.state.ashKnightDefeated = true;
+  routeReadability.state.archiveWardenDefeated = true;
+  routeReadability.state.eclipseDragonDefeated = true;
+  routeReadability.state.chapter2Reported = true;
+  routeReadability.state.cryptWardenDefeated = true;
+  routeReadability.state.obsidianGolemDefeated = true;
+  routeReadability.state.voidDragonDefeated = true;
+  routeReadability.state.chapter3Reported = true;
+  routeReadability.state.frostGolemDefeated = true;
+  routeReadability.state.frostDragonDefeated = true;
+  routeReadability.state.chapter4Reported = true;
+  routeReadability.state.solarWardenDefeated = false;
+  routeReadability.player.level = d.SOLAR_WARDEN_REQUIREMENTS.level;
+  assert(/黎明港から北東高原|日輪砲台/.test(routeReadability.runtime.objectiveText()), "Solar Warden objective should describe the Dawn Harbor to north-east highland route");
+  const solarDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(solarDestination?.label === "日輪砲台守" && solarDestination.site.x === d.SOLAR_WARDEN_SITE.x, "world map should mark Solar Warden as the current required destination");
+  const chapter5Memo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(routeReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(chapter5Memo?.lines.some((line) => /本線: 黎明港 -> 北東高原 -> 日輪砲台守/.test(line)), "Chapter 5 travel memo should show the main Solar Warden route");
+
+  routeReadability.state.solarWardenDefeated = true;
+  routeReadability.state.suncrestChampionDefeated = false;
+  routeReadability.state.sunspireKeeperDefeated = false;
+  routeReadability.player.level = d.SUNCREST_CHAMPION_REQUIREMENTS.level;
+  const suncrestMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(routeReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(suncrestMemo?.lines[0]?.includes("本線: 陽冠都市東門 -> 日鏡塔") && suncrestMemo.lines.some((line) => /任意: 西広場の闘技場/.test(line)), "Suncrest memo should show main tower route before optional arena");
+
   const reward = createRuntime();
   reward.runtime.grantChestReward("ashGear");
   assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8), "ashGear chest should grant star gear inventory");
@@ -1651,6 +1760,8 @@ function assertExpandedWorldContent() {
   assert(reward.player.wards >= 9, "trap hint should provide a ward and warning reward");
   reward.runtime.grantDiscoveryReward({ id: "test-waystone", kind: "waystone" }, 0, 0);
   assert(reward.player.wards >= 8 && reward.player.stamina === reward.player.staminaMax, "waystone discovery should restore stamina and add a ward");
+  reward.runtime.grantDiscoveryReward({ id: "test-dragon-cave-hint", kind: "dragonCaveHint" }, 0, 0);
+  assert(reward.player.wards >= 9, "Dragon Cave hint should provide a small route-preparation ward");
   reward.runtime.grantChestReward("eclipseGear");
   assert(reward.player.ownedWeapons.includes(9) && reward.player.ownedArmors.includes(9), "eclipseGear chest should grant eclipse gear");
   reward.runtime.grantChestReward("eclipseSupply");
@@ -1734,6 +1845,15 @@ function assertExpandedWorldContent() {
   guardedSunspireChest.runtime.openChest(sunspireChest);
   assert(guardedSunspireChest.state.chests.has("sunspire-reliquary") && guardedSunspireChest.player.ownedAccessories.includes("prismLens"), "Sunspire reliquary should grant the prism lens after Sunspire Keeper defeat");
 
+  const arenaChest = d.TREASURE_CHESTS.find((chest) => chest.id === "suncrest-arena-reliquary");
+  assert(arenaChest, "Suncrest Arena reliquary should exist");
+  const guardedArenaChest = createRuntime();
+  guardedArenaChest.runtime.openChest(arenaChest);
+  assert(!guardedArenaChest.state.chests.has("suncrest-arena-reliquary") && !guardedArenaChest.player.ownedAccessories.includes("duelist"), "Suncrest Arena reliquary should stay locked until Champion defeat");
+  guardedArenaChest.state.suncrestChampionDefeated = true;
+  guardedArenaChest.runtime.openChest(arenaChest);
+  assert(guardedArenaChest.state.chests.has("suncrest-arena-reliquary") && guardedArenaChest.player.ownedAccessories.includes("duelist"), "Suncrest Arena reliquary should grant the duelist accessory after Champion defeat");
+
   const regenBefore = reward.runtime.regenRate();
   reward.runtime.grantChestReward("greaterRegen");
   globalThis.DRAGON_HUNTER_REWARDS.equipAccessory(reward.player, "greaterRegen");
@@ -1781,11 +1901,24 @@ function assertExpandedWorldContent() {
   reward.runtime.grantChestReward("suncrestMarketSupply");
   reward.runtime.grantChestReward("suncrestArsenalSupply");
   assert(reward.player.elixirs >= 7 && reward.player.wards >= 9, "Suncrest city caches should provide chapter 5 expedition supplies");
+  reward.runtime.grantChestReward("arenaSupply");
+  assert(reward.player.tonics >= 9 && reward.player.warps >= 8, "Suncrest Arena supply should support the optional city challenge");
+  reward.runtime.grantChestReward("duelistMedal");
+  assert(reward.player.ownedAccessories.includes("duelist"), "Suncrest Arena reliquary should grant the duelist accessory");
+  reward.player.ownedAccessories = ["duelist"];
+  reward.player.equippedAccessories = ["duelist"];
+  reward.player.equippedAccessory = "duelist";
+  reward.runtime.refreshDerivedStats();
+  const duelistStaminaMax = reward.player.staminaMax;
+  assert(duelistStaminaMax > 100, "duelist accessory should raise stamina capacity for combo play");
   reward.runtime.grantChestReward("sunspireSupply");
   assert(reward.player.elixirs >= 6 && reward.player.warps >= 7, "Sunspire supply should support the chapter 5 tower expedition");
   reward.runtime.grantChestReward("prismLens");
   assert(reward.player.ownedAccessories.includes("prismLens"), "Sunspire reliquary should grant the prism lens accessory");
   reward.runtime.grantDiscoveryReward({ id: "test-sunspire-hint", kind: "sunspireHint" }, 0, 0);
+  reward.runtime.grantDiscoveryReward({ id: "test-suncrest-arena-hint", kind: "suncrestArenaHint" }, 0, 0);
+  reward.player.stamina = 1;
+  reward.runtime.grantDiscoveryReward({ id: "test-solar-warden-hint", kind: "solarWardenHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-moon-archive-hint", kind: "moonArchiveHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-suncrest-guide", kind: "suncrestGuide" }, 0, 0);
   assert(reward.player.wards >= 9 && reward.player.stamina === reward.player.staminaMax, "Sunspire observation point should provide anti-solar preparation");

@@ -21,6 +21,7 @@
     CHAPTER4_REQUIREMENTS,
     CHAPTER5_REQUIREMENTS,
     SOLAR_WARDEN_REQUIREMENTS,
+    SUNCREST_CHAMPION_REQUIREMENTS,
     SUNSPIRE_KEEPER_REQUIREMENTS,
     OBSIDIAN_GOLEM_REQUIREMENTS,
     SMUGGLER_CAPTAIN_REQUIREMENTS,
@@ -52,8 +53,11 @@
     if (stage === "sunspireReward") return "目的: 日鏡塔の反射水晶を受け取る";
     if (stage === "sunspireKeeper") return "目的: 日鏡塔の守主を倒す";
     if (stage === "sunspireRoute") return `目的: 陽冠都市東の日鏡塔へ LV${SUNSPIRE_KEEPER_REQUIREMENTS.level}`;
-    if (stage === "solarWarden") return "目的: 日輪砲台守を破壊";
-    if (stage === "sunriseRoute") return `目的: 日出高原へ LV${SOLAR_WARDEN_REQUIREMENTS.level}`;
+    if (stage === "suncrestArenaReward") return "目的: 闘技場奥の遺物庫を開ける";
+    if (stage === "suncrestChampion") return "目的: 陽冠闘技王を倒す";
+    if (stage === "suncrestArena") return `目的: 陽冠都市西の闘技場へ LV${SUNCREST_CHAMPION_REQUIREMENTS.level}`;
+    if (stage === "solarWarden") return "目的: 北東高原の日輪砲台守を破壊";
+    if (stage === "sunriseRoute") return `目的: 黎明港から北東高原の日輪砲台へ LV${SOLAR_WARDEN_REQUIREMENTS.level}`;
     if (stage === "chapter4cleared") return "第4章CLEAR: 霜冠竜を封じた";
     if (stage === "chapter4report") return "目的: 長老へ霜冠竜討伐を報告";
     if (stage === "frostDragon") return "目的: 霜冠竜を倒す";
@@ -82,8 +86,8 @@
     if (stage === "postDragon") return "目的: 灰道の宿場から古塔へ";
     if (stage === "cleared") return "第1章CLEAR: 旅は続く";
     if (stage === "report") return "目的: 長老へ赤竜討伐を報告";
-    if (stage === "dragon") return "目的: 赤竜を倒す";
-    if (stage === "cave") return "目的: 竜洞へ向かう";
+    if (stage === "dragon") return "目的: 竜洞の赤竜を倒す";
+    if (stage === "cave") return "目的: 北東の岩山にある竜洞へ向かう";
     if (stage === "guardian") return "目的: 北森の守護者を倒す";
     if (stage === "level") return `目的: LV${BOSS_REQUIREMENTS.level}まで鍛える`;
     if (stage === "ruin") return "目的: 北森の紋章を探す";
@@ -105,6 +109,7 @@
       if (state.chapter4Reported && !state.solarWardenDefeated) return "黎明港から北東高原の日輪砲台へ";
       if (state.chapter4Reported && state.solarWardenDefeated && !state.sunspireKeeperDefeated && player.level < SUNSPIRE_KEEPER_REQUIREMENTS.level) return `日鏡塔の守主にはLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}が要る`;
       if (state.chapter4Reported && state.solarWardenDefeated && !state.sunspireKeeperDefeated) return "陽冠都市の東門から日鏡塔へ";
+      if (state.chapter4Reported && state.solarWardenDefeated && !state.suncrestChampionDefeated && player.level >= SUNCREST_CHAMPION_REQUIREMENTS.level) return "任意: 西広場の闘技場で連撃装飾を狙える";
       if (state.chapter4Reported && state.sunspireKeeperDefeated && !state.chests.has("sunspire-reliquary")) return "日鏡塔奥で反射水晶を受け取る";
       if (state.chapter4Reported && !state.discoveries.has("sunrise-seal")) return "陽冠都市の南街道で陽光封印碑を探す";
       if (state.chapter4Reported && !state.chests.has("ember-sanctum-cache")) return "熾火聖域で決戦物資を確保する";
@@ -144,7 +149,11 @@
     if (region === "eastHighland") return "中央峠は近くて危険。西海岸道なら退路を取りやすい";
     if (region === "southIsles") return "南風岬砦で補給し、小島の橋と古い祠を巡ろう";
     if (region === "dawnCoast") return "黎明港を拠点に、北の山道か西海岸の迂回路を選ぼう";
-    if (region === "sunriseHighland" && !state.solarWardenDefeated) return "光槍兵の長い射線を横切り、北東高原の日輪砲台へ";
+    if (region === "sunriseHighland" && !state.solarWardenDefeated) return "焼けた街道と光の砲声を追い、北東高原の日輪砲台へ";
+    if (region === "suncrestArena" && !state.suncrestChampionDefeated && player.level < SUNCREST_CHAMPION_REQUIREMENTS.level) return `陽冠闘技場はLV${SUNCREST_CHAMPION_REQUIREMENTS.level}級。都市で装備と霊薬を整えよう`;
+    if (region === "suncrestArena" && !state.suncrestChampionDefeated) return "走者の突進と光砲の着弾円を避け、中央の闘技王へ詰めろ";
+    if (region === "suncrestArena" && !state.chests.has("suncrest-arena-reliquary")) return "闘技王撃破後は奥の遺物庫で陽冠闘士の徽章を受け取ろう";
+    if (region === "suncrestArena") return "連撃装飾を装備し、日鏡塔や熾火群島の長期戦に備えよう";
     if (region === "sunspire" && !state.sunspireKeeperDefeated && player.level < SUNSPIRE_KEEPER_REQUIREMENTS.level) return `日鏡塔はLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}級。無理なら陽冠都市へ戻ろう`;
     if (region === "sunspire" && !state.sunspireKeeperDefeated) return "反射鏡の着弾円を避け、塔奥の日鏡塔の守主へ";
     if (region === "sunspire" && !state.chests.has("sunspire-reliquary")) return "守主の奥の遺物庫で反射水晶を取ろう";
@@ -196,7 +205,7 @@
     if (stage === "ruin") return "北森で守護者の紋章を探す";
     if (stage === "level") return "装備とLVを上げて竜洞へ";
     if (stage === "guardian") return "北森の守護者へ";
-    if (stage === "cave") return "北東の竜洞へ";
+    if (stage === "cave") return "村の北東、岩山の焦げた道標から竜洞へ";
     if (stage === "dragon") return "赤竜戦: 正面を避けよう";
     if (stage === "report") return "村へ戻って報告";
     if (stage === "chapter2report") return "長老へ第2章の報告";
@@ -216,6 +225,7 @@
 
   function gameStage(context) {
     const { state, player, canChallengeDragon, guardianReady } = requireTextContext(context);
+    const region = typeof context.currentRegion === "function" ? context.currentRegion() : "";
     if (state.chapter5Reported) return "chapter5cleared";
     if (state.chapter5Victory || (state.emberDragonDefeated && !state.chapter5Reported)) return "chapter5report";
     if (state.spawnedEmberDragon) return "emberDragon";
@@ -224,6 +234,9 @@
     if (state.chapter4Reported && state.solarWardenDefeated && state.sunspireKeeperDefeated && state.chests.has("sunspire-reliquary") && !state.discoveries.has("sunrise-seal")) return "sunriseSeal";
     if (state.spawnedSunspireKeeper) return "sunspireKeeper";
     if (state.chapter4Reported && state.solarWardenDefeated && state.sunspireKeeperDefeated && !state.chests.has("sunspire-reliquary")) return "sunspireReward";
+    if (state.spawnedSuncrestChampion && !state.suncrestChampionDefeated) return "suncrestChampion";
+    if (region === "suncrestArena" && state.chapter4Reported && state.solarWardenDefeated && state.suncrestChampionDefeated && !state.chests.has("suncrest-arena-reliquary")) return "suncrestArenaReward";
+    if (region === "suncrestArena" && state.chapter4Reported && state.solarWardenDefeated && !state.suncrestChampionDefeated) return "suncrestArena";
     if (state.chapter4Reported && state.solarWardenDefeated && !state.sunspireKeeperDefeated) return "sunspireRoute";
     if (state.spawnedSolarWarden) return "solarWarden";
     if (state.chapter4Reported) return "sunriseRoute";
@@ -301,6 +314,9 @@
       sunspireRoute: "日鏡塔遠征",
       sunspireKeeper: "日鏡塔守主戦",
       sunspireReward: "反射水晶",
+      suncrestArena: "陽冠闘技場",
+      suncrestChampion: "陽冠闘技王戦",
+      suncrestArenaReward: "闘技場遺物庫",
       sunriseSeal: "陽光封印",
       emberSupply: "熾火聖域探索",
       emberReady: "熾火天竜の聖域",

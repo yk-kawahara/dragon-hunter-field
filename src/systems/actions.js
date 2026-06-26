@@ -33,6 +33,12 @@
 
   const worldPx = (value) => value * WORLD_SCALE;
 
+  function activeAccessory(player, id, legacyFlag) {
+    if (Array.isArray(player.equippedAccessories)) return player.equippedAccessories.includes(id);
+    if (player.equippedAccessory) return player.equippedAccessory === id;
+    return Boolean(player[legacyFlag]);
+  }
+
   function requireActionContext(context) {
     if (!context?.state || !context?.player) {
       throw new Error("action helpers require { state, player }");
@@ -108,7 +114,8 @@
     const { state, player, facingVector, moveActor, addSlash, addRing } = requireActionContext(context);
     if (player.attackCooldown > 0 || state.gameOver || player.hp <= 0) return;
     const profile = weaponAttackProfiles[player.weapon] || weaponAttackProfiles[0];
-    player.attackCooldown = profile.cooldown;
+    const duelist = activeAccessory(player, "duelist", "duelistCharm");
+    player.attackCooldown = Math.max(92, Math.round(profile.cooldown * (duelist ? 0.84 : 1)));
     const dir = facingVector();
     if (profile.lunge > 0) moveActor(player, dir.x * worldPx(profile.lunge), dir.y * worldPx(profile.lunge));
     const pc = centerOf(player);
@@ -135,7 +142,8 @@
 
     if (hitCount) {
       player.combo += hitCount;
-      player.comboTimer = 2400;
+      player.comboTimer = duelist ? 3200 : 2400;
+      if (duelist) player.stamina = Math.min(player.staminaMax, player.stamina + 2 + hitCount * 3);
       state.shake = Math.max(state.shake, 60);
     } else {
       player.combo = Math.max(0, player.combo - 1);
@@ -258,6 +266,10 @@
     }
     if (chest.id === "sunspire-reliquary" && !state.sunspireKeeperDefeated) {
       say("日鏡塔の守主を倒さないと反射水晶には触れられない", 2200);
+      return;
+    }
+    if (chest.id === "suncrest-arena-reliquary" && !state.suncrestChampionDefeated) {
+      say("陽冠闘技王を倒さないと闘技場の遺物庫は開かない", 2200);
       return;
     }
     state.chests.add(chest.id);

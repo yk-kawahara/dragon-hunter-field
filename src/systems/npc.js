@@ -26,6 +26,7 @@
     CHAPTER4_REQUIREMENTS,
     CHAPTER5_REQUIREMENTS,
     SOLAR_WARDEN_REQUIREMENTS,
+    SUNCREST_CHAMPION_REQUIREMENTS,
     SUNSPIRE_KEEPER_REQUIREMENTS,
     weaponNames,
     armorNames,
@@ -271,7 +272,7 @@
         state.clearPanelOpen = true;
         say("長老「霜冠竜を越えたか。第4章の遠征は新たな国への道となる」", 5800);
       } else if (state.chapter4Reported) {
-        say(`長老「外洋の黎明港から陽冠都市へ。日輪砲台守を破り、LV${CHAPTER5_REQUIREMENTS.level}で熾火群島へ向かえ」`, 5000);
+        say(`長老「黎明港から北東高原へ進め。光の砲声を追い日輪砲台守を破り、陽冠都市で備えよ」`, 5200);
       } else if (state.voidDragonDefeated && !state.chapter3Reported) {
         state.chapter3Reported = true;
         state.chapter3Victory = false;
@@ -296,7 +297,7 @@
       } else if (state.elderReported) {
         say(`長老「灰道の宿場から古塔へ進め。灰騎士を越えれば第2章の道が開く」`, 4600);
       } else if (canChallengeDragon(context)) {
-        say("長老「封印は解けた。北東の竜洞へ向かえ」");
+        say("長老「封印は解けた。村の北東、焦げた岩山の竜洞へ向かえ」");
       } else if (!state.guardianDefeated && guardianReady()) {
         say("長老「北森の守護者を越え、紋章を得よ」");
       } else if (player.scales < BOSS_REQUIREMENTS.scales) {
@@ -429,16 +430,18 @@
 
     if (npc.type === "guide") {
       if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
-        if (!state.solarWardenDefeated) say(`案内人「第5章は北東高原の日輪砲台守からだ。LV${SOLAR_WARDEN_REQUIREMENTS.level}と帰還鈴を用意しろ」`, 5000);
-        else if (!state.sunspireKeeperDefeated) say(`案内人「東門の日鏡塔へ。守主はLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}級、遠征薬舗で霊薬と護符を補給しろ」`, 5200);
+        if (!state.solarWardenDefeated) say(`案内人「第5章の本線は黎明港から北東高原の日輪砲台守へ。焼けた街道と砲声を追え」`, 5400);
+        else if (!state.sunspireKeeperDefeated) say(`案内人「本線は東門の日鏡塔だ。西広場の闘技場は任意、守主はLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}級だ」`, 5600);
+        else if (!state.suncrestChampionDefeated && player.level >= SUNCREST_CHAMPION_REQUIREMENTS.level) say(`案内人「本線を進めた後の任意挑戦なら、西広場の陽冠闘技場で連撃装飾を狙える」`, 5200);
         else if (!state.chests.has("sunspire-reliquary")) say("案内人「塔奥の遺物庫に反射水晶がある。都市の旅装ギルドでも同系統の対策を聞ける」", 4800);
         else if (!state.discoveries.has("sunrise-seal")) say("案内人「南門から街道を下り、陽光封印碑を読め。碑の先は熾火群島への前哨路だ」", 5000);
         else if (!state.chests.has("ember-sanctum-cache")) say("案内人「熾火聖域の補給箱を先に取れ。天竜戦は物資の余裕が勝敗を分ける」", 4800);
         else say(`案内人「陽冠装備、反射水晶、LV${CHAPTER5_REQUIREMENTS.level}。揃ったら南の熾火聖域へ」`, 4800);
       } else if (npc.x > 198 * TILE) {
-        if (!state.solarWardenDefeated) say(`案内人「日輪砲台守は北東高原。LV${SOLAR_WARDEN_REQUIREMENTS.level}で射線を横切り、砲台を壊せ」`, 4600);
+        if (!state.solarWardenDefeated) say(`案内人「日輪砲台守は北東高原。焼けた街道と光の柱を追い、射線を横切って砲台を壊せ」`, 5200);
         else if (!state.sunspireKeeperDefeated && player.level < SUNSPIRE_KEEPER_REQUIREMENTS.level) say(`案内人「次は陽冠都市の東門、日鏡塔だ。守主にはLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}と光砲対策が欲しい」`, 4800);
         else if (!state.sunspireKeeperDefeated) say("案内人「日鏡塔では反射鏡の着弾円が重なる。走者を先に処理して守主へ詰めろ」", 4800);
+        else if (!state.suncrestChampionDefeated && player.level >= SUNCREST_CHAMPION_REQUIREMENTS.level) say("案内人「本線後の寄り道なら、西広場の闘技場だ。突進を避けて闘技王の背後を取れ」", 5200);
         else if (!state.chests.has("sunspire-reliquary")) say("案内人「守主を倒したなら塔奥の遺物庫を調べろ。反射水晶が熾火聖域の備えになる」", 4600);
         else if (!state.discoveries.has("sunrise-seal")) say("案内人「南街道の陽光封印碑を読め。陽冠装備は大武装商会で選べる」", 4400);
         else if (!state.chests.has("ember-sanctum-cache")) say("案内人「熾火群島の聖域で天竜戦の補給箱を確保せよ」", 4400);
