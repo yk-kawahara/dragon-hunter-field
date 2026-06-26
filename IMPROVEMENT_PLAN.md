@@ -17,6 +17,7 @@ Main playtest/code-analysis findings:
 * Similar concern exists for Chapter 1 竜洞 / Red Dragon.
 * Some town-to-town routes are short or low-pressure enough that a new safe base does not feel like a breakthrough; 黒市都 -> 黒門砦 now has a first Black Gate approach pass.
 * Chapter 2 now has a first 月影洞窟 attrition route between 月影廃墟 and 月見砦; it needs real-browser/manual tuning to confirm pressure, length, and reward feel.
+* Chapter 4 now has first-pass role clarity: 白銀宿 first-arrival payoff, main-route travel memo, world-map destination markers, and guide dialogue distinguish 氷窟 / 霜冠城 from optional 霜見塔.
 * Chapter 5 has strong content but can read like a checklist if route guidance, travel memo, and map support are not unified.
 * Optional content, especially 陽冠闘技場, can appear too prominently compared with the main route.
 * Travel memo should become a route plan, not only a treasure/rumor reminder.
@@ -34,6 +35,26 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 ---
 
 # Now: recommended implementation sequence
+
+## Completed 2026-06-26: Pass 8 Chapter 4 arrival and role clarity
+
+Implemented:
+
+* Strengthened 白銀宿 first-arrival text so it reads as a hard-earned warm safe base after the frost frontier.
+* Reworked Chapter 4 travel memo into a main-route plan:
+  * before first arrival: 黒門砦南門 -> 霜原 -> 白銀宿.
+  * after arrival: 白銀宿 -> 東の氷窟 -> 霜心の護符.
+  * after 氷窟巨人: 氷窟 -> 霜冠城封印碑 -> 霜冠竜.
+* Kept 霜見塔 visible as optional movement/reward content instead of a mandatory route.
+* Added current-world-map destination markers for 白銀宿, 氷窟巨人, 霜冠封印碑, and 霜冠竜.
+* Reordered Frost Haven guide dialogue so mandatory seal guidance appears before optional tower advice.
+* Extended smoke coverage for Chapter 4 objective text, memo priority, and destination-marker progression.
+
+Next:
+
+1. Browser/manual playtest the 黒門砦南門 -> 霜原 -> 白銀宿 route for whether first arrival feels earned.
+2. Tune enemy pressure or add a final-approach supply/sign only if the route feels too easy or too unclear.
+3. Continue with Pass 4 street-to-street expedition tension review or Pass 2 Chapter 5 guidance polish, depending on playtest findings.
 
 ## Completed 2026-06-26: Immediate boss cleanup and rereadable field guidance fix
 

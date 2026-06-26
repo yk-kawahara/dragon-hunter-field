@@ -347,14 +347,14 @@ Optional route:
 
 Current issue:
 
-* 白銀宿 can deliver stronger “finally reached shelter in the frozen frontier” payoff.
-* 氷窟 and 霜見塔 should be clearly distinguished: main-route preparation vs optional movement/reward content.
+* 白銀宿 now has stronger first-arrival payoff text, but the route still needs manual playtest to confirm it feels hard-earned.
+* 氷窟 and 霜見塔 are now distinguished in travel memo, guide dialogue, and world-map markers: 氷窟 is main-route preparation, 霜見塔 is optional movement/reward content.
 
 Desired improvement:
 
-* Strengthen the approach to 白銀宿 with cold-route pressure and final-approach tension.
-* Add or revise first-arrival message for 白銀宿.
+* If playtest shows the 白銀宿 approach is too easy, strengthen the cold-route pressure with a small final-approach danger or supply decision.
 * Keep 霜見塔 optional but attractive.
+* Preserve the map-marker sequence: 白銀宿 -> 氷窟巨人 -> 霜冠封印碑 -> 霜冠竜.
 
 ## Chapter 5 role: horizon-fire expedition
 

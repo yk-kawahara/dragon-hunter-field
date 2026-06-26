@@ -613,16 +613,17 @@
     }
     if (!state.frostGolemDefeated) {
       return [
-        `白銀宿の東、氷窟へ LV${player.level}/30`,
-        state.towerWardenDefeated ? "霜見塔の昇降機は開通済み" : "霜原の霜見塔はLV32の寄り道",
-        "霜牙獣の突進は予兆中に横へ",
+        state.arrivedSafeBases?.has("frost-haven") ? "本線: 白銀宿 -> 東の氷窟 -> 霜心の護符" : "本線: 黒門砦南門 -> 霜原 -> 白銀宿",
+        `今: 氷窟巨人へ LV${player.level}/30`,
+        state.towerWardenDefeated ? "任意: 霜見塔の昇降機は開通済み" : "任意: 霜見塔はLV32の移動報酬",
       ];
     }
     if (!state.frostDragonDefeated) {
       return [
-        `霜冠城の封印碑とLV${player.level}/34`,
+        "本線: 氷窟 -> 霜冠城封印碑 -> 霜冠竜",
+        `今: 封印碑とLV${player.level}/34`,
         "霜心の護符は氷弾と凍結を軽減",
-        state.towerWardenDefeated ? "天駆けの徽章で竜の氷弾を回避" : "霜見塔の塔守はLV32の寄り道",
+        state.towerWardenDefeated ? "任意報酬: 天駆けの徽章で氷弾回避" : "任意: 霜見塔の塔守はLV32の寄り道",
       ];
     }
     if (!state.chapter4Reported) {

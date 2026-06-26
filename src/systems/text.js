@@ -64,7 +64,7 @@
     if (stage === "frostReady") return "目的: 霜冠城の奥へ進む";
     if (stage === "frostSeal") return "目的: 霜冠城の封印碑を探す";
     if (stage === "frostGolem") return "目的: 氷窟巨人を倒す";
-    if (stage === "frostRoute") return `目的: 白銀宿と氷窟へ LV${FROST_GOLEM_REQUIREMENTS.level}`;
+    if (stage === "frostRoute") return `目的: 白銀宿を拠点に東の氷窟へ LV${FROST_GOLEM_REQUIREMENTS.level}`;
     if (stage === "chapter3cleared") return "第3章CLEAR: 黒陽竜を封じた";
     if (stage === "chapter3report") return "目的: 長老へ黒陽竜討伐を報告";
     if (stage === "void") return "目的: 黒陽竜を倒す";
@@ -117,7 +117,8 @@
       if (state.chapter4Reported && !state.chests.has("ember-sanctum-cache")) return "熾火聖域で決戦物資を確保する";
       if (state.chapter4Reported && player.level < CHAPTER5_REQUIREMENTS.level) return `熾火天竜にはLV${CHAPTER5_REQUIREMENTS.level}が要る`;
       if (state.chapter4Reported) return "陽冠都市で光砲対策装備を整える";
-      if (state.chapter3Reported && !state.frostGolemDefeated && player.level < FROST_GOLEM_REQUIREMENTS.level) return `氷窟巨人にはLV${FROST_GOLEM_REQUIREMENTS.level}が要る`;
+      if (state.chapter3Reported && !state.frostGolemDefeated && !state.arrivedSafeBases?.has("frost-haven")) return "黒門砦から南の霜原を越え、白銀宿を目指そう";
+      if (state.chapter3Reported && !state.frostGolemDefeated && player.level < FROST_GOLEM_REQUIREMENTS.level) return `白銀宿を拠点に氷窟へ。巨人にはLV${FROST_GOLEM_REQUIREMENTS.level}が要る`;
       if (state.chapter3Reported && !state.frostGolemDefeated) return "白銀宿の東、氷窟巨人を倒そう";
       if (state.chapter3Reported && !state.discoveries.has("frost-seal")) return "霜冠城の中庭で封印碑を探そう";
       if (state.chapter3Reported && player.level < CHAPTER4_REQUIREMENTS.level) return `霜冠竜にはLV${CHAPTER4_REQUIREMENTS.level}が要る`;
@@ -176,7 +177,8 @@
     if (region === "frostCitadel" && !state.frostGolemDefeated) return "先に南西の氷窟巨人を倒そう";
     if (region === "frostCitadel" && player.level < CHAPTER4_REQUIREMENTS.level) return `霜冠竜にはLV${CHAPTER4_REQUIREMENTS.level}ほど欲しい`;
     if (region === "frostCitadel") return "霜冠竜の氷弾は白銀装備と霜心で軽くなる";
-    if (region === "frost") return "白銀宿で回復し、本道か南の氷窟道を選ぼう";
+    if (region === "frost" && !state.frostGolemDefeated) return "白銀宿で回復し、東の氷窟で霜心を狙おう。霜見塔は寄り道";
+    if (region === "frost") return "霜心を持って霜冠城へ。霜見塔は移動報酬の寄り道";
     if (region === "undercity" && !state.chapter2Reported) return "黒市地下墓所は終盤級。無理なら入口へ戻ろう";
     if (region === "moonArchive" && !state.archiveWardenDefeated && player.level < MOON_ARCHIVE_WARDEN_REQUIREMENTS.level) return `月の書庫はLV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}級。無理なら月見砦へ戻ろう`;
     if (region === "moonArchive" && !state.archiveWardenDefeated) return "召喚士を先に倒し、奥の月書庫の番人へ進もう";

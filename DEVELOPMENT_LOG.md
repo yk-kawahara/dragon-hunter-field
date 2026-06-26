@@ -39,6 +39,7 @@ Current high-priority design risks:
 * Chapter 1 竜洞 and Chapter 5 日輪砲台守 now have stronger objective text, route breadcrumbs, guide dialogue, travel memo support, and current-destination map markers; browser/manual readability still needs confirmation.
 * Several town-to-town routes are short or low-pressure enough that the next safe base may not feel like a hard-earned survival-range breakthrough; 黒市都 -> 黒門砦 now has a first 黒門前哨 pass and needs manual tuning.
 * Chapter 2 now has 月影洞窟 as a required attrition route between 月影廃墟 and 月見砦; manual tuning is still needed for pressure, length, and reward feel.
+* Chapter 4 now routes more clearly through 白銀宿 -> 氷窟 -> 霜冠城, with 霜見塔 kept as optional movement/reward content; manual route-pressure testing is still needed.
 * Chapter 5 has strong content but can become checklist-like if UI guidance, travel memo, and map markers do not present it as one expedition.
 * Optional 陽冠闘技場 can appear too prominent compared with the main 日鏡塔 route if guidance priority is not fixed.
 * Travel memo needs to become a route plan with main/optional/preparation sections.
@@ -57,6 +58,7 @@ Next verification target:
 5. Manual route-readability tests:
    * 竜洞 / Red Dragon.
    * 日輪砲台守.
+   * 白銀宿 -> 氷窟 -> 霜冠城.
    * 陽冠都市 east/west/south exits.
 6. Fresh-save route playthrough when feasible.
 
@@ -78,6 +80,29 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-26: Chapter 4 Frost Haven route-clarity pass
+
+Goal: make Chapter 4 read as a clear frozen-frontier expedition instead of a loose set of nearby tasks.
+
+Implemented:
+
+* Strengthened the 白銀宿 first-arrival message so it communicates a new safe radius for 氷窟 and 霜冠城 attempts.
+* Updated town/field guidance so first-time Chapter 4 progression points from 黒門砦 south through 霜原 to 白銀宿, then east to 氷窟.
+* Reworked Chapter 4 travel memo into main-route phases and kept 霜見塔 labeled as optional movement/reward content.
+* Added world-map current-destination markers for 白銀宿, 氷窟巨人, 霜冠封印碑, and 霜冠竜.
+* Reordered Frost Haven guide dialogue so mandatory seal guidance is not hidden behind optional 霜見塔 advice.
+* Added smoke coverage for Chapter 4 objective text, memo priority, and world-map destination progression.
+
+Verification:
+
+* `node --check` for changed JavaScript files passed.
+* `scripts/verify-game-smoke.js` passed.
+* `git diff --check` passed with line-ending warnings only.
+
+Known risks:
+
+* Browser/manual playtest was not run in this pass; actual readability and 白銀宿 approach pressure still need hands-on confirmation.
 
 ### 2026-06-26: Immediate boss cleanup and rereadable field guidance fix
 

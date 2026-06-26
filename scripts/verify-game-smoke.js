@@ -1823,6 +1823,36 @@ function assertExpandedWorldContent() {
   const blackSealDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(blackRouteReadability.state, blackRouteReadability.player);
   assert(blackSealDestination?.label === "黒陽碑" && blackSealDestination.site.x === 82, "world map should mark the Black Sun seal after Black Fort armory");
 
+  const frostRouteReadability = createRuntime();
+  frostRouteReadability.state.bossDefeated = true;
+  frostRouteReadability.state.elderReported = true;
+  frostRouteReadability.state.ashKnightDefeated = true;
+  frostRouteReadability.state.archiveWardenDefeated = true;
+  frostRouteReadability.state.eclipseDragonDefeated = true;
+  frostRouteReadability.state.chapter2Reported = true;
+  frostRouteReadability.state.cryptWardenDefeated = true;
+  frostRouteReadability.state.obsidianGolemDefeated = true;
+  frostRouteReadability.state.voidDragonDefeated = true;
+  frostRouteReadability.state.chapter3Reported = true;
+  assert(/白銀宿を拠点に東の氷窟/.test(frostRouteReadability.runtime.objectiveText()), "Chapter 4 objective should present Frost Haven and Ice Cave as one route");
+  let frostDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(frostRouteReadability.state, frostRouteReadability.player);
+  assert(frostDestination?.label === "白銀宿" && frostDestination.site.x === 24, "world map should first mark Frost Haven before first arrival");
+  let frostMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(frostRouteReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(frostMemo?.lines[0]?.includes("本線: 黒門砦南門 -> 霜原 -> 白銀宿") && frostMemo.lines.some((line) => /任意: 霜見塔/.test(line)), "Chapter 4 memo should guide first arrival before optional Frost Watchtower");
+  frostRouteReadability.state.arrivedSafeBases.add("frost-haven");
+  frostDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(frostRouteReadability.state, frostRouteReadability.player);
+  assert(frostDestination?.label === "氷窟巨人" && frostDestination.site.x === d.FROST_GOLEM_SITE.x, "world map should mark Frost Golem after Frost Haven arrival");
+  frostMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(frostRouteReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(frostMemo?.lines[0]?.includes("本線: 白銀宿 -> 東の氷窟 -> 霜心の護符"), "Chapter 4 memo should switch to Ice Cave preparation after Frost Haven arrival");
+  frostRouteReadability.state.frostGolemDefeated = true;
+  frostDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(frostRouteReadability.state, frostRouteReadability.player);
+  assert(frostDestination?.label === "霜冠封印碑" && frostDestination.site.x === 103, "world map should mark Frost Crown seal after Frost Golem");
+  frostRouteReadability.state.discoveries.add("frost-seal");
+  frostDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(frostRouteReadability.state, frostRouteReadability.player);
+  assert(frostDestination?.label === "霜冠竜" && frostDestination.site.x === d.FROST_DRAGON_SITE.x, "world map should mark Frost Crown Dragon after the seal");
+  frostMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(frostRouteReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(frostMemo?.lines[0]?.includes("本線: 氷窟 -> 霜冠城封印碑 -> 霜冠竜") && frostMemo.lines.some((line) => /任意: 霜見塔/.test(line)), "Chapter 4 memo should keep Frost Watchtower optional during dragon preparation");
+
   const reward = createRuntime();
   reward.runtime.grantChestReward("ashGear");
   assert(reward.player.ownedWeapons.includes(8) && reward.player.ownedArmors.includes(8), "ashGear chest should grant star gear inventory");

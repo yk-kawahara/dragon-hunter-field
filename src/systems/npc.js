@@ -451,9 +451,9 @@
         if (npc.y > 154 * TILE) say("案内人「北は蒼風港、南西の橋は群島祠、東は海岸の強敵地帯だ」", 4200);
         else say("案内人「北道は灯台、中央は峠、南道は岬砦。峠が最短だが最も危険だ」", 4200);
       } else if (npc.y > 144 * TILE) {
-        if (!state.frostGolemDefeated) say("案内人「本道は霜冠城、南の氷窟は危険だが霜心の護符が眠る」", 4200);
-        else if (!state.towerWardenDefeated) say("案内人「白銀宿の東に霜見塔がある。二階の塔守はLV32向けだ」", 4200);
+        if (!state.frostGolemDefeated) say("案内人「まず白銀宿を拠点に東の氷窟へ。巨人を倒して霜心を得たら、霜冠城へ向かえ」", 5200);
         else if (!state.discoveries.has("frost-seal")) say("案内人「霜冠城の中庭で封印碑を探せ。氷窟巨人の核が道を開く」", 4200);
+        else if (!state.towerWardenDefeated) say("案内人「霜見塔は任意の寄り道だ。二階の塔守はLV32向けで、移動を助ける徽章が眠る」", 5200);
         else say(`案内人「霜冠竜へ挑むならLV${CHAPTER4_REQUIREMENTS.level}と白銀装備を整えろ」`, 4200);
       } else if (state.chapter2Reported && !state.cryptWardenDefeated) {
         say("案内人「黒市東端の地下口は古い墓所へ続く。LV22以上、帰還鈴を持って入れ」", 4400);

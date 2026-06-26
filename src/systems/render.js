@@ -337,6 +337,18 @@ function currentWorldMapDestinationFor(stateArg, playerArg) {
   if (stateArg?.chapter4Reported && !stateArg.solarWardenDefeated) {
     return { site: SOLAR_WARDEN_SITE, label: "日輪砲台守" };
   }
+  if (stateArg?.chapter3Reported && !stateArg.frostGolemDefeated && !stateArg.arrivedSafeBases?.has("frost-haven")) {
+    return { site: { x: 24, y: 154 }, label: "白銀宿" };
+  }
+  if (stateArg?.chapter3Reported && !stateArg.frostGolemDefeated) {
+    return { site: FROST_GOLEM_SITE, label: "氷窟巨人" };
+  }
+  if (stateArg?.chapter3Reported && stateArg.frostGolemDefeated && !stateArg.discoveries?.has("frost-seal")) {
+    return { site: { x: 103, y: 154 }, label: "霜冠封印碑" };
+  }
+  if (stateArg?.chapter3Reported && !stateArg.frostDragonDefeated) {
+    return { site: FROST_DRAGON_SITE, label: "霜冠竜" };
+  }
   if (stateArg?.chapter2Reported && !stateArg.chests?.has("black-fort-armory")) {
     return { site: { x: 98, y: 132 }, label: "黒門砦" };
   }
