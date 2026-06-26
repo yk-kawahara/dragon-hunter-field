@@ -81,6 +81,28 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
+### 2026-06-27: Chapter 2 Moon Cavern pressure tuning pass
+
+Goal: make 月影洞窟 feel more like the final resource push before 月見砦 becomes a new safe base.
+
+Implemented:
+
+* Added `moon-cavern-exit-cache` and `moon-cavern-exit-note` on reachable Moon Cavern floor tiles before the east exit.
+* Added `moonCavernExitSupply` for a small final-push supply package of 活力薬, 護符, 帰還鈴, bombs, and gold.
+* Updated Chapter 2 travel memo and current-area guidance so the player looks for both 中継補給 and 出口補給 before the 月洞印 / 月見砦 exit.
+* Raised Moon Cavern local target density only before `moon-camp` first arrival, so the first clear is more tense while repeat traversal after reaching the base is calmer.
+* Added smoke coverage for reachability, travel memo text, and the new reward.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS.
+
+Known risks:
+
+* Real-browser/manual playtest was not run in this pass. Enemy density and item generosity still need hands-on tuning for the route from 月影廃墟 to 月見砦.
+* No terrain tiles were changed, so map preview regeneration was not required.
+
 ### 2026-06-27: Chapter 5 Suncrest approach tension pass
 
 Goal: make the 日輪砲台守 -> 陽冠都市 stretch feel like the last tense push to a new safe base, not empty travel after the midboss.

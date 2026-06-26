@@ -36,6 +36,22 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-06-27: Chapter 2 Moon Cavern pressure tuning pass
+
+Implemented:
+
+* Added a reachable 月影洞窟出口補給 cache and exit note before the 月見砦 portal.
+* Added `moonCavernExitSupply` so a depleted player can choose to push through the final stretch instead of automatically retreating.
+* Updated Chapter 2 travel memo and local guidance to name both 中継補給 and 出口補給 before the 月洞印.
+* Increased Moon Cavern local target density only before 月見砦 has been physically reached, making the first clear more tense while repeat travel is calmer.
+* Extended smoke coverage for reachability, travel memo, and the new supply reward.
+
+Next:
+
+1. Browser/manual playtest 灰道の宿場 -> 月影廃墟 -> 月影洞窟 -> 月見砦 to confirm pressure and retreat timing.
+2. If 月影洞窟 still feels flat, add one named gate encounter or clearer fork rather than increasing length.
+3. Continue checking Chapter 5 route readability and Suncrest exits in browser/manual QA.
+
 ## Completed 2026-06-27: Chapter 5 Suncrest approach tension pass
 
 Implemented:
@@ -50,7 +66,7 @@ Next:
 1. Browser/manual playtest 黎明港 -> 日輪砲台守 -> 陽冠都市 to confirm the final approach feels tense but fair.
 2. Browser/manual check the whole-world map while advancing through Chapter 5 stages.
 3. Browser/manual check 陽冠都市 east/west/south exits against the current marker sequence.
-4. If Chapter 5 feels readable and tense enough, move to Chapter 2 月影洞窟 pressure/length tuning.
+4. If Chapter 5 feels readable and tense enough, continue Chapter 2 月影洞窟 manual pressure tuning.
 
 ## Completed 2026-06-27: Chapter 5 full-route world-map marker pass
 

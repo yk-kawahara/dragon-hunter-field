@@ -311,6 +311,8 @@ function assertMapReachability() {
     ["moon-road", 102, 106],
     ["moon-cavern-entry", 92, 103],
     ["moon-cavern-mid-cache", 136, 34],
+    ["moon-cavern-exit-cache", 145, 38],
+    ["moon-cavern-exit-note", 148, 38],
     ["moon-cavern-reliquary", 153, 41],
     ["moon-cavern-east-exit", 153, 43],
     ["moon-camp", 102, 116],
@@ -1113,9 +1115,14 @@ function assertExpandedWorldContent() {
   assert(moonCavernPortal?.id === "moon-cavern-west-entry", "Moon Ruins should expose the Moon Cavern attrition route");
   runtime.traversePortal(moonCavernPortal);
   assert(runtime.currentRegion() === "moonCavern", "Moon Cavern interior should use its own region");
+  state.elderReported = true;
+  state.ashKnightDefeated = true;
+  state.chests.add("moon-ruin-cache");
   player.level = 14;
   const moonCavernPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moonCavern");
   assert(moonCavernPool.includes("moonShade") && moonCavernPool.includes("summoner") && moonCavernPool.includes("shieldSoldier"), "Moon Cavern should mix moon shades, summoners, and shield soldiers");
+  const moonCavernMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(moonCavernMemo?.lines.some((line) => /出口補給/.test(line)), "Moon Cavern memo should call out the exit supply before Moon Camp");
   player.x = 153 * d.TILE;
   player.y = 43 * d.TILE;
   const moonCavernEastExit = runtime.nearestPortal();
@@ -1884,6 +1891,8 @@ function assertExpandedWorldContent() {
   assert(reward.player.bombs >= 3 && reward.player.wards >= 7, "moonSupply chest should add late expedition supplies");
   reward.runtime.grantChestReward("moonCavernSupply");
   assert(reward.player.tonics >= 2 && reward.player.warps >= 1, "Moon Cavern mid-cache should add retreat supplies");
+  reward.runtime.grantChestReward("moonCavernExitSupply");
+  assert(reward.player.warps >= 2 && reward.player.wards >= 9, "Moon Cavern exit cache should add final-push supplies");
   reward.runtime.grantChestReward("moonCavernRelic");
   assert(reward.player.ownedShields.includes(3) && reward.player.elixirs >= 1, "Moon Cavern relic should grant the route shield and an elixir");
   reward.runtime.grantChestReward("summonerSupply");

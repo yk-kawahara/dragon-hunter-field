@@ -233,7 +233,8 @@ Current structure:
 Current issue:
 
 * A first implementation of 月影洞窟 now sits between 月影廃墟 and 月見砦, so the chapter has a real attrition route before the next safe base.
-* 月見砦 should still be manually tuned to feel like a hard-earned safe base, not simply the next nearby stop.
+* 月影洞窟 now has both mid-route and exit-route supplies, plus higher first-clear local pressure before 月見砦 is physically reached.
+* 月見砦 should still be manually tuned in browser play to confirm it feels like a hard-earned safe base, not simply the next nearby stop.
 * 月の書庫 adds volume, but it can read like an extra checklist step if the route before 月見砦 is not memorable.
 
 Implemented route:
@@ -248,7 +249,7 @@ Implemented route:
 月影洞窟
   - local moon pressure
   - summons / shield soldiers / traps
-  - mid-route supply
+  - mid-route and exit-route supplies
   - 月洞印 reward
 ↓
 月見砦 first-arrival safe-radius payoff

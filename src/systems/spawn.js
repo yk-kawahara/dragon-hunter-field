@@ -308,6 +308,7 @@
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
     const interior = INTERIOR_REGIONS.has(region);
     let target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "moonCavern" ? 11 : region === "moonArchive" ? 12 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "suncrestArena" ? 13 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
+    if (region === "moonCavern" && state.elderReported && state.ashKnightDefeated && !state.arrivedSafeBases?.has("moon-camp")) target += 2;
     if (region === "sunriseHighland" && state.chapter4Reported && !state.arrivedSafeBases?.has("suncrest-city")) target += 2;
     if (region !== state.lastRegion) {
       state.lastRegion = region;

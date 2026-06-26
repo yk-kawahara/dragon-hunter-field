@@ -185,6 +185,7 @@
     if (region === "moonArchive" && !state.chests.has("moon-archive-reliquary")) return "番人の奥の遺物庫で月蝕の指輪を取ろう";
     if (region === "moonArchive") return "月蝕の備えを整え、月見砦南西の封印碑へ戻ろう";
     if (region === "moonCavern" && !state.chests.has("moon-cavern-mid-cache")) return "月影洞窟の中継補給を探せ。帰還札を残すと撤退しやすい";
+    if (region === "moonCavern" && !state.chests.has("moon-cavern-exit-cache")) return "出口前の補給を拾えば、月見砦まで押し切りやすい";
     if (region === "moonCavern" && !state.chests.has("moon-cavern-reliquary")) return "奥で月洞印を得て、東の出口から月見砦へ抜けろ";
     if (region === "moonCavern") return "月洞印は得た。東は月見砦、西は月影廃墟へ戻れる";
     if (region === "undercity" && !state.cryptWardenDefeated && player.level < CRYPT_WARDEN_REQUIREMENTS.level) return `墓所の番人にはLV${CRYPT_WARDEN_REQUIREMENTS.level}ほど欲しい`;
