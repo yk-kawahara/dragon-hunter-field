@@ -704,6 +704,36 @@
     const { state, say } = requireSpawnContext(context);
     if (state.gameOver) return;
 
+    const storyEncounters = [
+      ["spawnedWarden", "wardenDefeated", "warden"],
+      ["spawnedGuardian", "guardianDefeated", "guardian"],
+      ["spawnedAshKnight", "ashKnightDefeated", "ashKnight"],
+      ["spawnedArchiveWarden", "archiveWardenDefeated", "archiveWarden"],
+      ["spawnedEclipseDragon", "eclipseDragonDefeated", "eclipseDragon"],
+      ["spawnedVoidDragon", "voidDragonDefeated", "voidDragon"],
+      ["spawnedObsidianGolem", "obsidianGolemDefeated", "obsidianGolem"],
+      ["spawnedSmugglerCaptain", "smugglerCaptainDefeated", "smugglerCaptain"],
+      ["spawnedRegenSentinel", "regenSentinelDefeated", "regenSentinel"],
+      ["spawnedMistKeeper", "mistKeeperDefeated", "mistKeeper"],
+      ["spawnedCryptWarden", "cryptWardenDefeated", "cryptWarden"],
+      ["spawnedFrostGolem", "frostGolemDefeated", "frostGolem"],
+      ["spawnedTowerWarden", "towerWardenDefeated", "towerWarden"],
+      ["spawnedFrostDragon", "frostDragonDefeated", "frostDragon"],
+      ["spawnedSolarWarden", "solarWardenDefeated", "solarWarden"],
+      ["spawnedSuncrestChampion", "suncrestChampionDefeated", "suncrestChampion"],
+      ["spawnedSunspireKeeper", "sunspireKeeperDefeated", "sunspireKeeper"],
+      ["spawnedEmberDragon", "emberDragonDefeated", "emberDragon"],
+    ];
+
+    for (const [spawnedKey, defeatedKey, typeName] of storyEncounters) {
+      if (state[defeatedKey]) {
+        state[spawnedKey] = false;
+        state.monsters = state.monsters.filter((monster) => monster.type !== typeName);
+      } else if (state[spawnedKey] && !hasLiveMonster(context, typeName)) {
+        state[spawnedKey] = false;
+      }
+    }
+
     if (state.spawnedWarden && !state.wardenDefeated && !hasLiveMonster(context, "warden")) {
       state.spawnedWarden = false;
     }

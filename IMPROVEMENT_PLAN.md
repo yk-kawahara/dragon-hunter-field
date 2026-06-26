@@ -35,6 +35,22 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-06-26: Boss persistence and earned wagon travel fix
+
+Implemented:
+
+* Fixed base wagon travel so destinations require both story unlock and first physical arrival, preventing travel to towns the player has never reached.
+* Normalized save/load restoration so spawned story encounters are never restored as active after reload; defeated bosses and midbosses stay defeated instead of returning as spawned encounters.
+* Added cleanup for defeated story encounters during story event updates, removing stale defeated boss bodies and clearing their spawned flags.
+* Added explicit Red Dragon cave handling so a defeated Red Dragon cannot be recreated by cave interaction.
+* Extended smoke coverage for unvisited wagon destinations, arrived-base travel, defeated boss cleanup, and save/load spawned-flag migration.
+
+Next:
+
+1. Manual/browser check wagon menus from each base to confirm the reduced destination list feels clear.
+2. Manual check several defeated boss sites after save/load, especially Red Dragon, Ember Dragon, and Chapter 5 midbosses.
+3. Continue with Pass 8: 逋ｽ驫螳ｿ arrival and Chapter 4 role clarity, unless another progression-breaking bug is found.
+
 ## Completed 2026-06-26: Pass 1 required route readability micro-pass
 
 Implemented:

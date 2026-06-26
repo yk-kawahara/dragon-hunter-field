@@ -526,6 +526,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.obsidianGolemDefeated, "obsidian golem defeat flag should persist");
   assert(restored.state.guardianDefeated && restored.state.bossDefeated && restored.state.elderReported, "boss/clear flags should persist");
+  assert(!restored.state.spawnedBoss && !restored.state.spawnedEmberDragon && !restored.state.spawnedFrostDragon && !restored.state.spawnedVoidDragon && !restored.state.spawnedEclipseDragon, "defeated bosses should not restore as spawned encounters");
   assert(restored.state.arrivedSafeBases.has("village") && restored.state.arrivedSafeBases.has("moon-camp") && restored.state.arrivedSafeBases.has("suncrest-city"), "safe base first-arrival flags should persist");
 
   const rewardHelpers = globalThis.DRAGON_HUNTER_REWARDS;
@@ -896,6 +897,8 @@ function assertStoryClearFlow() {
   emberDragon.hp = 0;
   runtime.updateMonsters(16);
   assert(state.emberDragonDefeated && state.chapter5Victory, "Ember Dragon defeat should set chapter 5 victory");
+  runtime.updateStoryEvents();
+  assert(!state.spawnedEmberDragon && !state.monsters.some((monster) => monster.type === "emberDragon"), "defeated Ember Dragon should not remain spawned or reappear");
   runtime.handleNpc(elder);
   assert(state.chapter5Reported, "Elder report should complete chapter 5 clear state");
   return { guardianDefeated: state.guardianDefeated, bossDefeated: state.bossDefeated, elderReported: state.elderReported, chapter2Reported: state.chapter2Reported, chapter3Reported: state.chapter3Reported, chapter4Reported: state.chapter4Reported, chapter5Reported: state.chapter5Reported };
@@ -1739,6 +1742,10 @@ function assertExpandedWorldContent() {
   assert(porter, "porter NPC should exist for base travel");
   state.elderReported = true;
   player.gold = 500;
+  runtime.closeShop();
+  openNpcShop(runtime, state, porter);
+  assert(!state.shopRows.some((row) => row.type === "travel" && row.id === "ash-hamlet"), "porter should not offer story-unlocked bases before first arrival");
+  state.arrivedSafeBases.add("ash-hamlet");
   runtime.closeShop();
   openNpcShop(runtime, state, porter);
   buyShopRow(runtime, state, (row) => row.type === "travel" && row.id === "ash-hamlet", "porter should offer unlocked base travel");

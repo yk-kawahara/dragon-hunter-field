@@ -79,6 +79,30 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
+### 2026-06-26: Boss persistence and earned wagon travel fix
+
+Goal: fix two playtest issues that broke survival-range expansion: defeated bosses could appear to return, and wagon travel could reach towns before the player had earned them by arrival.
+
+Implemented:
+
+* Wagon destinations now require both story unlock and `arrivedSafeBases` first-arrival state, except the village.
+* Save/load now clears all spawned story encounter flags on restore, letting undefeated encounters respawn only when the player revisits their site and preventing defeated encounters from restoring as active.
+* Story event updates now clean up defeated story encounters and their spawned flags, including late-game bosses and midbosses.
+* Red Dragon cave interaction now clears stale dragon state after victory instead of allowing any recreated dragon state to persist.
+* Smoke tests now cover unvisited wagon hiding, arrived wagon travel, save/load spawned flag cleanup, and defeated Ember Dragon cleanup.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS.
+* `git diff --check`: PASS with existing CRLF normalization warnings only.
+
+Known risks / next work:
+
+* Real-browser/manual QA was not performed in this pass.
+* Manual checks should confirm wagon menu clarity at each base and defeated boss sites after save/load.
+* Existing unstaged user changes to `AGENTS.md`, `README.md`, and level-up tuning in `src/systems/monsters.js` were preserved.
+
 ### 2026-06-26: Chapter 3 Black Gate approach expedition pass
 
 Goal: make 黒市都 -> 黒門砦 read as a main street-to-street survival push instead of a quick hop surrounded by optional content.

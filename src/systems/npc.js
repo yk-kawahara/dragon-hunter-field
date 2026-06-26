@@ -751,6 +751,8 @@
   function handleCave(context) {
     const { state, say, spawnMonster } = requireNpcContext(context);
     if (state.bossDefeated) {
+      state.spawnedBoss = false;
+      state.monsters = state.monsters.filter((monster) => monster.type !== "dragon");
       say("洞穴は静まり返っている");
       return;
     }

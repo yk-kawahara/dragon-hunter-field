@@ -68,7 +68,11 @@
   }
 
   function availableTravelPoints(state, player) {
-    return (TRAVEL_POINTS || []).filter((point) => travelPointUnlocked(point, state, player));
+    const arrived = state?.arrivedSafeBases instanceof Set ? state.arrivedSafeBases : new Set(["village"]);
+    return (TRAVEL_POINTS || []).filter((point) => (
+      travelPointUnlocked(point, state, player)
+      && (point.unlock === "always" || arrived.has(point.id))
+    ));
   }
 
   function rewardIds(list) {
