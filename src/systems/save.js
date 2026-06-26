@@ -15,6 +15,7 @@
     TILE,
     WORLD_SCALE,
     SAVE_KEY,
+    SAFE_ZONES,
     TREASURE_CHESTS,
     DISCOVERY_POINTS,
     itemOrder,
@@ -26,6 +27,8 @@
     savedIdSet,
     normalizeInventory,
   } = rewardHelpers;
+  const safeBaseIds = new Set((SAFE_ZONES || []).map((zone) => zone.id));
+  safeBaseIds.add("village");
 
   function requireSaveContext(context) {
     if (!context?.state || !context?.player || !context?.say || !context?.refreshDerivedStats || !context?.gameStage || !context?.stageName) {
@@ -137,6 +140,7 @@
       chapter5Reported: state.chapter5Reported,
       chests: Array.from(state.chests),
       discoveries: Array.from(state.discoveries),
+      arrivedSafeBases: Array.from(state.arrivedSafeBases instanceof Set ? state.arrivedSafeBases : ["village"]),
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     say(`保存しました (${stageName(gameStage())})`);
@@ -242,6 +246,8 @@
       state.victory = Boolean(data.bossDefeated) && !state.elderReported;
       state.chests = savedIdSet(data.chests, rewardIds(TREASURE_CHESTS));
       state.discoveries = savedIdSet(data.discoveries, rewardIds(DISCOVERY_POINTS));
+      state.arrivedSafeBases = savedIdSet(data.arrivedSafeBases || ["village"], safeBaseIds);
+      state.arrivedSafeBases.add("village");
       say("旅を再開しました");
       return true;
     } catch {
@@ -324,6 +330,7 @@
     state.projectiles = [];
     state.chests = new Set();
     state.discoveries = new Set();
+    state.arrivedSafeBases = new Set(["village"]);
     state.spawnedBoss = false;
     state.bossDefeated = false;
     state.spawnedGuardian = false;

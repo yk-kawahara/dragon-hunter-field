@@ -50,8 +50,24 @@ Implemented:
 Next:
 
 1. Manual/browser route-readability check for 竜洞 and 日輪砲台守.
-2. If readability is acceptable, move to Pass 2: Chapter 5 guidance polish and safe-base arrival payoff.
-3. Then tackle Pass 5: Chapter 2 attrition dungeon prototype.
+2. If readability is acceptable, move to Pass 5: Chapter 2 attrition dungeon prototype.
+3. Then review Pass 4 street-to-street expedition tension for routes that still feel too short.
+
+## Completed 2026-06-26: Pass 3 safe-base arrival payoff system
+
+Implemented:
+
+* Added persistent first-arrival tracking for major safe bases.
+* Added one-time safe-radius expansion messages for remote camps, towns, ports, and Chapter 5 髯ｽ蜀驛ｽ蟶・
+* On first arrival, the base clears incoming projectiles, refills stamina, and grants a short guard/invulnerability buffer so the player feels immediate relief.
+* Save/load/reset now preserve first-arrival state and never repeat already-seen arrival payoffs.
+* Extended smoke coverage for first-arrival recording, repeated-visit suppression, stamina refill, projectile clearing, and save/load persistence.
+
+Next:
+
+1. Manual/browser check that the arrival ring/message reads well in actual play.
+2. Tune which safe bases deserve stronger bespoke text after playtest.
+3. Proceed to Pass 5: Chapter 2 attrition dungeon prototype, because 譛郁ｦ狗ｦ still needs a more hard-earned approach.
 
 ## Pass 1: required route readability micro-pass
 

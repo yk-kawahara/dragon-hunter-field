@@ -103,6 +103,13 @@ Design rules:
 
 Avoid creating tension through empty distance. Use enemy pressure, route shape, supplies, discoveries, retreat decisions, and landmarks.
 
+Implemented safe-base payoff support:
+
+* Major safe bases now persist first-arrival state across save/load.
+* The first visit to a remote base shows a safe-radius expansion message, clears immediate incoming projectiles, refills stamina, and gives a short guard/invulnerability buffer.
+* Repeat visits should stay quiet; the base's normal healing, shops, travel, and NPC guidance carry the ongoing value.
+* Manual/browser playtest should still tune whether the arrival text and ring timing feel strong enough during actual expeditions.
+
 ## Street-to-street attrition route pattern
 
 Town-to-town routes are often where this game can become most exciting.

@@ -460,6 +460,8 @@ function assertSaveLoadAndEquipment() {
   state.bossDefeated = true;
   state.spawnedBoss = true;
   state.elderReported = true;
+  state.arrivedSafeBases.add("moon-camp");
+  state.arrivedSafeBases.add("suncrest-city");
   runtime.saveGame();
 
   const restored = createRuntime();
@@ -515,6 +517,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.voidDragonDefeated && restored.state.chapter3Reported, "chapter 3 flags should persist");
   assert(restored.state.obsidianGolemDefeated, "obsidian golem defeat flag should persist");
   assert(restored.state.guardianDefeated && restored.state.bossDefeated && restored.state.elderReported, "boss/clear flags should persist");
+  assert(restored.state.arrivedSafeBases.has("village") && restored.state.arrivedSafeBases.has("moon-camp") && restored.state.arrivedSafeBases.has("suncrest-city"), "safe base first-arrival flags should persist");
 
   const rewardHelpers = globalThis.DRAGON_HUNTER_REWARDS;
   const weakerWeapon = rewardHelpers.grantWeaponAtLeast({ player: restored.player, say: () => {} }, 1, "upgrade");
@@ -904,7 +907,7 @@ function assertMineContent() {
 }
 
 function assertFrontierCamp() {
-  const { definitions: d, state, player, runtime } = createRuntime();
+  const { definitions: d, state, player, runtime, contexts } = createRuntime();
   const centerPlayerOnTile = (tx, ty) => {
     player.x = (tx + 0.5) * d.TILE - player.w / 2;
     player.y = (ty + 0.5) * d.TILE - player.h / 2;
@@ -919,6 +922,16 @@ function assertFrontierCamp() {
   assert(!runtime.isPassableRect(intruder, 25 * d.TILE, 59 * d.TILE), "closed safe camp should block monster entry");
 
   centerPlayerOnTile(31, 59);
+  player.hp = Math.max(1, player.hpMax - 8);
+  player.stamina = 12;
+  state.projectiles = [{ x: player.x, y: player.y, vx: 0, vy: 0 }];
+  globalThis.DRAGON_HUNTER_PLAYER.updateSafeBaseArrival(contexts.player());
+  assert(state.arrivedSafeBases.has("southwest-camp"), "first arrival should record the frontier camp as a new safe base");
+  assert(/前線キャンプ/.test(state.message) && player.stamina === player.staminaMax && state.projectiles.length === 0, "first arrival should announce relief, refill stamina, and clear incoming danger");
+  state.message = "";
+  globalThis.DRAGON_HUNTER_PLAYER.updateSafeBaseArrival(contexts.player());
+  assert(state.message === "", "safe base first-arrival message should not repeat");
+
   player.hp = 3;
   runtime.updateHealCircle();
   assert(player.hp === player.hpMax, "frontier camp heal circle should fully heal");

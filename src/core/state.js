@@ -24,6 +24,7 @@
       npcs: [],
       chests: new Set(),
       discoveries: new Set(),
+      arrivedSafeBases: new Set(["village"]),
       spawnedBoss: false,
       bossDefeated: false,
       spawnedGuardian: false,

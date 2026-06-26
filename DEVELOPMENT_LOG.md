@@ -42,7 +42,7 @@ Current high-priority design risks:
 * Chapter 5 has strong content but can become checklist-like if UI guidance, travel memo, and map markers do not present it as one expedition.
 * Optional 陽冠闘技場 can appear too prominent compared with the main 日鏡塔 route if guidance priority is not fixed.
 * Travel memo needs to become a route plan with main/optional/preparation sections.
-* First arrival at new safe bases needs stronger payoff messaging.
+* First arrival at new safe bases now has persistent payoff messaging, stamina relief, projectile clearing, and a short guard buffer; browser/manual tuning is still needed.
 * Browser desktop/mobile QA is still needed.
 * Full fresh-save manual playthrough to Chapter 5 elder report is still needed.
 * Gold/EXP/shop price balance still needs hands-on playtest.
@@ -78,6 +78,28 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-26: Safe-base first-arrival payoff pass
+
+Goal: make reaching a new safe base feel like survival-range expansion rather than merely crossing a coordinate boundary.
+
+Implemented:
+
+* Added persistent `arrivedSafeBases` state with save/load/reset migration.
+* Added one-time arrival payoff messages for major remote bases, including early camps, Chapter 2/3/4 anchors, ports, and Chapter 5 髯ｽ蜀驛ｽ蟶・
+* On first arrival, immediate projectiles are cleared, stamina is refilled, and the player gets a short guard/invulnerability buffer plus a ring/burst effect.
+* Extended smoke coverage for first-arrival recording, repeated-visit suppression, save/load persistence, stamina refill, and projectile clearing.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS, including safe-base first-arrival and save/load assertions.
+* `git diff --check`: PASS.
+
+Known risks / next work:
+
+* Real-browser QA was not performed in this pass; arrival message timing, effect visibility, and feel during actual expeditions still need manual confirmation.
+* The next high-value player-facing pass is still Chapter 2 attrition volume, especially the route into 譛郁ｦ狗ｦ.
 
 ### 2026-06-26: Required route readability micro-pass
 

@@ -16,6 +16,7 @@
     WORLD_SCALE,
     MAP_W,
     MAP_H,
+    SAFE_ZONES,
     HEAL_POINTS,
     TOWN_GATES,
     DISCOVERY_POINTS,
@@ -30,6 +31,18 @@
   } = mathHelpers;
 
   const worldPx = (value) => value * WORLD_SCALE;
+  const safeBaseArrivalMessages = {
+    "southwest-camp": "前線キャンプに辿り着いた。新しい安全圏を確保した。廃坑遠征はここから再出発できる",
+    "ash-hamlet": "灰道の宿場に辿り着いた。古塔へ向かうための足場ができた",
+    "moon-camp": "月見砦に辿り着いた。月影の遠征路に新しい安全圏を確保した",
+    "black-market": "黒市都に辿り着いた。危険な裏道の先に大きな補給拠点を得た",
+    "black-fort": "黒門砦に辿り着いた。黒陽城へ挑む最後の足場を確保した",
+    "frost-haven": "白銀宿に辿り着いた。凍土の中に暖かい安全圏を確保した",
+    "east-harbor": "蒼風港に辿り着いた。外洋遠征の補給港を確保した",
+    "southwind-outpost": "南風岬砦に辿り着いた。島道の南側に退避拠点を得た",
+    "dawn-harbor": "黎明港に辿り着いた。日出大陸への橋頭堡を確保した",
+    "suncrest-city": "陽冠都市に辿り着いた。過酷な高原を越え、大遠征の安全圏が広がった",
+  };
 
   function accessoryActive(player, id, legacyFlag) {
     if (Array.isArray(player.equippedAccessories)) return player.equippedAccessories.includes(id);
@@ -144,8 +157,36 @@
     state.searchCooldown = Math.max(0, state.searchCooldown - dt);
     state.healCooldown = Math.max(0, state.healCooldown - dt);
     updateTownGate(context, dt);
+    updateSafeBaseArrival(context);
     updateHealCircle(context);
     updateDiscoverySprings(context);
+  }
+
+  function safeZoneAtPlayer(player) {
+    const tx = Math.floor((player.x + player.w / 2) / TILE);
+    const ty = Math.floor((player.y + player.h / 2) / TILE);
+    return SAFE_ZONES.find((zone) => (
+      tx >= zone.x1 && tx <= zone.x2 && ty >= zone.y1 && ty <= zone.y2
+    )) || null;
+  }
+
+  function updateSafeBaseArrival(context) {
+    const { state, player, addRing, burst, say } = requirePlayerContext(context);
+    if (state.gameOver || player.hp <= 0) return;
+    const zone = safeZoneAtPlayer(player);
+    if (!zone || zone.id === "village") return;
+    if (!(state.arrivedSafeBases instanceof Set)) state.arrivedSafeBases = new Set(["village"]);
+    if (state.arrivedSafeBases.has(zone.id)) return;
+    state.arrivedSafeBases.add(zone.id);
+    state.projectiles = [];
+    player.stamina = player.staminaMax;
+    player.guard = Math.max(player.guard, 1200);
+    player.invuln = Math.max(player.invuln, 900);
+    const cx = (zone.x1 + zone.x2 + 1) * TILE / 2;
+    const cy = (zone.y1 + zone.y2 + 1) * TILE / 2;
+    addRing(cx, cy, "#74ff8f", worldPx(44));
+    burst(cx, cy, "#fff2a6", 22);
+    say(safeBaseArrivalMessages[zone.id] || `${zone.name}に辿り着いた。新しい安全圏を確保した`, 4400);
   }
 
   function playerNearTownGate(context) {
@@ -235,6 +276,7 @@
     inputMoveVector,
     facingVector,
     updatePlayer,
+    updateSafeBaseArrival,
     playerNearTownGate,
     updateTownGate,
     updateHealCircle,
