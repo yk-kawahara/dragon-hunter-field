@@ -22,6 +22,8 @@
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_SITE,
     ASH_KNIGHT_REQUIREMENTS,
+    MOON_CAVERN_GATEKEEPER_SITE,
+    MOON_CAVERN_GATEKEEPER_REQUIREMENTS,
     MOON_ARCHIVE_WARDEN_SITE,
     MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     ECLIPSE_DRAGON_SITE,
@@ -192,10 +194,13 @@
     if (tx >= 104 && tx <= 118 && ty >= 18 && ty <= 32) return "frostTower2";
     if (ty >= 144 && tx >= 90) return "frostCitadel";
     if (ty >= 150 && tx >= 48 && tx <= 70) return "frostCave";
+    if (tx >= 35 && tx <= 50 && ty >= 144 && ty <= 156) return "frostApproach";
     if (ty >= 144) return "frost";
     if (tx >= 62 && tx <= 84 && ty >= 116 && ty <= 126) return "mistShrine";
     if (tx >= 24 && tx <= 58 && ty >= 120 && ty <= 127) return "regenCave";
     if (tx >= 18 && tx <= 23 && ty >= 95 && ty <= 128) return "smuggler";
+    if (tx >= 59 && tx <= 88 && ty >= 128 && ty <= 133) return "blackGateNorth";
+    if (tx >= 59 && tx <= 78 && ty >= 134 && ty <= 137) return "blackGateSouth";
     if (ty >= 128 && tx <= 58) return "obsidian";
     if (ty >= 128) return "void";
     if (ty >= 112) return "eclipse";
@@ -307,8 +312,9 @@
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
     const interior = INTERIOR_REGIONS.has(region);
-    let target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "moonCavern" ? 11 : region === "moonArchive" ? 12 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "suncrestArena" ? 13 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
+    let target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "moonCavern" ? 11 : region === "moonArchive" ? 12 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "blackGateNorth" ? 11 : region === "blackGateSouth" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostApproach" ? 12 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "suncrestArena" ? 13 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
     if (region === "moonCavern" && state.elderReported && state.ashKnightDefeated && !state.arrivedSafeBases?.has("moon-camp")) target += 2;
+    if (region === "frostApproach" && state.chapter3Reported && !state.arrivedSafeBases?.has("frost-haven")) target += 2;
     if (region === "sunriseHighland" && state.chapter4Reported && !state.arrivedSafeBases?.has("suncrest-city")) target += 2;
     if (region !== state.lastRegion) {
       state.lastRegion = region;
@@ -400,9 +406,12 @@
     if (region === "frostTower1") return "霜見塔一階: 退路を確かめて登れ";
     if (region === "frostCitadel") return "霜冠城: 第4章の最奥";
     if (region === "frostCave") return "氷窟: 巨人と吸命の巣";
+    if (region === "frostApproach") return "白銀宿前: 吹雪を越えれば新しい安全圏";
     if (region === "frost") return "霜原: 白銀宿より先は凍結地帯";
     if (region === "undercity") return "黒市地下墓所: 吸命鬼と墓守の領域";
     if (region === "obsidian") return "黒曜洞: 黒市の外は巨人の縄張り";
+    if (region === "blackGateNorth") return "黒門北道: 盾兵の正面を避ける安全な本道";
+    if (region === "blackGateSouth") return "黒門南道: 罠と術師が待つ危険な近道";
     if (region === "void") return "黒陽領: 第3章の高難度地帯";
     if (region === "eclipse") return "月蝕城: 第2章の最奥";
     if (region === "mistShrine") return "霧灯の祠: 罠と召喚が濃い寄り道";
@@ -433,6 +442,15 @@
   function ashKnightReady(context) {
     const { state, player } = requireSpawnContext(context);
     return !state.ashKnightDefeated && state.wardenDefeated && player.level >= ASH_KNIGHT_REQUIREMENTS.level;
+  }
+
+  function moonGatekeeperReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.moonGatekeeperDefeated
+      && state.elderReported
+      && state.ashKnightDefeated
+      && state.chests.has("moon-ruin-cache")
+      && player.level >= MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level;
   }
 
   function eclipseDragonReady(context) {
@@ -583,6 +601,14 @@
     return Math.hypot(pc.x - ax, pc.y - ay) < worldPx(92);
   }
 
+  function playerNearMoonGatekeeperSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const gx = (MOON_CAVERN_GATEKEEPER_SITE.x + 0.5) * TILE;
+    const gy = (MOON_CAVERN_GATEKEEPER_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - gx, pc.y - gy) < worldPx(96);
+  }
+
   function playerNearArchiveWardenSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -711,6 +737,7 @@
       ["spawnedWarden", "wardenDefeated", "warden"],
       ["spawnedGuardian", "guardianDefeated", "guardian"],
       ["spawnedAshKnight", "ashKnightDefeated", "ashKnight"],
+      ["spawnedMoonGatekeeper", "moonGatekeeperDefeated", "moonGatekeeper"],
       ["spawnedArchiveWarden", "archiveWardenDefeated", "archiveWarden"],
       ["spawnedEclipseDragon", "eclipseDragonDefeated", "eclipseDragon"],
       ["spawnedVoidDragon", "voidDragonDefeated", "voidDragon"],
@@ -745,6 +772,9 @@
     }
     if (state.spawnedAshKnight && !state.ashKnightDefeated && !hasLiveMonster(context, "ashKnight")) {
       state.spawnedAshKnight = false;
+    }
+    if (state.spawnedMoonGatekeeper && !state.moonGatekeeperDefeated && !hasLiveMonster(context, "moonGatekeeper")) {
+      state.spawnedMoonGatekeeper = false;
     }
     if (state.spawnedArchiveWarden && !state.archiveWardenDefeated && !hasLiveMonster(context, "archiveWarden")) {
       state.spawnedArchiveWarden = false;
@@ -864,6 +894,12 @@
       say("古塔の灰騎士が道を塞いだ!", 2600);
     }
 
+    if (moonGatekeeperReady(context) && !state.spawnedMoonGatekeeper && playerNearMoonGatekeeperSite(context)) {
+      state.spawnedMoonGatekeeper = true;
+      spawnMonster(context, "moonGatekeeper", MOON_CAVERN_GATEKEEPER_SITE.x * TILE, MOON_CAVERN_GATEKEEPER_SITE.y * TILE);
+      say("月門の護将が月見砦への出口を封じた!", 3200);
+    }
+
     if (archiveWardenReady(context) && !state.spawnedArchiveWarden && playerNearArchiveWardenSite(context)) {
       state.spawnedArchiveWarden = true;
       spawnMonster(context, "archiveWarden", MOON_ARCHIVE_WARDEN_SITE.x * TILE, MOON_ARCHIVE_WARDEN_SITE.y * TILE);
@@ -920,6 +956,7 @@
     guardianReady,
     wardenReady,
     ashKnightReady,
+    moonGatekeeperReady,
     archiveWardenReady,
     eclipseDragonReady,
     voidDragonReady,

@@ -212,6 +212,10 @@
 
   function traversePortal(context, portal) {
     const { state, player, say, addRing, burst } = requireActionContext(context);
+    if (portal.unlock === "moonGatekeeper" && !state.moonGatekeeperDefeated) {
+      say("月門の護将が出口を封じている。側面か背後から崩そう", 2600);
+      return;
+    }
     state.monsters = state.monsters.filter((monster) => monster.boss || monster.midboss);
     state.projectiles = [];
     state.regionSpawnTimer = 0;
@@ -254,6 +258,10 @@
     }
     if (chest.id === "moon-archive-reliquary" && !state.archiveWardenDefeated) {
       say("月の書庫の番人を倒さないと遺物庫は開かない", 2200);
+      return;
+    }
+    if (chest.id === "moon-cavern-reliquary" && !state.moonGatekeeperDefeated) {
+      say("月門の護将を倒さないと月洞印は受け取れない", 2200);
       return;
     }
     if (chest.id === "frost-core-reliquary" && !state.frostGolemDefeated) {

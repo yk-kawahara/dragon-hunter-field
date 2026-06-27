@@ -2008,6 +2008,30 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#9de8ff";
     ctx.fillRect(sx + 18, sy + 2 + pulse, 3, 16);
     ctx.fillRect(sx + 16, sy + 1 + pulse, 7, 3);
+  } else if (monster.type === "moonGatekeeper") {
+    const pulse = Math.floor(monster.age / 150) % 2;
+    const guardX = monster.dir === "left" ? sx : monster.dir === "right" ? sx + 12 : sx + 3;
+    const guardY = monster.dir === "up" ? sy : sy + 7;
+    ctx.fillStyle = "rgba(158, 134, 255, 0.25)";
+    ctx.fillRect(sx - 3 - pulse, sy - 2 - pulse, 25 + pulse * 2, 23 + pulse * 2);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx + 2, sy + 7, 15, 12);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 5, sy + 2, 9, 16);
+    ctx.fillRect(sx + 3, sy + 7, 13, 8);
+    ctx.fillStyle = "#f0eaff";
+    ctx.fillRect(sx + 7, sy + 5, 2, 2);
+    ctx.fillRect(sx + 11, sy + 5, 2, 2);
+    ctx.fillStyle = "#352766";
+    ctx.fillRect(guardX, guardY, 7, 10);
+    ctx.fillStyle = "#d8cfff";
+    ctx.fillRect(guardX + 2, guardY + 1, 4, 8);
+    ctx.fillStyle = "#9e86ff";
+    ctx.fillRect(guardX + 3, guardY + 2, 2, 2);
+    ctx.fillRect(guardX + 2, guardY + 5, 2, 2);
+    ctx.fillStyle = "#fff2a6";
+    ctx.fillRect(sx + 17, sy + 1 + pulse, 2, 18);
+    ctx.fillRect(sx + 15, sy + pulse, 6, 3);
   } else if (monster.type === "shieldSoldier") {
     const guardX = monster.dir === "left" ? sx + 1 : monster.dir === "right" ? sx + 8 : sx + 3;
     const guardY = monster.dir === "up" ? sy + 1 : sy + 5;

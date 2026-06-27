@@ -39,6 +39,8 @@ Current high-priority design risks:
 * Chapter 1 竜洞 and Chapter 5 日輪砲台守 now have stronger objective text, route breadcrumbs, guide dialogue, travel memo support, and current-destination map markers; browser/manual readability still needs confirmation.
 * Several town-to-town routes are short or low-pressure enough that the next safe base may not feel like a hard-earned survival-range breakthrough; 黒市都 -> 黒門砦 now has a first 黒門前哨 pass and needs manual tuning.
 * Chapter 2 now has 月影洞窟 as a required attrition route between 月影廃墟 and 月見砦; manual tuning is still needed for pressure, length, and reward feel.
+* 月影洞窟 now ends in 月門の護将, a persistent named gate encounter that seals 月洞印 and the east exit until defeated.
+* 黒門前哨 now has enemy-defined north/south route identities, and 白銀宿 has a first-arrival final-approach pressure zone with forward supplies.
 * Chapter 4 now routes more clearly through 白銀宿 -> 氷窟 -> 霜冠城, with 霜見塔 kept as optional movement/reward content; manual route-pressure testing is still needed.
 * Chapter 5 has stronger full-route map support now, but can still become checklist-like if city exits, route pressure, and map markers are not browser-verified together.
 * Optional 陽冠闘技場 can appear too prominent compared with the main 日鏡塔 route if guidance priority is not fixed.
@@ -80,6 +82,31 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-06-27: multi-chapter expedition decision pass
+
+Goal: turn three existing travel stretches into different survival decisions instead of repeating supply-and-density tuning.
+
+Implemented:
+
+* Added 月門の護将 to the end of 月影洞窟 with frontal defense, ranged moon pressure, and a half-HP 月影/盾兵 reinforcement call.
+* Locked 月洞印 and the 月見砦 east exit until the Gatekeeper is defeated; added save/load/reset state plus migration for saves that already own the relic.
+* Split 黒門前哨 spawn identity into shield-heavy north road and trap/summoner south shortcut, with matching danger/guidance and travel memo text.
+* Added the 白銀宿 final-approach region, forward frost supply, and route post. First-arrival density is higher; repeat travel calms after the base is reached.
+* Added a dedicated 月門の護将 pixel rendering.
+* Extended smoke coverage for encounter spawn/defeat, directional defense, exit/relic locks, save migration, regional pools, and placement reachability.
+
+Verification:
+
+* Syntax checked all `src/` and `scripts/` JavaScript files with bundled Node.js.
+* `scripts/verify-game-smoke.js`: PASS.
+* Browser QA on `localhost`: new game, world map, inventory, touch movement/attack/dash, desktop layout, and 390px-wide layout worked without JavaScript errors.
+
+Known risks:
+
+* A complete hands-on run of 月影洞窟, both 黒門前哨 routes, and the 白銀宿 approach was not completed. HP pressure, encounter crowding, and supply generosity still need play-feel tuning.
+* Browser screenshot capture timed out, so visual QA used DOM/layout measurements and live interaction rather than retained screenshots.
+* No terrain tiles or map dimensions changed, so world-map preview regeneration was not required.
 
 ### 2026-06-27: Chapter 2 Moon Cavern pressure tuning pass
 

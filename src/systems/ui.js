@@ -12,6 +12,7 @@
     DISCOVERY_POINTS,
     TILE_WATER,
     BOSS_REQUIREMENTS,
+    MOON_CAVERN_GATEKEEPER_REQUIREMENTS,
     MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     CHAPTER2_REQUIREMENTS,
     SOLAR_WARDEN_REQUIREMENTS,
@@ -552,8 +553,8 @@
       if (!state.chests.has("moon-cavern-reliquary")) {
         return [
           "本線: 月影廃墟西門 -> 月影洞窟 -> 月見砦",
-          "今: 中継補給と出口補給を拾い、奥の月洞印を得る",
-          "準備: 帰還鈴と護符を残して消耗路へ",
+          state.moonGatekeeperDefeated ? "今: 護将の先で月洞印を得て東出口へ" : `今: 中継補給と出口補給を拾い、月門の護将LV${MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level}を側背面から倒す`,
+          "準備: 帰還鈴・護符・星盾を残して消耗路へ",
         ];
       }
       if (!state.archiveWardenDefeated) {
@@ -572,7 +573,8 @@
     if (!state.chapter3Reported && !state.chests.has("black-fort-armory")) {
       return [
         "本線: 黒市東門 -> 黒門前哨 -> 黒門砦",
-        "今: 前哨の補給を拾い、砦の武具箱を確保",
+        "今: 北の盾兵本道 / 南の罠近道を選んで砦へ",
+        "準備: 北は側面攻撃、南は護符とダッシュ",
         "任意: 黒市地下墓所 / 密輸道 / 再生洞窟",
       ];
     }
@@ -614,7 +616,7 @@
     if (!state.frostGolemDefeated) {
       return [
         state.arrivedSafeBases?.has("frost-haven") ? "本線: 白銀宿 -> 東の氷窟 -> 霜心の護符" : "本線: 黒門砦南門 -> 霜原 -> 白銀宿",
-        `今: 氷窟巨人へ LV${player.level}/30`,
+        state.arrivedSafeBases?.has("frost-haven") ? `今: 氷窟巨人へ LV${player.level}/30` : "今: 宿の灯を目印に前進補給から最後の吹雪へ",
         state.towerWardenDefeated ? "任意: 霜見塔の昇降機は開通済み" : "任意: 霜見塔はLV32の移動報酬",
       ];
     }

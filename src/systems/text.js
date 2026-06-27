@@ -15,6 +15,7 @@
     BOSS_REQUIREMENTS,
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_REQUIREMENTS,
+    MOON_CAVERN_GATEKEEPER_REQUIREMENTS,
     MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     CHAPTER2_REQUIREMENTS,
     CHAPTER3_REQUIREMENTS,
@@ -82,7 +83,9 @@
     if (stage === "moonArchiveReward") return "目的: 月の書庫の遺物庫を開ける";
     if (stage === "moonArchiveWarden") return "目的: 月の書庫の番人を倒す";
     if (stage === "moonArchive") return `目的: 月見砦東の月の書庫へ LV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}`;
-    if (stage === "moonCavern") return "目的: 月影洞窟を抜けて月見砦へ";
+    if (stage === "moonCavern") return state.moonGatekeeperDefeated
+      ? "目的: 月洞印を得て東出口から月見砦へ"
+      : `目的: 月影洞窟の月門の護将を倒す LV${MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level}`;
     if (stage === "moonRelic") return "目的: 月影廃墟で月影遺物を探す";
     if (stage === "moonRoute") return `目的: 月見砦と月蝕城へ LV${CHAPTER2_REQUIREMENTS.level}`;
     if (stage === "postDragon") return "目的: 灰道の宿場から古塔へ";
@@ -131,7 +134,8 @@
       if (state.chapter2Reported && player.level < CHAPTER3_REQUIREMENTS.level) return `第3章大ボスにはLV${CHAPTER3_REQUIREMENTS.level}が要る`;
       if (state.chapter2Reported) return "黒門砦で黒陽装備を整えよう";
       if (state.elderReported && state.ashKnightDefeated && !state.chests.has("moon-ruin-cache")) return "月影廃墟で月影遺物を探す";
-      if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.chests.has("moon-cavern-reliquary")) return "月影廃墟の洞窟を抜け、月洞印を得て月見砦へ";
+      if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.moonGatekeeperDefeated) return `月影洞窟の護将はLV${MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level}。正面を避けて突破しよう`;
+      if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.chests.has("moon-cavern-reliquary")) return "護将の先で月洞印を得て、東出口から月見砦へ";
       if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.archiveWardenDefeated && player.level < MOON_ARCHIVE_WARDEN_REQUIREMENTS.level) return `月の書庫の番人にはLV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}が要る`;
       if (state.elderReported && state.ashKnightDefeated && state.chests.has("moon-ruin-cache") && !state.archiveWardenDefeated) return "月見砦の東、月の書庫へ";
       if (state.elderReported && state.archiveWardenDefeated && !state.chests.has("moon-archive-reliquary")) return "月の書庫の奥で遺物庫を開ける";
@@ -185,8 +189,10 @@
     if (region === "moonArchive" && !state.chests.has("moon-archive-reliquary")) return "番人の奥の遺物庫で月蝕の指輪を取ろう";
     if (region === "moonArchive") return "月蝕の備えを整え、月見砦南西の封印碑へ戻ろう";
     if (region === "moonCavern" && !state.chests.has("moon-cavern-mid-cache")) return "月影洞窟の中継補給を探せ。帰還札を残すと撤退しやすい";
-    if (region === "moonCavern" && !state.chests.has("moon-cavern-exit-cache")) return "出口前の補給を拾えば、月見砦まで押し切りやすい";
-    if (region === "moonCavern" && !state.chests.has("moon-cavern-reliquary")) return "奥で月洞印を得て、東の出口から月見砦へ抜けろ";
+    if (region === "moonCavern" && !state.chests.has("moon-cavern-exit-cache")) return "出口前の補給を拾い、護将戦へ備えよう";
+    if (region === "moonCavern" && !state.moonGatekeeperDefeated && player.level < MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level) return `月門の護将はLV${MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level}級。西出口へ退いて装備を整えよう`;
+    if (region === "moonCavern" && !state.moonGatekeeperDefeated) return "月門の護将は正面が硬い。月影を先に倒し、側面か背後へ回れ";
+    if (region === "moonCavern" && !state.chests.has("moon-cavern-reliquary")) return "護将の奥で月洞印を得て、東の出口から月見砦へ抜けろ";
     if (region === "moonCavern") return "月洞印は得た。東は月見砦、西は月影廃墟へ戻れる";
     if (region === "undercity" && !state.cryptWardenDefeated && player.level < CRYPT_WARDEN_REQUIREMENTS.level) return `墓所の番人にはLV${CRYPT_WARDEN_REQUIREMENTS.level}ほど欲しい`;
     if (region === "undercity" && !state.cryptWardenDefeated) return "吸命鬼を避け、最奥の墓所番人を倒そう";
@@ -203,9 +209,12 @@
     if (region === "smuggler") return "密輸道は黒市への近道。補給箱を拾いながら抜けよう";
     if (region === "obsidian" && state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門前哨の補給を拾い、東の黒門砦まで押し切ろう";
     if (region === "obsidian") return "黒曜洞は中ボス級の圧。黒市へ戻る余力を残そう";
+    if (region === "blackGateNorth") return "北道は盾兵中心。遠回りだが側面を取れば安定する";
+    if (region === "blackGateSouth") return "南道は罠と術師の近道。護符とダッシュで一気に抜けよう";
     if (region === "void" && state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門砦が近い。南道の罠か北道の盾兵を見て進もう";
     if (region === "void") return "黒陽領は最高危険度。砦へ戻る余力を残そう";
     if (region === "eclipse") return "月蝕魔法が濃い。砦へ戻れるHPを残そう";
+    if (region === "frostApproach" && !state.arrivedSafeBases?.has("frost-haven")) return "白銀宿の灯が見える。前進補給を拾い、最後の吹雪を越えよう";
     if (state.wardenDefeated && !state.ashKnightDefeated && region === "ash") return "古塔は南。LV14で灰騎士に挑む";
     if (state.wardenDefeated && !state.ashKnightDefeated && region === "tower") return "古塔の灰騎士を探せ";
     if (state.ashKnightDefeated && region === "tower") return "さらに南の月影廃墟へ進める";

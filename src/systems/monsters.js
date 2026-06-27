@@ -89,6 +89,7 @@
     ["guardian", "spawnedGuardian", "guardianDefeated"],
     ["warden", "spawnedWarden", "wardenDefeated"],
     ["ashKnight", "spawnedAshKnight", "ashKnightDefeated"],
+    ["moonGatekeeper", "spawnedMoonGatekeeper", "moonGatekeeperDefeated"],
     ["archiveWarden", "spawnedArchiveWarden", "archiveWardenDefeated"],
     ["eclipseDragon", "spawnedEclipseDragon", "eclipseDragonDefeated"],
     ["voidDragon", "spawnedVoidDragon", "voidDragonDefeated"],
@@ -458,6 +459,14 @@
         say("墓守が吸命鬼を呼び起こした!", 2400);
       }
 
+      if (monster.type === "moonGatekeeper" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {
+        monster.summoned = true;
+        spawnIfClear("moonShade", monster.x - worldPx(38), monster.y + worldPx(28));
+        spawnIfClear("shieldSoldier", monster.x + worldPx(38), monster.y + worldPx(28));
+        addRing(c.x, c.y, "#9e86ff", worldPx(38));
+        say("月門の護将が月影と盾兵を呼び、退路を圧迫した!", 2500);
+      }
+
       if (monster.type === "towerWarden" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {
         monster.summoned = true;
         monster.speed += worldPx(6);
@@ -755,7 +764,7 @@
       player.slow = Math.max(player.slow, Math.round(baseSlow * (frostGuard ? 0.45 : 1)));
       player.stamina = Math.max(0, player.stamina - (frostGuard ? Math.ceil(baseStamina * 0.35) : baseStamina));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "凍", "#b9f4ff");
-    } else if (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "mistKeeper" || monster.type === "cryptWarden" || monster.type === "archiveWarden" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "obsidianCrawler" || monster.type === "obsidianGolem") {
+    } else if (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "moonGatekeeper" || monster.type === "mistKeeper" || monster.type === "cryptWarden" || monster.type === "archiveWarden" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "obsidianCrawler" || monster.type === "obsidianGolem") {
       const eclipseGuard = player.armor === 9 || activeAccessory(player, "eclipse", "eclipseCharm");
       const voidGuard = player.armor === 10 || activeAccessory(player, "void", "voidCharm");
       const obsidianGuard = player.armor === 11 || activeAccessory(player, "obsidian", "obsidianCharm");
@@ -763,12 +772,12 @@
       const lampGuard = activeAccessory(player, "deepLamp", "deepLampCharm");
       const isVoid = monster.type === "voidWraith" || monster.type === "voidDragon";
       const isObsidian = monster.type === "obsidianCrawler" || monster.type === "obsidianGolem";
-      const baseSlow = monster.type === "voidDragon" ? 1850 : monster.type === "obsidianGolem" ? 1650 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 1300 : monster.type === "eclipseDragon" ? 1400 : monster.type === "cryptWarden" ? 1380 : monster.type === "archiveWarden" ? 1320 : monster.type === "mistKeeper" ? 1280 : monster.type === "eclipseMage" ? 1050 : monster.type === "summoner" ? 950 : 800;
-      const baseStamina = monster.type === "voidDragon" ? 24 : monster.type === "obsidianGolem" ? 22 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 16 : monster.type === "eclipseDragon" ? 18 : monster.type === "cryptWarden" ? 20 : monster.type === "archiveWarden" ? 18 : monster.type === "mistKeeper" ? 17 : monster.type === "eclipseMage" ? 13 : monster.type === "summoner" ? 12 : 10;
-      const guard = monster.type === "cryptWarden" ? lampGuard || mistGuard : isObsidian ? obsidianGuard : isVoid ? voidGuard : monster.type === "mistKeeper" || monster.type === "summoner" || monster.type === "archiveWarden" ? mistGuard || eclipseGuard : eclipseGuard;
+      const baseSlow = monster.type === "voidDragon" ? 1850 : monster.type === "obsidianGolem" ? 1650 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 1300 : monster.type === "eclipseDragon" ? 1400 : monster.type === "cryptWarden" ? 1380 : monster.type === "moonGatekeeper" ? 1360 : monster.type === "archiveWarden" ? 1320 : monster.type === "mistKeeper" ? 1280 : monster.type === "eclipseMage" ? 1050 : monster.type === "summoner" ? 950 : 800;
+      const baseStamina = monster.type === "voidDragon" ? 24 : monster.type === "obsidianGolem" ? 22 : monster.type === "voidWraith" || monster.type === "obsidianCrawler" ? 16 : monster.type === "eclipseDragon" ? 18 : monster.type === "cryptWarden" ? 20 : monster.type === "moonGatekeeper" ? 20 : monster.type === "archiveWarden" ? 18 : monster.type === "mistKeeper" ? 17 : monster.type === "eclipseMage" ? 13 : monster.type === "summoner" ? 12 : 10;
+      const guard = monster.type === "cryptWarden" ? lampGuard || mistGuard : isObsidian ? obsidianGuard : isVoid ? voidGuard : monster.type === "mistKeeper" || monster.type === "summoner" || monster.type === "moonGatekeeper" || monster.type === "archiveWarden" ? mistGuard || eclipseGuard : eclipseGuard;
       player.slow = Math.max(player.slow, Math.round(baseSlow * (guard ? 0.5 : 1)));
       player.stamina = Math.max(0, player.stamina - (guard ? 5 : baseStamina));
-      addFloater(player.x + player.w / 2, player.y - worldPx(7), isObsidian ? "曜" : isVoid ? "黒" : monster.type === "cryptWarden" ? "墓" : monster.type === "archiveWarden" ? "書" : monster.type === "mistKeeper" ? "霧" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "蝕" : "MAG", isObsidian ? "#aab0c8" : isVoid ? "#d8d8ff" : monster.type === "cryptWarden" ? "#d7b26d" : monster.type === "archiveWarden" ? "#b08cff" : monster.type === "mistKeeper" ? "#9fd6c7" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "#e36dff" : "#b990ff");
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), isObsidian ? "曜" : isVoid ? "黒" : monster.type === "cryptWarden" ? "墓" : monster.type === "moonGatekeeper" ? "月門" : monster.type === "archiveWarden" ? "書" : monster.type === "mistKeeper" ? "霧" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "蝕" : "MAG", isObsidian ? "#aab0c8" : isVoid ? "#d8d8ff" : monster.type === "cryptWarden" ? "#d7b26d" : monster.type === "moonGatekeeper" ? "#9e86ff" : monster.type === "archiveWarden" ? "#b08cff" : monster.type === "mistKeeper" ? "#9fd6c7" : monster.type === "eclipseMage" || monster.type === "eclipseDragon" ? "#e36dff" : "#b990ff");
     } else if (monster.type === "sunLancer" || monster.type === "mirageCaster" || monster.type === "solarRunner" || monster.type === "prismBeacon" || monster.type === "solarWarden" || monster.type === "suncrestChampion" || monster.type === "sunspireKeeper") {
       const solarGuard = player.armor === 13 || player.shield === 7 || activeAccessory(player, "horizon", "horizonCharm") || activeAccessory(player, "prismLens", "prismLensCharm");
       const baseSlow = monster.type === "sunspireKeeper" ? 1500 : monster.type === "solarWarden" || monster.type === "suncrestChampion" ? 1350 : monster.type === "prismBeacon" ? 1100 : monster.type === "solarRunner" ? 950 : 850;
@@ -935,6 +944,15 @@
       player.warps = Math.min(9, (player.warps || 0) + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#d7b26d", 58);
       say("地下墓所の番人を倒した。最奥の遺物庫が開いた!", 4800);
+    } else if (monster.type === "moonGatekeeper") {
+      state.moonGatekeeperDefeated = true;
+      state.spawnedMoonGatekeeper = true;
+      player.gold += 680;
+      player.potions = Math.min(9, player.potions + 2);
+      player.tonics = Math.min(9, (player.tonics || 0) + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#9e86ff", 56);
+      say("月門の護将を破った。月洞印と月見砦への出口が開いた!", 5000);
     } else if (monster.type === "archiveWarden") {
       state.archiveWardenDefeated = true;
       state.spawnedArchiveWarden = true;
@@ -963,7 +981,7 @@
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
       say("南東の道番を越え、守りの護石を得た!", 4200);
-    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "archiveWarden", "frostGolem", "towerWarden", "solarWarden", "suncrestChampion", "sunspireKeeper"].includes(monster.type)) {
+    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "moonGatekeeper", "archiveWarden", "frostGolem", "towerWarden", "solarWarden", "suncrestChampion", "sunspireKeeper"].includes(monster.type)) {
       state.guardianDefeated = true;
       player.sealCrest = true;
       player.scales = Math.min(3, player.scales + 1);

@@ -79,10 +79,10 @@
     if (player.weapon === 11 && (monster.type === "obsidianGolem" || monster.type === "obsidianCrawler" || monster.type === "trapFlower" || monster.type === "voidDragon" || monster.type === "voidWraith")) mult += 1.45;
     if (player.weapon === 12 && (monster.type === "frostMoth" || monster.type === "frostBeast" || monster.type === "frostGolem" || monster.type === "frostBeacon" || monster.type === "towerWarden" || monster.type === "frostDragon")) mult += 1.55;
     if (player.weapon === 13 && (monster.type === "sunLancer" || monster.type === "mirageCaster" || monster.type === "solarRunner" || monster.type === "prismBeacon" || monster.type === "solarWarden" || monster.type === "suncrestChampion" || monster.type === "sunspireKeeper" || monster.type === "emberDragon")) mult += 1.75;
-    if (monster.type === "shieldSoldier") {
-      if (behind) mult += 0.75;
-      else if (flanking) mult += 0.35;
-      else if (mDot > 0.55) mult *= 0.55;
+    if (monster.type === "shieldSoldier" || monster.type === "moonGatekeeper") {
+      if (behind) mult += monster.type === "moonGatekeeper" ? 1 : 0.75;
+      else if (flanking) mult += monster.type === "moonGatekeeper" ? 0.55 : 0.35;
+      else if (mDot > 0.55) mult *= monster.type === "moonGatekeeper" ? 0.42 : 0.55;
     }
     return mult;
   }

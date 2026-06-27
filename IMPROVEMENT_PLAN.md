@@ -17,7 +17,9 @@ Main playtest/code-analysis findings:
 * Similar concern exists for Chapter 1 竜洞 / Red Dragon.
 * Some town-to-town routes are short or low-pressure enough that a new safe base does not feel like a breakthrough; 黒市都 -> 黒門砦 now has a first Black Gate approach pass.
 * Chapter 2 now has a first 月影洞窟 attrition route between 月影廃墟 and 月見砦; it needs real-browser/manual tuning to confirm pressure, length, and reward feel.
+* 月影洞窟 now ends in the named 月門の護将 encounter, with the Moon Seal and east exit locked until victory; manual combat tuning is still needed.
 * Chapter 4 now has first-pass role clarity: 白銀宿 first-arrival payoff, main-route travel memo, world-map destination markers, and guide dialogue distinguish 氷窟 / 霜冠城 from optional 霜見塔.
+* 白銀宿 now has a dedicated final-approach pressure region and reachable forward supply before first arrival.
 * Chapter 5 now has stronger map support through the full main route, but still needs browser/manual checks to confirm the city exits and late-route markers are visually clear.
 * Optional content, especially 陽冠闘技場, can appear too prominently compared with the main route.
 * Travel memo should become a route plan, not only a treasure/rumor reminder.
@@ -35,6 +37,36 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 ---
 
 # Now: recommended implementation sequence
+
+## Completed 2026-06-27: multi-chapter expedition decision pass
+
+Implemented:
+
+* Added `月門の護将` as the named final gate of 月影洞窟.
+  * Strong frontal defense rewards side/back contact.
+  * At half HP it calls a 月影 and shield soldier, changing target priority mid-fight.
+  * 月洞印 and the east exit remain sealed until victory.
+  * Defeat state persists, and existing saves that already own 月洞印 migrate as cleared.
+* Split 黒門前哨 into two encounter identities without expanding the map:
+  * 北道: shield-heavy, steadier main road.
+  * 南道: trap/summoner-heavy, riskier shortcut.
+  * Travel memo and local guidance explain the preparation difference.
+* Added a 白銀宿 final-approach pressure region, reachable forward supply, and route sign.
+  * Before first arrival, frost-beast density rises on the last stretch.
+  * After arrival, the extra first-clear pressure is removed.
+* Added a distinct pixel design for 月門の護将 and extended smoke coverage for progression locks, save migration, route pools, facing damage, and reachability.
+
+Browser QA completed:
+
+* New-game startup, world map, inventory, touch movement/attack/dash, desktop layout, and 390px-wide layout.
+* No JavaScript console errors; only the expected browser audio-autoplay warning appeared.
+
+Next:
+
+1. Manually play 月影洞窟 from the west entrance and tune 月門の護将 HP/projectile/add pressure.
+2. Manually compare 黒門北道 and南道 travel time, damage, and supply value.
+3. Manually play 黒門砦南門 -> 白銀宿 and tune whether the final frost pressure feels tense rather than crowded.
+4. If these routes are sound, return to Chapter 1 first-five-minutes teaching or Chapter 5 city-exit readability.
 
 ## Completed 2026-06-27: Chapter 2 Moon Cavern pressure tuning pass
 

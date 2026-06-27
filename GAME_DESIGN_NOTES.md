@@ -234,6 +234,8 @@ Current issue:
 
 * A first implementation of 月影洞窟 now sits between 月影廃墟 and 月見砦, so the chapter has a real attrition route before the next safe base.
 * 月影洞窟 now has both mid-route and exit-route supplies, plus higher first-clear local pressure before 月見砦 is physically reached.
+* 月影洞窟の最終区画には名付き関門 `月門の護将` が立ち、正面防御・月影/盾兵の増援・月圧で、接触方向と残存物資を問う。
+* 月洞印と東出口は護将撃破まで閉ざされるため、月見砦への初到達は関門突破を伴う安全圏拡大になった。
 * 月見砦 should still be manually tuned in browser play to confirm it feels like a hard-earned safe base, not simply the next nearby stop.
 * 月の書庫 adds volume, but it can read like an extra checklist step if the route before 月見砦 is not memorable.
 
@@ -250,6 +252,7 @@ Implemented route:
   - local moon pressure
   - summons / shield soldiers / traps
   - mid-route and exit-route supplies
+  - 月門の護将: 正面が硬く、消耗時に増援を呼ぶ名付き関門
   - 月洞印 reward
 ↓
 月見砦 first-arrival safe-radius payoff
@@ -315,6 +318,7 @@ Current issue:
 
 * The amount of content is good, but the player can lose track of what is main route vs optional.
 * A first Black Gate approach pass now makes 黒市都 -> 黒門砦 read as the main Chapter 3 push before optional cleanup.
+* 黒門前哨は北の盾兵本道と南の罠近道で敵構成が分かれ、同じ区間でも準備と接触の仕方を選べる。
 
 Desired improvement:
 
@@ -355,6 +359,7 @@ Current issue:
 Desired improvement:
 
 * If playtest shows the 白銀宿 approach is too easy, strengthen the cold-route pressure with a small final-approach danger or supply decision.
+* 白銀宿東側の最終接近区間は、初到達前だけ凍獣圧が高まり、宿の灯の手前に前進補給がある。補給を使って押し切るか、退くかを選ぶ。
 * Keep 霜見塔 optional but attractive.
 * Preserve the map-marker sequence: 白銀宿 -> 氷窟巨人 -> 霜冠封印碑 -> 霜冠竜.
 
@@ -442,15 +447,15 @@ Potential future additions:
 | Ash Hamlet / 灰道の宿場 | Chapter 2 launch base. |
 | Old Tower / 古塔 | Chapter 2 early danger pocket and Ash Knight step. |
 | Moon Ruins / 月影廃墟 | Moon pressure and relic route. |
-| Moon Cavern / 月影洞窟 | Required attrition route before 月見砦; local moon spawns, mid-route supply, and 月洞印 gate. |
+| Moon Cavern / 月影洞窟 | Required attrition route before 月見砦; local moon spawns, two supplies, and the frontal-guard/summon encounter 月門の護将 before 月洞印. |
 | Moon Camp / 月見砦 | Chapter 2 safe base that should feel hard-earned. |
 | Moon Archive / 月の書庫 | Deeper Chapter 2 interior after 月見砦. |
 | Eclipse Castle / 月蝕城 | Chapter 2 final route and boss. |
 | Black Market City / 黒市都 | Chapter 3 hub for main route and optional rumors. |
-| Black Gate Approach / 黒門前哨 | Chapter 3 street-to-street attrition route: supplies, signs, and route choice before 黒門砦. |
+| Black Gate Approach / 黒門前哨 | Chapter 3 street-to-street attrition route: shield-heavy north main road vs trap/summoner south shortcut before 黒門砦. |
 | Black Fort / 黒門砦 | Chapter 3 remote safety anchor before Black Sun pressure. |
 | Black Sun Castle / 黒陽城 | Chapter 3 final danger route. |
-| Frost Haven / 白銀宿 | Chapter 4 safe base; should feel like shelter in a hostile frozen frontier. |
+| Frost Haven / 白銀宿 | Chapter 4 safe base; its first eastern approach adds frost-beast pressure and a final supply decision before relief. |
 | Ice Cave / 氷窟 | Chapter 4 main preparation dungeon. |
 | Frost Watchtower / 霜見塔 | Optional Chapter 4 movement/reward dungeon. |
 | Frost Crown Citadel / 霜冠城 | Chapter 4 final route. |

@@ -33,6 +33,8 @@
       wardenDefeated: false,
       spawnedAshKnight: false,
       ashKnightDefeated: false,
+      spawnedMoonGatekeeper: false,
+      moonGatekeeperDefeated: false,
       spawnedArchiveWarden: false,
       archiveWardenDefeated: false,
       spawnedSmugglerCaptain: false,

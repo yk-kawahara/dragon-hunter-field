@@ -99,6 +99,8 @@
       wardenDefeated: state.wardenDefeated,
       spawnedAshKnight: state.spawnedAshKnight,
       ashKnightDefeated: state.ashKnightDefeated,
+      spawnedMoonGatekeeper: state.spawnedMoonGatekeeper,
+      moonGatekeeperDefeated: state.moonGatekeeperDefeated,
       spawnedArchiveWarden: state.spawnedArchiveWarden,
       archiveWardenDefeated: state.archiveWardenDefeated,
       spawnedSmugglerCaptain: state.spawnedSmugglerCaptain,
@@ -195,6 +197,7 @@
       state.guardianDefeated = Boolean(data.guardianDefeated);
       state.wardenDefeated = Boolean(data.wardenDefeated);
       state.ashKnightDefeated = Boolean(data.ashKnightDefeated);
+      state.moonGatekeeperDefeated = Boolean(data.moonGatekeeperDefeated);
       state.archiveWardenDefeated = Boolean(data.archiveWardenDefeated);
       state.smugglerCaptainDefeated = Boolean(data.smugglerCaptainDefeated);
       state.regenSentinelDefeated = Boolean(data.regenSentinelDefeated);
@@ -214,6 +217,7 @@
       state.spawnedGuardian = false;
       state.spawnedWarden = false;
       state.spawnedAshKnight = false;
+      state.spawnedMoonGatekeeper = false;
       state.spawnedArchiveWarden = false;
       state.spawnedSmugglerCaptain = false;
       state.spawnedRegenSentinel = false;
@@ -246,6 +250,7 @@
       state.victory = Boolean(data.bossDefeated) && !state.elderReported;
       state.chests = savedIdSet(data.chests, rewardIds(TREASURE_CHESTS));
       state.discoveries = savedIdSet(data.discoveries, rewardIds(DISCOVERY_POINTS));
+      if (state.chests.has("moon-cavern-reliquary")) state.moonGatekeeperDefeated = true;
       state.arrivedSafeBases = savedIdSet(data.arrivedSafeBases || ["village"], safeBaseIds);
       state.arrivedSafeBases.add("village");
       say("旅を再開しました");
@@ -339,6 +344,8 @@
     state.wardenDefeated = false;
     state.spawnedAshKnight = false;
     state.ashKnightDefeated = false;
+    state.spawnedMoonGatekeeper = false;
+    state.moonGatekeeperDefeated = false;
     state.spawnedArchiveWarden = false;
     state.archiveWardenDefeated = false;
     state.spawnedSmugglerCaptain = false;

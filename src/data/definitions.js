@@ -68,7 +68,7 @@
     { id: "moon-archive-exit", name: "月見砦", x: 123, y: 2, toX: 110, toY: 115, prompt: "戻る: 月見砦" },
     { id: "moon-cavern-west-entry", name: "月影洞窟", x: 92, y: 103, toX: 123, toY: 25, prompt: "入る: 月影洞窟" },
     { id: "moon-cavern-west-exit", name: "月影廃墟", x: 123, y: 25, toX: 92, toY: 104, prompt: "戻る: 月影廃墟" },
-    { id: "moon-cavern-east-exit", name: "月見砦", x: 153, y: 43, toX: 95, toY: 115, prompt: "抜ける: 月見砦へ" },
+    { id: "moon-cavern-east-exit", name: "月見砦", x: 153, y: 43, toX: 95, toY: 115, prompt: "抜ける: 月見砦へ", unlock: "moonGatekeeper" },
     { id: "moon-camp-cavern-entry", name: "月影洞窟", x: 95, y: 115, toX: 153, toY: 43, prompt: "入る: 月影洞窟" },
     { id: "sunspire-entry", name: "日鏡塔", x: 246, y: 128, toX: 164, toY: 5, prompt: "入る: 日鏡塔" },
     { id: "sunspire-exit", name: "陽冠都市", x: 164, y: 5, toX: 246, toY: 128, prompt: "戻る: 陽冠都市" },
@@ -135,6 +135,7 @@
     { id: "undercity-supply", x: 91, y: 7, reward: "cryptSupply" },
     { id: "undercity-reliquary", x: 117, y: 13, reward: "deepLamp" },
     { id: "frost-haven-supply", x: 30, y: 153, reward: "frostSupply" },
+    { id: "frost-haven-approach-cache", x: 40, y: 149, reward: "frostSupply" },
     { id: "frost-core-reliquary", x: 68, y: 155, reward: "frostCharm" },
     { id: "frost-citadel-cache", x: 114, y: 156, reward: "frostSupply" },
     { id: "frost-tower-supply", x: 95, y: 27, reward: "towerExpeditionSupply" },
@@ -208,6 +209,7 @@
     { id: "black-sun-trap-note", x: 75, y: 139, kind: "trapHint" },
     { id: "undercity-inscription", x: 101, y: 10, kind: "cryptHint" },
     { id: "frost-road-waystone", x: 24, y: 148, kind: "frostHint" },
+    { id: "frost-haven-approach-post", x: 42, y: 149, kind: "frostHint" },
     { id: "frost-cave-warning", x: 54, y: 153, kind: "frostHint" },
     { id: "frost-seal", x: 103, y: 154, kind: "frostSeal" },
     { id: "frost-tower-map", x: 96, y: 23, kind: "frostTowerHint" },
@@ -241,6 +243,8 @@
   const WARDEN_REQUIREMENTS = { level: 10 };
   const ASH_KNIGHT_SITE = { x: 103, y: 89 };
   const ASH_KNIGHT_REQUIREMENTS = { level: 14 };
+  const MOON_CAVERN_GATEKEEPER_SITE = { x: 150, y: 40 };
+  const MOON_CAVERN_GATEKEEPER_REQUIREMENTS = { level: 16 };
   const MOON_ARCHIVE_WARDEN_SITE = { x: 150, y: 17 };
   const MOON_ARCHIVE_WARDEN_REQUIREMENTS = { level: 18 };
   const ECLIPSE_DRAGON_SITE = { x: 82, y: 123 };
@@ -289,10 +293,13 @@
     smuggler: { danger: 8, maxBonus: 8, pool: ["shieldSoldier", "trapFlower", "summoner", "wisp", "boar", "dragonling"] },
     regenCave: { danger: 8, maxBonus: 9, pool: ["bubbler", "trapFlower", "summoner", "obsidianCrawler", "shieldSoldier", "moonShade"] },
     obsidian: { danger: 8, maxBonus: 9, pool: ["shieldSoldier", "obsidianCrawler", "summoner", "trapFlower", "voidWraith", "eclipseMage", "dragonling"] },
+    blackGateNorth: { danger: 8, maxBonus: 9, pool: ["shieldSoldier", "shieldSoldier", "obsidianCrawler", "moonShade", "boar"] },
+    blackGateSouth: { danger: 9, maxBonus: 10, pool: ["trapFlower", "trapFlower", "summoner", "eclipseMage", "voidWraith"] },
     void: { danger: 8, maxBonus: 10, pool: ["shieldSoldier", "summoner", "trapFlower", "voidWraith", "eclipseMage", "moonShade", "dragonling"] },
     mistShrine: { danger: 8, maxBonus: 9, pool: ["mistLancer", "summoner", "trapFlower", "moonShade", "bubbler", "shieldSoldier"] },
     undercity: { danger: 8, maxBonus: 10, pool: ["vaultLeech", "shieldSoldier", "summoner", "trapFlower", "eclipseMage", "mistLancer"] },
     frost: { danger: 9, maxBonus: 11, pool: ["frostMoth", "frostBeast", "shieldSoldier", "voidWraith", "mistLancer"] },
+    frostApproach: { danger: 10, maxBonus: 12, pool: ["frostMoth", "frostBeast", "frostBeast", "shieldSoldier", "mistLancer"] },
     frostCave: { danger: 9, maxBonus: 12, pool: ["frostBeast", "frostMoth", "vaultLeech", "shieldSoldier", "summoner"] },
     frostCitadel: { danger: 10, maxBonus: 13, pool: ["frostMoth", "frostBeast", "summoner", "shieldSoldier", "voidWraith", "eclipseMage"] },
     frostTower1: { danger: 9, maxBonus: 11, pool: ["frostBeacon", "shieldSoldier", "frostMoth", "mistLancer"] },
@@ -844,6 +851,19 @@
       midboss: true,
       drop: 0,
     },
+    moonGatekeeper: {
+      name: "月門の護将",
+      hp: 2150,
+      atk: 126,
+      def: 86,
+      speed: 39 * WORLD_SCALE,
+      xp: 1050,
+      gold: 520,
+      color: "#9e86ff",
+      shadow: "#241949",
+      midboss: true,
+      drop: 0,
+    },
     archiveWarden: {
       name: "月書庫の番人",
       hp: 2650,
@@ -1048,6 +1068,8 @@
     WARDEN_REQUIREMENTS,
     ASH_KNIGHT_SITE,
     ASH_KNIGHT_REQUIREMENTS,
+    MOON_CAVERN_GATEKEEPER_SITE,
+    MOON_CAVERN_GATEKEEPER_REQUIREMENTS,
     MOON_ARCHIVE_WARDEN_SITE,
     MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     ECLIPSE_DRAGON_SITE,

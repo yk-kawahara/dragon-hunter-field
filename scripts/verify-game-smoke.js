@@ -313,6 +313,7 @@ function assertMapReachability() {
     ["moon-cavern-mid-cache", 136, 34],
     ["moon-cavern-exit-cache", 145, 38],
     ["moon-cavern-exit-note", 148, 38],
+    ["moon-cavern-gatekeeper", d.MOON_CAVERN_GATEKEEPER_SITE.x, d.MOON_CAVERN_GATEKEEPER_SITE.y],
     ["moon-cavern-reliquary", 153, 41],
     ["moon-cavern-east-exit", 153, 43],
     ["moon-camp", 102, 116],
@@ -336,6 +337,8 @@ function assertMapReachability() {
     ["black-market-catacomb-entry", 47, 130],
     ["cryptWarden", d.CRYPT_WARDEN_SITE.x, d.CRYPT_WARDEN_SITE.y],
     ["frost-haven", 24, 154],
+    ["frost-haven-approach-cache", 40, 149],
+    ["frost-haven-approach-post", 42, 149],
     ["frost-cave", d.FROST_GOLEM_SITE.x, d.FROST_GOLEM_SITE.y],
     ["frost-seal", 103, 154],
     ["frostDragon", d.FROST_DRAGON_SITE.x, d.FROST_DRAGON_SITE.y],
@@ -436,6 +439,8 @@ function assertSaveLoadAndEquipment() {
   state.spawnedWarden = true;
   state.ashKnightDefeated = true;
   state.spawnedAshKnight = true;
+  state.moonGatekeeperDefeated = true;
+  state.spawnedMoonGatekeeper = true;
   state.archiveWardenDefeated = true;
   state.spawnedArchiveWarden = true;
   state.smugglerCaptainDefeated = true;
@@ -517,6 +522,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.discoveries.size === 2, "discoveries should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
   assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
+  assert(restored.state.moonGatekeeperDefeated && !restored.state.spawnedMoonGatekeeper, "Moon Gatekeeper defeat should persist without restoring a live encounter");
   assert(restored.state.archiveWardenDefeated, "archive warden defeat flag should persist");
   assert(restored.state.smugglerCaptainDefeated, "smuggler captain defeat flag should persist");
   assert(restored.state.regenSentinelDefeated, "regen sentinel defeat flag should persist");
@@ -575,6 +581,13 @@ function assertSaveLoadAndEquipment() {
   assert(migrated.player.ownedAccessories.includes("trail"), "old trail flag should become owned accessory");
   assert(migrated.player.equippedAccessory === "trail", "old saves should equip trail by migration priority");
   assert(migrated.player.equippedAccessories.includes("trail") && migrated.player.equippedAccessories.includes("regen"), "old saves should migrate to two accessory slots");
+  localStorage.setItem(d.SAVE_KEY, JSON.stringify({
+    player: { hp: 60, hpMax: 60, level: 18, xp: 0, xpNext: 100, gold: 100, weapon: 8, armor: 8 },
+    chests: ["moon-cavern-reliquary"],
+  }));
+  const migratedMoonCavern = createRuntime();
+  assert(migratedMoonCavern.runtime.loadGame(), "pre-Gatekeeper Moon Cavern save should migrate");
+  assert(migratedMoonCavern.state.moonGatekeeperDefeated, "existing Moon Cavern relic owners should not be forced to refight the new Gatekeeper");
   return { saveKey: d.SAVE_KEY, weapon: restored.player.weapon, armor: restored.player.armor };
 }
 
@@ -1128,6 +1141,9 @@ function assertExpandedWorldContent() {
   const moonCavernEastExit = runtime.nearestPortal();
   assert(moonCavernEastExit?.id === "moon-cavern-east-exit", "Moon Cavern should exit near Moon Camp");
   runtime.traversePortal(moonCavernEastExit);
+  assert(Math.floor(player.x / d.TILE) === 153 && Math.floor(player.y / d.TILE) === 43, "Moon Cavern east exit should stay sealed before the Gatekeeper is defeated");
+  state.moonGatekeeperDefeated = true;
+  runtime.traversePortal(moonCavernEastExit);
   assert(Math.floor(player.x / d.TILE) === 95 && Math.floor(player.y / d.TILE) === 115, "Moon Cavern east exit should land at Moon Camp");
   player.x = 110 * d.TILE;
   player.y = 115 * d.TILE;
@@ -1236,6 +1252,21 @@ function assertExpandedWorldContent() {
   player.x = 52 * d.TILE;
   player.y = 132 * d.TILE;
   assert(runtime.currentRegion() === "obsidian", "black market branch dungeon should use obsidian region");
+  player.level = 24;
+  player.x = 65 * d.TILE;
+  player.y = 131 * d.TILE;
+  assert(runtime.currentRegion() === "blackGateNorth", "Black Gate north road should use its shield-route region");
+  const blackGateNorthPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "blackGateNorth");
+  assert(blackGateNorthPool.filter((type) => type === "shieldSoldier").length >= 2 && !blackGateNorthPool.includes("trapFlower"), "Black Gate north road should emphasize shield soldiers without trap pressure");
+  player.y = 136 * d.TILE;
+  assert(runtime.currentRegion() === "blackGateSouth", "Black Gate south road should use its trap-route region");
+  const blackGateSouthPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "blackGateSouth");
+  assert(blackGateSouthPool.filter((type) => type === "trapFlower").length >= 2 && blackGateSouthPool.includes("summoner"), "Black Gate south road should emphasize traps and summoners");
+  player.x = 40 * d.TILE;
+  player.y = 149 * d.TILE;
+  assert(runtime.currentRegion() === "frostApproach", "Frost Haven final approach should use its own pressure region");
+  const frostApproachPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "frostApproach");
+  assert(frostApproachPool.filter((type) => type === "frostBeast").length >= 2, "Frost Haven approach should emphasize charging frost beasts");
   player.level = 14;
   const towerPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "tower");
   assert(towerPool.includes("sorcerer") && towerPool.includes("shieldSoldier"), "tower spawn pool should include sorcerer and shield soldiers");
@@ -1243,6 +1274,9 @@ function assertExpandedWorldContent() {
   const shieldFront = runtime.weaponDamageMultiplier({ type: "shieldSoldier" }, 0.1, 0.7);
   const shieldBack = runtime.weaponDamageMultiplier({ type: "shieldSoldier" }, 0.1, -0.8);
   assert(shieldBack > shieldFront, "shield soldiers should be weaker from back attacks than frontal attacks");
+  const gatekeeperFront = runtime.weaponDamageMultiplier({ type: "moonGatekeeper" }, 0.1, 0.7);
+  const gatekeeperBack = runtime.weaponDamageMultiplier({ type: "moonGatekeeper" }, 0.1, -0.8);
+  assert(gatekeeperBack > gatekeeperFront * 2, "Moon Gatekeeper should strongly reward side and back contact attacks");
   player.level = 14;
   const moonPool = globalThis.DRAGON_HUNTER_SPAWN.monsterPoolForRegion(contexts.spawn(), "moon");
   assert(moonPool.includes("moonShade") && moonPool.includes("sorcerer") && moonPool.includes("summoner"), "moon spawn pool should include moonShade, sorcerer, and summoner");
@@ -1253,6 +1287,18 @@ function assertExpandedWorldContent() {
   state.elderReported = true;
   state.ashKnightDefeated = true;
   state.chests.add("moon-ruin-cache");
+  state.moonGatekeeperDefeated = false;
+  state.spawnedMoonGatekeeper = false;
+  state.monsters = [];
+  player.level = d.MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level;
+  player.x = d.MOON_CAVERN_GATEKEEPER_SITE.x * d.TILE;
+  player.y = d.MOON_CAVERN_GATEKEEPER_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  const moonGatekeeper = state.monsters.find((monster) => monster.type === "moonGatekeeper");
+  assert(moonGatekeeper, "Moon Cavern should spawn its named gate encounter before Moon Camp");
+  moonGatekeeper.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.moonGatekeeperDefeated, "Moon Gatekeeper defeat should persist in state");
   state.monsters = [];
   player.level = d.MOON_ARCHIVE_WARDEN_REQUIREMENTS.level;
   player.x = d.MOON_ARCHIVE_WARDEN_SITE.x * d.TILE;
@@ -1953,6 +1999,15 @@ function assertExpandedWorldContent() {
   guardedMoonArchiveChest.state.archiveWardenDefeated = true;
   guardedMoonArchiveChest.runtime.openChest(moonArchiveChest);
   assert(guardedMoonArchiveChest.state.chests.has("moon-archive-reliquary") && guardedMoonArchiveChest.player.ownedAccessories.includes("eclipse"), "Moon Archive reliquary should grant the eclipse accessory after Archive Warden defeat");
+
+  const moonCavernRelic = d.TREASURE_CHESTS.find((chest) => chest.id === "moon-cavern-reliquary");
+  assert(moonCavernRelic, "Moon Cavern reliquary should exist");
+  const guardedMoonCavernRelic = createRuntime();
+  guardedMoonCavernRelic.runtime.openChest(moonCavernRelic);
+  assert(!guardedMoonCavernRelic.state.chests.has("moon-cavern-reliquary"), "Moon Cavern relic should stay locked until Gatekeeper defeat");
+  guardedMoonCavernRelic.state.moonGatekeeperDefeated = true;
+  guardedMoonCavernRelic.runtime.openChest(moonCavernRelic);
+  assert(guardedMoonCavernRelic.state.chests.has("moon-cavern-reliquary"), "Moon Cavern relic should open after Gatekeeper defeat");
 
   const cryptChest = d.TREASURE_CHESTS.find((chest) => chest.id === "undercity-reliquary");
   assert(cryptChest, "catacomb reliquary should exist");
