@@ -68,6 +68,12 @@
       "荷運び「鉱夫服と泡除けがあれば、廃坑で粘れる時間が違う」",
       "採掘師「古鉄は南西の壁際に出る。帰る体力まで掘るなよ」",
     ],
+    trailCamp: [
+      "旅人「村からここまで来られたなら、次は北森の手前まで押せる」",
+      "斥候「草原で傷ついたら意地を張るな。この陣まで戻るのも前進だ」",
+      "荷馬車番「一度着けば村との馬車が使える。遠征の出発点にしろ」",
+      "狩人「防具を替えると蝙蝠の接触が目に見えて軽くなるぞ」",
+    ],
     ash: [
       "宿場の客「古塔へは南。灰術師の弾を壁際で受けるな」",
       "宿の女将「星装備目当ての旅人で、今夜も寝床が足りないよ」",
@@ -429,7 +435,9 @@
     }
 
     if (npc.type === "guide") {
-      if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
+      if (npc.x > 30 * TILE && npc.x < 40 * TILE && npc.y < 40 * TILE) {
+        say("斥候「ここは村外の最初の安全圏だ。北西へ進めば北森、東の川沿いは装備探しの寄り道になる」", 4600);
+      } else if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
         if (!state.solarWardenDefeated) say(`案内人「第5章の本線は黎明港から北東高原の日輪砲台守へ。焼けた街道と砲声を追え」`, 5400);
         else if (!state.sunspireKeeperDefeated) say(`案内人「本線は東門の日鏡塔だ。西広場の闘技場は任意、守主はLV${SUNSPIRE_KEEPER_REQUIREMENTS.level}級だ」`, 5600);
         else if (!state.suncrestChampionDefeated && player.level >= SUNCREST_CHAMPION_REQUIREMENTS.level) say(`案内人「本線を進めた後の任意挑戦なら、西広場の陽冠闘技場で連撃装飾を狙える」`, 5200);
@@ -468,7 +476,9 @@
     }
 
     if (npc.type === "villager" || npc.type === "guard") {
-      if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
+      if (npc.x > 30 * TILE && npc.x < 40 * TILE && npc.y < 40 * TILE) {
+        say(localDialogue(npc, townDialogue.trailCamp), 3600);
+      } else if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
         say(localDialogue(npc, townDialogue.suncrest), 4400);
       } else if (npc.x > 198 * TILE) {
         say(localDialogue(npc, townDialogue.dawn), 4000);
@@ -502,6 +512,19 @@
         player.stamina = player.staminaMax;
         player.guard = Math.max(player.guard, npc.y > 128 * TILE ? 1500 : npc.y > 110 * TILE ? 1200 : npc.x > 90 * TILE ? 900 : 700);
         say("拠点で休んだ。遠征を続けられる");
+        return;
+      }
+      if (npc.x > 30 * TILE && npc.x < 40 * TILE && npc.y < 40 * TILE) {
+        openShop(context, "草原野営地の旅支度", [
+          weaponRow(1),
+          armorRow(1),
+          shieldRow(1),
+          weaponRow(2, player.level >= 3, "LV3から"),
+          armorRow(2, player.level >= 3, "LV3から"),
+          itemRow("potion", 2, 24 + player.level * 4),
+          itemRow("bomb", 1, 34 + player.level * 4),
+          itemRow("ward", 1, 42 + player.level * 4),
+        ]);
         return;
       }
       if (npc.y > 144 * TILE) {

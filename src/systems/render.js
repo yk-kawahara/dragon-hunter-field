@@ -247,6 +247,7 @@ function draw(context) {
   drawCatacombDetails(cam);
   drawFieldDetails(cam);
   drawTownDetails(cam);
+  drawGrasslandCampDetails(cam);
   drawFrontierCampDetails(cam);
   drawAshHamletDetails(cam);
   drawMoonCampDetails(cam);
@@ -278,6 +279,7 @@ function draw(context) {
   drawScreenGrade(cam);
   drawObjective();
   drawContextPrompt();
+  drawObjectiveCompass();
   drawHud();
   drawInfoPanel();
   drawShopOverlay();
@@ -379,8 +381,14 @@ function currentWorldMapDestinationFor(stateArg, playerArg) {
   if (stateArg?.elderReported && stateArg?.ashKnightDefeated && stateArg.chests?.has("moon-cavern-reliquary") && !stateArg.archiveWardenDefeated) {
     return { site: { x: 110, y: 115 }, label: "月の書庫" };
   }
+  if (!stateArg?.guardianDefeated && (playerArg?.scales || 0) >= 2 && (playerArg?.level || 0) >= 3) {
+    return { site: GUARDIAN_SITE, label: "北森の守護者" };
+  }
   if (!stateArg?.bossDefeated && stateArg?.guardianDefeated && playerArg?.sealCrest && (playerArg.scales || 0) >= BOSS_REQUIREMENTS.scales) {
     return { site: { x: 51, y: 15 }, label: "竜洞" };
+  }
+  if (!stateArg?.elderReported && !stateArg?.arrivedSafeBases?.has("grassland-camp")) {
+    return { site: { x: 35, y: 35 }, label: "草原野営地" };
   }
   return null;
 }
@@ -772,6 +780,16 @@ function drawTownDetails(cam) {
   drawSign(12 * TILE - cam.x, 48 * TILE - cam.y);
 }
 
+function drawGrasslandCampDetails(cam) {
+  drawTent(33 * TILE - cam.x, 31 * TILE - cam.y, "#4b8f63");
+  drawTent(36 * TILE - cam.x, 33 * TILE - cam.y, "#6a78a8");
+  drawCampfire(34 * TILE - cam.x, 34 * TILE - cam.y);
+  drawLamp(32 * TILE - cam.x, 35 * TILE - cam.y);
+  drawRoleMarker(35 * TILE - cam.x, 34 * TILE - cam.y, "回", "#6de4ff");
+  drawRoleMarker(35 * TILE - cam.x, 31 * TILE - cam.y, "補", "#ffd166");
+  drawRoleMarker(32 * TILE - cam.x, 34 * TILE - cam.y, "馬", "#8dd7ff");
+}
+
 function drawFrontierCampDetails(cam) {
   drawCampBoundary(cam);
   drawTent(26 * TILE - cam.x, 57 * TILE - cam.y, "#6de4ff");
@@ -891,6 +909,9 @@ function drawSuncrestCityDetails(cam) {
   drawRoleMarker(238 * TILE - cam.x, 127 * TILE - cam.y, "回", "#6de4ff");
   drawRoleMarker(246 * TILE - cam.x, 125 * TILE - cam.y, "商", "#ffd166");
   drawRoleMarker(229 * TILE - cam.x, 127 * TILE - cam.y, "鍛", "#f0c36b");
+  drawRoleMarker(249 * TILE - cam.x, 129 * TILE - cam.y, "塔", "#fff0a6");
+  drawRoleMarker(225 * TILE - cam.x, 129 * TILE - cam.y, "任", "#d5a6ff");
+  drawRoleMarker(241 * TILE - cam.x, 132 * TILE - cam.y, "南", "#ff9b6b");
 }
 
 function drawCampBoundary(cam) {
@@ -1371,7 +1392,15 @@ function drawDiscoveries(cam) {
     const sy = discovery.y * TILE - cam.y;
     if (sx < -TILE || sy < -TILE || sx > W || sy > VIEW_H) continue;
     const found = state.discoveries.has(discovery.id);
-    if (discovery.kind === "spring") {
+    if (discovery.kind === "moonWayShrine") {
+      ctx.fillStyle = found ? "#4a5268" : "#241b55";
+      ctx.fillRect(sx + 2, sy + 6, 12, 7);
+      ctx.fillStyle = found ? "#78829f" : "#9e86ff";
+      ctx.fillRect(sx + 4, sy + 8, 8, 3);
+      ctx.strokeStyle = found ? "#65739a" : "#d8d8ff";
+      ctx.strokeRect(sx + 3, sy + 7, 10, 5);
+      if (!found) drawGlint(sx + 9, sy + 5, "#d8d8ff");
+    } else if (discovery.kind === "spring") {
       if (!found) {
         drawGlint(sx + 7, sy + 9, "#74ff8f");
       } else {
@@ -2450,6 +2479,33 @@ function drawContextPrompt() {
   ctx.strokeRect(x, y, w, 12);
   ctx.fillStyle = "#d7e2ea";
   ctx.fillText(text, x + 5, y + 9);
+}
+
+function drawObjectiveCompass() {
+  if (contextPromptText()) return;
+  const destination = currentWorldMapDestinationFor(state, player);
+  if (!destination) return;
+  const px = (player.x + player.w / 2) / TILE;
+  const py = (player.y + player.h / 2) / TILE;
+  const dx = destination.site.x - px;
+  const dy = destination.site.y - py;
+  const distance = Math.round(Math.hypot(dx, dy));
+  if (distance < 4) return;
+  const horizontal = Math.abs(dx) > 3 ? (dx > 0 ? "東" : "西") : "";
+  const vertical = Math.abs(dy) > 3 ? (dy > 0 ? "南" : "北") : "";
+  const arrow = vertical === "北" ? (horizontal === "東" ? "↗" : horizontal === "西" ? "↖" : "▲") : vertical === "南" ? (horizontal === "東" ? "↘" : horizontal === "西" ? "↙" : "▼") : horizontal === "東" ? "▶" : "◀";
+  const text = `${arrow} ${destination.label} ${distance}歩`;
+  ctx.font = "7px monospace";
+  ctx.textAlign = "left";
+  const width = Math.min(112, text.length * 7 + 8);
+  const x = W - width - 5;
+  const y = 31;
+  ctx.fillStyle = "rgba(5, 8, 18, 0.76)";
+  ctx.fillRect(x, y, width, 12);
+  ctx.strokeStyle = "rgba(109, 228, 255, 0.78)";
+  ctx.strokeRect(x, y, width, 12);
+  ctx.fillStyle = "#d7f7ff";
+  ctx.fillText(text, x + 4, y + 9);
 }
 
 function drawHud() {

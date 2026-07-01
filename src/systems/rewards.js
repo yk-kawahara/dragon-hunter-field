@@ -57,6 +57,7 @@
 
   function travelPointUnlocked(point, state, player) {
     if (!point || point.unlock === "always") return true;
+    if (point.unlock === "grasslandCamp") return true;
     if (point.unlock === "trail") return Boolean(player.trailCharm || state.wardenDefeated || state.elderReported);
     if (point.unlock === "elderReported") return Boolean(state.elderReported || state.chapter2Reported || state.chapter3Reported);
     if (point.unlock === "ashKnightDefeated") return Boolean(state.ashKnightDefeated || state.chapter2Reported || state.chapter3Reported);
@@ -893,6 +894,18 @@
       say("月影洞窟の道標: 途中の補給を拾い、奥の出口から月見砦へ抜けろ");
       return;
     }
+    if (discovery.kind === "moonWayShrine") {
+      player.hp = player.hpMax;
+      player.stamina = player.staminaMax;
+      player.slow = 0;
+      player.burn = 0;
+      player.guard = Math.max(player.guard || 0, 1800);
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
+      burst(x, y, "#d8d8ff", 26);
+      say("月泉の力で全快した。帰還札を得た。今使って護将へ進むか、温存して戻るかを選べる");
+      return;
+    }
     if (discovery.kind === "blackGateHint") {
       player.gold += 160;
       addItem(player, "tonic", 1);
@@ -908,6 +921,16 @@
       addItem(player, "ward", 1);
       burst(x, y, "#fff0a6", 20);
       say("陽冠都市の攻略掲示を読んだ。北東高原、日鏡塔、南街道の順に準備を進めよう");
+      return;
+    }
+    if (discovery.kind === "suncrestGateHint") {
+      player.gold += 180;
+      addItem(player, "ward", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#fff0a6", 18);
+      if (discovery.id === "suncrest-east-gate-sign") say("東門の案内: 本線の日鏡塔へ。反射水晶を得て南の封印碑へ進め");
+      else if (discovery.id === "suncrest-west-gate-sign") say("西門の案内: 陽冠闘技場は任意の腕試し。連撃装飾を狙える");
+      else say("南門の案内: 陽光封印碑と熾火群島へ続く、最終遠征の道だ");
       return;
     }
     if (discovery.kind === "suncrestArenaHint") {

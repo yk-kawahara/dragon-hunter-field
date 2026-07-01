@@ -43,6 +43,8 @@ Current high-priority design risks:
 * 黒門前哨 now has enemy-defined north/south route identities, and 白銀宿 has a first-arrival final-approach pressure zone with forward supplies.
 * Chapter 4 now routes more clearly through 白銀宿 -> 氷窟 -> 霜冠城, with 霜見塔 kept as optional movement/reward content; manual route-pressure testing is still needed.
 * Chapter 5 has stronger full-route map support now, but can still become checklist-like if city exits, route pressure, and map markers are not browser-verified together.
+* Chapter 1 now has an explicit first remote safe radius at 草原野営地, and the field objective compass exposes required destinations without requiring coordinate knowledge.
+* 陽冠都市 now labels east/main, west/optional, and south/final-expedition exits in the field; visual scale still needs manual confirmation.
 * Optional 陽冠闘技場 can appear too prominent compared with the main 日鏡塔 route if guidance priority is not fixed.
 * Travel memo needs to become a route plan with main/optional/preparation sections.
 * First arrival at new safe bases now has persistent payoff messaging, stamina relief, projectile clearing, and a short guard buffer; browser/manual tuning is still needed.
@@ -82,6 +84,57 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-07-01: Moon Cavern decision and action-depth pass
+
+Purpose:
+
+* Turn Chapter 2's attrition route into a resource decision followed by a readable action encounter, then make the new safe base deliver immediate relief.
+
+Implementation:
+
+* Added the one-use `moon-cavern-way-shrine` / 月泉 at the central waterway. It fully restores HP/stamina, clears slow/burn, grants brief guard, 活力薬, and a return bell.
+* Updated route guidance and travel memo to advertise the shrine as an optional timing decision and show when it is spent.
+* Added alternating Moon Gatekeeper patterns: telegraphed triple piercing moon lances and three persistent moon-snare zones.
+* Kept directional frontal defense and reinforcement phase, adding a small phase-two speed increase.
+* Classified Moon Gatekeeper projectiles as magic midboss pressure so defensive route equipment affects them consistently.
+* Made first arrival at remote safe bases fully restore HP in addition to the existing stamina refill, danger clearing, guard, and invulnerability.
+
+Verification:
+
+* `scripts/verify-game-smoke.js` passed after implementation.
+* Smoke coverage now asserts Moon Spring recovery/cleanse/retreat supply and save persistence, Moon Gatekeeper warning and piercing projectile behavior, route reachability, and full safe-base first-arrival recovery.
+* Existing save/load, inventory, boss persistence, all chapter clear flow, 34,647 reachable tiles, 125 NPCs, and full 22-script loading remain green.
+
+Unverified risk:
+
+* Real-browser/manual play feel remains unverified in this pass. The main tuning risk is whether moon-lance/snare overlap is fair while trying to flank the Gatekeeper.
+* No terrain tile or map-dimension changes were made, so world-map preview regeneration was not required.
+
+### 2026-06-27: first safe-radius and field objective pass
+
+Purpose:
+
+* Make the opening teach survival-range expansion through play, and make late-city route choices readable without stopping at text-only guidance.
+
+Implementation:
+
+* Promoted 草原野営地 into the first remote safe base with a safe zone, heal circle, early shop, route guide, residents, props, first-arrival relief message, and unlock-on-arrival wagon travel.
+* Added Chapter 1 objective and travel memo steps for village east gate -> grassland camp.
+* Added a field objective compass that shows the current required destination, direction, and tile distance while yielding to interaction prompts.
+* Added reachable, rereadable east/west/south gate signs in 陽冠都市 and matching field markers for main route, optional arena, and final expedition.
+* Removed duplicate unreachable shield shop confirmation branches and the unreachable `chapter4cleared` state branch.
+
+Verification:
+
+* JavaScript syntax checks passed across `src/` and `scripts/` before smoke execution; the final smoke also loaded all 22 browser scripts successfully.
+* `scripts/verify-game-smoke.js` passed, including 34,647 reachable tiles, 125 NPCs, camp arrival/travel/shop behavior, route text/map marker behavior, all three Suncrest signs, save/load, inventory, and Chapters 1-5 clear flow.
+* Gate signs were initially placed on blocked decorative tiles; reachability testing caught this and they were moved to adjacent passable tiles.
+
+Unverified risk:
+
+* Real-browser QA was not performed because the browser environment explicitly rejected `http://localhost:8765`; no alternate browser route was attempted.
+* Manual visual and combat checks remain for the objective-compass fit, grassland camp first-arrival feel, and Suncrest gate-marker readability at desktop/mobile scale.
 
 ### 2026-06-27: multi-chapter expedition decision pass
 

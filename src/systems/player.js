@@ -32,9 +32,10 @@
 
   const worldPx = (value) => value * WORLD_SCALE;
   const safeBaseArrivalMessages = {
+    "grassland-camp": "草原野営地に辿り着いた。村の外に最初の安全圏を確保した。北森への遠征はここから再出発できる",
     "southwest-camp": "前線キャンプに辿り着いた。新しい安全圏を確保した。廃坑遠征はここから再出発できる",
     "ash-hamlet": "灰道の宿場に辿り着いた。古塔へ向かうための足場ができた",
-    "moon-camp": "月見砦に辿り着いた。月影の遠征路に新しい安全圏を確保した",
+    "moon-camp": "月影洞窟を抜け、月見砦に辿り着いた。新しい安全圏を確保した。ここから月の書庫へ再出発できる",
     "black-market": "黒市都に辿り着いた。危険な裏道の先に大きな補給拠点を得た",
     "black-fort": "黒門砦に辿り着いた。黒陽城へ挑む最後の足場を確保した",
     "frost-haven": "白銀宿に辿り着いた。黒門砦から続く凍土を越え、氷窟と霜冠城へ挑む暖かい安全圏を確保した",
@@ -179,6 +180,7 @@
     if (state.arrivedSafeBases.has(zone.id)) return;
     state.arrivedSafeBases.add(zone.id);
     state.projectiles = [];
+    player.hp = player.hpMax;
     player.stamina = player.staminaMax;
     player.guard = Math.max(player.guard, 1200);
     player.invuln = Math.max(player.invuln, 900);

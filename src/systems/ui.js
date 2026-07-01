@@ -266,16 +266,6 @@
       say(`${row.name}を買った。もちもので装備できる`);
       return;
     }
-    if (row.type === "shield") {
-      player.shield = row.id;
-      say(`${row.name}を構えた`);
-      return;
-    }
-    if (row.type === "shield") {
-      player.shield = row.id;
-      say(`${row.name}を構えた`);
-      return;
-    }
     if (row.type === "accessory") {
       if (player.ownedAccessories.includes(row.id)) {
         say(`${row.name}は既に持っている`);
@@ -529,6 +519,13 @@
   function travelMemoLines(context) {
     const { state, player } = requireUiStatusContext(context);
     if (!state.elderReported) {
+      if (!state.arrivedSafeBases?.has("grassland-camp")) {
+        return [
+          "本線: 村東門 -> 草原野営地",
+          "今: 焚火と青い回復陣まで進み、危なければ村へ戻る",
+          "準備: 到達後は補給と村への馬車が使える",
+        ];
+      }
       return [
         state.bossDefeated ? "本線: 村へ戻って長老に報告" : "本線: 北森の紋章 -> 北東岩山の竜洞",
         state.spawnedBoss ? "今: 赤竜の正面を避けて接触" : `今: 鱗${player.scales}/${BOSS_REQUIREMENTS.scales} LV${player.level}/${BOSS_REQUIREMENTS.level}`,
@@ -555,6 +552,7 @@
           "本線: 月影廃墟西門 -> 月影洞窟 -> 月見砦",
           state.moonGatekeeperDefeated ? "今: 護将の先で月洞印を得て東出口へ" : `今: 中継補給と出口補給を拾い、月門の護将LV${MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level}を側背面から倒す`,
           "準備: 帰還鈴・護符・星盾を残して消耗路へ",
+          state.discoveries.has("moon-cavern-way-shrine") ? "任意: 中央の月泉は使用済み" : "任意: 中央の月泉は一度だけ全快できる",
         ];
       }
       if (!state.archiveWardenDefeated) {

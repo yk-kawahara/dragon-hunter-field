@@ -14,6 +14,7 @@
   const HEAL_CIRCLE = { x: 6, y: 48 };
   const SAFE_ZONES = [
     { id: "village", name: "村", x1: 5, y1: 39, x2: 18, y2: 55, outerX1: 4, outerY1: 38, outerX2: 19, outerY2: 57 },
+    { id: "grassland-camp", name: "草原野営地", x1: 32, y1: 31, x2: 37, y2: 36, outerX1: 31, outerY1: 30, outerX2: 38, outerY2: 37 },
     { id: "southwest-camp", name: "前線キャンプ", x1: 25, y1: 56, x2: 35, y2: 61, outerX1: 24, outerY1: 55, outerX2: 36, outerY2: 62 },
     { id: "ash-hamlet", name: "灰道の宿場", x1: 94, y1: 52, x2: 110, y2: 60, outerX1: 93, outerY1: 51, outerX2: 111, outerY2: 61 },
     { id: "moon-camp", name: "月見砦", x1: 94, y1: 113, x2: 110, y2: 118, outerX1: 93, outerY1: 112, outerX2: 111, outerY2: 119 },
@@ -27,6 +28,7 @@
   ];
   const HEAL_POINTS = [
     { ...HEAL_CIRCLE, id: "village-circle", name: "村の回復陣" },
+    { x: 35, y: 35, id: "grassland-camp-circle", name: "草原野営地の回復陣" },
     { x: 31, y: 59, id: "southwest-camp-circle", name: "前線キャンプの回復陣" },
     { x: 102, y: 58, id: "ash-hamlet-circle", name: "灰道の宿場の回復陣" },
     { x: 102, y: 116, id: "moon-camp-circle", name: "月見砦の回復陣" },
@@ -40,6 +42,7 @@
   ];
   const TRAVEL_POINTS = [
     { id: "village", name: "村", x: 10, y: 48, cost: 0, unlock: "always" },
+    { id: "grassland-camp", name: "草原野営地", x: 35, y: 35, cost: 20, unlock: "grasslandCamp" },
     { id: "southwest-camp", name: "前線キャンプ", x: 31, y: 59, cost: 35, unlock: "trail" },
     { id: "ash-hamlet", name: "灰道の宿場", x: 102, y: 58, cost: 90, unlock: "elderReported" },
     { id: "moon-camp", name: "月見砦", x: 102, y: 116, cost: 170, unlock: "ashKnightDefeated" },
@@ -184,6 +187,7 @@
     { id: "moon-grave-note", x: 91, y: 103, kind: "routeHint" },
     { id: "moon-cavern-mouth-note", x: 92, y: 102, kind: "moonCavernHint" },
     { id: "moon-cavern-route-note", x: 136, y: 33, kind: "moonCavernHint" },
+    { id: "moon-cavern-way-shrine", x: 139, y: 29, kind: "moonWayShrine" },
     { id: "moon-cavern-exit-note", x: 148, y: 38, kind: "moonCavernHint" },
     { id: "summoner-warning", x: 82, y: 107, kind: "summonerHint" },
     { id: "thorn-warning", x: 86, y: 104, kind: "trapHint" },
@@ -231,6 +235,9 @@
     { id: "suncrest-road-map", x: 228, y: 131, kind: "shortcutHint" },
     { id: "suncrest-tactics-board", x: 234, y: 123, kind: "suncrestGuide" },
     { id: "suncrest-market-rumor", x: 241, y: 131, kind: "suncrestGuide" },
+    { id: "suncrest-west-gate-sign", x: 225, y: 130, kind: "suncrestGateHint" },
+    { id: "suncrest-east-gate-sign", x: 249, y: 130, kind: "suncrestGateHint" },
+    { id: "suncrest-south-gate-sign", x: 241, y: 133, kind: "suncrestGateHint" },
     { id: "suncrest-arena-rules", x: 202, y: 2, kind: "suncrestArenaHint" },
     { id: "suncrest-arena-tactics", x: 209, y: 13, kind: "suncrestArenaHint" },
     { id: "sunspire-observatory", x: 180, y: 10, kind: "sunspireHint" },

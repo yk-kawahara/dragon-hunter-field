@@ -299,6 +299,7 @@ function assertMapReachability() {
     ...d.TREASURE_CHESTS.map((chest) => [`chest:${chest.id}`, chest.x, chest.y]),
     ...d.DISCOVERY_POINTS.map((discovery) => [`discovery:${discovery.id}`, discovery.x, discovery.y]),
     ["guardian", d.GUARDIAN_SITE.x, d.GUARDIAN_SITE.y],
+    ["grassland-camp", 35, 35],
     ["warden", d.WARDEN_SITE.x, d.WARDEN_SITE.y],
     ["ashKnight", d.ASH_KNIGHT_SITE.x, d.ASH_KNIGHT_SITE.y],
     ["dragon-cave", 51, 18],
@@ -369,6 +370,9 @@ function assertMapReachability() {
     ["sunrise-north-ruin", 236, 44],
     ["sunrise-valley-shrine", 211, 110],
     ["suncrest-city", 238, 128],
+    ["suncrest-west-gate-sign", 225, 130],
+    ["suncrest-east-gate-sign", 249, 130],
+    ["suncrest-south-gate-sign", 241, 133],
     ["ember-sanctum", 222, 226],
   ];
   const unreachable = goals.filter(([, x, y]) => !seen.has(`${x},${y}`));
@@ -381,7 +385,7 @@ function assertMapReachability() {
   assert(!overviewRows.slice(1, 22).some((row) => row.slice(122, 157).includes("_")), "world overview should hide embedded Moon Archive room layouts");
   assert(!overviewRows.slice(24, 46).some((row) => row.slice(122, 157).includes("_")), "world overview should hide embedded Moon Cavern room layouts");
   assert(!overviewRows.slice(1, 23).some((row) => row.slice(198, 227).includes("_")), "world overview should hide embedded Suncrest Arena room layouts");
-  assert(state.npcs.length === 121, "expected 121 NPCs after Suncrest City service pass");
+  assert(state.npcs.length === 125, "expected 125 NPCs after the grassland camp service pass");
   const blockedNpcs = state.npcs.filter((npc) => !passable(Math.floor(npc.x / d.TILE), Math.floor(npc.y / d.TILE)));
   assert(blockedNpcs.length === 0, `NPCs must stand on reachable terrain: ${JSON.stringify(blockedNpcs.map((npc) => ({ type: npc.type, x: Math.floor(npc.x / d.TILE), y: Math.floor(npc.y / d.TILE) })))}`);
   assert(state.npcs.some((entry) => entry.type === "frontier"), "frontier supply NPC should load from WORLD_OBJECTS");
@@ -433,6 +437,7 @@ function assertSaveLoadAndEquipment() {
   state.chests.add("south-outpost");
   state.discoveries.add("river-spring");
   state.discoveries.add("hunter-cache");
+  state.discoveries.add("moon-cavern-way-shrine");
   state.guardianDefeated = true;
   state.spawnedGuardian = true;
   state.wardenDefeated = true;
@@ -519,7 +524,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.runtime.playerMoveSpeed() > baseline.runtime.playerMoveSpeed(), "trail charm should improve movement speed after load");
   assert(restored.runtime.regenRate() > baseline.runtime.regenRate(), "greater regen charm should improve HP regeneration after load");
   assert(restored.state.chests.size === 3, "opened chests should persist");
-  assert(restored.state.discoveries.size === 2, "discoveries should persist");
+  assert(restored.state.discoveries.size === 3 && restored.state.discoveries.has("moon-cavern-way-shrine"), "discoveries and the spent Moon Spring should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
   assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
   assert(restored.state.moonGatekeeperDefeated && !restored.state.spawnedMoonGatekeeper, "Moon Gatekeeper defeat should persist without restoring a live encounter");
@@ -947,6 +952,17 @@ function assertFrontierCamp() {
     player.y = (ty + 0.5) * d.TILE - player.h / 2;
   };
 
+  assert(runtime.inTownTile(35, 35), "grassland camp should be a safe-zone tile");
+  assert(!globalThis.DRAGON_HUNTER_REWARDS.availableTravelPoints(state, player).some((point) => point.id === "grassland-camp"), "grassland camp wagon should stay locked before first arrival");
+  centerPlayerOnTile(35, 35);
+  player.hp = 2;
+  player.stamina = 9;
+  state.projectiles = [{ x: player.x, y: player.y, vx: 0, vy: 0 }];
+  globalThis.DRAGON_HUNTER_PLAYER.updateSafeBaseArrival(contexts.player());
+  assert(state.arrivedSafeBases.has("grassland-camp"), "first arrival should record the grassland camp as a new safe base");
+  assert(/草原野営地/.test(state.message) && player.hp === player.hpMax && player.stamina === player.staminaMax && state.projectiles.length === 0, "grassland camp arrival should announce the first expanded safe radius and fully clear danger");
+  assert(globalThis.DRAGON_HUNTER_REWARDS.availableTravelPoints(state, player).some((point) => point.id === "grassland-camp"), "grassland camp wagon should unlock after physical arrival");
+
   assert(runtime.inTownTile(31, 59), "frontier camp should be a safe-zone tile");
   assert(runtime.inTown(31 * d.TILE, 59 * d.TILE), "frontier camp should count as a safe base");
   assert(!runtime.inTownTile(39, 67), "southwest mine cache should remain outside the safe camp");
@@ -961,7 +977,7 @@ function assertFrontierCamp() {
   state.projectiles = [{ x: player.x, y: player.y, vx: 0, vy: 0 }];
   globalThis.DRAGON_HUNTER_PLAYER.updateSafeBaseArrival(contexts.player());
   assert(state.arrivedSafeBases.has("southwest-camp"), "first arrival should record the frontier camp as a new safe base");
-  assert(/前線キャンプ/.test(state.message) && player.stamina === player.staminaMax && state.projectiles.length === 0, "first arrival should announce relief, refill stamina, and clear incoming danger");
+  assert(/前線キャンプ/.test(state.message) && player.hp === player.hpMax && player.stamina === player.staminaMax && state.projectiles.length === 0, "first arrival should announce relief, fully recover, and clear incoming danger");
   state.message = "";
   globalThis.DRAGON_HUNTER_PLAYER.updateSafeBaseArrival(contexts.player());
   assert(state.message === "", "safe base first-arrival message should not repeat");
@@ -970,7 +986,17 @@ function assertFrontierCamp() {
   runtime.updateHealCircle();
   assert(player.hp === player.hpMax, "frontier camp heal circle should fully heal");
 
-  const frontier = state.npcs.find((entry) => entry.type === "frontier");
+  const trailCampFrontier = state.npcs.find((entry) => entry.type === "frontier" && entry.y < 40 * d.TILE);
+  assert(trailCampFrontier, "grassland camp supply NPC should exist");
+  player.hp = player.hpMax;
+  player.stamina = player.staminaMax;
+  player.level = 3;
+  player.gold = 200;
+  openNpcShop(runtime, state, trailCampFrontier);
+  assert(state.shopRows.some((row) => row.type === "shield" && row.id === 1), "grassland camp shop should provide an early shield choice");
+  runtime.closeShop();
+
+  const frontier = state.npcs.find((entry) => entry.type === "frontier" && entry.y > 54 * d.TILE && entry.y < 64 * d.TILE);
   assert(frontier, "frontier supply NPC should exist");
   player.hp = player.hpMax;
   player.stamina = player.staminaMax;
@@ -1296,6 +1322,15 @@ function assertExpandedWorldContent() {
   runtime.updateStoryEvents();
   const moonGatekeeper = state.monsters.find((monster) => monster.type === "moonGatekeeper");
   assert(moonGatekeeper, "Moon Cavern should spawn its named gate encounter before Moon Camp");
+  moonGatekeeper.patternCooldown = 0;
+  moonGatekeeper.fireCooldown = 0;
+  state.telegraphs = [];
+  state.projectiles = [];
+  runtime.updateMonsters(16);
+  assert(moonGatekeeper.patternState === "windup" && state.telegraphs.some((entry) => entry.kind === "line"), "Moon Gatekeeper should telegraph its opening triple-lance pattern");
+  moonGatekeeper.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.pattern === "moonLance" && projectile.piercing), "Moon Gatekeeper should fire readable piercing moon lances after the warning");
   moonGatekeeper.hp = 0;
   runtime.updateMonsters(16);
   assert(state.moonGatekeeperDefeated, "Moon Gatekeeper defeat should persist in state");
@@ -1822,6 +1857,11 @@ function assertExpandedWorldContent() {
   assert(memoPages.some((page) => page.title === "旅メモ" && page.lines.some((line) => /召喚士|黒市|古塔/.test(line))), "status panel should include travel memo guidance");
 
   const routeReadability = createRuntime();
+  assert(/草原野営地/.test(routeReadability.runtime.objectiveText()), "fresh Chapter 1 objective should lead to the first grassland safe base");
+  const firstCampDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(routeReadability.state, routeReadability.player);
+  assert(firstCampDestination?.label === "草原野営地" && firstCampDestination.site.x === 35, "world map should mark the first grassland safe base before early progression");
+  const firstCampMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(routeReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(firstCampMemo?.lines.some((line) => /村東門.*草原野営地/.test(line)), "fresh travel memo should trace the route to grassland camp");
   routeReadability.state.guardianDefeated = true;
   routeReadability.player.sealCrest = true;
   routeReadability.player.scales = d.BOSS_REQUIREMENTS.scales;
@@ -1941,6 +1981,14 @@ function assertExpandedWorldContent() {
   assert(reward.player.warps >= 2 && reward.player.wards >= 9, "Moon Cavern exit cache should add final-push supplies");
   reward.runtime.grantChestReward("moonCavernRelic");
   assert(reward.player.ownedShields.includes(3) && reward.player.elixirs >= 1, "Moon Cavern relic should grant the route shield and an elixir");
+  reward.player.hp = 1;
+  reward.player.stamina = 1;
+  reward.player.slow = 900;
+  reward.player.burn = 900;
+  const warpsBeforeMoonShrine = reward.player.warps;
+  reward.runtime.grantDiscoveryReward({ id: "moon-cavern-way-shrine", kind: "moonWayShrine" }, 0, 0);
+  assert(reward.player.hp === reward.player.hpMax && reward.player.stamina === reward.player.staminaMax, "Moon Cavern way shrine should fully restore the expedition once");
+  assert(reward.player.slow === 0 && reward.player.burn === 0 && reward.player.guard >= 1800 && reward.player.warps === Math.min(9, warpsBeforeMoonShrine + 1), "Moon Cavern way shrine should clear pressure and provide a retreat option");
   reward.runtime.grantChestReward("summonerSupply");
   assert(reward.player.tonics >= 2 && reward.player.warps >= 1 && reward.player.bombs >= 5, "summonerSupply should add route-extension supplies");
   reward.runtime.grantChestReward("trapSupply");
@@ -2125,6 +2173,13 @@ function assertExpandedWorldContent() {
   reward.runtime.grantDiscoveryReward({ id: "test-moon-archive-hint", kind: "moonArchiveHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-moon-cavern-hint", kind: "moonCavernHint" }, 0, 0);
   reward.runtime.grantDiscoveryReward({ id: "test-suncrest-guide", kind: "suncrestGuide" }, 0, 0);
+  reward.player.stamina = 1;
+  reward.runtime.grantDiscoveryReward({ id: "suncrest-east-gate-sign", kind: "suncrestGateHint" }, 0, 0);
+  assert(/日鏡塔/.test(reward.state.message) && reward.player.stamina === reward.player.staminaMax, "Suncrest east gate should identify the main Sunspire route and restore expedition stamina");
+  reward.runtime.grantDiscoveryReward({ id: "suncrest-west-gate-sign", kind: "suncrestGateHint" }, 0, 0);
+  assert(/任意/.test(reward.state.message), "Suncrest west gate should identify the arena as optional content");
+  reward.runtime.grantDiscoveryReward({ id: "suncrest-south-gate-sign", kind: "suncrestGateHint" }, 0, 0);
+  assert(/最終遠征/.test(reward.state.message), "Suncrest south gate should identify the final expedition route");
   assert(reward.player.wards >= 9 && reward.player.stamina === reward.player.staminaMax, "Sunspire observation point should provide anti-solar preparation");
 
   const normalDash = createRuntime();

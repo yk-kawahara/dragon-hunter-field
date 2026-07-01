@@ -203,6 +203,8 @@ Current issue:
 
 Desired improvement:
 
+* 草原野営地 is now the first explicit survival-range breakthrough outside the village: recovery, early supplies, local route guidance, and return wagon access unlock only after physical arrival.
+* New-game objective text, travel memo, and the field objective compass all trace the village east gate -> grassland camp route before later mandatory targets take priority.
 * Objective and NPC text now point to the north-east rock/cave landmark.
 * Field breadcrumbs now use heat, scorched stones, and an old sign to lead toward 竜洞.
 * Keep Chapter 1 compact; do not overbuild it.
@@ -234,7 +236,8 @@ Current issue:
 
 * A first implementation of 月影洞窟 now sits between 月影廃墟 and 月見砦, so the chapter has a real attrition route before the next safe base.
 * 月影洞窟 now has both mid-route and exit-route supplies, plus higher first-clear local pressure before 月見砦 is physically reached.
-* 月影洞窟の最終区画には名付き関門 `月門の護将` が立ち、正面防御・月影/盾兵の増援・月圧で、接触方向と残存物資を問う。
+* 中央水路の `月泉` は一度だけHP・スタミナ・状態異常を立て直し、帰還札を与える。今使って護将へ進むか、温存して撤退するかをプレイヤーが選ぶ。
+* 月影洞窟の最終区画には名付き関門 `月門の護将` が立ち、正面防御・月影/盾兵の増援・予告付き三連月槍・足場を塞ぐ月影陣で、接触方向と回避を問う。
 * 月洞印と東出口は護将撃破まで閉ざされるため、月見砦への初到達は関門突破を伴う安全圏拡大になった。
 * 月見砦 should still be manually tuned in browser play to confirm it feels like a hard-earned safe base, not simply the next nearby stop.
 * 月の書庫 adds volume, but it can read like an extra checklist step if the route before 月見砦 is not memorable.
@@ -252,7 +255,8 @@ Implemented route:
   - local moon pressure
   - summons / shield soldiers / traps
   - mid-route and exit-route supplies
-  - 月門の護将: 正面が硬く、消耗時に増援を呼ぶ名付き関門
+  - 月泉: 一度限りの全快と帰還判断
+  - 月門の護将: 正面が硬く、増援・三連月槍・月影陣を使う名付き関門
   - 月洞印 reward
 ↓
 月見砦 first-arrival safe-radius payoff
@@ -407,8 +411,9 @@ Desired improvement:
 * Chapter 5 travel memo lines now use 本線 / 今 / 準備 / 任意.
 * The whole-world current-destination marker now follows the main chain from 陽冠都市 through 日鏡塔, 反射水晶, 陽光封印碑, 熾火聖域補給箱, and 熾火天竜.
 * The highland approach after 日輪砲台守 now adds final-valley pressure and a forward cache before 陽冠都市, strengthening the feeling that the city is earned.
+* Suncrest's three exits now carry distinct readable roles: east gate = main Sunspire route, west gate = optional arena, south gate = final seal/island expedition. Each sign remains rereadable after its one-time reward.
 * Add strong first-arrival payoff for 陽冠都市.
-* Browser-check Suncrest east gate, west plaza, and south gate readability.
+* Browser/manual-check the three gate markers and sign placement at real play scale.
 
 Intended feeling:
 

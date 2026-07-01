@@ -59,7 +59,6 @@
     if (stage === "suncrestArena") return `目的: 陽冠都市西の闘技場へ LV${SUNCREST_CHAMPION_REQUIREMENTS.level}`;
     if (stage === "solarWarden") return "目的: 北東高原の日輪砲台守を破壊";
     if (stage === "sunriseRoute") return `目的: 黎明港から北東高原の日輪砲台へ LV${SOLAR_WARDEN_REQUIREMENTS.level}`;
-    if (stage === "chapter4cleared") return "第4章CLEAR: 霜冠竜を封じた";
     if (stage === "chapter4report") return "目的: 長老へ霜冠竜討伐を報告";
     if (stage === "frostDragon") return "目的: 霜冠竜を倒す";
     if (stage === "frostReady") return "目的: 霜冠城の奥へ進む";
@@ -96,6 +95,7 @@
     if (stage === "guardian") return "目的: 北森の守護者を倒す";
     if (stage === "level") return `目的: LV${BOSS_REQUIREMENTS.level}まで鍛える`;
     if (stage === "ruin") return "目的: 北森の紋章を探す";
+    if (stage === "firstCamp") return "目的: 村の東門から北東の草原野営地へ";
     const unopened = TREASURE_CHESTS.length - state.chests.size;
     const hidden = DISCOVERY_POINTS.length - state.discoveries.size;
     return `目的: 鱗${player.scales}/${BOSS_REQUIREMENTS.scales} 宝${unopened} 発見${hidden}`;
@@ -109,6 +109,7 @@
       if (state.chapter3Victory) return "黒陽竜討伐を長老へ報告";
       if (state.chapter2Victory) return "月蝕竜討伐を長老へ報告";
       if (player.hp < player.hpMax) return "回復陣か薬師で立て直そう";
+      if (!state.elderReported && !state.arrivedSafeBases?.has("grassland-camp")) return "焚火と青い回復陣を目印に、村外の安全圏を確保しよう";
       const cost = nextUpgradeCost(context);
       if (state.chapter4Reported && !state.solarWardenDefeated && player.level < SOLAR_WARDEN_REQUIREMENTS.level) return `日輪砲台守にはLV${SOLAR_WARDEN_REQUIREMENTS.level}が要る`;
       if (state.chapter4Reported && !state.solarWardenDefeated) return "黎明港から北東高原の日輪砲台へ";
@@ -189,6 +190,7 @@
     if (region === "moonArchive" && !state.chests.has("moon-archive-reliquary")) return "番人の奥の遺物庫で月蝕の指輪を取ろう";
     if (region === "moonArchive") return "月蝕の備えを整え、月見砦南西の封印碑へ戻ろう";
     if (region === "moonCavern" && !state.chests.has("moon-cavern-mid-cache")) return "月影洞窟の中継補給を探せ。帰還札を残すと撤退しやすい";
+    if (region === "moonCavern" && !state.discoveries.has("moon-cavern-way-shrine")) return "中央水路の月泉は一度だけ全快できる。使い時を選ぼう";
     if (region === "moonCavern" && !state.chests.has("moon-cavern-exit-cache")) return "出口前の補給を拾い、護将戦へ備えよう";
     if (region === "moonCavern" && !state.moonGatekeeperDefeated && player.level < MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level) return `月門の護将はLV${MOON_CAVERN_GATEKEEPER_REQUIREMENTS.level}級。西出口へ退いて装備を整えよう`;
     if (region === "moonCavern" && !state.moonGatekeeperDefeated) return "月門の護将は正面が硬い。月影を先に倒し、側面か背後へ回れ";
@@ -261,7 +263,6 @@
     if (state.chapter4Reported && state.solarWardenDefeated && !state.sunspireKeeperDefeated) return "sunspireRoute";
     if (state.spawnedSolarWarden) return "solarWarden";
     if (state.chapter4Reported) return "sunriseRoute";
-    if (state.chapter4Reported) return "chapter4cleared";
     if (state.chapter4Victory || (state.frostDragonDefeated && !state.chapter4Reported)) return "chapter4report";
     if (state.spawnedFrostDragon) return "frostDragon";
     if (state.spawnedFrostGolem) return "frostGolem";
@@ -293,12 +294,14 @@
     if (!state.guardianDefeated && guardianReady()) return "guardian";
     if (player.scales >= BOSS_REQUIREMENTS.scales && player.level < BOSS_REQUIREMENTS.level) return "level";
     if (player.scales >= 2 && !state.guardianDefeated) return "ruin";
+    if (!state.arrivedSafeBases?.has("grassland-camp")) return "firstCamp";
     return "scales";
   }
 
   function stageName(stage) {
     const names = {
       scales: "鱗集め",
+      firstCamp: "最初の遠征",
       ruin: "北森探索",
       level: "鍛錬",
       guardian: "守護者",
@@ -333,7 +336,6 @@
       frostReady: "霜冠城",
       frostDragon: "霜冠竜戦",
       chapter4report: "第4章報告",
-      chapter4cleared: "第4章クリア",
       sunriseRoute: "日出高原遠征",
       solarWarden: "日輪砲台戦",
       sunspireRoute: "日鏡塔遠征",

@@ -38,6 +38,51 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-07-01: Moon Cavern decision and action-depth pass
+
+Implemented:
+
+* Added `月泉` beside the central Moon Cavern waterway as a one-time expedition resource.
+  * Full HP/stamina recovery, status cleanse, short guard, 活力薬, and a return bell.
+  * Travel memo and local guidance explicitly frame it as a use-now-or-save decision.
+  * Its used state persists through the existing discovery save system.
+* Upgraded `月門の護将` from a stat gate into a readable action encounter.
+  * Alternates telegraphed triple piercing moon lances with three persistent moon-snare zones.
+  * Existing frontal defense and half-HP reinforcements remain, with a small phase-two speed increase.
+  * Moon Gatekeeper projectiles now count as magic/midboss damage so route counter-equipment applies consistently.
+* First arrival at every remote safe base now fully restores HP as well as stamina and clears incoming projectiles; repeat visits still use normal recovery facilities.
+* Strengthened the 月見砦 first-arrival message as the payoff for clearing Moon Cavern.
+* Added smoke coverage for the Moon Spring recovery package, Gatekeeper telegraph/projectile sequence, and full first-arrival recovery.
+
+Next:
+
+1. Manual playtest 月影洞窟 without using the shrine, then with the shrine, and tune whether the choice is meaningful rather than mandatory.
+2. Tune Moon Gatekeeper projectile damage/cooldown if the triple-lance and snare overlap leaves too little room for contact positioning.
+3. Continue Chapter 3 main/optional guidance separation or strengthen 陽冠都市 first-arrival services after visual QA.
+
+## Completed 2026-06-27: first safe-radius and field guidance pass
+
+Implemented:
+
+* Turned the existing grassland camp into Chapter 1's first explicit safe-radius breakthrough.
+  * Added a safe zone, full-heal circle, unique NPC guidance, early equipment/supply shop, camp props, and a village return wagon.
+  * Wagon travel unlocks only after the player reaches the camp on foot.
+  * New-game objective, travel memo, and current-destination marker all trace the camp before later mandatory progression takes priority.
+* Added a compact field objective compass for the current required destination, with direction and tile distance. It yields to nearby interaction prompts and disappears close to the target.
+* Clarified all three exits of 陽冠都市 with reachable, rereadable signs and field markers:
+  * East = main 日鏡塔 route.
+  * West = optional 陽冠闘技場.
+  * South = 陽光封印碑 and the final island expedition.
+* Removed confirmed unreachable duplicate shield-purchase branches and the unreachable `chapter4cleared` stage branch.
+* Extended smoke coverage for safe-base arrival, travel unlock, early shop contents, route UI, gate rewards, NPC placement, and reachability.
+
+Next:
+
+1. Manual playtest village -> grassland camp -> north forest and tune whether the first retreat/recovery lesson happens naturally.
+2. Manual visual check the objective compass and Suncrest gate markers at desktop and mobile-like sizes; automated browser access was unavailable in this pass.
+3. If Chapter 1 teaching reads well, tune Chapter 2 Moon Cavern combat pressure and Moon Gatekeeper balance from a fresh expedition.
+4. Continue removing the large unreachable legacy frontier auto-purchase block before editing frontier shops again.
+
 ## Completed 2026-06-27: multi-chapter expedition decision pass
 
 Implemented:

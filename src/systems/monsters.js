@@ -224,6 +224,29 @@
     monster.patternIndex = (monster.patternIndex || 0) + 1;
     monster.fireCooldown = Math.max(monster.fireCooldown, 1100);
 
+    if (monster.type === "moonGatekeeper") {
+      const snare = monster.patternIndex % 2 === 0;
+      monster.patternKind = snare ? "moonSnares" : "moonLances";
+      monster.patternWindup = snare ? 980 : 780;
+      monster.patternWaves = 3;
+      if (snare) {
+        monster.patternTargets = [
+          { x: playerCenter.x, y: playerCenter.y },
+          { x: playerCenter.x + worldPx(30), y: playerCenter.y - worldPx(22) },
+          { x: playerCenter.x - worldPx(30), y: playerCenter.y + worldPx(22) },
+        ];
+        for (const target of monster.patternTargets) {
+          state.telegraphs.push({ kind: "zone", x: target.x, y: target.y, radius: worldPx(14), color: "#9e86ff", life: monster.patternWindup, max: monster.patternWindup });
+        }
+        say("月門の護将が足元に三つの月影陣を刻む!", 1600);
+      } else {
+        state.telegraphs.push({ kind: "line", x: c.x, y: c.y, dx: monster.patternAim.x, dy: monster.patternAim.y, length: worldPx(300), width: worldPx(13), color: "#d8d8ff", life: monster.patternWindup, max: monster.patternWindup });
+        say("月門の護将が三連月槍を構える! 線から外れろ", 1500);
+      }
+      addRing(c.x, c.y, "#9e86ff", worldPx(40));
+      return;
+    }
+
     if (monster.type === "voidDragon") {
       monster.patternKind = "voidZones";
       monster.patternWindup = 920;
@@ -297,7 +320,7 @@
 
   function finishBossPattern(monster) {
     monster.patternState = "idle";
-    monster.patternCooldown = monster.enraged ? 2300 : 3200;
+    monster.patternCooldown = monster.type === "moonGatekeeper" ? 2500 : monster.enraged ? 2300 : 3200;
     monster.patternWaveCooldown = 0;
     monster.patternTargets = [];
   }
@@ -311,7 +334,17 @@
     };
     const wave = monster.patternWaves;
 
-    if (monster.patternKind === "voidZones") {
+    if (monster.patternKind === "moonSnares") {
+      const zoneIndex = 3 - wave;
+      const zone = monster.patternTargets?.[zoneIndex] || target;
+      shootProjectile(monster, zone, 0, { stationary: true, persistent: true, radius: 14, damageMultiplier: 0.58, life: 2200, color: "#7460c9", pattern: "moonSnare" });
+      addRing(zone.x, zone.y, "#9e86ff", worldPx(21));
+    } else if (monster.patternKind === "moonLances") {
+      const rotation = (3 - wave) * 0.11;
+      for (const offset of [-0.3, 0, 0.3]) {
+        shootProjectile(monster, target, offset + rotation, { speedMultiplier: 1.62, damageMultiplier: 0.76, radius: 5, life: 2400, piercing: true, color: "#d8d8ff", pattern: "moonLance" });
+      }
+    } else if (monster.patternKind === "voidZones") {
       const zoneIndex = 3 - wave;
       const zone = monster.patternTargets?.[zoneIndex] || target;
       shootProjectile(monster, zone, 0, { stationary: true, persistent: true, radius: 15, damageMultiplier: 0.58, life: 3200, color: "#7f69d9", pattern: "voidZone" });
@@ -358,13 +391,13 @@
     if (monster.patternWaves <= 0) finishBossPattern(monster);
     else {
       monster.patternState = "waves";
-      monster.patternWaveCooldown = monster.patternKind === "voidZones" || monster.patternKind === "emberArtillery" ? 380 : 220;
+      monster.patternWaveCooldown = monster.patternKind === "voidZones" || monster.patternKind === "emberArtillery" ? 380 : monster.patternKind === "moonSnares" ? 330 : 220;
     }
   }
 
   function updateBossPattern(context, monster, playerCenter, dist) {
-    if (!monster.boss) return false;
-    if (monster.patternState === "idle" && monster.patternCooldown <= 0 && dist < worldPx(monster.type === "emberDragon" ? 430 : 245)) {
+    if (!monster.boss && monster.type !== "moonGatekeeper") return false;
+    if (monster.patternState === "idle" && monster.patternCooldown <= 0 && dist < worldPx(monster.type === "emberDragon" ? 430 : monster.type === "moonGatekeeper" ? 215 : 245)) {
       startBossPattern(context, monster, playerCenter);
       return true;
     }
@@ -461,6 +494,8 @@
 
       if (monster.type === "moonGatekeeper" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {
         monster.summoned = true;
+        monster.speed += worldPx(5);
+        monster.patternCooldown = Math.min(monster.patternCooldown, 700);
         spawnIfClear("moonShade", monster.x - worldPx(38), monster.y + worldPx(28));
         spawnIfClear("shieldSoldier", monster.x + worldPx(38), monster.y + worldPx(28));
         addRing(c.x, c.y, "#9e86ff", worldPx(38));
