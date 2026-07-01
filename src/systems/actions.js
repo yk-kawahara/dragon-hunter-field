@@ -324,7 +324,23 @@
     return null;
   }
 
-  function rereadDiscoveryMessage(discovery) {
+  function blackMarketBoardMessage(state) {
+    let main = "村で前章の討伐を報告";
+    if (state.chapter2Reported && !state.chests.has("black-fort-armory")) main = "東門 -> 黒門前哨 -> 黒門砦";
+    else if (state.chapter2Reported && !state.discoveries.has("void-seal")) main = "黒門砦南西 -> 黒陽碑";
+    else if (state.chapter2Reported && !state.obsidianGolemDefeated) main = "黒市東 -> 黒曜洞 -> 黒曜巨人";
+    else if (state.chapter2Reported && !state.voidDragonDefeated) main = "黒門砦 -> 黒陽城 -> 黒陽竜";
+    else if (state.voidDragonDefeated && !state.chapter3Reported) main = "村の長老へ黒陽竜討伐を報告";
+    const optional = [];
+    if (!state.cryptWardenDefeated) optional.push("地下墓所");
+    if (!state.smugglerCaptainDefeated) optional.push("密輸道");
+    if (!state.regenSentinelDefeated) optional.push("再生洞窟");
+    else if (!state.mistKeeperDefeated) optional.push("霧灯の祠");
+    return `黒市の遠征掲示板 本線: ${main} / 任意: ${optional.join("・") || "攻略済み"}`;
+  }
+
+  function rereadDiscoveryMessage(discovery, state) {
+    if (discovery.kind === "blackMarketBoard") return blackMarketBoardMessage(state);
     if (discovery.kind === "suncrestGateHint") {
       if (discovery.id === "suncrest-east-gate-sign") return "東門の案内を読み返した。本線は日鏡塔、反射水晶の先は南街道だ";
       if (discovery.id === "suncrest-west-gate-sign") return "西門の案内を読み返した。陽冠闘技場は任意の腕試しだ";
@@ -364,7 +380,7 @@
     const dy = (discovery.y + 0.5) * TILE;
     if (state.discoveries.has(discovery.id)) {
       addRing(dx, dy, "#bafc87", worldPx(14));
-      say(rereadDiscoveryMessage(discovery), 2600);
+      say(rereadDiscoveryMessage(discovery, state), discovery.kind === "blackMarketBoard" ? 5200 : 2600);
       return;
     }
     state.discoveries.add(discovery.id);

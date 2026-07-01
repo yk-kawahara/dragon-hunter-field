@@ -463,12 +463,18 @@
         else if (!state.discoveries.has("frost-seal")) say("案内人「霜冠城の中庭で封印碑を探せ。氷窟巨人の核が道を開く」", 4200);
         else if (!state.towerWardenDefeated) say("案内人「霜見塔は任意の寄り道だ。二階の塔守はLV32向けで、移動を助ける徽章が眠る」", 5200);
         else say(`案内人「霜冠竜へ挑むならLV${CHAPTER4_REQUIREMENTS.level}と白銀装備を整えろ」`, 4200);
-      } else if (state.chapter2Reported && !state.cryptWardenDefeated) {
-        say("案内人「黒市東端の地下口は古い墓所へ続く。LV22以上、帰還鈴を持って入れ」", 4400);
+      } else if (state.chapter2Reported && !state.chests.has("black-fort-armory")) {
+        say("案内人「本線は東門から黒門前哨を越えて黒門砦へ。北道は盾兵、南道は罠の近道だ」", 5000);
+      } else if (state.chapter2Reported && !state.discoveries.has("void-seal")) {
+        say("案内人「本線は黒門砦の南西にある黒陽碑だ。地下墓所や密輸道は任意の寄り道だ」", 5000);
+      } else if (!state.chapter2Reported) {
+        say("案内人「黒市の深部遠征は月蝕竜の報告後だ。今は月見砦の本線を進めろ」", 4400);
       } else if (!state.obsidianGolemDefeated) {
-        say(`案内人「黒市の東、黒曜洞に巨人がいる。LV24以上と黒門砦の装備が欲しい」`, 4200);
+        say("案内人「本線は黒市の東、黒曜洞の巨人だ。LV24と黒門砦装備を目安に。地下墓所は任意だ」", 5000);
       } else if (!state.voidDragonDefeated) {
-        say(`案内人「黒曜の備えがあれば、黒陽城の奥まで踏み込める」`, 3600);
+        say("案内人「本線は黒門砦から黒陽城の奥へ。黒曜装備を選び、黒陽竜へ踏み込め」", 4600);
+      } else if (!state.chapter3Reported) {
+        say("案内人「黒陽竜討伐を村の長老へ報告しろ。寄り道はその後でも戻れる」", 4400);
       } else {
         say("案内人「黒陽の先へ行く道を、商人たちが探している」", 3600);
       }

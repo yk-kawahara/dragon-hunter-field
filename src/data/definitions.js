@@ -198,6 +198,7 @@
     { id: "void-seal", x: 82, y: 138, kind: "voidSeal" },
     { id: "obsidian-waystone", x: 52, y: 132, kind: "obsidianWaystone" },
     { id: "black-market-rumor", x: 41, y: 132, kind: "routeHint" },
+    { id: "black-market-expedition-board", x: 41, y: 130, kind: "blackMarketBoard" },
     { id: "black-market-alley-map", x: 47, y: 133, kind: "shortcutHint" },
     { id: "black-gate-road-post", x: 63, y: 134, kind: "blackGateHint" },
     { id: "black-gate-lookout", x: 84, y: 132, kind: "blackGateHint" },

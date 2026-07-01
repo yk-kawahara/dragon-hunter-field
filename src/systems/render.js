@@ -375,6 +375,12 @@ function currentWorldMapDestinationFor(stateArg, playerArg) {
   if (stateArg?.chapter2Reported && stateArg.chests?.has("black-fort-armory") && !stateArg.discoveries?.has("void-seal")) {
     return { site: { x: 82, y: 138 }, label: "黒陽碑" };
   }
+  if (stateArg?.chapter2Reported && stateArg.chests?.has("black-fort-armory") && stateArg.discoveries?.has("void-seal") && !stateArg.obsidianGolemDefeated) {
+    return { site: OBSIDIAN_GOLEM_SITE, label: "黒曜巨人" };
+  }
+  if (stateArg?.chapter2Reported && stateArg.obsidianGolemDefeated && !stateArg.voidDragonDefeated) {
+    return { site: VOID_DRAGON_SITE, label: "黒陽竜" };
+  }
   if (stateArg?.elderReported && stateArg?.ashKnightDefeated && stateArg.chests?.has("moon-ruin-cache") && !stateArg.chests?.has("moon-cavern-reliquary")) {
     return { site: { x: 92, y: 103 }, label: "月影洞窟" };
   }
@@ -479,7 +485,8 @@ function drawInfoPanel() {
   const x = 37;
   const y = 17;
   const w = 166;
-  const h = 58;
+  const lines = Array.isArray(panel.lines) ? panel.lines : [];
+  const h = Math.min(VIEW_H - y - 4, 31 + lines.length * 11);
   ctx.fillStyle = "rgba(5, 8, 18, 0.9)";
   ctx.fillRect(x, y, w, h);
   ctx.strokeStyle = "#6de4ff";
@@ -490,8 +497,8 @@ function drawInfoPanel() {
   ctx.fillText(panel.title, x + 7, y + 12);
   ctx.fillStyle = "#ffffff";
   ctx.font = "8px monospace";
-  for (let i = 0; i < panel.lines.length; i += 1) {
-    ctx.fillText(panel.lines[i], x + 7, y + 25 + i * 11);
+  for (let i = 0; i < lines.length; i += 1) {
+    ctx.fillText(lines[i], x + 7, y + 25 + i * 11, w - 14);
   }
 }
 
@@ -1475,10 +1482,10 @@ function drawDiscoveries(cam) {
       ctx.fillRect(sx + 6, sy + 3, 4, 4);
       ctx.fillRect(sx + 7, sy + 8, 2, 5);
       if (!found) drawGlint(sx + 11, sy + 4, "#ff5e9f");
-    } else if (discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint" || discovery.kind === "mistHint" || discovery.kind === "cryptHint" || discovery.kind === "frostHint" || discovery.kind === "sunspireHint" || discovery.kind === "moonCavernHint" || discovery.kind === "blackGateHint") {
+    } else if (discovery.kind === "blackMarketBoard" || discovery.kind === "routeHint" || discovery.kind === "shortcutHint" || discovery.kind === "smugglerHint" || discovery.kind === "greaterRegenHint" || discovery.kind === "mistHint" || discovery.kind === "cryptHint" || discovery.kind === "frostHint" || discovery.kind === "sunspireHint" || discovery.kind === "moonCavernHint" || discovery.kind === "blackGateHint") {
       ctx.fillStyle = found ? "#604622" : "#7b4b25";
       ctx.fillRect(sx + 5, sy + 5, 7, 8);
-      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : discovery.kind === "moonCavernHint" ? "#b08cff" : discovery.kind === "blackGateHint" ? "#8dd7ff" : "#ffd166";
+      ctx.fillStyle = found ? "#b08a54" : discovery.kind === "blackMarketBoard" ? "#fff2a6" : discovery.kind === "greaterRegenHint" ? "#74ff8f" : discovery.kind === "mistHint" ? "#9fd6c7" : discovery.kind === "cryptHint" ? "#d7b26d" : discovery.kind === "frostHint" ? "#b9f4ff" : discovery.kind === "sunspireHint" ? "#fff0a6" : discovery.kind === "moonCavernHint" ? "#b08cff" : discovery.kind === "blackGateHint" ? "#8dd7ff" : "#ffd166";
       ctx.fillRect(sx + 3, sy + 4, 10, 3);
       ctx.fillStyle = "#2a1d12";
       ctx.fillRect(sx + 8, sy + 8, 2, 6);

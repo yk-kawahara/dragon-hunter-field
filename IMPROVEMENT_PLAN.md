@@ -38,6 +38,26 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-07-01: Chapter 3 main/optional route hierarchy pass
+
+Implemented:
+
+* Added a reachable, rereadable `黒市の遠征掲示板` that updates its main-route message with Chapter 3 progress and lists side routes separately.
+* Reworked Chapter 3 travel memo ordering so uncleared optional content can no longer replace the required route.
+  * Main: 黒門砦 -> 黒陽碑 -> 黒曜巨人 -> 黒陽竜.
+  * Optional: 地下墓所 / 密輸道 / 再生洞窟 / 霧灯の祠, with reward roles shown.
+* Updated the Black Market guide to repeat the same hierarchy at every required stage.
+* Extended the world-map current destination through 黒曜巨人 and 黒陽竜 instead of dropping the marker after the seal.
+* The board grants one small preparation package on first read; rereading updates guidance without repeating the reward, and save/load preserves the claim.
+* Made the information panel grow with its line count and constrain text to its width, so four-line travel plans and equipment pages no longer draw outside the frame.
+* Added smoke coverage for board reachability/reward/reread, guide priority, travel memo hierarchy, destination progression, and persistence.
+
+Next:
+
+1. Manual check whether the longer optional line fits the travel memo panel at desktop and mobile-like widths.
+2. Strengthen 陽冠都市 first-arrival services or Chapter 5 preparation payoff without adding duplicate shops.
+3. Continue the scoped legacy frontier auto-purchase cleanup before changing frontier shop behavior again.
+
 ## Completed 2026-07-01: Moon Cavern decision and action-depth pass
 
 Implemented:

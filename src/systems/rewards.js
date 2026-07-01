@@ -749,7 +749,7 @@
   }
 
   function grantDiscoveryReward(context, discovery, x, y) {
-    const { player, say, burst, refreshDerivedStats } = requireDiscoveryContext(context);
+    const { state, player, say, burst, refreshDerivedStats } = requireDiscoveryContext(context);
     if (discovery.kind === "waystone") {
       player.gold += 180;
       player.stamina = player.staminaMax;
@@ -913,6 +913,16 @@
       player.stamina = player.staminaMax;
       burst(x, y, "#8dd7ff", 20);
       say("黒門前哨の道標: 北道は盾兵、南道は罠。補給を拾って砦まで進め");
+      return;
+    }
+    if (discovery.kind === "blackMarketBoard") {
+      player.gold += 260;
+      addItem(player, "tonic", 1);
+      addItem(player, "warp", 1);
+      player.stamina = player.staminaMax;
+      burst(x, y, "#fff2a6", 20);
+      const main = !state.chapter2Reported ? "村で前章を報告" : !state.chests.has("black-fort-armory") ? "東門から黒門砦" : !state.discoveries.has("void-seal") ? "黒門砦南西の黒陽碑" : !state.obsidianGolemDefeated ? "黒市東の黒曜巨人" : !state.voidDragonDefeated ? "黒陽城の黒陽竜" : "村の長老へ報告";
+      say(`黒市の遠征掲示板を手帳に写した。本線: ${main}。地下墓所・密輸道・再生洞窟は任意`, 5200);
       return;
     }
     if (discovery.kind === "suncrestGuide") {

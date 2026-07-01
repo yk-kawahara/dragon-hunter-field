@@ -320,13 +320,15 @@ Optional or side content includes:
 
 Current issue:
 
-* The amount of content is good, but the player can lose track of what is main route vs optional.
+* The amount of content is good; the main route now stays visible while side dungeons are explicitly labeled optional.
 * A first Black Gate approach pass now makes 黒市都 -> 黒門砦 read as the main Chapter 3 push before optional cleanup.
 * 黒門前哨は北の盾兵本道と南の罠近道で敵構成が分かれ、同じ区間でも準備と接触の仕方を選べる。
+* 黒市の遠征掲示板、旅メモ、案内人、世界地図マーカーは、黒門砦 -> 黒陽碑 -> 黒曜巨人 -> 黒陽竜の必須順を共有する。
+* 地下墓所・密輸道・再生洞窟・霧灯の祠は、報酬を明記した任意ルートとして表示される。
 
 Desired improvement:
 
-* Travel memo and guides should clearly separate 本線 and 任意.
+* Preserve the shared 本線 / 任意 hierarchy when adding future Chapter 3 content.
 * The Black Gate approach should create a small continue/retreat decision through route signs, forward supplies, and shield/trap pressure.
 * Black Market City should function as a hub for preparation and rumors, not just a large safe zone.
 * If 黒市都 -> 黒門砦 feels too short, consider a compact 黒門関所 / 影道 route.

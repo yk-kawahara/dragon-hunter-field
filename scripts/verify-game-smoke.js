@@ -438,6 +438,7 @@ function assertSaveLoadAndEquipment() {
   state.discoveries.add("river-spring");
   state.discoveries.add("hunter-cache");
   state.discoveries.add("moon-cavern-way-shrine");
+  state.discoveries.add("black-market-expedition-board");
   state.guardianDefeated = true;
   state.spawnedGuardian = true;
   state.wardenDefeated = true;
@@ -524,7 +525,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.runtime.playerMoveSpeed() > baseline.runtime.playerMoveSpeed(), "trail charm should improve movement speed after load");
   assert(restored.runtime.regenRate() > baseline.runtime.regenRate(), "greater regen charm should improve HP regeneration after load");
   assert(restored.state.chests.size === 3, "opened chests should persist");
-  assert(restored.state.discoveries.size === 3 && restored.state.discoveries.has("moon-cavern-way-shrine"), "discoveries and the spent Moon Spring should persist");
+  assert(restored.state.discoveries.size === 4 && restored.state.discoveries.has("moon-cavern-way-shrine") && restored.state.discoveries.has("black-market-expedition-board"), "discoveries, the spent Moon Spring, and the expedition board reward should persist");
   assert(restored.state.wardenDefeated, "warden defeat flag should persist");
   assert(restored.state.ashKnightDefeated, "ash knight defeat flag should persist");
   assert(restored.state.moonGatekeeperDefeated && !restored.state.spawnedMoonGatekeeper, "Moon Gatekeeper defeat should persist without restoring a live encounter");
@@ -1854,7 +1855,7 @@ function assertExpandedWorldContent() {
   const armorRows = globalThis.DRAGON_HUNTER_UI.inventoryRows(contexts.ui());
   assert(armorRows.some((row) => row.id === 8 && /DEF/.test(row.detail) && /\(/.test(row.detail)), "armor inventory rows should show DEF comparison");
   const memoPages = globalThis.DRAGON_HUNTER_UI.statsPanelPages(contexts.ui());
-  assert(memoPages.some((page) => page.title === "旅メモ" && page.lines.some((line) => /召喚士|黒市|古塔/.test(line))), "status panel should include travel memo guidance");
+  assert(memoPages.some((page) => page.title === "旅メモ" && page.lines.some((line) => /本線:/.test(line))), "status panel should include main-route travel memo guidance");
 
   const routeReadability = createRuntime();
   assert(/草原野営地/.test(routeReadability.runtime.objectiveText()), "fresh Chapter 1 objective should lead to the first grassland safe base");
@@ -1931,12 +1932,26 @@ function assertExpandedWorldContent() {
   blackRouteReadability.state.chapter2Reported = true;
   assert(/黒門前哨|黒門砦/.test(blackRouteReadability.runtime.objectiveText()), "Chapter 3 objective should first route through the Black Gate approach");
   const blackRouteMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(blackRouteReadability.contexts.ui()).find((page) => page.title === "旅メモ");
-  assert(blackRouteMemo?.lines[0]?.includes("本線: 黒市東門 -> 黒門前哨 -> 黒門砦") && blackRouteMemo.lines.some((line) => /任意: 黒市地下墓所/.test(line)), "Chapter 3 memo should show Black Fort as main route before optional dungeons");
+  assert(blackRouteMemo?.lines[0]?.includes("本線: 黒市東門 -> 黒門前哨 -> 黒門砦") && blackRouteMemo.lines.some((line) => /任意:.*地下墓所/.test(line)), "Chapter 3 memo should show Black Fort as main route before optional dungeons");
   const blackFortDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(blackRouteReadability.state, blackRouteReadability.player);
   assert(blackFortDestination?.label === "黒門砦" && blackFortDestination.site.x === 98, "world map should mark Black Fort before its armory is secured");
   blackRouteReadability.state.chests.add("black-fort-armory");
   const blackSealDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(blackRouteReadability.state, blackRouteReadability.player);
   assert(blackSealDestination?.label === "黒陽碑" && blackSealDestination.site.x === 82, "world map should mark the Black Sun seal after Black Fort armory");
+  blackRouteReadability.state.discoveries.add("void-seal");
+  let chapter3Memo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(blackRouteReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(chapter3Memo?.lines[0]?.includes("本線: 黒市東の黒曜洞窟") && chapter3Memo.lines.some((line) => /任意:.*地下墓所/.test(line)), "Chapter 3 memo should keep Obsidian Cave above optional uncleared content");
+  let chapter3Destination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(blackRouteReadability.state, blackRouteReadability.player);
+  assert(chapter3Destination?.label === "黒曜巨人" && chapter3Destination.site.x === d.OBSIDIAN_GOLEM_SITE.x, "world map should mark Obsidian Golem after the Black Sun seal");
+  const blackMarketGuide = blackRouteReadability.state.npcs.find((npc) => npc.type === "guide" && npc.x < 50 * d.TILE && npc.y > 128 * d.TILE);
+  assert(blackMarketGuide, "Black Market expedition guide should exist");
+  blackRouteReadability.runtime.handleNpc(blackMarketGuide);
+  assert(/本線.*黒曜洞|黒曜洞.*任意/.test(blackRouteReadability.state.message), "Black Market guide should explain the required Obsidian route before optional catacombs");
+  blackRouteReadability.state.obsidianGolemDefeated = true;
+  chapter3Destination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(blackRouteReadability.state, blackRouteReadability.player);
+  assert(chapter3Destination?.label === "黒陽竜" && chapter3Destination.site.x === d.VOID_DRAGON_SITE.x, "world map should continue to Black Sun Dragon after Obsidian Golem");
+  chapter3Memo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(blackRouteReadability.contexts.ui()).find((page) => page.title === "旅メモ");
+  assert(chapter3Memo?.lines[0]?.includes("本線: 黒門砦 -> 黒陽城 -> 黒陽竜"), "Chapter 3 memo should continue from Obsidian Golem to Black Sun Dragon");
 
   const frostRouteReadability = createRuntime();
   frostRouteReadability.state.bossDefeated = true;
@@ -2251,6 +2266,21 @@ function assertDiscoveryReread() {
   assert(player.gold === afterFirst.gold && player.wards === afterFirst.wards, "rereading a discovery should not grant rewards again");
   assert(state.message !== afterFirst.message && /読み返/.test(state.message), "rereading a discovery should show guidance again");
   assert(runtime.nearestDiscovery()?.id === discovery.id, "already-read discoveries should remain interactable as field guidance");
+  const board = d.DISCOVERY_POINTS.find((entry) => entry.kind === "blackMarketBoard");
+  assert(board, "Black Market expedition board should exist");
+  state.chapter2Reported = true;
+  state.chests.add("black-fort-armory");
+  state.discoveries.add("void-seal");
+  player.x = board.x * d.TILE;
+  player.y = board.y * d.TILE;
+  state.searchCooldown = 0;
+  runtime.searchGround();
+  const boardFirst = { gold: player.gold, tonics: player.tonics, warps: player.warps };
+  assert(state.discoveries.has(board.id) && /本線: 黒市東の黒曜巨人/.test(state.message), "expedition board should state the current Chapter 3 main route on first read");
+  state.searchCooldown = 0;
+  runtime.searchGround();
+  assert(player.gold === boardFirst.gold && player.tonics === boardFirst.tonics && player.warps === boardFirst.warps, "rereading the expedition board should not repeat its supply reward");
+  assert(/本線: 黒市東 -> 黒曜洞 -> 黒曜巨人/.test(state.message) && /任意:/.test(state.message), "rereadable expedition board should separate current main and optional routes");
   return { discovery: discovery.id, reread: true };
 }
 

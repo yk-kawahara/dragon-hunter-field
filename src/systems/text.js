@@ -129,7 +129,6 @@
       if (state.chapter3Reported) return "白銀宿で凍土装備を整えよう";
       if (state.chapter2Reported && !state.chests.has("black-fort-armory")) return "黒門砦の武具箱で黒陽装備を得よう";
       if (state.chapter2Reported && !state.discoveries.has("void-seal")) return "黒門砦の南西で黒陽碑を探す";
-      if (state.chapter2Reported && !state.cryptWardenDefeated && player.level >= CRYPT_WARDEN_REQUIREMENTS.level) return "黒市の地下入口から墓所の番人へ挑める";
       if (state.chapter2Reported && !state.obsidianGolemDefeated && player.level < OBSIDIAN_GOLEM_REQUIREMENTS.level) return `黒曜洞の巨人にはLV${OBSIDIAN_GOLEM_REQUIREMENTS.level}が要る`;
       if (state.chapter2Reported && !state.obsidianGolemDefeated) return "黒市の東、黒曜洞の巨人を倒そう";
       if (state.chapter2Reported && player.level < CHAPTER3_REQUIREMENTS.level) return `第3章大ボスにはLV${CHAPTER3_REQUIREMENTS.level}が要る`;

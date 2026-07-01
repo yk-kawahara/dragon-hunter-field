@@ -85,6 +85,32 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
+### 2026-07-01: Chapter 3 main/optional route hierarchy pass
+
+Purpose:
+
+* Keep Chapter 3's valuable side content without letting it hide required progression.
+
+Implementation:
+
+* Added `black-market-expedition-board` in Black Market City with dynamic main-route text and explicit optional-route listing.
+* Reordered Chapter 3 travel memo and town guidance around the required chain: Black Fort, Black Sun seal, Obsidian Golem, Black Sun Dragon.
+* Added destination markers for Obsidian Golem and Black Sun Dragon.
+* Labeled side-route reward purposes in the memo: deep lamp, shortcut supplies, greater regeneration, and mist protection.
+* Added a one-time board preparation reward while preserving unlimited no-reward rereads.
+* Made the information panel height responsive to line count and constrained line drawing to panel width.
+
+Verification:
+
+* `scripts/verify-game-smoke.js` passed after implementation.
+* Smoke coverage verifies board reachability, current-stage messages, no duplicate reread reward, discovery persistence, guide priority, memo hierarchy, and Chapter 3 destination-marker progression.
+* Existing route, save/load, inventory, encounter, and full script-load checks remain green.
+
+Unverified risk:
+
+* Real-browser visual QA was not performed. The longest optional-route memo line may need shortening if it wraps poorly on narrow layouts.
+* No terrain tile or map-dimension changes were made, so world-map preview regeneration was not required.
+
 ### 2026-07-01: Moon Cavern decision and action-depth pass
 
 Purpose:

@@ -516,6 +516,15 @@
     clampInventoryIndex(state, inventoryRows(context));
   }
 
+  function chapter3OptionalLine(state) {
+    const routes = [];
+    if (!state.cryptWardenDefeated) routes.push("地下墓所: 深層灯");
+    if (!state.smugglerCaptainDefeated) routes.push("密輸道: 近道物資");
+    if (!state.regenSentinelDefeated) routes.push("再生洞窟: 大再生");
+    else if (!state.mistKeeperDefeated) routes.push("霧灯の祠: 霧護符");
+    return routes.length ? `任意: ${routes.join(" / ")}` : "任意: 黒市周辺の寄り道は攻略済み";
+  }
+
   function travelMemoLines(context) {
     const { state, player } = requireUiStatusContext(context);
     if (!state.elderReported) {
@@ -573,7 +582,7 @@
         "本線: 黒市東門 -> 黒門前哨 -> 黒門砦",
         "今: 北の盾兵本道 / 南の罠近道を選んで砦へ",
         "準備: 北は側面攻撃、南は護符とダッシュ",
-        "任意: 黒市地下墓所 / 密輸道 / 再生洞窟",
+        chapter3OptionalLine(state),
       ];
     }
     if (!state.chapter3Reported && !state.discoveries.has("void-seal")) {
@@ -581,20 +590,7 @@
         "本線: 黒門砦南西の黒陽碑",
         "今: 砦を拠点に黒陽城の封印を読む",
         "準備: 黒陽装備と帰還鈴を確認",
-      ];
-    }
-    if (state.regenSentinelDefeated && !state.mistKeeperDefeated) {
-      return [
-        "黒市北東の霧灯の祠へ",
-        "霧槍兵は突進前に横へ抜ける",
-        "護符は罠と召喚の圧を軽くする",
-      ];
-    }
-    if (!state.cryptWardenDefeated) {
-      return [
-        `黒市東端の地下入口へ LV${player.level}/22`,
-        "吸命鬼は接触で回復しスタミナを奪う",
-        "墓守の先に深層灯の護符",
+        chapter3OptionalLine(state),
       ];
     }
     if (!state.obsidianGolemDefeated) {
@@ -602,13 +598,14 @@
         "本線: 黒市東の黒曜洞窟",
         "今: 帰還鈴を残して巨人の深部へ進む",
         `黒曜巨人はLV${player.level}/24目安`,
+        chapter3OptionalLine(state),
       ];
     }
     if (!state.chapter3Reported) {
       return [
         "本線: 黒門砦 -> 黒陽城 -> 黒陽竜",
         "準備: 黒市で最終装備を選ぶ",
-        "任意: 地下墓所・密輸道・霧灯の祠で遠征補助",
+        chapter3OptionalLine(state),
       ];
     }
     if (!state.frostGolemDefeated) {
