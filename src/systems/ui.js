@@ -69,6 +69,12 @@
     warp: "拠点へ帰還",
   };
 
+  const expeditionBlessingNames = {
+    sunspire: "日鏡塔支度",
+    arena: "闘技場支度",
+    ember: "熾火決戦支度",
+  };
+
   function requireUiContext(context) {
     if (!context?.ui || !context?.state || !context?.player || !context?.say) {
       throw new Error("ui helpers require { ui, state, player, say }");
@@ -170,6 +176,21 @@
     normalizeInventory(player);
     if (row.available === false) {
       say(row.lockedReason || "まだ買えない");
+      return;
+    }
+    if (row.type === "expeditionKit") {
+      if (player.gold < row.cost) {
+        say(`${row.name}は${row.cost}G`);
+        return;
+      }
+      player.gold -= row.cost;
+      for (const [id, amount] of Object.entries(row.items || {})) {
+        const field = itemField(id);
+        player[field] = Math.min(9, (player[field] || 0) + amount);
+      }
+      player.expeditionBlessing = row.id;
+      player.expeditionBlessingTime = row.duration || 180000;
+      say(`${row.name}を整えた。加護は3分間有効`);
       return;
     }
     if (row.type === "item") {
@@ -721,6 +742,7 @@
         title: "探索力",
         lines: [
           `HP ${Math.ceil(player.hp)}/${player.hpMax} ST ${Math.floor(player.stamina)}/${player.staminaMax}`,
+          `遠征加護 ${player.expeditionBlessing && player.expeditionBlessingTime > 0 ? `${expeditionBlessingNames[player.expeditionBlessing] || player.expeditionBlessing} ${Math.ceil(player.expeditionBlessingTime / 1000)}秒` : "なし"}`,
           `回避 ${dashCost()}ST 再生 ${regenRate().toFixed(1)}/秒`,
           `状態 ${player.burn > 0 ? "燃焼" : player.slow > 0 ? "鈍足" : player.mineCharm ? "泡護符" : player.aegisCharm ? "護石" : player.trailCharm ? "旅鈴" : "通常"}`,
         ],

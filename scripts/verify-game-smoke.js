@@ -250,6 +250,7 @@ function createRuntime() {
     moveShop: (dy) => ui.moveShop(contexts.ui(), dy),
     confirmShop: () => ui.confirmShop(contexts.ui()),
     updateMonsters: (dt) => monsters.updateMonsters(contexts.monster(), dt),
+    updatePlayer: (dt) => playerHelpers.updatePlayer(contexts.player(), dt),
   });
 
   map.createMap(contexts.map());
@@ -486,6 +487,8 @@ function assertSaveLoadAndEquipment() {
   state.elderReported = true;
   state.arrivedSafeBases.add("moon-camp");
   state.arrivedSafeBases.add("suncrest-city");
+  player.expeditionBlessing = "ember";
+  player.expeditionBlessingTime = 123456;
   runtime.saveGame();
 
   const restored = createRuntime();
@@ -509,6 +512,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.horizonCharm, "horizon charm should persist");
   assert(restored.player.prismLensCharm, "prism lens charm should persist");
   assert(restored.player.duelistCharm, "duelist charm should persist");
+  assert(restored.player.expeditionBlessing === "ember" && restored.player.expeditionBlessingTime === 123456, "active expedition preparation should persist with its remaining time");
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
@@ -1659,9 +1663,46 @@ function assertExpandedWorldContent() {
   suncrestShop.state.sunspireKeeperDefeated = true;
   suncrestShop.player.gold = 100000;
   suncrestShop.runtime.handleNpc(suncrestGuild);
+  assert(suncrestShop.state.shopRows.filter((row) => row.type === "expeditionKit").length === 3, "Suncrest guild should offer three route-specific expedition preparations");
+  assert(suncrestShop.state.shopRows.find((row) => row.type === "expeditionKit" && row.id === "ember")?.available === false, "Ember preparation should stay locked until the reflection crystal is recovered");
+  suncrestShop.player.tonics = 0;
+  suncrestShop.player.wards = 0;
+  suncrestShop.player.warps = 0;
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "expeditionKit" && row.id === "sunspire", "Suncrest guild should sell the Sunspire preparation");
+  assert(suncrestShop.player.expeditionBlessing === "sunspire" && suncrestShop.player.expeditionBlessingTime === 180000, "Sunspire preparation should activate a timed blessing");
+  assert(suncrestShop.player.tonics === 2 && suncrestShop.player.wards === 3 && suncrestShop.player.warps === 2, "Sunspire preparation should include route supplies");
+  suncrestShop.player.ownedAccessories = [];
+  suncrestShop.player.equippedAccessories = [];
+  const sunspirePreparedDamage = suncrestShop.runtime.armorDamageMultiplier({ type: "sunspireKeeper" }, 0, "solar");
+  suncrestShop.player.expeditionBlessing = "";
+  suncrestShop.player.expeditionBlessingTime = 0;
+  const sunspireUnpreparedDamage = suncrestShop.runtime.armorDamageMultiplier({ type: "sunspireKeeper" }, 0, "solar");
+  assert(sunspirePreparedDamage < sunspireUnpreparedDamage, "Sunspire preparation should reduce tower projectile damage");
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "expeditionKit" && row.id === "arena", "Suncrest guild should sell the arena preparation");
+  const arenaPreparedAttack = suncrestShop.runtime.weaponDamageMultiplier({ type: "suncrestChampion" }, 0, -0.8);
+  suncrestShop.player.expeditionBlessing = "";
+  suncrestShop.player.expeditionBlessingTime = 0;
+  const arenaUnpreparedAttack = suncrestShop.runtime.weaponDamageMultiplier({ type: "suncrestChampion" }, 0, -0.8);
+  assert(arenaPreparedAttack > arenaUnpreparedAttack, "Arena preparation should reward side and back attacks");
+  suncrestShop.state.chests.add("sunspire-reliquary");
+  suncrestShop.runtime.handleNpc(suncrestGuild);
+  buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "expeditionKit" && row.id === "ember", "Reflection crystal should unlock the Ember preparation");
+  const emberPreparedDamage = suncrestShop.runtime.armorDamageMultiplier({ type: "emberDragon" }, 0, "fire");
+  suncrestShop.player.expeditionBlessing = "";
+  suncrestShop.player.expeditionBlessingTime = 0;
+  const emberUnpreparedDamage = suncrestShop.runtime.armorDamageMultiplier({ type: "emberDragon" }, 0, "fire");
+  assert(emberPreparedDamage < emberUnpreparedDamage, "Ember preparation should reduce final-route fire damage");
   assert(suncrestShop.state.shopTitle.includes("旅装ギルド"), "Suncrest travel guild should be a separate accessory and shield shop");
   buyShopRow(suncrestShop.runtime, suncrestShop.state, (row) => row.type === "accessory" && row.id === "prismLens", "Suncrest guild should sell high-end prism counter gear after the tower keeper");
   assert(suncrestShop.player.ownedAccessories.includes("prismLens"), "Suncrest guild prism gear should enter accessory inventory");
+
+  const expiringPreparation = createRuntime();
+  expiringPreparation.player.expeditionBlessing = "arena";
+  expiringPreparation.player.expeditionBlessingTime = 5;
+  expiringPreparation.runtime.updatePlayer(16);
+  assert(expiringPreparation.player.expeditionBlessing === "" && expiringPreparation.player.expeditionBlessingTime === 0, "expedition preparation should expire during field play");
+  const statusPage = globalThis.DRAGON_HUNTER_UI.statsPanelPages(suncrestShop.contexts.ui()).find((page) => page.title === "探索力");
+  assert(statusPage?.lines.some((line) => line.includes("遠征加護")), "status UI should display expedition preparation state");
 
   player.x = 78 * d.TILE;
   player.y = 140 * d.TILE;

@@ -29,6 +29,10 @@
     return Boolean(player[legacyFlag]);
   }
 
+  function activeBlessing(player, id) {
+    return player.expeditionBlessing === id && (player.expeditionBlessingTime || 0) > 0;
+  }
+
   function playerAttack(context) {
     const { player } = requireCombatContext(context);
     const comboCap = activeAccessory(player, "duelist", "duelistCharm") ? 14 : 8;
@@ -84,6 +88,7 @@
       else if (flanking) mult += monster.type === "moonGatekeeper" ? 0.55 : 0.35;
       else if (mDot > 0.55) mult *= monster.type === "moonGatekeeper" ? 0.42 : 0.55;
     }
+    if (activeBlessing(player, "arena") && (flanking || behind)) mult *= 1.22;
     return mult;
   }
 
@@ -118,6 +123,9 @@
     if (activeAccessory(player, "frost", "frostCharm") && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostBeacon" || monster?.type === "towerWarden" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.68;
     if (activeAccessory(player, "horizon", "horizonCharm") && (monster?.type === "sunLancer" || monster?.type === "mirageCaster" || monster?.type === "solarRunner" || monster?.type === "prismBeacon" || monster?.type === "solarWarden" || monster?.type === "suncrestChampion" || monster?.type === "sunspireKeeper" || monster?.type === "emberDragon" || source === "solar" || source === "projectile")) mult *= 0.58;
     if (activeAccessory(player, "prismLens", "prismLensCharm") && (monster?.type === "mirageCaster" || monster?.type === "prismBeacon" || monster?.type === "suncrestChampion" || monster?.type === "sunspireKeeper" || monster?.type === "emberDragon" || source === "solar")) mult *= 0.64;
+    if (activeBlessing(player, "sunspire") && (source === "solar" || source === "projectile")) mult *= 0.82;
+    if (activeBlessing(player, "arena") && source === "contact" && pDot > 0.35) mult *= 0.88;
+    if (activeBlessing(player, "ember") && (source === "solar" || source === "fire" || monster?.type === "emberDragon")) mult *= 0.76;
     return mult;
   }
 

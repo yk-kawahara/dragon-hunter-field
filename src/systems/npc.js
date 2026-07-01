@@ -187,6 +187,20 @@
     };
   }
 
+  function expeditionKitRow(id, name, detail, cost, items, available = true, lockedReason = "") {
+    return {
+      type: "expeditionKit",
+      id,
+      name,
+      detail,
+      cost,
+      items,
+      duration: 180000,
+      available,
+      lockedReason,
+    };
+  }
+
   function travelRow(point) {
     return {
       type: "travel",
@@ -380,6 +394,33 @@
       if (npc.x > 224 * TILE && npc.y > 120 * TILE) {
         const hasShield = player.shield > 0;
         openShop(context, "陽冠都市・旅装ギルド", [
+          expeditionKitRow(
+            "sunspire",
+            "日鏡塔支度",
+            "3分: 光弾18%軽減 活力薬2 護符3 帰還2",
+            4800,
+            { tonic: 2, ward: 3, warp: 2 },
+            state.solarWardenDefeated,
+            "日輪砲台守を倒せ",
+          ),
+          expeditionKitRow(
+            "arena",
+            "闘技場支度",
+            "3分: 側背面攻撃+22% 正面接触12%軽減 活力薬3 爆弾3",
+            4200,
+            { tonic: 3, bomb: 3 },
+            state.solarWardenDefeated,
+            "日輪砲台守を倒せ",
+          ),
+          expeditionKitRow(
+            "ember",
+            "熾火決戦支度",
+            "3分: 火炎・光圧24%軽減 霊薬2 護符4 帰還2",
+            8500,
+            { elixir: 2, ward: 4, warp: 2 },
+            state.chests.has("sunspire-reliquary"),
+            "日鏡塔で反射水晶を得よ",
+          ),
           accessoryRow("sky", 18000),
           accessoryRow("horizon", 32000, state.solarWardenDefeated, "日輪砲台守を倒せ"),
           accessoryRow("prismLens", 42000, state.sunspireKeeperDefeated, "日鏡塔の守主を倒せ"),

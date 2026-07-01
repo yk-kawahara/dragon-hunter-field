@@ -414,7 +414,12 @@ Desired improvement:
 * The whole-world current-destination marker now follows the main chain from 陽冠都市 through 日鏡塔, 反射水晶, 陽光封印碑, 熾火聖域補給箱, and 熾火天竜.
 * The highland approach after 日輪砲台守 now adds final-valley pressure and a forward cache before 陽冠都市, strengthening the feeling that the city is earned.
 * Suncrest's three exits now carry distinct readable roles: east gate = main Sunspire route, west gate = optional arena, south gate = final seal/island expedition. Each sign remains rereadable after its one-time reward.
-* Add strong first-arrival payoff for 陽冠都市.
+* 陽冠都市の初回到達は全回復と安全圏確保に加え、旅装ギルドの遠征別支度を新しい準備手段として案内する。
+* 旅装ギルドは恒久装備の重複店ではなく、次の目的地に合わせた3分間の加護と補給を売る。
+  * 日鏡塔支度: 光弾を軽減し、塔向けの活力薬・護符・帰還の鈴を補給する。
+  * 闘技場支度: 側面・背後攻撃を強化し、正面接触を少し軽減する。
+  * 熾火決戦支度: 反射水晶取得後に解禁され、火炎・光圧を軽減して最終遠征物資を補給する。
+* 遠征支度は一度に1つだけ有効で、時間と残り効果は装備情報から確認できる。終盤ゴールドを恒久装備の購入後にも意味ある準備へ使わせる。
 * Browser/manual-check the three gate markers and sign placement at real play scale.
 
 Intended feeling:
@@ -467,7 +472,7 @@ Potential future additions:
 | Frost Watchtower / 霜見塔 | Optional Chapter 4 movement/reward dungeon. |
 | Frost Crown Citadel / 霜冠城 | Chapter 4 final route. |
 | Dawn Harbor / 黎明港 | Chapter 5 arrival hub before hostile highland pressure. |
-| Suncrest City / 陽冠都市 | Chapter 5 major preparation city and civilization payoff. |
+| Suncrest City / 陽冠都市 | Chapter 5 major preparation city and civilization payoff; route-specific timed expedition kits turn late gold into survivability. |
 | Suncrest Arena / 陽冠闘技場 | Optional city combat activity; must not override main-route guidance. |
 | Sunspire Tower / 日鏡塔 | Required Chapter 5 expedition for 反射水晶. |
 | Ember Isles / 熾火群島 | Chapter 5 final volcanic route. |

@@ -42,7 +42,7 @@
     "east-harbor": "蒼風港に辿り着いた。外洋遠征の補給港を確保した",
     "southwind-outpost": "南風岬砦に辿り着いた。島道の南側に退避拠点を得た",
     "dawn-harbor": "黎明港に辿り着いた。日出大陸への橋頭堡を確保した",
-    "suncrest-city": "陽冠都市に辿り着いた。過酷な高原を越え、大遠征の安全圏が広がった",
+    "suncrest-city": "陽冠都市に辿り着いた。新しい安全圏を確保した。旅装ギルドで遠征別の支度ができる",
   };
 
   function accessoryActive(player, id, legacyFlag) {
@@ -155,6 +155,8 @@
     player.stamina = Math.min(player.staminaMax, player.stamina + dt * staminaRegen);
     player.comboTimer = Math.max(0, player.comboTimer - dt);
     if (player.comboTimer <= 0) player.combo = 0;
+    player.expeditionBlessingTime = Math.max(0, (player.expeditionBlessingTime || 0) - dt);
+    if (player.expeditionBlessingTime <= 0) player.expeditionBlessing = "";
     state.searchCooldown = Math.max(0, state.searchCooldown - dt);
     state.healCooldown = Math.max(0, state.healCooldown - dt);
     updateTownGate(context, dt);

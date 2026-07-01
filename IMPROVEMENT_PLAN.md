@@ -38,6 +38,26 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-07-01: Suncrest route-preparation payoff pass
+
+Implemented:
+
+* Turned `陽冠都市・旅装ギルド` into a route-preparation service instead of another duplicate equipment shop.
+* Added three selectable three-minute expedition preparations with supplies and combat effects:
+  * `日鏡塔支度`: solar/projectile damage reduction for the required tower route.
+  * `闘技場支度`: stronger side/back attacks and modest frontal contact protection for the optional arena.
+  * `熾火決戦支度`: stronger fire/solar protection and final-route supplies, unlocked by recovering `反射水晶`.
+* Only one preparation can be active at a time; the active name and remaining time appear in the status panel.
+* Preparation state persists through save/load, expires during field play, and resets cleanly on a new game.
+* Updated Suncrest first-arrival text so reaching the city immediately advertises its new route-preparation value.
+* Added smoke coverage for unlock rules, purchases, supplies, all three combat effects, expiration, status display, and save/load.
+
+Next:
+
+1. Manual Chapter 5 playtest the 3-minute duration and 4,200-8,500G prices from a real Chapter 4 clear save.
+2. Check the travel-guild shop panel at desktop and mobile-like widths; the local-file browser target was blocked by browser policy in this pass.
+3. Return to required-route readability or Chapter 2 attrition tuning after this preparation loop is visually confirmed.
+
 ## Completed 2026-07-01: Chapter 3 main/optional route hierarchy pass
 
 Implemented:

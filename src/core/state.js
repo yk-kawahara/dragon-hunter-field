@@ -155,6 +155,8 @@
       horizonCharm: false,
       prismLensCharm: false,
       duelistCharm: false,
+      expeditionBlessing: "",
+      expeditionBlessingTime: 0,
       stamina: 100,
       staminaMax: 100,
       attackCooldown: 0,

@@ -90,6 +90,8 @@
         horizonCharm: player.horizonCharm,
         prismLensCharm: player.prismLensCharm,
         duelistCharm: player.duelistCharm,
+        expeditionBlessing: player.expeditionBlessing,
+        expeditionBlessingTime: player.expeditionBlessingTime,
       },
       spawnedBoss: state.spawnedBoss,
       bossDefeated: state.bossDefeated,
@@ -181,6 +183,9 @@
       player.horizonCharm = Boolean(player.horizonCharm);
       player.prismLensCharm = Boolean(player.prismLensCharm);
       player.duelistCharm = Boolean(player.duelistCharm);
+      player.expeditionBlessing = ["sunspire", "arena", "ember"].includes(player.expeditionBlessing) ? player.expeditionBlessing : "";
+      player.expeditionBlessingTime = player.expeditionBlessing ? Math.max(0, Math.min(180000, Number(player.expeditionBlessingTime) || 0)) : 0;
+      if (player.expeditionBlessingTime <= 0) player.expeditionBlessing = "";
       normalizeInventory(player);
       refreshDerivedStats();
       player.stamina = player.staminaMax;
@@ -323,6 +328,8 @@
       dashCooldown: 0,
       combo: 0,
       comboTimer: 0,
+      expeditionBlessing: "",
+      expeditionBlessingTime: 0,
       speed: 66 * WORLD_SCALE,
       scales: 0,
     });

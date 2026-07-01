@@ -85,6 +85,30 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
+### 2026-07-01: Suncrest route-preparation payoff pass
+
+Purpose:
+
+* Make 陽冠都市 a meaningful survival-range expansion hub and give late-game gold a route-specific use after permanent equipment purchases.
+
+Implementation:
+
+* Added three selectable timed preparations to the Suncrest travel guild: 日鏡塔支度, 闘技場支度, and 熾火決戦支度.
+* Each kit combines capped consumable supplies with a three-minute combat effect suited to its route; buying a new kit replaces the previous blessing.
+* Gated tower/arena kits behind 日輪砲台守 and the final kit behind the 日鏡塔 `反射水晶` reward.
+* Added active-preparation name/time to the status panel and preserved it through save/load with validation and clean reset behavior.
+* Updated the Suncrest first-arrival message to identify the travel guild as the city's new preparation benefit.
+
+Verification:
+
+* Changed JavaScript and smoke-test syntax checks passed with the bundled Node.js runtime.
+* `scripts/verify-game-smoke.js` passed, including kit unlocks, purchases, item grants, combat multipliers, expiration, status display, and save/load persistence.
+* No map data changed, so map-preview regeneration was not required.
+
+Unverified risk:
+
+* In-app browser access to the local `file://` target was rejected by browser security policy. Shop row fit, first-arrival presentation, and real Chapter 5 price/duration feel remain manual QA items.
+
 ### 2026-07-01: Chapter 3 main/optional route hierarchy pass
 
 Purpose:
