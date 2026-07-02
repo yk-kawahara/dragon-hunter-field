@@ -38,6 +38,26 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-07-02: Chapter 4 Ice Cave preparation and action-depth pass
+
+Implemented:
+
+* Added a reachable one-use `氷窟の暖炉` before the Frost Golem.
+  * Restores 35% max HP and all stamina, clears slow/burn, grants short guard, and supplies a tonic, ward, and return bell.
+  * Uses the existing discovery save set, so the spent brazier persists without a save-schema change.
+* Upgraded `氷窟巨人` into a two-pattern required midboss:
+  * Three telegraphed piercing shard lanes with safe gaps.
+  * Three warned persistent quake zones that consume floor space.
+* Added a half-HP phase that activates two frost beacons, forcing the player to interrupt the boss and remove stamina/slow pressure.
+* Updated Chapter 4 travel memo and local guidance with the brazier decision and the shard -> quake -> beacon response hierarchy.
+* Added smoke coverage for brazier reachability, reward/persistence, both boss patterns, phase-two beacons, and the existing Frost Heart unlock.
+
+Next:
+
+1. Manual playtest 白銀宿 -> 氷窟 without using the brazier, then with it, to tune whether 35% HP recovery is a meaningful choice rather than automatic.
+2. Tune shard spacing, quake duration, and beacon aura if the second phase leaves too little room for contact positioning.
+3. Continue Chapter 4 final-route pressure toward 霜冠城, or visually verify Chapter 5 city exits and preparation panels before adding more content.
+
 ## Completed 2026-07-02: Chapter 1 Dragon Cave expedition and boss-depth pass
 
 Implemented:

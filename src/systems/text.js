@@ -175,7 +175,8 @@
     if (region === "frostTower2") return "最上階の遺物庫と昇降機を調べよう";
     if (region === "frostTower1") return "補給庫を探し、南東の階段から二階へ";
     if (region === "frostCave" && !state.frostGolemDefeated && player.level < FROST_GOLEM_REQUIREMENTS.level) return `氷窟巨人にはLV${FROST_GOLEM_REQUIREMENTS.level}ほど欲しい`;
-    if (region === "frostCave" && !state.frostGolemDefeated) return "氷窟巨人を倒せば霜心の護符に届く";
+    if (region === "frostCave" && !state.discoveries.has("frost-cave-brazier")) return "氷窟の暖炉は一度だけ使える。消耗を見て、今使うか巨人戦まで温存しよう";
+    if (region === "frostCave" && !state.frostGolemDefeated) return "氷槍は予告線の間へ、氷震は円外へ。半分以下では凍気灯を先に壊そう";
     if (region === "frostCave") return "霜心の護符を装備し、霜冠城へ戻ろう";
     if (region === "frostCitadel" && !state.discoveries.has("frost-seal")) return "霜冠城の中庭で封印碑を探そう";
     if (region === "frostCitadel" && !state.frostGolemDefeated) return "先に南西の氷窟巨人を倒そう";

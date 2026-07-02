@@ -302,6 +302,35 @@
       return;
     }
 
+    if (monster.type === "frostGolem") {
+      const quake = monster.patternIndex % 2 === 0;
+      monster.patternKind = quake ? "frostGolemQuake" : "frostGolemShards";
+      monster.patternWindup = quake ? 1020 : 820;
+      monster.patternWaves = 3;
+      if (quake) {
+        monster.patternTargets = [
+          { x: playerCenter.x, y: playerCenter.y },
+          { x: playerCenter.x + worldPx(32), y: playerCenter.y - worldPx(24) },
+          { x: playerCenter.x - worldPx(32), y: playerCenter.y + worldPx(24) },
+        ];
+        for (const target of monster.patternTargets) {
+          state.telegraphs.push({ kind: "zone", x: target.x, y: target.y, radius: worldPx(15), color: "#8dd7ff", life: monster.patternWindup, max: monster.patternWindup });
+        }
+        say("氷窟巨人が三つの氷震を刻む! 円の外へ", 1700);
+      } else {
+        monster.patternTargets = [-0.38, 0, 0.38].map((offset) => {
+          const angle = Math.atan2(monster.patternAim.y, monster.patternAim.x) + offset;
+          return { x: Math.cos(angle), y: Math.sin(angle) };
+        });
+        for (const direction of monster.patternTargets) {
+          state.telegraphs.push({ kind: "line", x: c.x, y: c.y, dx: direction.x, dy: direction.y, length: worldPx(300), width: worldPx(10), color: "#d9f7ff", life: monster.patternWindup, max: monster.patternWindup });
+        }
+        say("氷窟巨人が三方向の氷槍を構える! 予告線の間へ", 1700);
+      }
+      addRing(c.x, c.y, "#8dd7ff", worldPx(40));
+      return;
+    }
+
     if (monster.type === "voidDragon") {
       monster.patternKind = "voidZones";
       monster.patternWindup = 920;
@@ -375,7 +404,7 @@
 
   function finishBossPattern(monster) {
     monster.patternState = "idle";
-    monster.patternCooldown = monster.type === "archiveWarden" ? (monster.enraged ? 1900 : 2600) : monster.type === "dragon" ? (monster.enraged ? 2100 : 2800) : monster.type === "moonGatekeeper" ? 2500 : monster.enraged ? 2300 : 3200;
+    monster.patternCooldown = monster.type === "archiveWarden" ? (monster.enraged ? 1900 : 2600) : monster.type === "dragon" ? (monster.enraged ? 2100 : 2800) : monster.type === "frostGolem" ? (monster.enraged ? 2100 : 2700) : monster.type === "moonGatekeeper" ? 2500 : monster.enraged ? 2300 : 3200;
     monster.patternWaveCooldown = 0;
     monster.patternTargets = [];
   }
@@ -418,6 +447,16 @@
       const rotation = (2 - wave) * 0.1;
       for (const offset of [-0.34, 0, 0.34]) {
         shootProjectile(monster, target, offset + rotation, { speedMultiplier: 1.34, damageMultiplier: 0.68, radius: 5, life: 2100, color: "#ff8a3d", pattern: "dragonBreath" });
+      }
+    } else if (monster.patternKind === "frostGolemQuake") {
+      const zoneIndex = 3 - wave;
+      const zone = monster.patternTargets?.[zoneIndex] || target;
+      shootProjectile(monster, zone, 0, { stationary: true, persistent: true, radius: 15, damageMultiplier: 0.54, life: 2200, color: "#8dd7ff", pattern: "frostGolemQuake" });
+      addRing(zone.x, zone.y, "#b9f4ff", worldPx(22));
+    } else if (monster.patternKind === "frostGolemShards") {
+      for (const direction of monster.patternTargets || []) {
+        const shardTarget = { x: c.x + direction.x * worldPx(360), y: c.y + direction.y * worldPx(360) };
+        shootProjectile(monster, shardTarget, 0, { speedMultiplier: 1.48, damageMultiplier: 0.68, radius: 5, life: 2400, piercing: true, color: "#d9f7ff", pattern: "frostGolemShard" });
       }
     } else if (monster.patternKind === "voidZones") {
       const zoneIndex = 3 - wave;
@@ -466,13 +505,13 @@
     if (monster.patternWaves <= 0) finishBossPattern(monster);
     else {
       monster.patternState = "waves";
-      monster.patternWaveCooldown = monster.patternKind === "voidZones" || monster.patternKind === "emberArtillery" ? 380 : monster.patternKind === "dragonFirePools" ? 360 : monster.patternKind === "archiveSeals" ? 340 : monster.patternKind === "moonSnares" ? 330 : monster.patternKind === "dragonBreath" ? 260 : 220;
+      monster.patternWaveCooldown = monster.patternKind === "voidZones" || monster.patternKind === "emberArtillery" ? 380 : monster.patternKind === "dragonFirePools" || monster.patternKind === "frostGolemQuake" ? 360 : monster.patternKind === "archiveSeals" ? 340 : monster.patternKind === "moonSnares" ? 330 : monster.patternKind === "dragonBreath" ? 260 : monster.patternKind === "frostGolemShards" ? 280 : 220;
     }
   }
 
   function updateBossPattern(context, monster, playerCenter, dist) {
-    if (!monster.boss && monster.type !== "moonGatekeeper" && monster.type !== "archiveWarden") return false;
-    if (monster.patternState === "idle" && monster.patternCooldown <= 0 && dist < worldPx(monster.type === "emberDragon" ? 430 : monster.type === "archiveWarden" ? 230 : monster.type === "moonGatekeeper" ? 215 : 245)) {
+    if (!monster.boss && monster.type !== "moonGatekeeper" && monster.type !== "archiveWarden" && monster.type !== "frostGolem") return false;
+    if (monster.patternState === "idle" && monster.patternCooldown <= 0 && dist < worldPx(monster.type === "emberDragon" ? 430 : monster.type === "archiveWarden" ? 230 : monster.type === "frostGolem" ? 220 : monster.type === "moonGatekeeper" ? 215 : 245)) {
       startBossPattern(context, monster, playerCenter);
       return true;
     }
@@ -586,6 +625,17 @@
         spawnIfClear("moonShade", 147 * TILE, 19 * TILE);
         addRing(c.x, c.y, "#b08cff", worldPx(42));
         say("月書庫の番人が禁書を開き、召喚士と月影を解き放った!", 2600);
+      }
+
+      if (monster.type === "frostGolem" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {
+        monster.summoned = true;
+        monster.enraged = true;
+        monster.speed += worldPx(4);
+        monster.patternCooldown = Math.min(monster.patternCooldown, 600);
+        spawnIfClear("frostBeacon", 60 * TILE, 154 * TILE);
+        spawnIfClear("frostBeacon", 67 * TILE, 154 * TILE);
+        addRing(c.x, c.y, "#d9f7ff", worldPx(42));
+        say("氷窟巨人が二つの凍気灯を起動した! 先に灯を壊せ", 2600);
       }
 
       if (monster.type === "towerWarden" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {

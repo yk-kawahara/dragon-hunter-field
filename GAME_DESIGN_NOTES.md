@@ -372,6 +372,13 @@ Current issue:
 * 白銀宿 now has stronger first-arrival payoff text, but the route still needs manual playtest to confirm it feels hard-earned.
 * 氷窟 and 霜見塔 are now distinguished in travel memo, guide dialogue, and world-map markers: 氷窟 is main-route preparation, 霜見塔 is optional movement/reward content.
 
+The required Ice Cave now has a complete preparation encounter:
+
+* `氷窟の暖炉` is a one-use partial recovery point before the giant. It restores some HP, all stamina, clears cold pressure, and grants a return bell without erasing the route's accumulated damage.
+* The player may preserve the brazier for a deeper attempt, consume it before the boss, or use its return bell to retreat and improve equipment.
+* `氷窟巨人` alternates three piercing shard lanes with three persistent quake zones. The safe response is repeated in travel memo and local guidance.
+* Below half HP, two frost beacons activate and drain movement/stamina until destroyed, creating a clear target-priority phase before the Frost Heart reward.
+
 Desired improvement:
 
 * If playtest shows the 白銀宿 approach is too easy, strengthen the cold-route pressure with a small final-approach danger or supply decision.
@@ -479,7 +486,7 @@ Potential future additions:
 | Black Fort / 黒門砦 | Chapter 3 remote safety anchor before Black Sun pressure. |
 | Black Sun Castle / 黒陽城 | Chapter 3 final danger route. |
 | Frost Haven / 白銀宿 | Chapter 4 safe base; its first eastern approach adds frost-beast pressure and a final supply decision before relief. |
-| Ice Cave / 氷窟 | Chapter 4 main preparation dungeon. |
+| Ice Cave / 氷窟 | Chapter 4 main preparation dungeon; one-use warming brazier, shard/quake Giant encounter, and Frost Heart survivability reward. |
 | Frost Watchtower / 霜見塔 | Optional Chapter 4 movement/reward dungeon. |
 | Frost Crown Citadel / 霜冠城 | Chapter 4 final route. |
 | Dawn Harbor / 黎明港 | Chapter 5 arrival hub before hostile highland pressure. |

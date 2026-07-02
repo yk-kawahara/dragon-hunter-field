@@ -633,7 +633,8 @@
     if (!state.frostGolemDefeated) {
       return [
         state.arrivedSafeBases?.has("frost-haven") ? "本線: 白銀宿 -> 東の氷窟 -> 霜心の護符" : "本線: 黒門砦南門 -> 霜原 -> 白銀宿",
-        state.arrivedSafeBases?.has("frost-haven") ? `今: 氷窟巨人へ LV${player.level}/30` : "今: 宿の灯を目印に前進補給から最後の吹雪へ",
+        state.arrivedSafeBases?.has("frost-haven") ? `今: 暖炉を使う時を選び、氷窟巨人へ LV${player.level}/30` : "今: 宿の灯を目印に前進補給から最後の吹雪へ",
+        state.arrivedSafeBases?.has("frost-haven") ? "準備: 氷槍は線の間、氷震は円外、凍気灯は先に破壊" : "準備: 白銀宿で回復と凍土装備を確保する",
         state.towerWardenDefeated ? "任意: 霜見塔の昇降機は開通済み" : "任意: 霜見塔はLV32の移動報酬",
       ];
     }

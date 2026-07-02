@@ -85,6 +85,30 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
+### 2026-07-02: Chapter 4 Ice Cave preparation and action-depth pass
+
+Purpose:
+
+* Make the required Ice Cave a real preparation dungeon with a resource decision and readable action climax before the Frost Heart reward.
+
+Implementation:
+
+* Added the one-use `frost-cave-brazier`, providing partial HP recovery, full stamina, cold cleanse, short guard, supplies, and a return bell.
+* Added alternating Frost Golem patterns: three piercing shard lanes and three persistent quake zones.
+* Added a half-HP phase with two frost beacons that apply stamina/slow pressure until destroyed.
+* Updated Chapter 4 travel memo and Ice Cave guidance with the brazier and boss counterplay.
+
+Verification:
+
+* JavaScript syntax checks passed across all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed, including 34,647 reachable tiles, brazier reachability/reward/save persistence, both Frost Golem patterns, phase-two beacons, and Frost Heart progression.
+* `git diff --check` passed with line-ending normalization warnings only.
+* No terrain shape, map dimensions, or save schema changed, so map preview regeneration and save migration were not required.
+
+Unverified risk:
+
+* Real-browser/manual combat feel was not verified in this environment. Brazier timing, shard safe-lane width, quake duration, and beacon crowding need a hands-on Chapter 4 run.
+
 ### 2026-07-02: Chapter 1 Dragon Cave expedition and boss-depth pass
 
 Purpose:

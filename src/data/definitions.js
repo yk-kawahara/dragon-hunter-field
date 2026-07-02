@@ -217,6 +217,7 @@
     { id: "frost-road-waystone", x: 24, y: 148, kind: "frostHint" },
     { id: "frost-haven-approach-post", x: 42, y: 149, kind: "frostHint" },
     { id: "frost-cave-warning", x: 54, y: 153, kind: "frostHint" },
+    { id: "frost-cave-brazier", x: 58, y: 154, kind: "frostBrazier" },
     { id: "frost-seal", x: 103, y: 154, kind: "frostSeal" },
     { id: "frost-tower-map", x: 96, y: 23, kind: "frostTowerHint" },
     { id: "frost-tower-warning", x: 111, y: 25, kind: "frostTowerHint" },

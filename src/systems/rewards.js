@@ -831,6 +831,19 @@
       say("霜境の道標: 氷窟の巨人を倒し、霜心の護符を持って霜冠城へ進め");
       return;
     }
+    if (discovery.kind === "frostBrazier") {
+      player.hp = Math.min(player.hpMax, player.hp + Math.round(player.hpMax * 0.35));
+      player.stamina = player.staminaMax;
+      player.slow = 0;
+      player.burn = 0;
+      player.guard = Math.max(player.guard || 0, 1600);
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 1);
+      addItem(player, "warp", 1);
+      burst(x, y, "#ffcf7a", 24);
+      say("氷窟の暖炉で体温を取り戻し、帰還鈴を得た。巨人へ進むか、戻って装備を整えるか選べる");
+      return;
+    }
     if (discovery.kind === "frostSeal") {
       player.gold += 760;
       player.stamina = player.staminaMax;
