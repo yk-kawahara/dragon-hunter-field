@@ -558,8 +558,8 @@
       }
       return [
         state.bossDefeated ? "本線: 村へ戻って長老に報告" : "本線: 北森の紋章 -> 北東岩山の竜洞",
-        state.spawnedBoss ? "今: 赤竜の正面を避けて接触" : `今: 鱗${player.scales}/${BOSS_REQUIREMENTS.scales} LV${player.level}/${BOSS_REQUIREMENTS.level}`,
-        "準備: 焦げた道標を追い、薬と防具を整える",
+        state.spawnedBoss ? "今: 三連火炎は横へ、残る火床から離れて接触" : `今: 鱗${player.scales}/${BOSS_REQUIREMENTS.scales} LV${player.level}/${BOSS_REQUIREMENTS.level}`,
+        state.chests.has("dragon-approach-cache") ? "準備: 前進補給は回収済み。帰還鈴を残して竜洞へ" : "準備: 焦げ道の竜狩人補給を拾い、押すか戻るか決める",
       ];
     }
     if (!state.ashKnightDefeated) {
@@ -588,8 +588,9 @@
       if (!state.archiveWardenDefeated) {
         return [
           "本線: 月見砦東 -> 月の書庫",
-          `今: 書庫番LV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}に備える`,
-          "準備: 月洞印と星盾で正面被害を抑える",
+          `今: 書庫番LV${MOON_ARCHIVE_WARDEN_REQUIREMENTS.level}の四方書刃と封書陣を越える`,
+          "準備: 書刃は予告線の間、封書陣は中央へ逃れる",
+          "注意: 半分以下で召喚士と月影が現れる",
         ];
       }
       return [

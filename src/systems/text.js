@@ -222,13 +222,15 @@
     if (region === "moon" && !state.chests.has("moon-ruin-cache")) return "月影廃墟の星遺物を探し、月見砦で補給しよう";
     if (region === "moon" && state.chests.has("moon-ruin-cache") && !state.chests.has("moon-cavern-reliquary")) return "月影廃墟の西門から月影洞窟へ。奥で月洞印を取れば月見砦へ抜けられる";
     if (region === "moon") return "月影廃墟の南に月見砦、東に月の書庫がある";
+    if (region === "dragonApproach" && !state.chests.has("dragon-approach-cache")) return "焦げ道の竜狩人補給を探せ。帰還鈴を残せば撤退して装備を整えられる";
+    if (region === "dragonApproach") return "小竜と火霊を抜け、北の熱い岩穴へ。HPが減ったら補給の帰還鈴で戻ろう";
     if (player.trailCharm && player.level >= WARDEN_REQUIREMENTS.level && !state.wardenDefeated) return "南東の番人の気配が近い";
     if (stage === "scales") return player.armor === 0 ? "痛ければ村で防具を買おう" : "外で鱗とゴールドを集めよう";
     if (stage === "ruin") return "北森で守護者の紋章を探す";
     if (stage === "level") return "装備とLVを上げて竜洞へ";
     if (stage === "guardian") return "北森の守護者へ";
     if (stage === "cave") return "村の北東、岩山の焦げた道標から竜洞へ";
-    if (stage === "dragon") return "赤竜戦: 正面を避けよう";
+    if (stage === "dragon") return "赤竜戦: 三連火炎は横へ、火床から離れて側背面へ";
     if (stage === "report") return "村へ戻って報告";
     if (stage === "chapter2report") return "長老へ第2章の報告";
     if (stage === "chapter3report") return "長老へ第3章の報告";

@@ -85,6 +85,53 @@ Keep new entries concise. For deep historical detail, use git history instead of
 
 ## New entries
 
+### 2026-07-02: Chapter 1 Dragon Cave expedition and boss-depth pass
+
+Purpose:
+
+* Make the first chapter teach a complete survival-range expedition and a readable action boss instead of ending with a mostly empty cave approach and generic fire lance.
+
+Implementation:
+
+* Added the `dragonApproach` region on the existing scorched road, with 小竜 / 火霊 pressure and higher target density after the Guardian is defeated.
+* Added the reachable one-time `dragon-approach-cache`, granting medicine, wards, and a return bell for a push-or-retreat decision.
+* Added alternating 赤竜 patterns: three breath volleys across a warned line and three warned persistent fire pools.
+* Updated the Chapter 1 travel memo and field guidance with the approach supply and actual boss counterplay.
+
+Verification:
+
+* JavaScript syntax checks passed across all files under `src/` and `scripts/`.
+* `scripts/verify-game-smoke.js` passed, including 34,647 reachable tiles, approach-cache reachability/reward, regional spawn identity, both Red Dragon pattern families, and duplicate boss cleanup.
+* `git diff --check` passed with line-ending normalization warnings only.
+* No terrain shape, map dimensions, or save schema changed, so map preview regeneration and save migration were not required.
+
+Unverified risk:
+
+* Real-browser/manual combat feel was not verified in this environment. Fresh-save enemy density, breath spacing, persistent fire-pool duration, and the value of the return-bell decision need hands-on playtest.
+
+### 2026-07-01: Moon Archive action-climax pass
+
+Purpose:
+
+* Give Chapter 2 a memorable mechanical climax after the Moon Cavern attrition route instead of ending its next dungeon with another generic ranged midboss.
+
+Implementation:
+
+* Added alternating `archiveQuills` and `archiveSeals` patterns to 月書庫の番人.
+* Four-way quills fire three piercing volleys along telegraphed lanes; seals warn four corner zones before creating persistent hazards.
+* Added a half-HP phase that summons a summoner and Moon Shade and increases pattern pressure.
+* Updated travel memo preparation and the rereadable archive record to explain safe-lane and center positioning.
+
+Verification:
+
+* Syntax checks passed for `monsters.js`, `ui.js`, `rewards.js`, and the smoke script.
+* `scripts/verify-game-smoke.js` passed with assertions for four line warnings, piercing quills, three-wave completion, four zone warnings, persistent seals, phase-two reinforcements, and defeat persistence.
+* No map/save schema changed, so map preview regeneration and save migration were not required.
+
+Unverified risk:
+
+* Browser/manual combat feel remains unverified because the local browser target is blocked in this environment. Projectile speed, seal duration, and second-phase crowding need a real Chapter 2 playtest.
+
 ### 2026-07-01: Suncrest route-preparation payoff pass
 
 Purpose:

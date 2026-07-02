@@ -323,7 +323,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "moonRelic" || reward === "moonSupply" || reward === "moonCavernSupply" || reward === "moonCavernExitSupply" || reward === "moonCavernRelic" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "blackGateSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestApproachSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
+    if (reward === "dragonApproachSupply" || reward === "moonRelic" || reward === "moonSupply" || reward === "moonCavernSupply" || reward === "moonCavernExitSupply" || reward === "moonCavernRelic" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "blackGateSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestApproachSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -382,6 +382,15 @@
 
   function grantMoonChestReward(context, reward) {
     const { player, say } = requireRewardContext(context);
+    if (reward === "dragonApproachSupply") {
+      player.gold += 180;
+      player.potions = Math.min(9, player.potions + 2);
+      addItem(player, "tonic", 1);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      say("竜狩人の前進補給を得た。押し切るか、帰還鈴で装備を整えるか選べる");
+      return true;
+    }
     if (reward === "moonRelic") {
       player.gold += 980;
       player.wards = Math.min(9, player.wards + 4);
@@ -882,7 +891,7 @@
       addItem(player, "ward", 1);
       player.stamina = player.staminaMax;
       burst(x, y, "#b08cff", 20);
-      say("月の書庫の記録: 召喚士を放置せず、番人を倒して遺物庫を開け");
+      say("月の書庫の記録: 四方書刃は予告線の間へ。四隅の封書陣は中央が安全だ");
       return;
     }
     if (discovery.kind === "moonCavernHint") {

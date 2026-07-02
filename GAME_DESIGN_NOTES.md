@@ -207,6 +207,9 @@ Desired improvement:
 * New-game objective text, travel memo, and the field objective compass all trace the village east gate -> grassland camp route before later mandatory targets take priority.
 * Objective and NPC text now point to the north-east rock/cave landmark.
 * Field breadcrumbs now use heat, scorched stones, and an old sign to lead toward 竜洞.
+* 竜洞前の焦げ道 is now a distinct pressure region populated by 小竜 and 火霊. It becomes slightly denser after the North Forest Guardian falls and remains a short final expedition rather than empty approach walking.
+* A one-time 竜狩人の前進補給 provides medicine, wards, and a return bell. The player chooses whether to push into the cave or retreat and convert earned gold into better equipment.
+* 赤竜 alternates a telegraphed three-volley breath with three persistent fire pools. The first major boss now teaches lateral evasion, safe-floor reading, and side/back contact instead of relying on levels alone.
 * Keep Chapter 1 compact; do not overbuild it.
 * First remote base/camp arrival should demonstrate “safe radius expanded.”
 
@@ -241,6 +244,13 @@ Current issue:
 * 月洞印と東出口は護将撃破まで閉ざされるため、月見砦への初到達は関門突破を伴う安全圏拡大になった。
 * 月見砦 should still be manually tuned in browser play to confirm it feels like a hard-earned safe base, not simply the next nearby stop.
 * 月の書庫 adds volume, but it can read like an extra checklist step if the route before 月見砦 is not memorable.
+
+The Moon Archive climax now has its own action identity:
+
+* `月書庫の番人` alternates three volleys of four-way piercing quills with four persistent corner seals.
+* Quill warnings teach the player to stand between lanes; corner seals create a readable choice between the center and outer edge.
+* Below half HP, a summoner and Moon Shade enter while the pattern interval shortens, forcing target-priority decisions before the reliquary reward.
+* The travel memo and archive record teach the same counterplay before the player commits to the fight.
 
 Implemented route:
 
@@ -454,7 +464,8 @@ Potential future additions:
 | Village | Starting safe base: recovery, smith, supplies, elder guidance, clear safety boundary. |
 | Grassland / Outskirts | First gold loop and retreat training. |
 | North Forest | First serious survival gate and Guardian route. |
-| Dragon Cave | Chapter 1 final danger route; needs readable entrance breadcrumbs. |
+| Dragon Cave approach / 竜洞前焦土 | Short Chapter 1 final expedition with dragonling/fire-spirit pressure and a push-or-retreat supply cache. |
+| Dragon Cave | Chapter 1 final boss space; Red Dragon teaches line evasion, persistent hazard avoidance, and side/back contact. |
 | Southwest Frontier Camp | Early remote safety anchor; should demonstrate safe-radius expansion. |
 | Ash Hamlet / 灰道の宿場 | Chapter 2 launch base. |
 | Old Tower / 古塔 | Chapter 2 early danger pocket and Ash Knight step. |

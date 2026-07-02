@@ -209,6 +209,7 @@
     if (tx >= 24 && tx < 80 && ty >= 72 && ty < 96) return "highland";
     if (tx >= 80 || ty >= 72) return "ash";
     if (tx >= 47 && tx <= 55 && ty >= 10 && ty <= 18) return "cave";
+    if (tx >= 45 && tx <= 55 && ty >= 18 && ty <= 36) return "dragonApproach";
     if (tx >= 20 && tx <= 43 && ty >= 60) return "mine";
     if (tx > 40) return "east";
     if (ty < 25) return "north";
@@ -312,7 +313,8 @@
     const regionInfo = REGION_SPAWNS[region] || REGION_SPAWNS.grassland;
     const maxMonsters = clamp(6 + player.level * 2 + regionInfo.maxBonus, 8, 20);
     const interior = INTERIOR_REGIONS.has(region);
-    let target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "moonCavern" ? 11 : region === "moonArchive" ? 12 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "blackGateNorth" ? 11 : region === "blackGateSouth" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostApproach" ? 12 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "suncrestArena" ? 13 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
+    let target = region === "grassland" ? 3 : region === "wilds" ? 4 : region === "north" ? 5 : region === "east" ? 6 : region === "dragonApproach" ? 7 : region === "ash" ? 7 : region === "tower" ? 8 : region === "moon" ? 9 : region === "moonCavern" ? 11 : region === "moonArchive" ? 12 : region === "eclipse" ? 11 : region === "smuggler" ? 10 : region === "regenCave" ? 11 : region === "mistShrine" ? 11 : region === "undercity" ? 12 : region === "obsidian" ? 12 : region === "blackGateNorth" ? 11 : region === "blackGateSouth" ? 12 : region === "void" ? 13 : region === "frost" ? 11 : region === "frostApproach" ? 12 : region === "frostCave" ? 12 : region === "frostCitadel" ? 14 : region === "frostTower1" ? 10 : region === "frostTower2" ? 12 : region === "dawnCoast" ? 12 : region === "sunriseHighland" ? 14 : region === "suncrestArena" ? 13 : region === "sunspire" ? 13 : region === "emberIsles" ? 15 : 6;
+    if (region === "dragonApproach" && state.guardianDefeated && !state.bossDefeated) target += 1;
     if (region === "moonCavern" && state.elderReported && state.ashKnightDefeated && !state.arrivedSafeBases?.has("moon-camp")) target += 2;
     if (region === "frostApproach" && state.chapter3Reported && !state.arrivedSafeBases?.has("frost-haven")) target += 2;
     if (region === "sunriseHighland" && state.chapter4Reported && !state.arrivedSafeBases?.has("suncrest-city")) target += 2;
@@ -424,6 +426,7 @@
     if (region === "north") return "北森: 強敵の気配";
     if (region === "east") return "東の森: 魔力が濃い";
     if (region === "mine") return "廃坑: 泡と魔法の気配";
+    if (region === "dragonApproach") return "竜洞前焦土: 小竜と火霊が退路を削る";
     if (region === "cave") return "竜洞: 危険";
     if (region === "wilds") return "荒野: 村から遠い";
     return "草原: 村の近く";

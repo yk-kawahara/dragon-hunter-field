@@ -38,6 +38,42 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Completed 2026-07-02: Chapter 1 Dragon Cave expedition and boss-depth pass
+
+Implemented:
+
+* Added `竜洞前焦土` as a distinct final-approach region on the existing scorched road without increasing world size.
+* Gave the approach a 小竜 / 火霊 identity and slightly stronger first-clear density after the North Forest Guardian is defeated.
+* Added a reachable one-time `竜狩人の前進補給` with medicine, wards, and a return bell, creating a push-now vs retreat-and-upgrade decision before the cave.
+* Upgraded 赤竜 into an alternating two-pattern boss:
+  * Three telegraphed breath volleys that reward moving across the firing line.
+  * Three warned persistent fire pools that force the player to preserve safe floor before re-entering contact.
+* Updated field guidance and the travel memo so the route preparation and boss counterplay use the same language.
+* Added smoke coverage for cache reachability/reward, regional enemy identity, both boss patterns, and existing same-update duplicate cleanup.
+
+Next:
+
+1. Manual playtest 草原野営地 -> 北森 -> 竜洞前焦土 -> 赤竜 from a fresh save, especially whether seven-to-eight local enemies are fair at Chapter 1 equipment levels.
+2. Tune Red Dragon breath spacing and fire-pool duration if the first major boss is too passive or too restrictive.
+3. Continue Chapter 4 hands-on pressure/readability work or perform the scoped legacy frontier shop cleanup before changing those shops again.
+
+## Completed 2026-07-01: Moon Archive action-climax pass
+
+Implemented:
+
+* Upgraded `月書庫の番人` from a generic ranged midboss into a two-pattern Chapter 2 climax.
+* Added a telegraphed four-way piercing-quill sequence with three volleys and stable safe lanes between the warnings.
+* Added four corner seal zones that persist after a longer warning, leaving the center or outer edge as readable escape choices.
+* Added a half-HP second phase with a summoner, Moon Shade, faster movement, and shorter pattern downtime.
+* Updated the Chapter 2 travel memo and rereadable Moon Archive record with the actual counterplay.
+* Added smoke coverage for both pattern families, projectile properties, phase-two reinforcements, and existing defeat persistence.
+
+Next:
+
+1. Manual playtest whether quill speed and the three-volley rhythm leave enough time to reposition for contact attacks.
+2. Tune seal duration/radius and phase-two add pressure if the center becomes either completely safe or impossibly crowded.
+3. Continue required-route readability review, starting with the Chapter 1 Red Dragon approach or a Chapter 4 manual pressure pass.
+
 ## Completed 2026-07-01: Suncrest route-preparation payoff pass
 
 Implemented:
