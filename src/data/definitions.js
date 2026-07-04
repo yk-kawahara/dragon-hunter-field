@@ -145,7 +145,7 @@
     { id: "frost-tower-supply", x: 95, y: 27, reward: "towerExpeditionSupply" },
     { id: "frost-tower-reliquary", x: 115, y: 29, reward: "skyCharm" },
     { id: "east-harbor-supply", x: 154, y: 84, reward: "frostSupply" },
-    { id: "east-lighthouse-cache", x: 150, y: 49, reward: "towerSupply" },
+    { id: "east-lighthouse-cache", x: 150, y: 49, reward: "galeRelic" },
     { id: "east-ridge-cache", x: 168, y: 105, reward: "voidSupply" },
     { id: "east-coast-cache", x: 179, y: 121, reward: "frostSupply" },
     { id: "southwind-supply", x: 172, y: 169, reward: "frostSupply" },
@@ -273,6 +273,8 @@
   const CRYPT_WARDEN_REQUIREMENTS = { level: 22 };
   const FROST_GOLEM_SITE = { x: 64, y: 155 };
   const FROST_GOLEM_REQUIREMENTS = { level: 30 };
+  const STORM_ROC_SITE = { x: 150, y: 50 };
+  const STORM_ROC_REQUIREMENTS = { level: 30 };
   const FROST_TOWER_WARDEN_SITE = { x: 112, y: 27 };
   const FROST_TOWER_WARDEN_REQUIREMENTS = { level: 32 };
   const FROST_DRAGON_SITE = { x: 108, y: 156 };
@@ -366,6 +368,22 @@
     { style: "霜刃滑走", cooldown: 190, range: 1.48, width: 1.45, power: 1.12, lunge: 5, knockback: 12, color: "#b9f4ff" },
     { style: "暁光突貫", cooldown: 165, range: 2.2, width: 0.72, power: 1.2, lunge: 8, knockback: 14, color: "#fff0a6" },
   ];
+  const weaponRoles = [
+    "標準: 初期装備。早く買い替えたい",
+    "速突き: 長射程・高回転。正面から先に触れる戦い向き",
+    "薙ぎ払い: 広範囲。群れ・罠・召喚の処理向き",
+    "軽連斬: 最速級。背後取りと術師狩り向き",
+    "鉄剣: 中盤の標準。ボス・中型に安定",
+    "泡割り: 水辺・泡・罠への長槍対策",
+    "火返し: 火霊・小竜・罠を広く払う",
+    "竜狩り: 竜洞とボスの踏み込み用",
+    "星見: 最長射程。術師・霧・灯台の遠隔敵向き",
+    "月蝕: 高回転。召喚士・罠・月影敵を崩す",
+    "黒陽: 広い大振り。闇術師と終盤雑魚を押す",
+    "黒曜槌: 重装崩し。盾兵・岩敵・正面圧を割る",
+    "霜砕き: 氷敵・灯台・凍土を踏み込んで崩す",
+    "暁光長槍: 超射程。光砲兵と熾火遠征の主力",
+  ];
   const armorTraits = ["軽装", "疾走", "受け", "護符", "耐性", "泡耐性", "火耐性", "遠征防御", "魔法軽減", "月蝕魔法軽減", "黒陽圧軽減", "正面防御", "凍結軽減", "狙撃・光熱・着弾軽減"];
   const weaponCosts = [0, 90, 320, 880, 1120, 520, 740, 1450, 2100, 7400, 9600, 12800, 18500, 42000];
   const weaponAttack = [0, 3, 5, 14, 19, 8, 12, 17, 24, 29, 35, 42, 50, 65];
@@ -413,7 +431,7 @@
     bomb: 14,
     ward: 18,
   };
-  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens", "duelist"];
+  const accessoryOrder = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "gale", "frost", "sky", "horizon", "prismLens", "duelist"];
   const accessoryData = {
     hunter: {
       name: "狩人の印",
@@ -480,6 +498,12 @@
       trait: "鈍足を軽減・薬草回復を強化",
       sell: 0,
       flag: "deepLampCharm",
+    },
+    gale: {
+      name: "蒼風の羽飾り",
+      trait: "移動・回避を強化し、霧と遠距離攻撃を軽減",
+      sell: 0,
+      flag: "galeCharm",
     },
     frost: {
       name: "霜心の護符",
@@ -784,6 +808,20 @@
       color: "#8dd7ff",
       shadow: "#1c4966",
       midboss: true,
+      drop: 1,
+    },
+    stormRoc: {
+      name: "蒼嵐の翼",
+      hp: 3800,
+      atk: 176,
+      def: 108,
+      speed: 64 * WORLD_SCALE,
+      xp: 2700,
+      gold: 1350,
+      color: "#70d9d1",
+      shadow: "#245b70",
+      midboss: true,
+      flying: true,
       drop: 1,
     },
     frostBeacon: {
@@ -1099,6 +1137,8 @@
     CRYPT_WARDEN_REQUIREMENTS,
     FROST_GOLEM_SITE,
     FROST_GOLEM_REQUIREMENTS,
+    STORM_ROC_SITE,
+    STORM_ROC_REQUIREMENTS,
     FROST_TOWER_WARDEN_SITE,
     FROST_TOWER_WARDEN_REQUIREMENTS,
     FROST_DRAGON_SITE,
@@ -1130,6 +1170,7 @@
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponRoles,
     weaponAttackProfiles,
     armorTraits,
     weaponCosts,

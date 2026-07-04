@@ -38,6 +38,75 @@ Do not recreate deleted `TODO.md` or `NEXT_CODEX_TASK.md` unless explicitly requ
 
 # Now: recommended implementation sequence
 
+## Current audit 2026-07-02: deepen existing geography
+
+Completed structural foundations:
+
+* Required route breadcrumbs and destination markers for 竜洞 and 日輪砲台守.
+* Persistent safe-base arrival payoff.
+* Chapter 2 Moon Cavern attrition and Moon Archive climax.
+* Chapter 3 main/optional hierarchy.
+* Chapter 4 Ice Cave preparation encounter.
+* Chapter 5 full-route memo/marker support and Suncrest route preparations.
+
+Selected highest-value gap:
+
+* 蒼風島 occupied a large, readable part of the fixed world but was mostly traversal scenery. It had no named local climax and no unique persistent reward, so exploring it did not materially expand survival range.
+
+### Completed 2026-07-02: 蒼風灯台 regional side arc
+
+Implemented one complete optional arc without changing world size:
+
+1. Harbor/field guidance identifies the lighthouse as optional and keeps Chapter 4's main route first.
+2. Add a named lighthouse encounter with wind/ranged behavior distinct from existing stat gates.
+3. Lock the lighthouse relic until victory.
+4. Grant a persistent island reward that improves movement or survival against ranged/mist pressure.
+5. Persist encounter/reward state through save/load and new game reset.
+6. Add world reachability, combat-pattern, reward, guidance-priority, and migration smoke coverage.
+
+Acceptance criteria:
+
+* A player arriving at 蒼風港 can choose a clear optional expedition instead of seeing only empty roads.
+* The route has a named climax and a reward that changes later travel.
+* Chapter 4's required Ice Cave/Frost Crown route remains above the island arc in travel memo and objective UI.
+* The island content is replay-safe across save/load and cannot duplicate its reward.
+
+Result:
+
+* `蒼嵐の翼` now appears at 蒼風灯台 after Chapter 3 report at LV30.
+* The encounter alternates three piercing wind lanes and four persistent vortices, then calls two mist lancers below 55% HP.
+* The lighthouse reliquary remains locked until victory and grants `蒼風の羽飾り` plus expedition supplies.
+* The accessory improves movement, stamina, dash efficiency, and resistance to ranged/mist pressure, so the optional route expands later survivable range.
+* Harbor guide, current-area guidance, and Chapter 4 travel memo advertise the route as optional while keeping 白銀宿 / 氷窟 as the main route.
+* Save/load, new-game reset, reachability, pattern, guidance, reward-lock, duplicate cleanup, and equipment-effect smoke coverage are in place.
+
+### Next recommended player-facing pass
+
+1. Manually tune 蒼風港 -> 蒼風灯台 pressure, wind-lane speed, vortex floor coverage, and phase-two add density at real browser scale.
+2. If the route is still too short after tuning, add one compact hand-authored island interior or ridge fork with a retreat resource; do not enlarge the world canvas.
+3. Visually verify Chapter 5 city exits and preparation panels before adding another late-game checklist.
+4. Continue weapon/equipment tuning only after hands-on play confirms which sidegrades are still ignored.
+
+### Completed 2026-07-04: weapon sidegrade relevance pass
+
+Implemented:
+
+* Added explicit weapon role text for every weapon, so the inventory and shop rows communicate purpose rather than only ATK.
+* Strengthened early sidegrade matchups:
+  * たけやり now rewards frontal thrust setup against charging enemies.
+  * 粘土の剣 now functions as a wide trap/swarm clearer.
+  * 木刀 now rewards back attacks against casters and summoners.
+* Strengthened later route matchups:
+  * 星見の杖 now remains relevant against mist/lighthouse ranged enemies such as 蒼嵐の翼.
+  * 黒曜の槌 now has an explicit shield-breaking role against shield soldiers and heavy guards.
+* Added smoke coverage for role definitions, visible inventory role text, and sidegrade matchup multipliers.
+
+Acceptance result:
+
+* The player can now inspect a weapon and understand where it is useful.
+* Lower-ATK weapons can be situationally correct instead of automatically obsolete.
+* The change supports survival-range expansion by tying equipment choice to safer routes and enemy counterplay.
+
 ## Completed 2026-07-02: Chapter 4 Ice Cave preparation and action-depth pass
 
 Implemented:
@@ -742,15 +811,11 @@ For the next implementation pass, run as much as possible:
 
 ---
 
-# Immediate recommended first implementation package
+# Immediate recommended implementation package
 
-Start with a small, high-confidence package before the larger Chapter 2 dungeon:
+Tune and selectively deepen the completed 蒼風灯台 arc before starting another broad region:
 
-1. Update objective/guidance text for 日輪砲台守 and 竜洞.
-2. Add one breadcrumb discovery/sign for each.
-3. Fix Chapter 5 guidance priority so 日鏡塔/本線 appears before optional arena.
-4. Add Chapter 5 travel memo lines.
-5. Add first-arrival message support for 陽冠都市 and one early base.
-6. Run syntax + smoke + manual route-readability check.
-
-Then move to the Chapter 2 attrition dungeon prototype.
+1. Play 蒼風港 -> 蒼風灯台 at Chapter 3-clear power and measure retreat pressure, route length, and boss warning readability.
+2. Add a compact island interior or ridge fork only if the overworld route remains too short; do not enlarge the world canvas.
+3. Confirm `蒼風の羽飾り` is a useful Chapter 4/5 sidegrade rather than an automatic best accessory.
+4. After the first weapon-role pass, manually test whether any weapons are still ignored and tune the worst offenders with route-specific counterplay.

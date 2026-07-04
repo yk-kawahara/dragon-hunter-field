@@ -52,17 +52,19 @@
     const { player } = requireCombatContext(context);
     const armorMoveBonus = player.armor >= 1 ? 4 * WORLD_SCALE : 0;
     const trailMoveBonus = activeAccessory(player, "trail", "trailCharm") ? 5 * WORLD_SCALE : 0;
+    const galeMoveBonus = activeAccessory(player, "gale", "galeCharm") ? 6 * WORLD_SCALE : 0;
     const shieldRuneMoveBonus = player.shield > 0 && player.shieldRune === "stride" ? 6 * WORLD_SCALE : 0;
     const slowPenalty = player.slow > 0 ? (activeAccessory(player, "frost", "frostCharm") ? 0.9 : activeAccessory(player, "deepLamp", "deepLampCharm") ? 0.86 : 0.72) : 1;
-    return (player.speed + armorMoveBonus + trailMoveBonus + shieldRuneMoveBonus) * slowPenalty;
+    return (player.speed + armorMoveBonus + trailMoveBonus + galeMoveBonus + shieldRuneMoveBonus) * slowPenalty;
   }
 
   function dashCost(context) {
     const { player } = requireCombatContext(context);
     const armorDiscount = player.armor >= 1 ? 6 : 0;
     const trailDiscount = activeAccessory(player, "trail", "trailCharm") ? 8 : 0;
+    const galeDiscount = activeAccessory(player, "gale", "galeCharm") ? 4 : 0;
     const shieldRuneDiscount = player.shield > 0 && player.shieldRune === "stride" ? 6 : 0;
-    return Math.max(18, DASH_COST - armorDiscount - trailDiscount - shieldRuneDiscount);
+    return Math.max(18, DASH_COST - armorDiscount - trailDiscount - galeDiscount - shieldRuneDiscount);
   }
 
   function weaponDamageMultiplier(context, monster, pDot, mDot) {
@@ -74,10 +76,22 @@
     if (player.weapon >= 2 && flanking) mult += 0.18;
     if (player.weapon >= 3 && behind) mult += 0.34;
     if (player.weapon >= 4 && (monster.boss || monster.midboss || monster.type === "dragonling")) mult += 0.25;
+    if (player.weapon === 1) {
+      if (pDot > 0.58) mult += 0.32;
+      if (monster.type === "boar" || monster.type === "solarRunner" || monster.type === "frostBeast" || monster.type === "dragonling") mult += 0.18;
+    }
+    if (player.weapon === 2) {
+      if (monster.type === "slime" || monster.type === "bat" || monster.type === "bubbler" || monster.type === "trapFlower" || monster.type === "frostBeacon" || monster.type === "prismBeacon") mult += 0.52;
+      if (flanking) mult += 0.12;
+    }
+    if (player.weapon === 3) {
+      if (behind) mult += 0.42;
+      if ((flanking || behind) && (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "eclipseMage" || monster.type === "mirageCaster" || monster.type === "sunLancer")) mult += 0.35;
+    }
     if (player.weapon === 5 && (monster.type === "bubbler" || monster.type === "slime")) mult += 0.85;
     if (player.weapon === 6 && (monster.type === "wisp" || monster.type === "dragonling" || monster.type === "sorcerer" || monster.type === "moonShade" || monster.type === "trapFlower")) mult += 0.55;
     if (player.weapon === 7 && (monster.boss || monster.type === "dragonling" || monster.type === "ashKnight")) mult += 0.6;
-    if (player.weapon === 8 && (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "ashKnight" || monster.type === "mistLancer" || monster.type === "mistKeeper" || monster.midboss)) mult += 0.75;
+    if (player.weapon === 8 && (monster.type === "sorcerer" || monster.type === "summoner" || monster.type === "moonShade" || monster.type === "ashKnight" || monster.type === "mistLancer" || monster.type === "mistKeeper" || monster.type === "stormRoc" || monster.midboss)) mult += 0.75;
     if (player.weapon === 9 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "eclipseMage" || monster.type === "eclipseDragon" || monster.type === "moonShade" || monster.type === "mistLancer" || monster.type === "mistKeeper")) mult += 0.95;
     if (player.weapon === 10 && (monster.type === "summoner" || monster.type === "trapFlower" || monster.type === "voidWraith" || monster.type === "voidDragon" || monster.type === "eclipseMage")) mult += 1.25;
     if (player.weapon === 11 && (monster.type === "obsidianGolem" || monster.type === "obsidianCrawler" || monster.type === "trapFlower" || monster.type === "voidDragon" || monster.type === "voidWraith")) mult += 1.45;
@@ -88,6 +102,7 @@
       else if (flanking) mult += monster.type === "moonGatekeeper" ? 0.55 : 0.35;
       else if (mDot > 0.55) mult *= monster.type === "moonGatekeeper" ? 0.42 : 0.55;
     }
+    if (player.weapon === 11 && (monster.type === "shieldSoldier" || monster.type === "moonGatekeeper" || monster.type === "obsidianGolem" || monster.type === "solarWarden" || monster.type === "suncrestChampion")) mult += 0.65;
     if (activeBlessing(player, "arena") && (flanking || behind)) mult *= 1.22;
     return mult;
   }
@@ -120,6 +135,7 @@
     if (activeAccessory(player, "void", "voidCharm") && (monster?.type === "voidWraith" || monster?.type === "voidDragon" || source === "void")) mult *= 0.7;
     if (activeAccessory(player, "obsidian", "obsidianCharm") && (monster?.type === "obsidianGolem" || monster?.type === "obsidianCrawler" || source === "obsidian" || (source === "contact" && pDot > 0.3))) mult *= 0.68;
     if (activeAccessory(player, "deepLamp", "deepLampCharm") && (monster?.type === "vaultLeech" || monster?.type === "cryptWarden")) mult *= 0.7;
+    if (activeAccessory(player, "gale", "galeCharm") && (monster?.type === "stormRoc" || monster?.type === "mistLancer" || monster?.type === "frostMoth" || source === "projectile")) mult *= 0.76;
     if (activeAccessory(player, "frost", "frostCharm") && (monster?.type === "frostMoth" || monster?.type === "frostBeast" || monster?.type === "frostGolem" || monster?.type === "frostBeacon" || monster?.type === "towerWarden" || monster?.type === "frostDragon" || source === "frost")) mult *= 0.68;
     if (activeAccessory(player, "horizon", "horizonCharm") && (monster?.type === "sunLancer" || monster?.type === "mirageCaster" || monster?.type === "solarRunner" || monster?.type === "prismBeacon" || monster?.type === "solarWarden" || monster?.type === "suncrestChampion" || monster?.type === "sunspireKeeper" || monster?.type === "emberDragon" || source === "solar" || source === "projectile")) mult *= 0.58;
     if (activeAccessory(player, "prismLens", "prismLensCharm") && (monster?.type === "mirageCaster" || monster?.type === "prismBeacon" || monster?.type === "suncrestChampion" || monster?.type === "sunspireKeeper" || monster?.type === "emberDragon" || source === "solar")) mult *= 0.64;
@@ -145,6 +161,7 @@
       + (activeAccessory(player, "void", "voidCharm") ? 12 : 0)
       + (activeAccessory(player, "obsidian", "obsidianCharm") ? 8 : 0);
     if (activeAccessory(player, "deepLamp", "deepLampCharm")) player.staminaMax += 6;
+    if (activeAccessory(player, "gale", "galeCharm")) player.staminaMax += 8;
     if (activeAccessory(player, "frost", "frostCharm")) player.staminaMax += 10;
     if (activeAccessory(player, "horizon", "horizonCharm")) player.staminaMax += 12;
     if (activeAccessory(player, "prismLens", "prismLensCharm")) player.staminaMax += 8;

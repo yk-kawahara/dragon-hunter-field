@@ -153,6 +153,8 @@
     if (hpRate < 0.35) return "危険: 帰還鈴か最寄りの拠点で立て直そう";
     const stage = gameStage(context);
     const region = currentRegion();
+    if (region === "windCoast" && state.chapter3Reported && !state.stormRocDefeated) return "第4章本線は西方の白銀宿。任意なら北道を登り、蒼風灯台の蒼嵐の翼へ";
+    if (region === "windCoast" && state.stormRocDefeated && !state.chests.has("east-lighthouse-cache")) return "蒼風灯台直下の遺物庫で、蒼風の羽飾りを受け取ろう";
     if (region === "windCoast") return "蒼風港を足場に、灯台道か南の海岸道を選ぼう";
     if (region === "eastHighland") return "中央峠は近くて危険。西海岸道なら退路を取りやすい";
     if (region === "southIsles") return "南風岬砦で補給し、小島の橋と古い祠を巡ろう";

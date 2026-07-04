@@ -50,6 +50,7 @@
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponRoles,
     weaponAttackProfiles,
     armorTraits,
     weaponAttack,
@@ -628,7 +629,7 @@ function inventoryRenderRows(tab) {
     const owned = Array.isArray(player.ownedWeapons) ? player.ownedWeapons : [player.weapon || 0];
     return owned.map((rank) => ({
       name: weaponNames[rank] || `武器${rank}`,
-      detail: `${weaponAttackProfiles[rank]?.style || weaponTraits[rank] || ""} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - currentAttack)})`,
+      detail: `${weaponAttackProfiles[rank]?.style || weaponTraits[rank] || ""} / ${weaponRoles[rank] || weaponTraits[rank] || ""} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - currentAttack)})`,
       sell: weaponSellValues[rank] || 0,
       equipped: player.weapon === rank,
     }));
@@ -1942,6 +1943,25 @@ function drawMonster(monster, sx, sy) {
     ctx.fillStyle = "#ffd166";
     ctx.fillRect(sx + 6, sy + 8, 1, 2);
     ctx.fillRect(sx + 8, sy + 8, 1, 2);
+  } else if (monster.type === "stormRoc") {
+    const flap = Math.floor(monster.age / 110) % 2;
+    ctx.fillStyle = "rgba(112, 217, 209, 0.24)";
+    ctx.fillRect(sx - 5 - flap, sy + 1, 28 + flap * 2, 18);
+    ctx.fillStyle = monster.shadow;
+    ctx.fillRect(sx - 5, sy + 5 + flap, 10, 9);
+    ctx.fillRect(sx + 14, sy + 5 + flap, 10, 9);
+    ctx.fillRect(sx - 2, sy + 12 + flap, 7, 5);
+    ctx.fillRect(sx + 14, sy + 12 + flap, 7, 5);
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(sx + 4, sy + 2, 11, 15);
+    ctx.fillRect(sx + 2, sy + 7, 15, 8);
+    ctx.fillStyle = "#eaffff";
+    ctx.fillRect(sx + 6, sy + 5, 2, 2);
+    ctx.fillRect(sx + 12, sy + 5, 2, 2);
+    ctx.fillStyle = "#fff0a6";
+    ctx.fillRect(sx + 8, sy, 4, 4);
+    ctx.fillRect(sx + 8, sy + 15, 2, 5);
+    ctx.fillRect(sx + 12, sy + 15, 2, 5);
   } else if (monster.type === "frostMoth") {
     const flap = Math.floor(monster.age / 130) % 2;
     ctx.fillStyle = "rgba(185, 244, 255, 0.32)";

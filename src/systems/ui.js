@@ -15,6 +15,7 @@
     MOON_CAVERN_GATEKEEPER_REQUIREMENTS,
     MOON_ARCHIVE_WARDEN_REQUIREMENTS,
     CHAPTER2_REQUIREMENTS,
+    STORM_ROC_REQUIREMENTS,
     SOLAR_WARDEN_REQUIREMENTS,
     SUNCREST_CHAMPION_REQUIREMENTS,
     SUNSPIRE_KEEPER_REQUIREMENTS,
@@ -22,6 +23,7 @@
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponRoles,
     weaponAttackProfiles,
     armorTraits,
     weaponCosts,
@@ -326,7 +328,7 @@
         type: "weapon",
         id: rank,
         name: weaponNames[rank],
-        detail: `${weaponAttackProfiles[rank]?.style || weaponTraits[rank]} / ${weaponTraits[rank]} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - attackWithoutCombo)})`,
+        detail: `${weaponAttackProfiles[rank]?.style || weaponTraits[rank]} / ${weaponRoles[rank] || weaponTraits[rank]} ATK ${baseAttack + (weaponAttack[rank] || 0)} (${diffText(baseAttack + (weaponAttack[rank] || 0) - attackWithoutCombo)})`,
         equipped: player.weapon === rank,
         sell: weaponSellValues[rank],
         currentValue: playerAttack(),
@@ -546,6 +548,14 @@
     return routes.length ? `任意: ${routes.join(" / ")}` : "任意: 黒市周辺の寄り道は攻略済み";
   }
 
+  function chapter4OptionalLine(state) {
+    const routes = [];
+    if (!state.towerWardenDefeated) routes.push("霜見塔: 移動徽章");
+    if (!state.stormRocDefeated) routes.push(`蒼風灯台: 羽飾りLV${STORM_ROC_REQUIREMENTS.level}`);
+    else if (!state.chests.has("east-lighthouse-cache")) routes.push("蒼風灯台: 遺物庫");
+    return routes.length ? `任意: ${routes.join(" / ")}` : "任意: 第4章周辺の寄り道は攻略済み";
+  }
+
   function travelMemoLines(context) {
     const { state, player } = requireUiStatusContext(context);
     if (!state.elderReported) {
@@ -635,7 +645,7 @@
         state.arrivedSafeBases?.has("frost-haven") ? "本線: 白銀宿 -> 東の氷窟 -> 霜心の護符" : "本線: 黒門砦南門 -> 霜原 -> 白銀宿",
         state.arrivedSafeBases?.has("frost-haven") ? `今: 暖炉を使う時を選び、氷窟巨人へ LV${player.level}/30` : "今: 宿の灯を目印に前進補給から最後の吹雪へ",
         state.arrivedSafeBases?.has("frost-haven") ? "準備: 氷槍は線の間、氷震は円外、凍気灯は先に破壊" : "準備: 白銀宿で回復と凍土装備を確保する",
-        state.towerWardenDefeated ? "任意: 霜見塔の昇降機は開通済み" : "任意: 霜見塔はLV32の移動報酬",
+        chapter4OptionalLine(state),
       ];
     }
     if (!state.frostDragonDefeated) {
@@ -643,7 +653,7 @@
         "本線: 氷窟 -> 霜冠城封印碑 -> 霜冠竜",
         `今: 封印碑とLV${player.level}/34`,
         "霜心の護符は氷弾と凍結を軽減",
-        state.towerWardenDefeated ? "任意報酬: 天駆けの徽章で氷弾回避" : "任意: 霜見塔の塔守はLV32の寄り道",
+        chapter4OptionalLine(state),
       ];
     }
     if (!state.chapter4Reported) {
@@ -732,7 +742,7 @@
       {
         title: "装備",
         lines: [
-          `${weaponNames[player.weapon]} ${weaponAttackProfiles[player.weapon]?.style || weaponTraits[player.weapon]} ATK ${baseAttack}+${weaponBonus}=${baseAttack + weaponBonus}`,
+          `${weaponNames[player.weapon]} ${weaponRoles[player.weapon] || weaponAttackProfiles[player.weapon]?.style || weaponTraits[player.weapon]} ATK ${baseAttack}+${weaponBonus}=${baseAttack + weaponBonus}`,
           `${armorNames[player.armor]} ${armorTraits[player.armor]} DEF ${baseDefense}+${armorBonus}=${baseDefense + armorBonus}`,
           `戦闘中: ATK ${playerAttack()} / DEF ${playerDefense()}`,
           `盾 ${shieldNames[player.shield]} 正面${shieldCut}%軽減 刻印:${shieldRuneName}`,

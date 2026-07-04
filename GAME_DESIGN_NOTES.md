@@ -61,6 +61,18 @@ The next quality jump should not be another empty world expansion. The current p
 * Chapter 2 needs more sustained expedition volume.
 * Chapter 5 needs clearer route guidance and less checklist feeling.
 
+## 2026-07-02 post-expedition audit
+
+Several former structural risks are now implemented rather than merely planned:
+
+* Chapter 1 has a first remote camp, a pressured Dragon Cave approach, and a two-pattern Red Dragon.
+* Chapter 2 has Moon Cavern attrition, a named gatekeeper, a one-use spring, Moon Camp arrival payoff, and an action-focused Moon Archive climax.
+* Chapter 3 keeps required progression above its many optional routes.
+* Chapter 4 distinguishes required Ice Cave preparation from optional Frost Watchtower content, and Ice Cave now has a resource decision plus a multi-phase giant.
+* Chapter 5 traces its full main route and Suncrest provides route-specific preparation.
+
+The audit identified **underused existing geography**, not missing world size, as the largest code-visible content gap. 蒼風島 was selected for the first response because it already had ports, roads, ridges, a lighthouse, caches, and a southern outpost. Its lighthouse arc is now implemented; manual route-pressure tuning and selective deepening should follow while Chapter 4's main route remains first in guidance.
+
 ## Required route readability
 
 Required bosses, required midbosses, required dungeon entrances, required seals, and required route unlocks should be discoverable by route breadcrumbs.
@@ -183,6 +195,31 @@ Weak rewards:
 * Pure number increases with no route meaning.
 * Rewards that arrive after the route they counter is already irrelevant.
 * One-time rewards that are easy to miss but required for progress without clear hints.
+
+## Weapon sidegrade design
+
+Weapons should not be a simple ladder where every older weapon is dead after the next purchase.
+
+Each weapon should communicate:
+
+* Attack feel: speed, reach, width, lunge, or heavy impact.
+* Combat role: frontal poke, crowd clear, back attack, shield breaking, caster hunting, route counter, or boss preparation.
+* Survival-range value: which route or enemy it makes safer.
+
+Current first-pass implementation:
+
+* Weapon inventory/shop rows show role text in addition to raw ATK comparison.
+* Early weapons now have situational combat bonuses:
+  * たけやり rewards lining up a quick frontal thrust against charging enemies.
+  * 粘土の剣 is a wide crowd/trap clearer.
+  * 木刀 rewards fast back attacks against casters and summoners.
+* Later sidegrades have clearer matchups:
+  * 星見の杖 now remains useful against mist/lighthouse ranged enemies.
+  * 黒曜の槌 has a shield-breaking role against shield soldiers and heavy guards.
+
+Desired tuning target:
+
+> A lower-ATK weapon can still be the correct choice for a specific route if its reach, speed, arc, or enemy matchup keeps the player safer.
 
 ## Chapter 1 role: village, north forest, and Red Dragon
 
@@ -443,7 +480,7 @@ Intended feeling:
 
 > The highland was oppressive. The city made survival possible. The tower earned the final countermeasure. The southern islands are the final push.
 
-## 蒼風島 role: future regional arc candidate
+## 蒼風島 role: optional Chapter 4 regional expedition
 
 蒼風島 already has geography, ports, roads, and route identity.
 
@@ -452,17 +489,16 @@ Current role:
 * Broadens the world laterally.
 * Offers sea-crossing geography and additional safe anchors.
 * Helps the world feel like continents and islands rather than a single corridor.
-
-Future candidate:
-
-* Turn 蒼風島 from a region into a full expedition arc only after route readability, safe-base arrival tension, and Chapter 2/5 polish are addressed.
+* Offers an optional Chapter 4 expedition from 蒼風港 to 蒼風灯台 without replacing the western 白銀宿 / 氷窟 main route.
+* `蒼嵐の翼` tests long-line evasion, persistent-zone positioning, and add priority rather than only equipment numbers.
+* The locked lighthouse reliquary grants `蒼風の羽飾り`, a two-slot accessory choice for movement, stamina, dash efficiency, and ranged/mist resistance.
+* This reward is intended to make later long routes safer without trivializing contact damage from unrelated enemies.
 
 Potential future additions:
 
-* Local named midboss.
-* One interior dungeon.
-* Region-specific reward.
-* Lighthouse / ridge / south-cape route climax.
+* One compact interior dungeon or ridge fork if the harbor-to-lighthouse route remains too short in manual play.
+* More local discoveries between the lighthouse, central ridge, and southern cape.
+* A later south-cape climax only if it adds a new survival decision rather than another isolated boss.
 
 ## Area roles
 
@@ -488,6 +524,8 @@ Potential future additions:
 | Frost Haven / 白銀宿 | Chapter 4 safe base; its first eastern approach adds frost-beast pressure and a final supply decision before relief. |
 | Ice Cave / 氷窟 | Chapter 4 main preparation dungeon; one-use warming brazier, shard/quake Giant encounter, and Frost Heart survivability reward. |
 | Frost Watchtower / 霜見塔 | Optional Chapter 4 movement/reward dungeon. |
+| Bluewind Harbor / 蒼風港 | Optional Chapter 4 island base; clearly separates the western main route from the northern lighthouse side expedition. |
+| Bluewind Lighthouse / 蒼風灯台 | Optional regional climax against 蒼嵐の翼; grants the traversal/ranged-defense accessory 蒼風の羽飾り. |
 | Frost Crown Citadel / 霜冠城 | Chapter 4 final route. |
 | Dawn Harbor / 黎明港 | Chapter 5 arrival hub before hostile highland pressure. |
 | Suncrest City / 陽冠都市 | Chapter 5 major preparation city and civilization payoff; route-specific timed expedition kits turn late gold into survivability. |
@@ -523,7 +561,7 @@ Future growth should focus on:
 * Stronger safe-base arrival payoff.
 * Chapter 2 attrition volume.
 * Chapter 5 route polish.
-* Future 蒼風島 regional arc only after the above.
+* Manual tuning and selective deepening of existing regional arcs such as 蒼風島.
 
 World expansion must not mean empty walking space. Each new region or dungeon should provide at least one of:
 

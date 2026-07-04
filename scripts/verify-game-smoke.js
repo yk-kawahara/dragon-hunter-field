@@ -303,6 +303,7 @@ function assertMapReachability() {
     ["grassland-camp", 35, 35],
     ["warden", d.WARDEN_SITE.x, d.WARDEN_SITE.y],
     ["ashKnight", d.ASH_KNIGHT_SITE.x, d.ASH_KNIGHT_SITE.y],
+    ["stormRoc", d.STORM_ROC_SITE.x, d.STORM_ROC_SITE.y],
     ["dragon-cave", 51, 18],
     ["east-expansion", 72, 57],
     ["north", 11, 13],
@@ -425,12 +426,13 @@ function assertSaveLoadAndEquipment() {
   player.voidCharm = true;
   player.obsidianCharm = true;
   player.deepLampCharm = true;
+  player.galeCharm = true;
   player.frostCharm = true;
   player.skyCharm = true;
   player.horizonCharm = true;
   player.prismLensCharm = true;
   player.duelistCharm = true;
-  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "frost", "sky", "horizon", "prismLens", "duelist"];
+  player.ownedAccessories = ["hunter", "regen", "greaterRegen", "trail", "aegis", "mine", "mist", "eclipse", "void", "obsidian", "deepLamp", "gale", "frost", "sky", "horizon", "prismLens", "duelist"];
   player.equippedAccessory = "trail";
   player.equippedAccessories = ["trail", "greaterRegen"];
   state.chests.add("town-cache");
@@ -461,6 +463,8 @@ function assertSaveLoadAndEquipment() {
   state.spawnedCryptWarden = true;
   state.frostGolemDefeated = true;
   state.spawnedFrostGolem = true;
+  state.stormRocDefeated = true;
+  state.spawnedStormRoc = true;
   state.towerWardenDefeated = true;
   state.spawnedTowerWarden = true;
   state.frostDragonDefeated = true;
@@ -508,6 +512,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.player.voidCharm, "void charm should persist");
   assert(restored.player.obsidianCharm, "obsidian charm should persist");
   assert(restored.player.deepLampCharm, "deep lamp charm should persist");
+  assert(restored.player.galeCharm, "gale charm should persist");
   assert(restored.player.frostCharm, "frost charm should persist");
   assert(restored.player.skyCharm, "sky charm should persist");
   assert(restored.player.horizonCharm, "horizon charm should persist");
@@ -517,7 +522,7 @@ function assertSaveLoadAndEquipment() {
   assert(JSON.stringify(restored.player.ownedWeapons) === JSON.stringify([0, 1, 2, 3]), "owned weapons should persist");
   assert(JSON.stringify(restored.player.ownedArmors) === JSON.stringify([0, 1, 2, 3]), "owned armors should persist");
   assert(JSON.stringify(restored.player.ownedShields) === JSON.stringify([0, 1, 2]), "owned shields should persist");
-  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("frost") && restored.player.ownedAccessories.includes("sky") && restored.player.ownedAccessories.includes("horizon") && restored.player.ownedAccessories.includes("prismLens") && restored.player.ownedAccessories.includes("duelist"), "owned accessories should persist");
+  assert(restored.player.ownedAccessories.includes("trail") && restored.player.ownedAccessories.includes("greaterRegen") && restored.player.ownedAccessories.includes("mine") && restored.player.ownedAccessories.includes("mist") && restored.player.ownedAccessories.includes("eclipse") && restored.player.ownedAccessories.includes("void") && restored.player.ownedAccessories.includes("obsidian") && restored.player.ownedAccessories.includes("deepLamp") && restored.player.ownedAccessories.includes("gale") && restored.player.ownedAccessories.includes("frost") && restored.player.ownedAccessories.includes("sky") && restored.player.ownedAccessories.includes("horizon") && restored.player.ownedAccessories.includes("prismLens") && restored.player.ownedAccessories.includes("duelist"), "owned accessories should persist");
   assert(restored.player.equippedAccessory === "trail", "equipped accessory should persist");
   assert(JSON.stringify(restored.player.equippedAccessories) === JSON.stringify(["trail", "greaterRegen"]), "two equipped accessory slots should persist");
   assert(restored.player.tonics === 3 && restored.player.elixirs === 2 && restored.player.warps === 1, "new premium items should persist");
@@ -540,6 +545,7 @@ function assertSaveLoadAndEquipment() {
   assert(restored.state.mistKeeperDefeated, "mist keeper defeat flag should persist");
   assert(restored.state.cryptWardenDefeated, "crypt warden defeat flag should persist");
   assert(restored.state.frostGolemDefeated, "frost golem defeat flag should persist");
+  assert(restored.state.stormRocDefeated && !restored.state.spawnedStormRoc, "Storm Roc defeat should persist without restoring a live encounter");
   assert(restored.state.towerWardenDefeated, "frost tower warden defeat flag should persist");
   assert(restored.state.frostDragonDefeated && restored.state.chapter4Reported, "chapter 4 flags should persist");
   assert(restored.state.solarWardenDefeated && restored.state.suncrestChampionDefeated && restored.state.sunspireKeeperDefeated && restored.state.emberDragonDefeated && restored.state.chapter5Reported, "chapter 5 flags should persist");
@@ -872,6 +878,47 @@ function assertStoryClearFlow() {
   runtime.handleNpc(elder);
   assert(state.chapter3Reported, "Elder report should complete chapter 3 clear state");
 
+  const guardianStateBeforeStorm = state.guardianDefeated;
+  player.level = d.STORM_ROC_REQUIREMENTS.level;
+  player.hp = player.hpMax;
+  player.x = d.STORM_ROC_SITE.x * d.TILE;
+  player.y = d.STORM_ROC_SITE.y * d.TILE;
+  runtime.updateStoryEvents();
+  assert(state.spawnedStormRoc, "Storm Roc should spawn at Bluewind Lighthouse after chapter 3 report and its level gate");
+  const stormRoc = state.monsters.find((monster) => monster.type === "stormRoc");
+  assert(stormRoc, "Storm Roc monster should exist");
+  stormRoc.patternCooldown = 0;
+  stormRoc.fireCooldown = 0;
+  state.telegraphs = [];
+  state.projectiles = [];
+  runtime.updateMonsters(16);
+  assert(stormRoc.patternKind === "stormLances" && state.telegraphs.filter((entry) => entry.kind === "line").length === 3, "Storm Roc should open with three warned piercing wind lanes");
+  stormRoc.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.filter((projectile) => projectile.pattern === "stormLance" && projectile.piercing).length === 3, "Storm Roc wind-lance wave should fire three piercing projectiles");
+  stormRoc.patternWaveCooldown = 0;
+  runtime.updateMonsters(16);
+  stormRoc.patternWaveCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(stormRoc.patternState === "idle", "Storm Roc lance sequence should finish after three volleys");
+  state.telegraphs = [];
+  state.projectiles = [];
+  stormRoc.patternCooldown = 0;
+  runtime.updateMonsters(16);
+  assert(stormRoc.patternKind === "stormVortices" && state.telegraphs.filter((entry) => entry.kind === "zone").length === 4, "Storm Roc should alternate into four warned persistent vortices");
+  stormRoc.patternWindup = 0;
+  runtime.updateMonsters(16);
+  assert(state.projectiles.some((projectile) => projectile.pattern === "stormVortex" && projectile.persistent), "Storm Roc vortices should persist after their warning");
+  stormRoc.hp = stormRoc.hpMax * 0.5;
+  stormRoc.summoned = false;
+  runtime.updateMonsters(16);
+  assert(stormRoc.enraged && state.monsters.filter((monster) => monster.type === "mistLancer").length >= 2, "Storm Roc phase two should call mist lancers onto the lighthouse road");
+  runtime.spawnMonster("stormRoc", d.STORM_ROC_SITE.x * d.TILE + d.TILE, d.STORM_ROC_SITE.y * d.TILE);
+  stormRoc.hp = 0;
+  runtime.updateMonsters(16);
+  assert(state.stormRocDefeated && !state.monsters.some((monster) => monster.type === "stormRoc"), "Storm Roc defeat should persist and clear duplicate live copies in the same update");
+  assert(state.guardianDefeated === guardianStateBeforeStorm, "Storm Roc defeat should not alter the chapter 1 Guardian flag");
+
   player.level = d.FROST_GOLEM_REQUIREMENTS.level;
   player.hp = player.hpMax;
   player.x = d.FROST_GOLEM_SITE.x * d.TILE;
@@ -1139,6 +1186,7 @@ function assertExpandedWorldContent() {
   assert(Boolean(d.monsterTypes.frostMoth), "frost moth monster definition should exist");
   assert(Boolean(d.monsterTypes.frostBeast), "frost beast monster definition should exist");
   assert(Boolean(d.monsterTypes.frostGolem), "frost golem monster definition should exist");
+  assert(Boolean(d.monsterTypes.stormRoc), "Storm Roc monster definition should exist");
   assert(Boolean(d.monsterTypes.frostBeacon), "frost beacon monster definition should exist");
   assert(Boolean(d.monsterTypes.towerWarden), "frost tower warden monster definition should exist");
   assert(Boolean(d.monsterTypes.frostDragon), "frost dragon monster definition should exist");
@@ -1154,8 +1202,30 @@ function assertExpandedWorldContent() {
   assert(d.accessoryData.horizon?.name === "遠見の護符", "chapter 5 should define the anti-sniper accessory");
   assert(d.accessoryData.prismLens?.name === "反射水晶", "chapter 5 tower should define the prism lens accessory");
   assert(d.accessoryData.duelist?.name === "陽冠闘士の徽章", "Suncrest Arena should define the duelist accessory");
+  assert(d.accessoryData.gale?.name === "蒼風の羽飾り", "Bluewind Lighthouse should define its route-extension accessory");
   assert(d.weaponAttackProfiles.length === d.weaponNames.length, "every weapon should define an attack profile");
+  assert(d.weaponRoles.length === d.weaponNames.length, "every weapon should define a readable combat role");
+  assert(d.weaponRoles[1].includes("長射程") && d.weaponRoles[11].includes("盾兵"), "weapon roles should explain sidegrade purposes");
   assert(d.weaponAttackProfiles[1].cooldown < d.weaponAttackProfiles[11].cooldown && d.weaponAttackProfiles[8].range > d.weaponAttackProfiles[2].range, "weapon profiles should create visible speed and reach tradeoffs");
+
+  const weaponMatchups = createRuntime();
+  weaponMatchups.player.weapon = 1;
+  const spearCharge = weaponMatchups.runtime.weaponDamageMultiplier({ type: "boar" }, 0.7, 0.1);
+  const spearLoose = weaponMatchups.runtime.weaponDamageMultiplier({ type: "boar" }, 0.1, 0.1);
+  assert(spearCharge > spearLoose, "spear sidegrade should reward lining up a frontal thrust");
+  weaponMatchups.player.weapon = 2;
+  const clayTrap = weaponMatchups.runtime.weaponDamageMultiplier({ type: "trapFlower" }, 0.1, 0.1);
+  const clayHeavy = weaponMatchups.runtime.weaponDamageMultiplier({ type: "dragonling" }, 0.1, 0.1);
+  assert(clayTrap > clayHeavy, "wide clay sword should have a swarm/trap clearing matchup");
+  weaponMatchups.player.weapon = 3;
+  const woodBackstab = weaponMatchups.runtime.weaponDamageMultiplier({ type: "summoner" }, 0.1, -0.8);
+  const woodFront = weaponMatchups.runtime.weaponDamageMultiplier({ type: "summoner" }, 0.1, 0.8);
+  assert(woodBackstab > woodFront * 1.5, "wooden sword should reward quick back attacks against casters");
+  weaponMatchups.player.weapon = 11;
+  const hammerShieldFront = weaponMatchups.runtime.weaponDamageMultiplier({ type: "shieldSoldier" }, 0.3, 0.8);
+  weaponMatchups.player.weapon = 10;
+  const blackSwordShieldFront = weaponMatchups.runtime.weaponDamageMultiplier({ type: "shieldSoldier" }, 0.3, 0.8);
+  assert(hammerShieldFront > blackSwordShieldFront, "obsidian hammer should be a real shield-breaker sidegrade");
 
   const attackStyle = createRuntime();
   attackStyle.player.x = 30 * d.TILE;
@@ -1975,6 +2045,7 @@ function assertExpandedWorldContent() {
   state.inventoryTab = "weapons";
   const weaponRows = globalThis.DRAGON_HUNTER_UI.inventoryRows(contexts.ui());
   assert(weaponRows.some((row) => row.id === 8 && /ATK/.test(row.detail) && /\(/.test(row.detail)), "weapon inventory rows should show ATK comparison");
+  assert(weaponRows.some((row) => row.id === 8 && row.detail.includes(d.weaponRoles[8])), "weapon inventory rows should show the weapon role, not only raw ATK");
   state.inventoryTab = "armors";
   const armorRows = globalThis.DRAGON_HUNTER_UI.inventoryRows(contexts.ui());
   assert(armorRows.some((row) => row.id === 8 && /DEF/.test(row.detail) && /\(/.test(row.detail)), "armor inventory rows should show DEF comparison");
@@ -2093,6 +2164,11 @@ function assertExpandedWorldContent() {
   assert(frostDestination?.label === "白銀宿" && frostDestination.site.x === 24, "world map should first mark Frost Haven before first arrival");
   let frostMemo = globalThis.DRAGON_HUNTER_UI.statsPanelPages(frostRouteReadability.contexts.ui()).find((page) => page.title === "旅メモ");
   assert(frostMemo?.lines[0]?.includes("本線: 黒門砦南門 -> 霜原 -> 白銀宿") && frostMemo.lines.some((line) => /任意: 霜見塔/.test(line)), "Chapter 4 memo should guide first arrival before optional Frost Watchtower");
+  assert(frostMemo.lines.some((line) => /任意:.*蒼風灯台.*羽飾り/.test(line)), "Chapter 4 memo should advertise Bluewind Lighthouse below the western main route");
+  const islandGuide = frostRouteReadability.state.npcs.find((npc) => npc.type === "guide" && npc.x > 132 * d.TILE && npc.y < 154 * d.TILE);
+  assert(islandGuide, "Bluewind Harbor should have a regional guide");
+  frostRouteReadability.runtime.handleNpc(islandGuide);
+  assert(/本線.*白銀宿/.test(frostRouteReadability.state.message) && /任意.*蒼風灯台/.test(frostRouteReadability.state.message), "Bluewind guide should keep Frost Haven as the main route while advertising the optional lighthouse boss");
   frostRouteReadability.state.arrivedSafeBases.add("frost-haven");
   frostDestination = globalThis.DRAGON_HUNTER_RENDER.currentWorldMapDestinationFor(frostRouteReadability.state, frostRouteReadability.player);
   assert(frostDestination?.label === "氷窟巨人" && frostDestination.site.x === d.FROST_GOLEM_SITE.x, "world map should mark Frost Golem after Frost Haven arrival");
@@ -2233,6 +2309,15 @@ function assertExpandedWorldContent() {
   guardedTowerChest.runtime.openChest(towerChest);
   assert(guardedTowerChest.state.chests.has("frost-tower-reliquary") && guardedTowerChest.player.ownedAccessories.includes("sky"), "tower reliquary should grant the sky accessory after Tower Warden defeat");
 
+  const lighthouseChest = d.TREASURE_CHESTS.find((chest) => chest.id === "east-lighthouse-cache");
+  assert(lighthouseChest, "Bluewind Lighthouse reliquary should exist");
+  const guardedLighthouseChest = createRuntime();
+  guardedLighthouseChest.runtime.openChest(lighthouseChest);
+  assert(!guardedLighthouseChest.state.chests.has("east-lighthouse-cache") && !guardedLighthouseChest.player.ownedAccessories.includes("gale"), "lighthouse reliquary should stay locked until Storm Roc defeat");
+  guardedLighthouseChest.state.stormRocDefeated = true;
+  guardedLighthouseChest.runtime.openChest(lighthouseChest);
+  assert(guardedLighthouseChest.state.chests.has("east-lighthouse-cache") && guardedLighthouseChest.player.ownedAccessories.includes("gale"), "lighthouse reliquary should grant the gale accessory after Storm Roc defeat");
+
   const sunspireChest = d.TREASURE_CHESTS.find((chest) => chest.id === "sunspire-reliquary");
   assert(sunspireChest, "Sunspire reliquary should exist");
   const guardedSunspireChest = createRuntime();
@@ -2287,6 +2372,20 @@ function assertExpandedWorldContent() {
   assert(reward.player.elixirs >= 5 && reward.player.warps >= 5, "frost supply should extend the new region expedition");
   reward.runtime.grantChestReward("frostCharm");
   assert(reward.player.ownedAccessories.includes("frost"), "ice cave reliquary should grant the frost accessory");
+  reward.runtime.grantChestReward("galeRelic");
+  assert(reward.player.ownedAccessories.includes("gale"), "Bluewind Lighthouse reliquary should grant the gale accessory and supplies");
+  reward.player.armor = 0;
+  reward.player.equippedAccessories = [];
+  reward.player.equippedAccessory = "";
+  reward.runtime.refreshDerivedStats();
+  const normalIslandSpeed = reward.runtime.playerMoveSpeed();
+  const normalIslandDashCost = reward.runtime.dashCost();
+  const normalWindDamage = reward.runtime.armorDamageMultiplier({ type: "stormRoc" }, 0, "projectile");
+  reward.player.equippedAccessories = ["gale"];
+  reward.player.equippedAccessory = "gale";
+  reward.runtime.refreshDerivedStats();
+  assert(reward.runtime.playerMoveSpeed() > normalIslandSpeed && reward.runtime.dashCost() < normalIslandDashCost, "gale accessory should extend traversal through movement and cheaper dashes");
+  assert(reward.runtime.armorDamageMultiplier({ type: "stormRoc" }, 0, "projectile") < normalWindDamage, "gale accessory should reduce wind and ranged expedition damage");
   reward.runtime.grantChestReward("towerExpeditionSupply");
   assert(reward.player.tonics >= 9 && reward.player.warps >= 6, "frost tower supply should support the two-floor expedition");
   reward.runtime.grantChestReward("skyCharm");

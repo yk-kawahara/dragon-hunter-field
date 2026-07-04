@@ -35,19 +35,12 @@ Current project status:
 
 Current high-priority design risks:
 
-* Required route targets can be hard to locate if the player misses landmarks. Confirmed concern: 日輪砲台守; similar concern exists for Chapter 1 竜洞 / Red Dragon.
-* Chapter 1 竜洞 and Chapter 5 日輪砲台守 now have stronger objective text, route breadcrumbs, guide dialogue, travel memo support, and current-destination map markers; browser/manual readability still needs confirmation.
-* Several town-to-town routes are short or low-pressure enough that the next safe base may not feel like a hard-earned survival-range breakthrough; 黒市都 -> 黒門砦 now has a first 黒門前哨 pass and needs manual tuning.
-* Chapter 2 now has 月影洞窟 as a required attrition route between 月影廃墟 and 月見砦; manual tuning is still needed for pressure, length, and reward feel.
-* 月影洞窟 now ends in 月門の護将, a persistent named gate encounter that seals 月洞印 and the east exit until defeated.
-* 黒門前哨 now has enemy-defined north/south route identities, and 白銀宿 has a first-arrival final-approach pressure zone with forward supplies.
-* Chapter 4 now routes more clearly through 白銀宿 -> 氷窟 -> 霜冠城, with 霜見塔 kept as optional movement/reward content; manual route-pressure testing is still needed.
-* Chapter 5 has stronger full-route map support now, but can still become checklist-like if city exits, route pressure, and map markers are not browser-verified together.
-* Chapter 1 now has an explicit first remote safe radius at 草原野営地, and the field objective compass exposes required destinations without requiring coordinate knowledge.
-* 陽冠都市 now labels east/main, west/optional, and south/final-expedition exits in the field; visual scale still needs manual confirmation.
-* Optional 陽冠闘技場 can appear too prominent compared with the main 日鏡塔 route if guidance priority is not fixed.
-* Travel memo needs to become a route plan with main/optional/preparation sections.
-* First arrival at new safe bases now has persistent payoff messaging, stamina relief, projectile clearing, and a short guard buffer; browser/manual tuning is still needed.
+* Former structural priorities now have first implementations: required-route breadcrumbs, safe-base payoff, Moon Cavern attrition, Chapter 3 hierarchy, Ice Cave preparation, and Chapter 5 route planning.
+* 蒼風島 now has its first complete optional regional climax and persistent reward; its remaining risk is route length/pressure at real play scale rather than missing purpose.
+* Required-route guidance must remain above optional regional arcs as new island content is added.
+* Weapon sidegrades now have visible role text and first-pass matchup bonuses; hands-on tuning is still needed to confirm players actually swap weapons for routes instead of defaulting to highest ATK.
+* Recent Red Dragon, Moon Archive, and Frost Golem patterns still need hands-on timing/readability tuning.
+* Chapter 5 city exits and route-preparation panels still need browser-scale visual confirmation.
 * Browser desktop/mobile QA is still needed.
 * Full fresh-save manual playthrough to Chapter 5 elder report is still needed.
 * Gold/EXP/shop price balance still needs hands-on playtest.
@@ -84,6 +77,58 @@ Keep new entries concise. For deep historical detail, use git history instead of
 ---
 
 ## New entries
+
+### 2026-07-04: Weapon sidegrade relevance pass
+
+Purpose:
+
+* Address the playtest/design issue that many weapons felt dead once a higher-ATK weapon was found.
+
+Implementation:
+
+* Added a role description for every weapon and surfaced it in shop rows, inventory rows, and the status page.
+* Added situational combat multipliers so several lower-ATK weapons retain a route or enemy purpose:
+  * たけやり for quick frontal thrusts against charging enemies.
+  * 粘土の剣 for trap/swarm clearing.
+  * 木刀 for back attacks against casters and summoners.
+  * 星見の杖 for mist/lighthouse ranged enemies.
+  * 黒曜の槌 for shield soldiers and heavy guards.
+* Added smoke assertions for role definitions, visible inventory role text, and matchup multipliers.
+
+Verification:
+
+* JavaScript syntax checks passed across all 24 files under `src/` and `scripts/` using the bundled Node runtime.
+* `scripts/verify-game-smoke.js` passed, including the new weapon role/matchup checks and the existing 34,647 reachable-tile map check.
+
+Unverified risk:
+
+* Real-browser/manual combat feel was not verified in this pass. The main risk is numeric tuning: the sidegrades may still be underused, or one matchup may overperform once tested in a real route.
+
+### 2026-07-02: Bluewind Lighthouse regional expedition pass
+
+Purpose:
+
+* Turn underused existing island geography into a clear optional expedition whose reward materially extends later travel range.
+
+Implementation:
+
+* Added the named LV30 `蒼嵐の翼` encounter at 蒼風灯台 after Chapter 3 report.
+* Added alternating piercing wind-lance and persistent-vortex patterns, plus a half-HP mist-lancer reinforcement phase.
+* Locked the existing lighthouse reliquary behind victory and changed it to grant supplies plus `蒼風の羽飾り`.
+* Added the accessory to inventory/save/reset handling; while equipped it improves movement, stamina, dash efficiency, and ranged/mist resistance.
+* Updated harbor NPC guidance, current-area guidance, and Chapter 4 travel memo while preserving 白銀宿 / 氷窟 as the higher-priority main route.
+* Added a custom field sprite and projectile status feedback for the encounter.
+
+Verification:
+
+* JavaScript syntax checks passed across all 24 files under `src/` and `scripts/` using the bundled Node runtime.
+* `scripts/verify-game-smoke.js` passed, including 34,647 reachable tiles, boss spawn/phase/pattern/duplicate cleanup, gated reward, equipment effects, guidance priority, and save/load behavior.
+* `git diff --check` passed with line-ending normalization warnings only.
+* No terrain geometry or map dimensions changed, so map-preview regeneration was not required.
+
+Unverified risk:
+
+* The local HTTP target returned `200`, but the in-app browser connection was rejected by the current usage limit before navigation. Real-browser visual timing, sprite readability, responsive layout, and the full 蒼風港 -> 灯台 attrition curve therefore remain unverified.
 
 ### 2026-07-02: Chapter 4 Ice Cave preparation and action-depth pass
 

@@ -42,6 +42,8 @@
     CRYPT_WARDEN_REQUIREMENTS,
     FROST_GOLEM_SITE,
     FROST_GOLEM_REQUIREMENTS,
+    STORM_ROC_SITE,
+    STORM_ROC_REQUIREMENTS,
     FROST_TOWER_WARDEN_SITE,
     FROST_TOWER_WARDEN_REQUIREMENTS,
     FROST_DRAGON_SITE,
@@ -529,6 +531,13 @@
       && player.level >= FROST_GOLEM_REQUIREMENTS.level;
   }
 
+  function stormRocReady(context) {
+    const { state, player } = requireSpawnContext(context);
+    return !state.stormRocDefeated
+      && state.chapter3Reported
+      && player.level >= STORM_ROC_REQUIREMENTS.level;
+  }
+
   function towerWardenReady(context) {
     const { state, player } = requireSpawnContext(context);
     return !state.towerWardenDefeated
@@ -684,6 +693,14 @@
     return Math.hypot(pc.x - gx, pc.y - gy) < worldPx(104);
   }
 
+  function playerNearStormRocSite(context) {
+    const { player } = requireSpawnContext(context);
+    const pc = centerOf(player);
+    const sx = (STORM_ROC_SITE.x + 0.5) * TILE;
+    const sy = (STORM_ROC_SITE.y + 0.5) * TILE;
+    return Math.hypot(pc.x - sx, pc.y - sy) < worldPx(112);
+  }
+
   function playerNearTowerWardenSite(context) {
     const { player } = requireSpawnContext(context);
     const pc = centerOf(player);
@@ -750,6 +767,7 @@
       ["spawnedMistKeeper", "mistKeeperDefeated", "mistKeeper"],
       ["spawnedCryptWarden", "cryptWardenDefeated", "cryptWarden"],
       ["spawnedFrostGolem", "frostGolemDefeated", "frostGolem"],
+      ["spawnedStormRoc", "stormRocDefeated", "stormRoc"],
       ["spawnedTowerWarden", "towerWardenDefeated", "towerWarden"],
       ["spawnedFrostDragon", "frostDragonDefeated", "frostDragon"],
       ["spawnedSolarWarden", "solarWardenDefeated", "solarWarden"],
@@ -806,6 +824,9 @@
     if (state.spawnedFrostGolem && !state.frostGolemDefeated && !hasLiveMonster(context, "frostGolem")) {
       state.spawnedFrostGolem = false;
     }
+    if (state.spawnedStormRoc && !state.stormRocDefeated && !hasLiveMonster(context, "stormRoc")) {
+      state.spawnedStormRoc = false;
+    }
     if (state.spawnedTowerWarden && !state.towerWardenDefeated && !hasLiveMonster(context, "towerWarden")) {
       state.spawnedTowerWarden = false;
     }
@@ -853,6 +874,12 @@
       state.spawnedFrostGolem = true;
       spawnMonster(context, "frostGolem", FROST_GOLEM_SITE.x * TILE, FROST_GOLEM_SITE.y * TILE);
       say("氷窟の奥で氷窟巨人が目覚めた!", 3200);
+    }
+
+    if (stormRocReady(context) && !state.spawnedStormRoc && playerNearStormRocSite(context)) {
+      state.spawnedStormRoc = true;
+      spawnMonster(context, "stormRoc", STORM_ROC_SITE.x * TILE, STORM_ROC_SITE.y * TILE);
+      say("蒼風灯台の上空から蒼嵐の翼が急降下した!", 3400);
     }
 
     if (towerWardenReady(context) && !state.spawnedTowerWarden && playerNearTowerWardenSite(context)) {
@@ -969,6 +996,7 @@
     mistKeeperReady,
     cryptWardenReady,
     frostGolemReady,
+    stormRocReady,
     towerWardenReady,
     frostDragonReady,
     solarWardenReady,
@@ -988,6 +1016,7 @@
     playerNearMistKeeperSite,
     playerNearCryptWardenSite,
     playerNearFrostGolemSite,
+    playerNearStormRocSite,
     playerNearTowerWardenSite,
     playerNearFrostDragonSite,
     playerNearSolarWardenSite,

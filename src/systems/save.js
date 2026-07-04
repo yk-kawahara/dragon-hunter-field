@@ -85,6 +85,7 @@
         voidCharm: player.voidCharm,
         obsidianCharm: player.obsidianCharm,
         deepLampCharm: player.deepLampCharm,
+        galeCharm: player.galeCharm,
         frostCharm: player.frostCharm,
         skyCharm: player.skyCharm,
         horizonCharm: player.horizonCharm,
@@ -115,6 +116,8 @@
       cryptWardenDefeated: state.cryptWardenDefeated,
       spawnedFrostGolem: state.spawnedFrostGolem,
       frostGolemDefeated: state.frostGolemDefeated,
+      spawnedStormRoc: state.spawnedStormRoc,
+      stormRocDefeated: state.stormRocDefeated,
       spawnedTowerWarden: state.spawnedTowerWarden,
       towerWardenDefeated: state.towerWardenDefeated,
       spawnedFrostDragon: state.spawnedFrostDragon,
@@ -178,6 +181,7 @@
       player.voidCharm = Boolean(player.voidCharm);
       player.obsidianCharm = Boolean(player.obsidianCharm);
       player.deepLampCharm = Boolean(player.deepLampCharm);
+      player.galeCharm = Boolean(player.galeCharm);
       player.frostCharm = Boolean(player.frostCharm);
       player.skyCharm = Boolean(player.skyCharm);
       player.horizonCharm = Boolean(player.horizonCharm);
@@ -209,6 +213,7 @@
       state.mistKeeperDefeated = Boolean(data.mistKeeperDefeated);
       state.cryptWardenDefeated = Boolean(data.cryptWardenDefeated);
       state.frostGolemDefeated = Boolean(data.frostGolemDefeated);
+      state.stormRocDefeated = Boolean(data.stormRocDefeated);
       state.towerWardenDefeated = Boolean(data.towerWardenDefeated);
       state.frostDragonDefeated = Boolean(data.frostDragonDefeated);
       state.solarWardenDefeated = Boolean(data.solarWardenDefeated);
@@ -229,6 +234,7 @@
       state.spawnedMistKeeper = false;
       state.spawnedCryptWarden = false;
       state.spawnedFrostGolem = false;
+      state.spawnedStormRoc = false;
       state.spawnedTowerWarden = false;
       state.spawnedFrostDragon = false;
       state.spawnedSolarWarden = false;
@@ -312,6 +318,7 @@
       voidCharm: false,
       obsidianCharm: false,
       deepLampCharm: false,
+      galeCharm: false,
       frostCharm: false,
       skyCharm: false,
       horizonCharm: false,
@@ -365,6 +372,8 @@
     state.cryptWardenDefeated = false;
     state.spawnedFrostGolem = false;
     state.frostGolemDefeated = false;
+    state.spawnedStormRoc = false;
+    state.stormRocDefeated = false;
     state.spawnedTowerWarden = false;
     state.towerWardenDefeated = false;
     state.spawnedFrostDragon = false;

@@ -25,12 +25,14 @@
     CHAPTER3_REQUIREMENTS,
     CHAPTER4_REQUIREMENTS,
     CHAPTER5_REQUIREMENTS,
+    STORM_ROC_REQUIREMENTS,
     SOLAR_WARDEN_REQUIREMENTS,
     SUNCREST_CHAMPION_REQUIREMENTS,
     SUNSPIRE_KEEPER_REQUIREMENTS,
     weaponNames,
     armorNames,
     weaponTraits,
+    weaponRoles,
     armorTraits,
     weaponCosts,
     armorCosts,
@@ -137,7 +139,7 @@
       type: "weapon",
       id: rank,
       name: weaponNames[rank],
-      detail: `${weaponTraits[rank]} ATK+${weaponAttack[rank] || 0}`,
+      detail: `${weaponTraits[rank]} ATK+${weaponAttack[rank] || 0} / ${weaponRoles[rank] || ""}`,
       cost: weaponCosts[rank],
       available,
       lockedReason,
@@ -498,7 +500,10 @@
         else say("案内人「北回りは遺跡、西海岸は安全、中央山道は光槍兵が狙う危険な近道だ」", 4400);
       } else if (npc.x > 132 * TILE) {
         if (npc.y > 154 * TILE) say("案内人「北は蒼風港、南西の橋は群島祠、東は海岸の強敵地帯だ」", 4200);
-        else say("案内人「北道は灯台、中央は峠、南道は岬砦。峠が最短だが最も危険だ」", 4200);
+        else if (!state.chapter3Reported) say("案内人「北道は灯台、中央は峠、南道は岬砦。黒陽竜の報告後に島の強敵へ挑める」", 4600);
+        else if (!state.stormRocDefeated) say(`案内人「第4章本線は西方の白銀宿だ。任意なら北道の蒼風灯台へ。蒼嵐の翼はLV${STORM_ROC_REQUIREMENTS.level}級だ」`, 5600);
+        else if (!state.chests.has("east-lighthouse-cache")) say("案内人「本線は白銀宿。蒼嵐の翼を倒したなら灯台直下の遺物庫から羽飾りを受け取れ」", 5200);
+        else say("案内人「蒼風の羽飾りは移動と遠距離耐性を伸ばす。白銀宿や日出大陸への長旅で役立つ」", 4800);
       } else if (npc.y > 144 * TILE) {
         if (!state.frostGolemDefeated) say("案内人「まず白銀宿を拠点に東の氷窟へ。巨人を倒して霜心を得たら、霜冠城へ向かえ」", 5200);
         else if (!state.discoveries.has("frost-seal")) say("案内人「霜冠城の中庭で封印碑を探せ。氷窟巨人の核が道を開く」", 4200);

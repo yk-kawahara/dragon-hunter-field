@@ -99,6 +99,7 @@
     ["mistKeeper", "spawnedMistKeeper", "mistKeeperDefeated"],
     ["cryptWarden", "spawnedCryptWarden", "cryptWardenDefeated"],
     ["frostGolem", "spawnedFrostGolem", "frostGolemDefeated"],
+    ["stormRoc", "spawnedStormRoc", "stormRocDefeated"],
     ["towerWarden", "spawnedTowerWarden", "towerWardenDefeated"],
     ["frostDragon", "spawnedFrostDragon", "frostDragonDefeated"],
     ["solarWarden", "spawnedSolarWarden", "solarWardenDefeated"],
@@ -331,6 +332,36 @@
       return;
     }
 
+    if (monster.type === "stormRoc") {
+      const vortex = monster.patternIndex % 2 === 0;
+      monster.patternKind = vortex ? "stormVortices" : "stormLances";
+      monster.patternWindup = vortex ? 1040 : 800;
+      monster.patternWaves = vortex ? 4 : 3;
+      if (vortex) {
+        monster.patternTargets = [
+          { x: playerCenter.x, y: playerCenter.y },
+          { x: playerCenter.x + worldPx(36), y: playerCenter.y - worldPx(26) },
+          { x: playerCenter.x - worldPx(36), y: playerCenter.y + worldPx(26) },
+          { x: playerCenter.x + worldPx(8), y: playerCenter.y + worldPx(48) },
+        ];
+        for (const target of monster.patternTargets) {
+          state.telegraphs.push({ kind: "zone", x: target.x, y: target.y, radius: worldPx(16), color: "#70d9d1", life: monster.patternWindup, max: monster.patternWindup });
+        }
+        say("蒼嵐の翼が四つの旋風を残す! 円の外へ", 1700);
+      } else {
+        monster.patternTargets = [-0.34, 0, 0.34].map((offset) => {
+          const angle = Math.atan2(monster.patternAim.y, monster.patternAim.x) + offset;
+          return { x: Math.cos(angle), y: Math.sin(angle) };
+        });
+        for (const direction of monster.patternTargets) {
+          state.telegraphs.push({ kind: "line", x: c.x, y: c.y, dx: direction.x, dy: direction.y, length: worldPx(340), width: worldPx(9), color: "#d6ffff", life: monster.patternWindup, max: monster.patternWindup });
+        }
+        say("蒼嵐の翼が三方向の風槍を構える! 射線の間へ", 1700);
+      }
+      addRing(c.x, c.y, "#70d9d1", worldPx(42));
+      return;
+    }
+
     if (monster.type === "voidDragon") {
       monster.patternKind = "voidZones";
       monster.patternWindup = 920;
@@ -404,7 +435,7 @@
 
   function finishBossPattern(monster) {
     monster.patternState = "idle";
-    monster.patternCooldown = monster.type === "archiveWarden" ? (monster.enraged ? 1900 : 2600) : monster.type === "dragon" ? (monster.enraged ? 2100 : 2800) : monster.type === "frostGolem" ? (monster.enraged ? 2100 : 2700) : monster.type === "moonGatekeeper" ? 2500 : monster.enraged ? 2300 : 3200;
+    monster.patternCooldown = monster.type === "archiveWarden" ? (monster.enraged ? 1900 : 2600) : monster.type === "dragon" ? (monster.enraged ? 2100 : 2800) : monster.type === "frostGolem" ? (monster.enraged ? 2100 : 2700) : monster.type === "stormRoc" ? (monster.enraged ? 1850 : 2500) : monster.type === "moonGatekeeper" ? 2500 : monster.enraged ? 2300 : 3200;
     monster.patternWaveCooldown = 0;
     monster.patternTargets = [];
   }
@@ -458,6 +489,16 @@
         const shardTarget = { x: c.x + direction.x * worldPx(360), y: c.y + direction.y * worldPx(360) };
         shootProjectile(monster, shardTarget, 0, { speedMultiplier: 1.48, damageMultiplier: 0.68, radius: 5, life: 2400, piercing: true, color: "#d9f7ff", pattern: "frostGolemShard" });
       }
+    } else if (monster.patternKind === "stormVortices") {
+      const zoneIndex = 4 - wave;
+      const zone = monster.patternTargets?.[zoneIndex] || target;
+      shootProjectile(monster, zone, 0, { stationary: true, persistent: true, radius: 16, damageMultiplier: 0.62, life: 2500, color: "#70d9d1", pattern: "stormVortex" });
+      addRing(zone.x, zone.y, "#a7fff7", worldPx(24));
+    } else if (monster.patternKind === "stormLances") {
+      for (const direction of monster.patternTargets || []) {
+        const lanceTarget = { x: c.x + direction.x * worldPx(400), y: c.y + direction.y * worldPx(400) };
+        shootProjectile(monster, lanceTarget, 0, { speedMultiplier: 1.72, damageMultiplier: 0.74, radius: 5, life: 2600, piercing: true, color: "#d6ffff", pattern: "stormLance" });
+      }
     } else if (monster.patternKind === "voidZones") {
       const zoneIndex = 3 - wave;
       const zone = monster.patternTargets?.[zoneIndex] || target;
@@ -505,13 +546,13 @@
     if (monster.patternWaves <= 0) finishBossPattern(monster);
     else {
       monster.patternState = "waves";
-      monster.patternWaveCooldown = monster.patternKind === "voidZones" || monster.patternKind === "emberArtillery" ? 380 : monster.patternKind === "dragonFirePools" || monster.patternKind === "frostGolemQuake" ? 360 : monster.patternKind === "archiveSeals" ? 340 : monster.patternKind === "moonSnares" ? 330 : monster.patternKind === "dragonBreath" ? 260 : monster.patternKind === "frostGolemShards" ? 280 : 220;
+      monster.patternWaveCooldown = monster.patternKind === "voidZones" || monster.patternKind === "emberArtillery" ? 380 : monster.patternKind === "dragonFirePools" || monster.patternKind === "frostGolemQuake" ? 360 : monster.patternKind === "stormVortices" ? 350 : monster.patternKind === "archiveSeals" ? 340 : monster.patternKind === "moonSnares" ? 330 : monster.patternKind === "dragonBreath" ? 260 : monster.patternKind === "frostGolemShards" || monster.patternKind === "stormLances" ? 280 : 220;
     }
   }
 
   function updateBossPattern(context, monster, playerCenter, dist) {
-    if (!monster.boss && monster.type !== "moonGatekeeper" && monster.type !== "archiveWarden" && monster.type !== "frostGolem") return false;
-    if (monster.patternState === "idle" && monster.patternCooldown <= 0 && dist < worldPx(monster.type === "emberDragon" ? 430 : monster.type === "archiveWarden" ? 230 : monster.type === "frostGolem" ? 220 : monster.type === "moonGatekeeper" ? 215 : 245)) {
+    if (!monster.boss && monster.type !== "moonGatekeeper" && monster.type !== "archiveWarden" && monster.type !== "frostGolem" && monster.type !== "stormRoc") return false;
+    if (monster.patternState === "idle" && monster.patternCooldown <= 0 && dist < worldPx(monster.type === "emberDragon" ? 430 : monster.type === "archiveWarden" ? 230 : monster.type === "stormRoc" ? 260 : monster.type === "frostGolem" ? 220 : monster.type === "moonGatekeeper" ? 215 : 245)) {
       startBossPattern(context, monster, playerCenter);
       return true;
     }
@@ -636,6 +677,17 @@
         spawnIfClear("frostBeacon", 67 * TILE, 154 * TILE);
         addRing(c.x, c.y, "#d9f7ff", worldPx(42));
         say("氷窟巨人が二つの凍気灯を起動した! 先に灯を壊せ", 2600);
+      }
+
+      if (monster.type === "stormRoc" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {
+        monster.summoned = true;
+        monster.enraged = true;
+        monster.speed += worldPx(8);
+        monster.patternCooldown = Math.min(monster.patternCooldown, 500);
+        spawnIfClear("mistLancer", 149 * TILE, 52 * TILE);
+        spawnIfClear("mistLancer", 155 * TILE, 52 * TILE);
+        addRing(c.x, c.y, "#a7fff7", worldPx(46));
+        say("蒼嵐の翼が二人の霧槍兵を呼び、灯台道を封じた!", 2700);
       }
 
       if (monster.type === "towerWarden" && !monster.summoned && monster.hp <= monster.hpMax * 0.55) {
@@ -928,6 +980,11 @@
       player.stamina = Math.max(0, player.stamina - (lampGuard ? 5 : 18));
       monster.hp = Math.min(monster.hpMax, monster.hp + (lampGuard ? 5 : 18));
       addFloater(player.x + player.w / 2, player.y - worldPx(7), "吸命", "#d78ab7");
+    } else if (monster.type === "stormRoc") {
+      const galeGuard = activeAccessory(player, "gale", "galeCharm");
+      player.slow = Math.max(player.slow, galeGuard ? 420 : 1050);
+      player.stamina = Math.max(0, player.stamina - (galeGuard ? 6 : 18));
+      addFloater(player.x + player.w / 2, player.y - worldPx(7), "烈風", "#70d9d1");
     } else if (monster.type === "frostMoth" || monster.type === "frostBeast" || monster.type === "frostGolem" || monster.type === "towerWarden" || monster.type === "frostDragon") {
       const frostGuard = player.armor === 12 || activeAccessory(player, "frost", "frostCharm");
       const baseSlow = monster.type === "frostDragon" ? 2100 : monster.type === "towerWarden" ? 1750 : monster.type === "frostGolem" ? 1650 : monster.type === "frostBeast" ? 1300 : 1050;
@@ -1062,6 +1119,15 @@
       player.wards = Math.min(9, player.wards + 2);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#8dd7ff", 58);
       say("氷窟巨人を倒した。奥の霜心の護符に近づける!", 4800);
+    } else if (monster.type === "stormRoc") {
+      state.stormRocDefeated = true;
+      state.spawnedStormRoc = true;
+      player.gold += 1200;
+      player.tonics = Math.min(9, (player.tonics || 0) + 2);
+      player.wards = Math.min(9, player.wards + 2);
+      player.warps = Math.min(9, (player.warps || 0) + 1);
+      addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#70d9d1", 62);
+      say("蒼嵐の翼を退けた。蒼風灯台の遺物庫が開いた!", 5000);
     } else if (monster.type === "towerWarden") {
       state.towerWardenDefeated = true;
       state.spawnedTowerWarden = true;
@@ -1152,7 +1218,7 @@
       player.potions = Math.min(9, player.potions + 1);
       addRing(monster.x + monster.w / 2, monster.y + monster.h / 2, "#6de4ff", 42);
       say("南東の道番を越え、守りの護石を得た!", 4200);
-    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "moonGatekeeper", "archiveWarden", "frostGolem", "towerWarden", "solarWarden", "suncrestChampion", "sunspireKeeper"].includes(monster.type)) {
+    } else if (monster.midboss && !["obsidianGolem", "smugglerCaptain", "regenSentinel", "mistKeeper", "cryptWarden", "moonGatekeeper", "archiveWarden", "frostGolem", "stormRoc", "towerWarden", "solarWarden", "suncrestChampion", "sunspireKeeper"].includes(monster.type)) {
       state.guardianDefeated = true;
       player.sealCrest = true;
       player.scales = Math.min(3, player.scales + 1);

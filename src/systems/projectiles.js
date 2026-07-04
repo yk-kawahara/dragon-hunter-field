@@ -160,6 +160,11 @@
             player.slow = Math.max(player.slow, Math.round(baseSlow * (frostGuard ? 0.42 : 1)));
             player.stamina = Math.max(0, player.stamina - (frostGuard ? Math.ceil(baseStamina * 0.32) : baseStamina));
             addFloater(player.x + player.w / 2, player.y - worldPx(7), "凍", "#b9f4ff");
+          } else if (p.source === "stormRoc") {
+            const galeGuard = activeAccessory(player, "gale", "galeCharm");
+            player.slow = Math.max(player.slow, galeGuard ? 420 : 1100);
+            player.stamina = Math.max(0, player.stamina - (galeGuard ? 6 : 18));
+            addFloater(player.x + player.w / 2, player.y - worldPx(7), "烈風", "#70d9d1");
           } else if (p.source === "sunLancer" || p.source === "mirageCaster" || p.source === "solarRunner" || p.source === "prismBeacon" || p.source === "solarWarden" || p.source === "suncrestChampion" || p.source === "sunspireKeeper" || p.source === "emberDragon") {
             const solarGuard = player.armor === 13 || activeAccessory(player, "horizon", "horizonCharm") || activeAccessory(player, "prismLens", "prismLensCharm") || player.shield === 7;
             const baseSlow = p.source === "emberDragon" ? 1700 : p.source === "solarWarden" || p.source === "suncrestChampion" || p.source === "sunspireKeeper" ? 1350 : 950;

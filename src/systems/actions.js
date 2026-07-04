@@ -268,6 +268,10 @@
       say("氷窟巨人を倒さないと霜心の遺物庫は開かない", 2200);
       return;
     }
+    if (chest.id === "east-lighthouse-cache" && !state.stormRocDefeated) {
+      say("蒼嵐の翼を倒さないと灯台の遺物庫は開かない", 2200);
+      return;
+    }
     if (chest.id === "frost-tower-reliquary" && !state.towerWardenDefeated) {
       say("霜見の塔守を倒さないと最上階の遺物庫は開かない", 2200);
       return;

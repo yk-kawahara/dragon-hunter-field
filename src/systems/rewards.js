@@ -323,7 +323,7 @@
 
   function grantChestReward(context, reward) {
     const { player, say, refreshDerivedStats } = requireRewardContext(context);
-    if (reward === "dragonApproachSupply" || reward === "moonRelic" || reward === "moonSupply" || reward === "moonCavernSupply" || reward === "moonCavernExitSupply" || reward === "moonCavernRelic" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "blackGateSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestApproachSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
+    if (reward === "dragonApproachSupply" || reward === "moonRelic" || reward === "moonSupply" || reward === "moonCavernSupply" || reward === "moonCavernExitSupply" || reward === "moonCavernRelic" || reward === "moonArchiveSupply" || reward === "moonArchiveRelic" || reward === "summonerSupply" || reward === "trapSupply" || reward === "eclipseGear" || reward === "eclipseSupply" || reward === "voidGear" || reward === "voidSupply" || reward === "obsidianGear" || reward === "obsidianSupply" || reward === "blackMarketSupply" || reward === "blackGateSupply" || reward === "smugglerSupply" || reward === "shieldSupply" || reward === "blackShieldSupply" || reward === "greaterRegen" || reward === "mistCharm" || reward === "mistSupply" || reward === "cryptSupply" || reward === "deepLamp" || reward === "galeRelic" || reward === "frostSupply" || reward === "frostCharm" || reward === "towerExpeditionSupply" || reward === "skyCharm" || reward === "solarSupply" || reward === "suncrestApproachSupply" || reward === "suncrestMarketSupply" || reward === "suncrestArsenalSupply" || reward === "arenaSupply" || reward === "duelistMedal" || reward === "sunspireSupply" || reward === "prismLens" || reward === "emberSupply") {
       grantMoonChestReward(context, reward);
       return;
     }
@@ -565,6 +565,15 @@
       addItem(player, "warp", 1);
       grantAccessory(context, "deepLamp", "深層灯の護符を得た。装備すると鈍足を軽くし、薬草回復が強くなる");
       say("地下墓所の遺物庫から深層灯の護符を得た");
+      return true;
+    }
+    if (reward === "galeRelic") {
+      player.gold += 1800;
+      addItem(player, "tonic", 2);
+      addItem(player, "ward", 2);
+      addItem(player, "warp", 1);
+      grantAccessory(context, "gale", "蒼風の羽飾りを得た。装備すると移動と回避が伸び、霧と遠距離攻撃を軽減する");
+      say("蒼風灯台の遺物庫から羽飾りと島越えの物資を得た");
       return true;
     }
     if (reward === "frostSupply") {
